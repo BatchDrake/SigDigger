@@ -14,7 +14,7 @@
    <string>SigDigger</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="Icons.qrc">
+   <iconset resource="../icons/Icons.qrc">
     <normaloff>:/icons/icon-color.png</normaloff>:/icons/icon-color.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>1251</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -67,6 +67,7 @@
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
@@ -95,8 +96,8 @@
    </attribute>
    <addaction name="actionRun"/>
    <addaction name="separator"/>
-   <addaction name="actionChooseProfile"/>
    <addaction name="actionSetup"/>
+   <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionRun">
@@ -104,35 +105,35 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="Icons.qrc">
+    <iconset resource="../icons/Icons.qrc">
      <normaloff>:/icons/start-capture.png</normaloff>:/icons/start-capture.png</iconset>
    </property>
    <property name="text">
     <string>Run</string>
    </property>
   </action>
-  <action name="actionChooseProfile">
-   <property name="icon">
-    <iconset resource="Icons.qrc">
-     <normaloff>:/icons/select-source.png</normaloff>:/icons/select-source.png</iconset>
-   </property>
-   <property name="text">
-    <string>Choose profile</string>
-   </property>
-  </action>
   <action name="actionSetup">
    <property name="icon">
-    <iconset resource="Icons.qrc">
+    <iconset resource="../icons/Icons.qrc">
      <normaloff>:/icons/preferences.png</normaloff>:/icons/preferences.png</iconset>
    </property>
    <property name="text">
     <string>Settings</string>
    </property>
   </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/about.png</normaloff>:/icons/about.png</iconset>
+   </property>
+   <property name="text">
+    <string>About SigDigger</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="Icons.qrc"/>
+  <include location="../icons/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -16,11 +16,16 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+
 #ifndef MESSAGES_INSPECTOR_MESSAGE_H
 #define MESSAGES_INSPECTOR_MESSAGE_H
 
 #include <Suscan/Compat.h>
 #include <Suscan/Message.h>
+#include <Suscan/Channel.h>
+#include <Suscan/Config.h>
+#include <Suscan/SpectrumSource.h>
+#include <Suscan/Estimator.h>
 
 #include <analyzer/analyzer.h>
 
@@ -28,8 +33,25 @@ namespace Suscan {
   class InspectorMessage: public Message {
   private:
     struct suscan_analyzer_inspector_msg *message = nullptr; // Convenience reference
+    std::vector<SpectrumSource> sources;
+    std::vector<Estimator> estimators;
+
+    Config config;
 
   public:
+    enum suscan_analyzer_inspector_msgkind getKind(void) const;
+    suscan_config_t const *getCConfig(void) const;
+    RequestId getRequestId(void) const;
+    InspectorId getInspectorId(void) const;
+    Handle getHandle(void) const;
+    SUFLOAT *getSpectrumData(void) const;
+    SUSCOUNT getSpectrumLength(void) const;
+    SUSCOUNT getSpectrumRate(void) const;
+    std::string getClass(void) const;
+    std::vector<SpectrumSource> const &getSpectrumSources(void) const;
+    std::vector<Estimator> const &getEstimators(void) const;
+    Channel getChannel(void) const;
+
     InspectorMessage();
     InspectorMessage(struct suscan_analyzer_inspector_msg *msg);
   };

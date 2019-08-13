@@ -25,6 +25,7 @@
 #include <Suscan/Compat.h>
 #include <Suscan/Source.h>
 #include <Suscan/Logger.h>
+#include <Suscan/Config.h>
 
 #include <codec/codec.h>
 #include <analyzer/source.h>
@@ -32,13 +33,20 @@
 #include <analyzer/spectsrc.h>
 #include <analyzer/inspector/inspector.h>
 
+#include <map>
+
 namespace Suscan {
+  typedef std::map<std::string, Source::Config> ConfigMap;
+
   class Singleton {
-  private:
     static Singleton *instance;
     static Logger *logger;
 
-    std::vector<Source::Config> profiles;
+    std::vector<Source::Device> devices;
+    ConfigMap profiles;
+    std::vector<Object> palettes;
+    std::vector<Object> autoGains;
+    std::vector<Object> uiConfig;
 
     bool codecs_initd;
     bool sources_initd;
@@ -49,17 +57,47 @@ namespace Suscan {
     Singleton();
     ~Singleton();
 
+    bool havePalette(std::string const &name);
+    bool haveAutoGain(std::string const &name);
+
   public:
     void init_codecs(void);
     void init_sources(void);
     void init_estimators(void);
     void init_spectrum_sources(void);
     void init_inspectors(void);
+    void init_palettes(void);
+    void init_autogains(void);
+    void init_ui_config(void);
+
+    void sync(void);
 
     void registerSourceConfig(suscan_source_config_t *config);
 
-    std::vector<Source::Config>::const_iterator getFirstProfile(void) const;
-    std::vector<Source::Config>::const_iterator getLastProfile(void) const;
+    void registerSourceDevice(const suscan_source_device_t *dev);
+
+
+    ConfigMap::const_iterator getFirstProfile(void) const;
+    ConfigMap::const_iterator getLastProfile(void) const;
+    Suscan::Source::Config *getProfile(std::string const &name);
+    void saveProfile(Suscan::Source::Config const &name);
+
+    std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
+    std::vector<Source::Device>::const_iterator getLastDevice(void) const;
+
+
+    std::vector<Object>::const_iterator getFirstPalette(void) const;
+    std::vector<Object>::const_iterator getLastPalette(void) const;
+
+    std::vector<Object>::const_iterator getFirstAutoGain(void) const;
+    std::vector<Object>::const_iterator getLastAutoGain(void) const;
+
+    std::vector<Object>::iterator getFirstUIConfig(void);
+    std::vector<Object>::iterator getLastUIConfig(void);
+
+    void putUIConfig(unsigned int where, Object &&rv);
+
+    const Source::Device *getDeviceAt(unsigned int index) const;
 
     static Singleton *get_instance(void);
   };

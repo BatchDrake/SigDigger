@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    UIMediator.cpp: User Interface mediator object
+//    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -23,7 +23,9 @@
 
 #include "UIMediator.h"
 
+#include <QGuiApplication>
 #include <QDockWidget>
+#include <QScreen>
 
 using namespace SigDigger;
 
@@ -64,12 +66,12 @@ UIMediator::refreshUI(void)
 
   this->owner->setWindowTitle(
         "SigDigger - "
-        + QString::fromStdString(this->ui->configDialog->getProfile().label())
+        + QString::fromStdString(this->getProfile()->label())
         + " - " + stateString);
 }
 
 void
-UIMediator::connectSpectrum(void)
+UIMediator::connectMainWindow(void)
 {
   connect(
         this->ui->main->actionSetup,
@@ -84,6 +86,12 @@ UIMediator::connectSpectrum(void)
         SLOT(onToggleCapture(bool)));
 
   connect(
+        this->ui->main->actionAbout,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onToggleAbout(bool)));
+
+  connect(
         this->ui->main->mainTab,
         SIGNAL(tabCloseRequested(int)),
         this,
@@ -94,6 +102,11 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 {
   this->owner = owner;
   this->ui = ui;
+
+  // Configure audio preview
+  this->audioPanelDock = new QDockWidget("Audio preview", owner);
+  this->audioPanelDock->setWidget(this->ui->audioPanel);
+  owner->addDockWidget(Qt::RightDockWidgetArea, this->audioPanelDock);
 
   // Configure Source Panel
   this->sourcePanelDock = new QDockWidget("Source", owner);
@@ -110,18 +123,12 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->fftPanelDock->setWidget(this->ui->fftPanel);
   owner->addDockWidget(Qt::RightDockWidgetArea, this->fftPanelDock);
 
-  // Configure audio preview
-  this->audioPanelDock = new QDockWidget("Audio preview", owner);
-  this->audioPanelDock->setWidget(this->ui->audioPanel);
-  owner->addDockWidget(Qt::RightDockWidgetArea, this->audioPanelDock);
-
   // Add baseband analyzer tab
   this->ui->main->mainTab->addTab(this->ui->spectrum, "Radio spectrum");
 
   // Sort panels
   owner->tabifyDockWidget(this->sourcePanelDock, this->inspectorPanelDock);
   owner->tabifyDockWidget(this->inspectorPanelDock, this->fftPanelDock);
-  owner->tabifyDockWidget(this->fftPanelDock, this->audioPanelDock);
 
   this->sourcePanelDock->raise();
 
@@ -129,7 +136,12 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->ui->spectrum->setPaletteGradient(
         this->ui->fftPanel->getPaletteGradient());
 
+  this->connectMainWindow();
   this->connectSpectrum();
+  this->connectSourcePanel();
+  this->connectFftPanel();
+  this->connectAudioPanel();
+  this->connectInspectorPanel();
 }
 
 void
@@ -143,8 +155,21 @@ void
 UIMediator::setSampleRate(unsigned int rate)
 {
   if (this->rate != rate) {
+    unsigned int bw = rate / 30;
+
+    SUFREQ audioBw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
+
+    if (audioBw > rate / 2)
+      audioBw = rate / 2;
+
+    this->ui->fftPanel->setSampleRate(rate);
+    this->ui->inspectorPanel->setBandwidthLimits(0, rate / 2);
     this->ui->spectrum->setSampleRate(rate);
     this->ui->sourcePanel->setSampleRate(rate);
+    this->ui->inspectorPanel->setBandwidth(bw);
+    this->ui->spectrum->setFilterBandwidth(bw);
+
+    this->ui->audioPanel->setBandwidth(static_cast<float>(audioBw));
     this->rate = rate;
   }
 }
@@ -165,12 +190,17 @@ UIMediator::getState(void) const
 void
 UIMediator::feedPSD(const Suscan::PSDMessage &msg)
 {
-  this->ui->spectrum->setSampleRate(msg.getSampleRate());
-  this->ui->sourcePanel->setSampleRate(msg.getSampleRate());
+  this->setSampleRate(msg.getSampleRate());
   this->averager.feed(msg);
   this->ui->spectrum->feed(
         this->averager.get(),
         static_cast<int>(this->averager.size()));
+}
+
+void
+UIMediator::setCaptureSize(quint64 size)
+{
+  this->ui->sourcePanel->setCaptureSize(size);
 }
 
 Inspector *
@@ -254,6 +284,7 @@ UIMediator::refreshProfile(void)
   this->ui->configDialog->setProfile(this->appConfig->profile);
   this->ui->spectrum->setCenterFreq(
         static_cast<qint64>(this->appConfig->profile.getFreq()));
+  this->setSampleRate(this->appConfig->profile.getSampleRate());
 }
 
 Suscan::Source::Config *
@@ -262,22 +293,71 @@ UIMediator::getProfile(void) const
   return &this->appConfig->profile;
 }
 
+Suscan::AnalyzerParams *
+UIMediator::getAnalyzerParams(void) const
+{
+  return &this->appConfig->analyzerParams;
+}
+
+unsigned int
+UIMediator::getFftSize(void) const
+{
+  return this->appConfig->analyzerParams.windowSize;
+}
+
 Suscan::Serializable *
-UIMediator::allocConfig()
+UIMediator::allocConfig(void)
 {
   return this->appConfig = new AppConfig(this->ui);
 }
 
 void
+UIMediator::saveGeometry(void)
+{
+  this->appConfig->x = this->owner->geometry().x();
+  this->appConfig->y = this->owner->geometry().y();
+  this->appConfig->width  = this->owner->geometry().width();
+  this->appConfig->height = this->owner->geometry().height();
+}
+
+void
 UIMediator::applyConfig(void)
 {
+  // Apply window config
+  QRect rec = QGuiApplication::primaryScreen()->geometry();
+
+  if (this->appConfig->x == -1)
+    this->appConfig->x = (rec.width() - this->appConfig->width) / 2;
+  if (this->appConfig->y == -1)
+    this->appConfig->y = (rec.height() - this->appConfig->height) / 2;
+
+  this->owner->setGeometry(
+        this->appConfig->x,
+        this->appConfig->y,
+        this->appConfig->width,
+        this->appConfig->height);
+
+  // The following controls reflect elements of the configuration that are
+  // not owned by them. We need to set them manually.
   this->ui->configDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
+  this->ui->fftPanel->setWindowFunction(this->appConfig->analyzerParams.windowFunction);
+  this->ui->fftPanel->setFftSize(this->appConfig->analyzerParams.windowSize);  
+  this->ui->fftPanel->setDefaultFftSize(SIGDIGGER_FFT_WINDOW_SIZE);
+
+  // The rest of them are automatically deserialized
   this->ui->sourcePanel->applyConfig();
   this->ui->fftPanel->applyConfig();
   this->ui->inspectorPanel->applyConfig();
+  this->ui->audioPanel->applyConfig();
 
   this->refreshProfile();
+
+  // Artificially trigger slots to synchronize UI
+  this->onPaletteChanged();
+  this->onRangesChanged();
+  this->onAveragerChanged();
+  this->onThrottleConfigChanged();
 }
 
 UIMediator::~UIMediator()
@@ -289,8 +369,14 @@ UIMediator::~UIMediator()
 void
 UIMediator::onTriggerSetup(bool)
 {
+  this->ui->configDialog->setProfile(*this->getProfile());
+  this->ui->configDialog->setAnalyzerParams(*this->getAnalyzerParams());
+
   if (this->ui->configDialog->run()) {
     this->appConfig->profile = this->ui->configDialog->getProfile();
+
+    this->appConfig->analyzerParams = this->ui->configDialog->getAnalyzerParams();
+    this->ui->fftPanel->setFftSize(this->getFftSize());
     this->refreshProfile();
 
     this->appConfig->colors = this->ui->configDialog->getColors();
@@ -309,6 +395,12 @@ UIMediator::onToggleCapture(bool state)
   } else {
     emit captureEnd();
   }
+}
+
+void
+UIMediator::onToggleAbout(bool)
+{
+  this->ui->aboutDialog->exec();
 }
 
 void
@@ -338,22 +430,3 @@ UIMediator::onCloseInspectorTab(int ndx)
   }
 }
 
-void
-UIMediator::onWfBandwidthChanged(int min, int max)
-{
-  unsigned int bw = static_cast<unsigned int>(max - min);
-
-  this->setBandwidth(bw);
-}
-
-void
-UIMediator::onFrequencyChanged(void)
-{
-
-}
-
-void
-UIMediator::onLoChanged(void)
-{
-
-}

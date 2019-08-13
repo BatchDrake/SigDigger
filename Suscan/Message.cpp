@@ -50,16 +50,16 @@ Message::Message(uint32_t type, void *c_message)
 // Move constructor
 Message::Message(Message &&rv)
 {
-  this->type = rv.type;
-  this->c_message = std::move(rv.c_message);
+  std::swap(this->type, rv.type);
+  this->c_message.swap(rv.c_message);
 }
 
 // Move assignation
 Message &
 Message::operator=(Message &&rv)
 {
-  this->type = rv.type;
-  this->c_message = std::move(rv.c_message);
+  std::swap(this->type, rv.type);
+  this->c_message.swap(rv.c_message);
 
   return *this;
 }

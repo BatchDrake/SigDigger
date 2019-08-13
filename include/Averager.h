@@ -1,5 +1,5 @@
 //
-//    filename: description
+//    Averager.h: Simple PSD averager
 //    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -19,4 +19,39 @@
 #ifndef AVERAGER_H
 #define AVERAGER_H
 
+#include <Suscan/Messages/PSDMessage.h>
+
+namespace SigDigger {
+  class Averager {
+    float *last = nullptr;
+    unsigned long bufsiz = 0;
+    float alpha = 1.;
+
+  public:
+    void feed(Suscan::PSDMessage const &m);
+    void setAlpha(float alpha);
+    ~Averager(void);
+
+    float *
+    get(void) const
+    {
+      return this->last;
+    }
+
+    unsigned long
+    size(void) const
+    {
+      return this->bufsiz;
+    }
+
+    void
+    reset(void)
+    {
+      if (this->last != nullptr) {
+        delete [] this->last;
+        this->bufsiz = 0;
+      }
+    }
+  };
+}
 #endif // AVERAGER_H

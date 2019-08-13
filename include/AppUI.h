@@ -19,4 +19,38 @@
 #ifndef APPUI_H
 #define APPUI_H
 
+#include "AboutDialog.h"
+#include "SourcePanel.h"
+#include "InspectorPanel.h"
+#include "FftPanel.h"
+#include "AudioPanel.h"
+#include "MainSpectrum.h"
+#include "ConfigDialog.h"
+#include "Palette.h"
+#include "AutoGain.h"
+#include "Averager.h"
+#include "DeviceGain.h"
+#include "Inspector.h"
+#include "ui_MainWindow.h"
+#include "ConfigDialog.h"
+
+namespace SigDigger {
+  struct AppUI {
+    Ui_MainWindow *main = nullptr;
+    ConfigDialog *configDialog = nullptr;
+    MainSpectrum *spectrum = nullptr;
+    SourcePanel *sourcePanel = nullptr;
+    InspectorPanel *inspectorPanel = nullptr;
+    FftPanel *fftPanel = nullptr;
+    AudioPanel *audioPanel = nullptr;
+    AboutDialog *aboutDialog = nullptr;
+    std::map<Suscan::InspectorId, Inspector *> inspectorTable;
+    Suscan::InspectorId lastId = 0;
+
+    AppUI(QMainWindow *);
+    void postLoadInit(QMainWindow *owner);
+    ~AppUI();
+  };
+}
+
 #endif // APPUI_H

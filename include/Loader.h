@@ -16,8 +16,8 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef QSTONES_H
-#define QSTONES_H
+#ifndef LOADER_H
+#define LOADER_H
 
 #include <QApplication>
 #include <QMainWindow>
@@ -26,11 +26,10 @@
 
 #include <Suscan/Library.h>
 
-#include <Application.h>
+#include "Application.h"
 
-namespace QStones {
-  class InitThread: public QThread
-  {
+namespace SigDigger {
+  class InitThread: public QThread {
     Q_OBJECT
 
     void run() override;
@@ -47,6 +46,10 @@ namespace QStones {
   class Loader: public QSplashScreen {
     Q_OBJECT
 
+    unsigned int confIndex = 0;
+    void flushLog(void);
+    QString getLogText(void);
+
   private:
     // Owned pointers
     std::unique_ptr<InitThread> initThread; // QT wants this to be a pointer
@@ -60,6 +63,7 @@ namespace QStones {
     Loader(Application *app);
     ~Loader();
     void load(void);
+    void saveConfig(void);
 
   public slots:
     void handleChange(const QString &state);
@@ -68,4 +72,4 @@ namespace QStones {
   };
 };
 
-#endif // QSTONES_H
+#endif // LOADER_H

@@ -141,6 +141,7 @@ Application::setAudioInspectorParams(
     cfg.set("audio.sample-rate", static_cast<uint64_t>(rate));
     cfg.set("audio.demodulator", static_cast<uint64_t>(demod));
     this->analyzer->setInspectorConfig(this->audioInspHandle, cfg, 0);
+    this->assertAudioInspectorLo();
   } else {
     this->delayedRate    = rate;
     this->delayedCutOff  = cutOff;
@@ -165,13 +166,14 @@ Application::openAudio(unsigned int rate)
 
         this->playBack = std::make_unique<AudioPlayback>("default", rate);
         this->audioSampleRate = this->playBack->getSampleRate();
+        this->lastAudioLo = this->getAudioInspectorLo();
 
         if (bw > this->analyzer->getSampleRate() / 2)
           bw = this->analyzer->getSampleRate() / 2;
 
         ch.bw    = bw;
         ch.ft    = 0;
-        ch.fc    = this->ui.spectrum->getLoFreq();
+        ch.fc    = this->getAudioInspectorLo();
         ch.fLow  = -.5 * bw;
         ch.fHigh = .5 * bw;
 
@@ -235,6 +237,21 @@ Application::getAudioInspectorBandwidth(void) const
 
   return bw;
 }
+
+SUFREQ
+Application::getAudioInspectorLo(void) const
+{
+  SUFREQ lo = this->ui.spectrum->getLoFreq();
+  SUFREQ bw = this->getAudioInspectorBandwidth();
+
+  if (this->ui.audioPanel->getDemod() == AudioDemod::USB)
+    lo += .5 * bw;
+  else if (this->ui.audioPanel->getDemod() == AudioDemod::LSB)
+    lo -= .5 * bw;
+
+  return lo;
+}
+
 
 void
 Application::connectUI(void)
@@ -436,23 +453,6 @@ Application::startCapture(void)
             return;
         }
       }
-
-      //maxIfFreq = this->mediator->getProfile()->getSampleRate() / 2;
-
-      /*
-      this->ui->sbIFFreq->setMaximum(+maxIfFreq);
-      this->ui->sbIFFreq->setMinimum(-maxIfFreq);
-      this->setIfFrequency(oldIfFreq);
-
-      if (SU_ABS(oldIfFreq) > maxIfFreq) {
-        this->setIfFrequency(0);
-
-        QMessageBox::information(
-              this,
-              "IF out of bounds",
-              "Detector IF was set to 0 Hz to fit sample rate constraints.",
-              QMessageBox::Ok);
-      }*/
 
       // Flush log messages from here
       Suscan::Logger::getInstance()->flush();
@@ -686,6 +686,9 @@ Application::onAnalyzerReadError(void)
 
 Application::~Application()
 {
+  if (this->audioCfgTemplate != nullptr)
+    suscan_config_destroy(this->audioCfgTemplate);
+
   this->playBack = nullptr;
   this->analyzer = nullptr;
   this->uninstallDataSaver();
@@ -869,13 +872,20 @@ Application::onCommit(void)
 }
 
 void
-Application::onLoChanged(qint64 lo)
+Application::onLoChanged(qint64)
 {
-  if (this->audioConfigured) {
-    this->analyzer->setInspectorFreq(
-          this->audioInspHandle,
-          static_cast<double>(lo),
-          0);
+  if (this->audioConfigured)
+    this->assertAudioInspectorLo();
+}
+
+void
+Application::assertAudioInspectorLo(void)
+{
+  SUFREQ lo = this->getAudioInspectorLo();
+
+  if (fabs(lo - this->lastAudioLo) > 1e-8) {
+    this->analyzer->setInspectorFreq(this->audioInspHandle, lo, 0);
+    this->lastAudioLo = lo;
   }
 }
 
@@ -883,10 +893,11 @@ void
 Application::onBandwidthChanged(qreal)
 {
   if (this->audioConfigured) {
-    this->analyzer->setInspectorBandwidth(
-          this->audioInspHandle,
-          this->getAudioInspectorBandwidth(),
-          0);
+    SUFREQ bw;
+    bw = this->getAudioInspectorBandwidth();
+
+    this->analyzer->setInspectorBandwidth(this->audioInspHandle, bw, 0);
+    this->assertAudioInspectorLo();
   }
 }
 

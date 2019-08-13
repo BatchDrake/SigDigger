@@ -1,15 +1,15 @@
 <RCC>
-    <qresource prefix="/icons"/>
-    <qresource prefix="/">
-        <file>icons/icon-alpha.png</file>
-        <file>icons/icon-color-about.png</file>
-        <file>icons/icon-color.png</file>
-        <file>icons/icon-pro.png</file>
-        <file>icons/icon.png</file>
-        <file>icons/overlay-channels.png</file>
-        <file>icons/preferences.png</file>
-        <file>icons/select-source.png</file>
-        <file>icons/splash.png</file>
-        <file>icons/start-capture.png</file>
+    <qresource prefix="/icons">
+        <file>icon-alpha.png</file>
+        <file>icon-color-about.png</file>
+        <file>icon-color.png</file>
+        <file>icon-pro.png</file>
+        <file>icon.png</file>
+        <file>overlay-channels.png</file>
+        <file>preferences.png</file>
+        <file>select-source.png</file>
+        <file>splash.png</file>
+        <file>start-capture.png</file>
+        <file>about.png</file>
     </qresource>
 </RCC>

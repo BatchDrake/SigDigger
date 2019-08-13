@@ -366,6 +366,8 @@ void
 FftPanel::setFreqZoom(int zoom)
 {
   this->ui->freqZoomSlider->setValue(zoom);
+  this->ui->freqZoomLabel->setText(
+        zoom < 1 ? "<1x" : QString::number(zoom) + "x");
   this->panelConfig->zoom = zoom;
 }
 

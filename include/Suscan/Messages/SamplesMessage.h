@@ -30,6 +30,33 @@ namespace Suscan {
     struct suscan_analyzer_sample_batch_msg *message = nullptr; // Convenience reference
 
   public:
+    InspectorId
+    getInspectorId(void) const
+    {
+      if (this->message == nullptr)
+        return 999999999;
+
+      return static_cast<InspectorId>(this->message->inspector_id);
+    }
+
+    unsigned int
+    getCount(void) const
+    {
+      if (this->message == nullptr)
+        return 0;
+
+      return this->message->sample_count;
+    }
+
+    const SUCOMPLEX *
+    getSamples(void) const
+    {
+      if (this->message == nullptr)
+        return nullptr;
+
+      return this->message->samples;
+    }
+
     SamplesMessage();
     SamplesMessage(struct suscan_analyzer_sample_batch_msg *msg);
   };

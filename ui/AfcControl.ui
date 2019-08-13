@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>241</width>
+    <width>229</width>
     <height>166</height>
    </rect>
   </property>
@@ -71,7 +71,11 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QDoubleSpinBox" name="bwSpin"/>
+       <widget class="QDoubleSpinBox" name="bwSpin">
+        <property name="maximum">
+         <double>1000000.000000000000000</double>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label">
@@ -154,7 +158,11 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QDoubleSpinBox" name="offsetSpin"/>
+       <widget class="QDoubleSpinBox" name="offsetSpin">
+        <property name="maximum">
+         <double>1000000.000000000000000</double>
+        </property>
+       </widget>
       </item>
       <item row="0" column="0" colspan="3">
        <widget class="QLabel" name="label_7">

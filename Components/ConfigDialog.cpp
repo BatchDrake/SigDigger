@@ -33,11 +33,13 @@ void
 ConfigDialog::populateCombos(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  this->ui->profileCombo->clear();
+  this->ui->deviceCombo->clear();
 
   for (auto i = sus->getFirstProfile(); i != sus->getLastProfile(); ++i)
       this->ui->profileCombo->addItem(
-            QString::fromStdString(i->label()),
-            QVariant::fromValue(*i));
+            QString::fromStdString(i->first),
+            QVariant::fromValue(i->second));
 
   for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i)
     this->ui->deviceCombo->addItem(
@@ -188,6 +190,13 @@ ConfigDialog::refreshProfileUi(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
+  for (auto i = 0; i < this->ui->profileCombo->count(); ++i)
+    if (this->ui->profileCombo->itemText(i).toStdString() ==
+        this->profile.label()) {
+      this->ui->profileCombo->setCurrentIndex(i);
+      break;
+    }
+
   this->ui->frequencyLine->setText(
         QString::number(
           static_cast<uint64_t>(this->profile.getFreq())));
@@ -328,15 +337,21 @@ ConfigDialog::connectAll(void)
 
   connect(
         this,
-        SIGNAL(accepted()),
+        SIGNAL(accepted(void)),
         this,
-        SLOT(onAccepted()));
+        SLOT(onAccepted(void)));
 
   connect(
         this->ui->browseButton,
-        SIGNAL(clicked()),
+        SIGNAL(clicked(void)),
         this,
-        SLOT(onBrowseCaptureFile()));
+        SLOT(onBrowseCaptureFile(void)));
+
+  connect(
+        this->ui->saveProfileButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onSaveProfile(void)));
 }
 
 void
@@ -596,5 +611,38 @@ ConfigDialog::onBrowseCaptureFile(void)
   if (!path.isEmpty()) {
     this->ui->pathEdit->setText(path);
     this->profile.setPath(path.toStdString());
+  }
+}
+
+void
+ConfigDialog::onSaveProfile(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  std::string name = "My " + this->profile.label();
+  std::string candidate = name;
+  unsigned int i = 1;
+
+  while (sus->getProfile(candidate) != nullptr)
+    candidate = name + " (" + std::to_string(i++) + ")";
+
+  this->saveProfileDialog.setProfileName(QString::fromStdString(candidate));
+
+  if (this->saveProfileDialog.run()) {
+    candidate = this->saveProfileDialog.getProfileName().toStdString();
+
+    if (sus->getProfile(candidate) != nullptr) {
+      QMessageBox::warning(
+            this,
+            "Profile already exists",
+            "There is already a profile named " +
+            this->saveProfileDialog.getProfileName() +
+            " please choose a different one.",
+            QMessageBox::Ok);
+      return;
+    }
+
+    this->profile.setLabel(candidate);
+    sus->saveProfile(this->profile);
+    this->populateCombos();
   }
 }

@@ -27,6 +27,10 @@
 #include <analyzer/msg.h>
 
 namespace Suscan {
+  typedef uint32_t RequestId;
+  typedef uint32_t InspectorId;
+  typedef SUHANDLE Handle;
+
   class Message {
   private:
     uint32_t type;

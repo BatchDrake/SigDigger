@@ -21,11 +21,136 @@
 
 using namespace Suscan;
 
-InspectorMessage::InspectorMessage() : Message() { }
-
-InspectorMessage::InspectorMessage(struct suscan_analyzer_inspector_msg *msg) :
-  Message(SUSCAN_ANALYZER_MESSAGE_TYPE_INSPECTOR, msg)
-{
-  this->message = msg;
+InspectorMessage::InspectorMessage() : Message() {
+  this->message = nullptr;
+  printf("Create EMPTY inspector message\n");
 }
 
+InspectorMessage::InspectorMessage(struct suscan_analyzer_inspector_msg *msg) :
+  Message(SUSCAN_ANALYZER_MESSAGE_TYPE_INSPECTOR, msg),
+  config(msg->kind == SUSCAN_ANALYZER_INSPECTOR_MSGKIND_GET_CONFIG ||
+         msg->kind == SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_CONFIG
+         ? msg->config
+         : nullptr)
+{
+  unsigned int i;
+
+  this->message = msg;
+
+  this->sources.resize(static_cast<unsigned>(msg->spectsrc_count));
+  for (i = 0; i < static_cast<unsigned>(msg->spectsrc_count); ++i) {
+    this->sources[i].name = msg->spectsrc_list[i]->name;
+    this->sources[i].desc = msg->spectsrc_list[i]->desc;
+  }
+
+  this->estimators.resize(static_cast<unsigned>(msg->estimator_count));
+  for (i = 0; i < static_cast<unsigned>(msg->estimator_count); ++i) {
+    this->estimators[i].name  = msg->estimator_list[i]->name;
+    this->estimators[i].desc  = msg->estimator_list[i]->desc;
+    this->estimators[i].field = msg->estimator_list[i]->field;
+  }
+}
+
+SUFLOAT *
+InspectorMessage::getSpectrumData(void) const
+{
+  if (this->message == nullptr)
+    return nullptr;
+
+  return this->message->spectrum_data;
+}
+
+SUSCOUNT
+InspectorMessage::getSpectrumLength(void) const
+{
+  if (this->message == nullptr)
+    return 0;
+
+  return this->message->spectrum_size;
+}
+
+SUSCOUNT
+InspectorMessage::getSpectrumRate(void) const
+{
+  if (this->message == nullptr)
+    return 0;
+
+  return this->message->samp_rate;
+}
+
+enum suscan_analyzer_inspector_msgkind
+InspectorMessage::getKind(void) const
+{
+  if (this->message == nullptr)
+    return SUSCAN_ANALYZER_INSPECTOR_MSGKIND_WRONG_HANDLE;
+
+  return this->message->kind;
+}
+
+
+RequestId
+InspectorMessage::getRequestId(void) const
+{
+  if (this->message == nullptr)
+    return 99999999;
+
+  return this->message->req_id;
+}
+
+RequestId
+InspectorMessage::getInspectorId(void) const
+{
+  if (this->message == nullptr)
+    return 99999999;
+
+  return this->message->inspector_id;
+}
+
+suscan_config_t const *
+InspectorMessage::getCConfig(void) const
+{
+  return this->message->config;
+}
+
+Handle
+InspectorMessage::getHandle(void) const
+{
+  if (this->message == nullptr)
+    return 99999999;
+
+  return static_cast<Handle>(this->message->handle);
+}
+
+std::string
+InspectorMessage::getClass(void) const
+{
+  if (this->message == nullptr)
+    return "null";
+
+  return this->message->class_name;
+}
+
+std::vector<SpectrumSource> const &
+InspectorMessage::getSpectrumSources(void) const
+{
+  return this->sources;
+}
+
+std::vector<Estimator> const &
+InspectorMessage::getEstimators(void) const
+{
+  return this->estimators;
+}
+
+Channel
+InspectorMessage::getChannel(void) const
+{
+  Channel ch;
+
+  if (this->message != nullptr) {
+    ch.fc = this->message->channel.fc;
+    ch.fc = this->message->channel.bw;
+  }
+
+  return ch;
+}

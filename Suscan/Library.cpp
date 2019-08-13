@@ -75,12 +75,23 @@ walk_all_sources(suscan_source_config_t *config, void *privdata)
   return SU_TRUE;
 }
 
+static SUBOOL
+walk_all_devices(const suscan_source_device_t *device, unsigned int, void *privdata)
+{
+  Singleton *instance = static_cast<Singleton *>(privdata);
+
+  instance->registerSourceDevice(device);
+
+  return SU_TRUE;
+}
+
 void
 Singleton::init_sources(void)
 {
   if (!this->sources_initd) {
     SU_ATTEMPT(suscan_init_sources());
     suscan_source_config_walk(walk_all_sources, static_cast<void *>(this));
+    suscan_source_device_walk(walk_all_devices, static_cast<void *>(this));
     this->sources_initd = true;
   }
 }
@@ -112,21 +123,224 @@ Singleton::init_inspectors(void)
   }
 }
 
+bool
+Singleton::haveAutoGain(std::string const &name)
+{
+  for (auto p = this->autoGains.begin();
+       p != this->autoGains.end();
+       ++p) {
+    try {
+      if (p->getField("name").value() == name)
+        return true;
+    } catch (Suscan::Exception const &) {
+
+    }
+  }
+
+  return false;
+}
+
+bool
+Singleton::havePalette(std::string const &name)
+{
+  for (auto p = this->palettes.begin();
+       p != this->palettes.end();
+       ++p) {
+    try {
+      if (p->getField("name").value() == name)
+        return true;
+    } catch (Suscan::Exception const &) {
+
+    }
+  }
+
+  return false;
+}
+
+void
+Singleton::init_palettes(void)
+{
+  unsigned int i, count;
+  ConfigContext ctx("palettes");
+  Object list = ctx.listObject();
+
+  count = list.length();
+
+  for (i = 0; i < count; ++i) {
+    try {
+      if (!this->havePalette(list[i].getField("name").value()))
+        this->palettes.push_back(list[i]);
+    } catch (Suscan::Exception const &) { }
+  }
+}
+
+void
+Singleton::init_autogains(void)
+{
+  unsigned int i, count;
+  ConfigContext ctx("autogains");
+  Object list = ctx.listObject();
+
+  count = list.length();
+
+  for (i = 0; i < count; ++i) {
+    try {
+      if (!this->haveAutoGain(list[i].getField("name").value()))
+        this->autoGains.push_back(list[i]);
+    } catch (Suscan::Exception const &) { }
+  }
+}
+
+void
+Singleton::init_ui_config(void)
+{
+  unsigned int i, count;
+  ConfigContext ctx("uiconfig");
+
+  Object list = ctx.listObject();
+
+  count = list.length();
+
+  for (i = 0; i < count; ++i) {
+    try {
+      this->uiConfig.push_back(list[i]);
+    } catch (Suscan::Exception const &) { }
+  }
+}
+
+void
+Singleton::sync(void)
+{
+  unsigned int i, count;
+  ConfigContext ctx("uiconfig");
+  Object list = ctx.listObject();
+
+  count = static_cast<unsigned int>(this->uiConfig.size());
+
+  // Sync all modified configurations
+  for (i = 0; i < count; ++i) {
+    if (!this->uiConfig[i].isBorrowed()) {
+      try {
+        list.put(this->uiConfig[i], i);
+      } catch (Suscan::Exception const &) {
+        list.append(this->uiConfig[i]);
+      }
+    }
+  }
+}
+
 // Singleton methods
+
 void
 Singleton::registerSourceConfig(suscan_source_config_t *config)
 {
-  this->profiles.push_back(Source::Config(config));
+  const char *label = suscan_source_config_get_label(config);
+
+  if (label == nullptr)
+    label = "(Null profile)";
+
+  this->profiles[label] = Suscan::Source::Config(config);
 }
 
-std::vector<Source::Config>::const_iterator
+ConfigMap::const_iterator
 Singleton::getFirstProfile(void) const
 {
   return this->profiles.begin();
 }
 
-std::vector<Source::Config>::const_iterator
+ConfigMap::const_iterator
 Singleton::getLastProfile(void) const
 {
   return this->profiles.end();
+}
+
+Suscan::Source::Config *
+Singleton::getProfile(std::string const &name)
+{
+  if (this->profiles.find(name) == this->profiles.end())
+    return nullptr;
+
+  return &this->profiles[name];
+}
+
+void
+Singleton::saveProfile(Suscan::Source::Config const &profile)
+{
+  this->profiles[profile.label()] = profile;
+
+  SU_ATTEMPT(
+        suscan_source_config_register(
+          this->profiles[profile.label()].instance));
+}
+
+void
+Singleton::registerSourceDevice(const suscan_source_device_t *dev)
+{
+  this->devices.push_back(Source::Device(dev, 0));
+}
+
+std::vector<Source::Device>::const_iterator
+Singleton::getFirstDevice(void) const
+{
+  return this->devices.begin();
+}
+
+std::vector<Source::Device>::const_iterator
+Singleton::getLastDevice(void) const
+{
+  return this->devices.end();
+}
+
+std::vector<Object>::const_iterator
+Singleton::getFirstPalette(void) const
+{
+  return this->palettes.begin();
+}
+
+std::vector<Object>::const_iterator
+Singleton::getLastPalette(void) const
+{
+  return this->palettes.end();
+}
+
+std::vector<Object>::const_iterator
+Singleton::getFirstAutoGain(void) const
+{
+  return this->autoGains.begin();
+}
+
+std::vector<Object>::const_iterator
+Singleton::getLastAutoGain(void) const
+{
+  return this->autoGains.end();
+}
+
+std::vector<Object>::iterator
+Singleton::getFirstUIConfig(void)
+{
+  return this->uiConfig.begin();
+}
+
+std::vector<Object>::iterator
+Singleton::getLastUIConfig(void)
+{
+  return this->uiConfig.end();
+}
+
+void
+Singleton::putUIConfig(unsigned int pos, Object &&rv)
+{
+  if (pos >= this->uiConfig.size())
+    this->uiConfig.resize(pos + 1);
+
+  this->uiConfig[pos] = std::move(rv);
+}
+
+const Source::Device *
+Singleton::getDeviceAt(unsigned int index) const
+{
+  if (index < this->devices.size())
+    return &this->devices[index];
+
+  return nullptr;
 }

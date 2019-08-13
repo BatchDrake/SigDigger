@@ -16,14 +16,31 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include "MainWindow.h"
+
 #include <QApplication>
+#include <iostream>
 
-int main(int argc, char *argv[])
+#include "Loader.h"
+
+using namespace SigDigger;
+
+int
+main(int argc, char *argv[])
 {
-  QApplication a(argc, argv);
-  MainWindow w;
-  w.show();
+  int ret;
 
-  return a.exec();
+  QApplication app(argc, argv);
+
+  Application main_app;
+  Loader loader(&main_app);
+
+  loader.load();
+
+  ret = app.exec();
+
+  std::cout << "Saving config..." << std::endl;
+
+  loader.saveConfig();
+
+  return ret;
 }
