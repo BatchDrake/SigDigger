@@ -38,6 +38,7 @@ If you the above steps were successful, chances are that you will success on bui
 % git clone https://github.com/BatchDrake/SigDigger
 % cd SigDigger
 % qmake SigDigger.pro
+% make
 % sudo make install
 ```
 
