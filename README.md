@@ -6,7 +6,7 @@ SigDigger is the continuation project for the already-deprecated Suscan. GTK+3.0
 
 The set of features is more or less the same, with few things missing (like estimators, the FAC analysis or the Berlekamp-Massey algorithm... working on it, still trying to figure out the UI) and a lot of additions, like a realtime audio inspector, sample recorder, realtime 6Msps channel inspection (AirSpy tested), LSE-based SNR calculator or gain presents. I tried to make it as customizable as Suscan, but I'm still a Qt newbie, so expect bugs!
 
-![](/home/waldo/Documents/Desarrollo/SigDigger/Screenshots/mainWindow.png) 
+![](Screenshots/mainWindow.png) 
 
 ## Wait, why does it look like Gqrx?
 Because I'm a terrible person. Also, because after dealing with a lot of software of the sort, I realized that Gqrx had the best UI of them all: minimalistic and yet operative. Earlier versions of the UI were somewhat different, but after a lot of debugging I came to the conclusion that it would be better off if I just tried to mimic existing (and successful) software, reducing the learning curve to the new feature set.
