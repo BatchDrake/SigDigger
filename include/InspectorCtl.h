@@ -1,0 +1,4 @@
+#ifndef INSPECTORCTL_H
+#define INSPECTORCTL_H
+
+#endif // INSPECTORCTL_H

@@ -1,0 +1,88 @@
+//
+//    InspectorPanel.h: Dockable inspector panel
+//    Copyright (C) 2019 Gonzalo José Carracedo Carballal
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as
+//    published by the Free Software Foundation, either version 3 of the
+//    License, or (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful, but
+//    WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this program.  If not, see
+//    <http://www.gnu.org/licenses/>
+//
+#ifndef INSPECTORPANEL_H
+#define INSPECTORPANEL_H
+
+#include <PersistentWidget.h>
+
+namespace Ui {
+  class InspectorPanel;
+}
+
+namespace SigDigger {
+  class InspectorPanelConfig : public Suscan::Serializable {
+  public:
+    std::string inspectorClass = "psk";
+
+    // Overriden methods
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize(void) override;
+  };
+
+  class InspectorPanel : public PersistentWidget
+  {
+    Q_OBJECT
+    enum State {
+      DETACHED,
+      ATTACHED
+    };
+
+  private:
+    // Convenience pointer
+    InspectorPanelConfig *panelConfig = nullptr;
+
+    // UI objects
+    Ui::InspectorPanel *ui = nullptr;
+
+    // UI State
+    State state = DETACHED;
+
+    // Private methods
+    void connectAll(void);
+    void refreshUi(void);
+    void setInspectorClass(std::string const &cls);
+
+  public:
+    explicit InspectorPanel(QWidget *parent = nullptr);
+    ~InspectorPanel() override;
+
+    void setDemodFrequency(qint64);
+    void setBandwidthLimits(unsigned int min, unsigned int max);
+    void setBandwidth(unsigned int freq);
+    void setState(enum State state);
+
+    unsigned int getBandwidth(void) const;
+    std::string getInspectorClass(void) const;
+    enum State getState(void) const;
+
+    // Overriden methods
+    Suscan::Serializable *allocConfig(void) override;
+    void applyConfig(void) override;
+
+  public slots:
+    void onOpenInspector(void);
+    void onBandwidthChanged(int);
+
+  signals:
+    void bandwidthChanged(int);
+    void requestOpenInspector(QString);
+  };
+}
+
+#endif // INSPECTORPANEL_H

@@ -1,0 +1,4 @@
+#ifndef SPECTRUMSOURCE_H
+#define SPECTRUMSOURCE_H
+
+#endif // SPECTRUMSOURCE_H

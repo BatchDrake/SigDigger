@@ -1,0 +1,4 @@
+#ifndef INSPECTORUI_H
+#define INSPECTORUI_H
+
+#endif // INSPECTORUI_H
