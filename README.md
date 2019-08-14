@@ -54,9 +54,10 @@ If the command above fails, it is possible that you got SigDigger installed some
 % /opt/SigDigger/bin/SigDigger
 ```
 
-For people like EB3FRN looking for precompiled binaries, I am working on a redistributable release, but I have yet to integrate it with the existing build system, and it will take some time. Stay tuned!
+## Precompiled releases
+You can find precompiled releases under the "Releases" tab in this repository. For the time being, these releases are meant for x64 Linux only (preferably Debian-like distributions) and have been minimally tested. Although I have plans to port Sigutils, Suscan and SigDigger to other platforms, I'd like to have a stable codebase before going any further.
 
-If you experience any issues building or using SigDigger, please use GitHub's bug tracking system. I'm way more responsive there and it is easier for me to keep track of the existing issues.
+Obviously, your feedback will make my job easier. If you experience any issues building or using SigDigger, go ahead and use the fantastic GitHub's bug tracking system. It works pretty well and it is way easier for me to keep track of the existing issues.
 
 Looking forward for your feedback! :)
 
