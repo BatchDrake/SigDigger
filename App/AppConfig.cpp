@@ -67,6 +67,7 @@ AppConfig::loadDefaults(void)
 void
 AppConfig::deserialize(Suscan::Object const &conf)
 {
+  this->loadDefaults();
   if (!conf.isHollow()) {
     TRYSILENT(this->profile = Suscan::Source::Config(conf.getField("source")));
     TRYSILENT(this->analyzerParams.deserialize(conf.getField("analyzerParams")));
