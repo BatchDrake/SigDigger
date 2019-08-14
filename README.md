@@ -27,7 +27,7 @@ After successfully building Sigutils and Suscan, you can now proceed to build **
 ```
 % git clone https://github.com/BatchDrake/SuWidgets
 % cd SuWidgets
-% qmake SuWidgetsLib.pro
+% qmake SuWidgets.pro
 % make
 % sudo make install
 ```
