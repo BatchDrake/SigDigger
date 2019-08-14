@@ -27,7 +27,7 @@ After successfully building Sigutils and Suscan, you can now proceed to build **
 ```
 % git clone https://github.com/BatchDrake/SuWidgets
 % cd SuWidgets
-% qmake SuWidgetsLib.pro
+% qmake SuWidgets.pro
 % make
 % sudo make install
 ```
@@ -35,9 +35,10 @@ After successfully building Sigutils and Suscan, you can now proceed to build **
 If you the above steps were successful, chances are that you will success on building SigDigger too. In order to build SigDigger, do:
 
 ```
-% git clone https://github.com/BatchDrake/SuWidgets
+% git clone https://github.com/BatchDrake/SigDigger
 % cd SigDigger
 % qmake SigDigger.pro
+% make
 % sudo make install
 ```
 
