@@ -19,7 +19,7 @@ Apart from the UI layout and the plotter wigets, SigDigger bears little resembla
 SigDigger depends on three different projects: **Sigutils**, **Suscan** and **SuWidgets**. You need to build and install these projects in your computer prior to compile SigDigger.
 
 * Sigutils build instructions can be found [here](https://github.com/BatchDrake/sigutils/blob/master/README.md).
-* Suscan build instructions can be found [here](https://github.com/BatchDrake/suscan/blob/master/README.md). You will sill need GTK+ 3.0 for this. I have plans to remove the whole GTK UI from this project in the near future.
+* Suscan build instructions can be found [here](https://github.com/BatchDrake/suscan/blob/master/README.md).
 
 
 After successfully building Sigutils and Suscan, you can now proceed to build **SuWidgets**. SuWidgets is Qt 5.11 graphical library containing all SigDigger's custom widgets. In order to build it, ensure you have the latest version of the Qt 5.11 development framework installed in your system and then run:
