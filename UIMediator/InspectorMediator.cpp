@@ -35,8 +35,6 @@ UIMediator::connectInspectorPanel(void)
         SIGNAL(requestOpenInspector(QString)),
         this,
         SLOT(onOpenInspector()));
-
-
 }
 
 void
@@ -44,6 +42,9 @@ UIMediator::onInspBandwidthChanged(void)
 {
   this->ui->spectrum->setFilterBandwidth(
         this->ui->inspectorPanel->getBandwidth());
+  this->appConfig->bandwidth =
+      static_cast<unsigned int>(this->ui->spectrum->getBandwidth());
+  emit bandwidthChanged(this->ui->inspectorPanel->getBandwidth());
 }
 
 void

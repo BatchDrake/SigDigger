@@ -77,17 +77,19 @@ FftPanel::allocConfig(void)
 void
 FftPanel::applyConfig(void)
 {
-  this->setAveraging(this->panelConfig->averaging);
-  this->setPanWfRatio(this->panelConfig->panWfRatio);
-  this->setPandRangeMax(this->panelConfig->panRangeMax);
-  this->setPandRangeMin(this->panelConfig->panRangeMin);
-  this->setWfRangeMax(this->panelConfig->wfRangeMax);
-  this->setWfRangeMin(this->panelConfig->wfRangeMin);
-  this->setPalette(this->panelConfig->palette);
-  this->setFreqZoom(this->panelConfig->zoom);
-  this->setPeakHold(this->panelConfig->peakHold);
-  this->setPeakDetect(this->panelConfig->peakDetect);
-  this->setRangeLock(this->panelConfig->rangeLock);
+  FftPanelConfig savedConfig = *this->panelConfig;
+
+  this->setAveraging(savedConfig.averaging);
+  this->setPanWfRatio(savedConfig.panWfRatio);
+  this->setPandRangeMax(savedConfig.panRangeMax);
+  this->setPandRangeMin(savedConfig.panRangeMin);
+  this->setWfRangeMax(savedConfig.wfRangeMax);
+  this->setWfRangeMin(savedConfig.wfRangeMin);
+  this->setPalette(savedConfig.palette);
+  this->setFreqZoom(savedConfig.zoom);
+  this->setPeakHold(savedConfig.peakHold);
+  this->setPeakDetect(savedConfig.peakDetect);
+  this->setRangeLock(savedConfig.rangeLock);
 }
 
 void

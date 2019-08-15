@@ -60,7 +60,8 @@ void
 UIMediator::onBandwidthChanged(void)
 {
   this->ui->inspectorPanel->setBandwidth(this->ui->spectrum->getBandwidth());
-
+  this->appConfig->bandwidth =
+      static_cast<unsigned int>(this->ui->spectrum->getBandwidth());
   emit bandwidthChanged(this->ui->spectrum->getBandwidth());
 }
 
@@ -82,6 +83,7 @@ UIMediator::onLoChanged(qint64)
       + this->ui->spectrum->getLoFreq();
   this->ui->inspectorPanel->setDemodFrequency(freq);
 
+  this->appConfig->loFreq = static_cast<int>(this->ui->spectrum->getLoFreq());
   emit loChanged(this->ui->spectrum->getLoFreq());
 }
 

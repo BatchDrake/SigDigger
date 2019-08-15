@@ -325,6 +325,7 @@ UIMediator::applyConfig(void)
 {
   // Apply window config
   QRect rec = QGuiApplication::primaryScreen()->geometry();
+  unsigned int savedBw = this->appConfig->bandwidth;
 
   if (this->appConfig->x == -1)
     this->appConfig->x = (rec.width() - this->appConfig->width) / 2;
@@ -352,6 +353,11 @@ UIMediator::applyConfig(void)
   this->ui->audioPanel->applyConfig();
 
   this->refreshProfile();
+
+  // Apply loFreq and bandwidth config AFTER profile has been set.
+  this->ui->spectrum->setLoFreq(this->appConfig->loFreq);
+  if (savedBw > 0)
+    this->setBandwidth(savedBw);
 
   // Artificially trigger slots to synchronize UI
   this->onPaletteChanged();

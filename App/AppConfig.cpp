@@ -41,6 +41,8 @@ AppConfig::serialize(void)
   obj.set("height", this->height);
   obj.set("x", this->x);
   obj.set("y", this->y);
+  obj.set("loFreq", this->loFreq);
+  obj.set("bandwidth", this->bandwidth);
 
   obj.setField("source", profileObj);
   obj.setField("analyzerParams", this->analyzerParams.serialize());
@@ -81,6 +83,8 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->height = conf.get("height", this->height));
     TRYSILENT(this->x      = conf.get("x", this->x));
     TRYSILENT(this->y      = conf.get("y", this->y));
+    TRYSILENT(this->loFreq = conf.get("loFreq", this->loFreq));
+    TRYSILENT(this->bandwidth = conf.get("bandwidth", this->bandwidth));
   }
 }
 

@@ -51,6 +51,9 @@ namespace SigDigger {
       int x = -1;
       int y = -1;
 
+      int loFreq = 0;
+      unsigned int bandwidth = 0;
+
       // Methods
       AppConfig(AppUI *ui = nullptr);
       [[ noreturn ]] AppConfig(Suscan::Object const &conf);
