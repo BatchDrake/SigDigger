@@ -132,17 +132,17 @@
        <widget class="QComboBox" name="orderCombo">
         <item>
          <property name="text">
-          <string>1 (2 bit/sym)</string>
+          <string>1 (2 phases)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>2 (4 bit/sym)</string>
+          <string>2 (4 phases)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>3 (8 bit/sym)</string>
+          <string>3 (8 phases)</string>
          </property>
         </item>
        </widget>
