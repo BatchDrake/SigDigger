@@ -51,6 +51,9 @@ namespace SigDigger {
 
     private:
 
+    unsigned int basebandSampleRate;
+    float sampleRate;
+
     bool scrolling = false;
     bool demodulating = true;
     bool recording = false;
@@ -110,6 +113,14 @@ namespace SigDigger {
       bool installDataSaver(void);
       void uninstallDataSaver(void);
 
+      void setBasebandRate(unsigned int);
+      void setSampleRate(float rate);
+      void setBandwidth(unsigned int bw);
+      void setLo(int lo);
+
+      unsigned int getBandwidth(void) const;
+      int getLo(void) const;
+
       enum State getState(void) const;
 
     public slots:
@@ -129,6 +140,8 @@ namespace SigDigger {
       void onToggleSNR(void);
       void onResetSNR(void);
       void onToggleRecord(void);
+      void onChangeLo(void);
+      void onChangeBandwidth(void);
 
       // DataSaver slots
       void onSaveError(void);
@@ -139,6 +152,8 @@ namespace SigDigger {
     signals:
       void configChanged(void);
       void setSpectrumSource(unsigned int index);
+      void loChanged(void);
+      void bandwidthChanged(void);
   };
 }
 

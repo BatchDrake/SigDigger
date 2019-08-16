@@ -47,6 +47,10 @@ namespace Suscan {
     SUFLOAT *getSpectrumData(void) const;
     SUSCOUNT getSpectrumLength(void) const;
     SUSCOUNT getSpectrumRate(void) const;
+    unsigned int getBasebandRate(void) const;
+    SUFLOAT  getEquivSampleRate(void) const;
+    SUFLOAT  getBandwidth(void) const;
+    SUFLOAT  getLo(void) const;
     std::string getClass(void) const;
     std::vector<SpectrumSource> const &getSpectrumSources(void) const;
     std::vector<Estimator> const &getEstimators(void) const;

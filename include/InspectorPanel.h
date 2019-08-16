@@ -29,6 +29,7 @@ namespace SigDigger {
   class InspectorPanelConfig : public Suscan::Serializable {
   public:
     std::string inspectorClass = "psk";
+    bool precise = false;
 
     // Overriden methods
     void deserialize(Suscan::Object const &conf) override;
@@ -65,10 +66,12 @@ namespace SigDigger {
     void setDemodFrequency(qint64);
     void setBandwidthLimits(unsigned int min, unsigned int max);
     void setBandwidth(unsigned int freq);
+    void setPrecise(bool precise);
     void setState(enum State state);
 
     unsigned int getBandwidth(void) const;
     std::string getInspectorClass(void) const;
+    bool getPrecise(void) const;
     enum State getState(void) const;
 
     // Overriden methods
@@ -78,10 +81,12 @@ namespace SigDigger {
   public slots:
     void onOpenInspector(void);
     void onBandwidthChanged(int);
+    void onPreciseChanged(void);
 
   signals:
     void bandwidthChanged(int);
     void requestOpenInspector(QString);
+
   };
 }
 

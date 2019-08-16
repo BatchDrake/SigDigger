@@ -197,6 +197,18 @@ InspectorUI::InspectorUI(
         this,
         SLOT(onResetSNR()));
 
+  this->connect(
+        this->ui->loLcd,
+        SIGNAL(valueChanged(void)),
+        this,
+        SLOT(onChangeLo(void)));
+
+  this->connect(
+        this->ui->bwLcd,
+        SIGNAL(valueChanged(void)),
+        this,
+        SLOT(onChangeBandwidth(void)));
+
   this->populate();
 
   // Configure throttleable widgets
@@ -220,6 +232,54 @@ InspectorUI::InspectorUI(
 InspectorUI::~InspectorUI()
 {
   delete this->ui;
+}
+
+void
+InspectorUI::setBasebandRate(unsigned int rate)
+{
+  this->basebandSampleRate = rate;
+  this->ui->loLcd->setMin(-static_cast<int>(rate) / 2);
+  this->ui->loLcd->setMax(static_cast<int>(rate) / 2);
+}
+
+void
+InspectorUI::setSampleRate(float rate)
+{
+  this->sampleRate = rate;
+  this->ui->sampleRateLabel->setText(
+        "Sample rate: "
+        + QString::number(static_cast<qreal>(rate))
+        + " sps");
+  this->ui->bwLcd->setMin(0);
+  this->ui->bwLcd->setMax(static_cast<qint64>(rate));
+}
+
+void
+InspectorUI::setBandwidth(unsigned int bandwidth)
+{
+  // More COBOL
+  this->ui->bwLcd->setValue(
+        static_cast<int>(bandwidth *
+              static_cast<unsigned int>(this->ui->bwLcd->getMax())
+                         / this->sampleRate));
+}
+
+void
+InspectorUI::setLo(int lo)
+{
+  this->ui->loLcd->setValue(lo);
+}
+
+unsigned int
+InspectorUI::getBandwidth(void) const
+{
+  return static_cast<unsigned int>(this->ui->bwLcd->getValue());
+}
+
+int
+InspectorUI::getLo(void) const
+{
+  return static_cast<int>(this->ui->loLcd->getValue());
 }
 
 bool
@@ -250,7 +310,6 @@ InspectorUI::addEstimator(Suscan::Estimator const &estimator)
 {
   this->estimators.push_back(estimator);
 }
-
 
 void
 InspectorUI::connectDataSaver()
@@ -530,6 +589,8 @@ InspectorUI::refreshUi(void)
   this->ui->snrButton->setEnabled(enabled);
   this->ui->snrResetButton->setEnabled(enabled);
   this->ui->recordButton->setEnabled(enabled);
+  this->ui->loLcd->setEnabled(enabled);
+  this->ui->bwLcd->setEnabled(enabled);
   this->saverUI->setEnabled(enabled && this->recordingRate != 0);
 }
 
@@ -858,5 +919,17 @@ void
 InspectorUI::onCommit(void)
 {
   this->saverUI->setCaptureSize(this->dataSaver->getSize());
+}
+
+void
+InspectorUI::onChangeLo(void)
+{
+  emit loChanged();
+}
+
+void
+InspectorUI::onChangeBandwidth(void)
+{
+  emit bandwidthChanged();
 }
 

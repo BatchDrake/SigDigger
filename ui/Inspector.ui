@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>793</width>
+    <width>1125</width>
     <height>802</height>
    </rect>
   </property>
@@ -32,67 +32,14 @@
    <property name="verticalSpacing">
     <number>3</number>
    </property>
-   <item row="0" column="0" rowspan="6">
-    <widget class="QScrollArea" name="scrollArea">
-     <property name="maximumSize">
-      <size>
-       <width>300</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="widgetResizable">
-      <bool>true</bool>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-     </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>107</width>
-        <height>788</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <layout class="QGridLayout" name="controlsGrid">
-       <property name="leftMargin">
-        <number>3</number>
-       </property>
-       <property name="topMargin">
-        <number>3</number>
-       </property>
-       <property name="rightMargin">
-        <number>3</number>
-       </property>
-       <property name="bottomMargin">
-        <number>3</number>
-       </property>
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <item row="0" column="0">
-        <widget class="QWidget" name="widget_2" native="true">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
-   <item row="1" column="1" colspan="2">
+   <item row="0" column="1" colspan="2">
     <widget class="QFrame" name="frame_3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -198,6 +145,9 @@ font-family: Monospace;</string>
         <property name="maximum">
          <number>120</number>
         </property>
+        <property name="value">
+         <number>60</number>
+        </property>
        </widget>
       </item>
       <item row="1" column="0">
@@ -259,7 +209,7 @@ font-family: Monospace;</string>
      </layout>
     </widget>
    </item>
-   <item row="2" column="1" colspan="2">
+   <item row="1" column="1" colspan="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -663,6 +613,274 @@ font-family: Monospace;</string>
      </widget>
     </widget>
    </item>
+   <item row="0" column="0" rowspan="2">
+    <widget class="QToolBox" name="toolBox">
+     <property name="maximumSize">
+      <size>
+       <width>300</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QToolBox::tab {
+    color: white;
+    font-weight: bold;
+    background: qlineargradient( x1:0 y1:0, x2:0 y2:1, stop:0 #808080, stop:1 black);
+    border-radius: 5px;
+    border: 1px solid transparent;
+}
+
+QToolBox::tab:hover {
+    background: qlineargradient( x1:0 y1:0, x2:0 y2:1, stop:0 #a0a0a0, stop:1 black);
+    border-color: black;
+}
+</string>
+     </property>
+     <property name="midLineWidth">
+      <number>0</number>
+     </property>
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
+     <property name="tabSpacing">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="page">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>300</width>
+        <height>734</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>🠟 Channel properties</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_9">
+       <property name="leftMargin">
+        <number>6</number>
+       </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
+        <number>6</number>
+       </property>
+       <property name="spacing">
+        <number>3</number>
+       </property>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Bandwidth (Hz)</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Channel offset (Hz)</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1" colspan="2">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0" colspan="3">
+        <widget class="QLabel" name="sampleRateLabel">
+         <property name="text">
+          <string>Sample rate: XXX</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="LCD" name="loLcd">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="segScale">
+          <double>0.900000000000000</double>
+         </property>
+         <property name="thickness">
+          <double>0.300000000000000</double>
+         </property>
+         <property name="zoom">
+          <double>0.600000000000000</double>
+         </property>
+         <property name="backgroundColor">
+          <color>
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </property>
+         <property name="foregroundColor">
+          <color>
+           <red>144</red>
+           <green>177</green>
+           <blue>86</blue>
+          </color>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" colspan="2">
+        <widget class="LCD" name="bwLcd">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="segScale">
+          <double>0.900000000000000</double>
+         </property>
+         <property name="thickness">
+          <double>0.300000000000000</double>
+         </property>
+         <property name="zoom">
+          <double>0.600000000000000</double>
+         </property>
+         <property name="backgroundColor">
+          <color>
+           <red>0</red>
+           <green>0</green>
+           <blue>0</blue>
+          </color>
+         </property>
+         <property name="foregroundColor">
+          <color>
+           <red>144</red>
+           <green>177</green>
+           <blue>86</blue>
+          </color>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_2">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>300</width>
+        <height>734</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>🠟Demodulator controls</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_8">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>300</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>300</width>
+            <height>734</height>
+           </rect>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <layout class="QGridLayout" name="controlsGrid">
+           <property name="leftMargin">
+            <number>3</number>
+           </property>
+           <property name="topMargin">
+            <number>3</number>
+           </property>
+           <property name="rightMargin">
+            <number>3</number>
+           </property>
+           <property name="bottomMargin">
+            <number>3</number>
+           </property>
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QWidget" name="widget_2" native="true">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -680,6 +898,11 @@ font-family: Monospace;</string>
    <class>Histogram</class>
    <extends>QFrame</extends>
    <header>Histogram.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LCD</class>
+   <extends>QFrame</extends>
+   <header>LCD.h</header>
   </customwidget>
   <customwidget>
    <class>SymView</class>

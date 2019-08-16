@@ -78,6 +78,30 @@ InspectorMessage::getSpectrumRate(void) const
   return this->message->samp_rate;
 }
 
+unsigned int
+InspectorMessage::getBasebandRate(void) const
+{
+  return this->message->fs;
+}
+
+SUFLOAT
+InspectorMessage::getEquivSampleRate(void) const
+{
+  return this->message->equiv_fs;
+}
+
+SUFLOAT
+InspectorMessage::getBandwidth(void) const
+{
+  return this->message->bandwidth;
+}
+
+SUFLOAT
+InspectorMessage::getLo(void) const
+{
+  return this->message->lo;
+}
+
 enum suscan_analyzer_inspector_msgkind
 InspectorMessage::getKind(void) const
 {

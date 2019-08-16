@@ -770,7 +770,16 @@ Application::onOpenInspector(void)
     ch.fLow  = - .5 * ch.bw;
     ch.fHigh = + .5 * ch.bw;
 
-    this->analyzer->open(this->ui.inspectorPanel->getInspectorClass(), ch, 0);
+    if (this->ui.inspectorPanel->getPrecise())
+      this->analyzer->openPrecise(
+          this->ui.inspectorPanel->getInspectorClass(),
+          ch,
+          0);
+    else
+      this->analyzer->open(
+          this->ui.inspectorPanel->getInspectorClass(),
+          ch,
+          0);
   }
 }
 

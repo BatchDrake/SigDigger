@@ -62,6 +62,8 @@ namespace SigDigger {
     public slots:
       void onConfigChanged(void);
       void onSetSpectrumSource(unsigned int index);
+      void onLoChanged(void);
+      void onBandwidthChanged(void);
   };
 }
 

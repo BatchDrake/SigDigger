@@ -30,6 +30,7 @@ void
 InspectorPanelConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(inspectorClass);
+  LOAD(precise);
 }
 
 Suscan::Object &&
@@ -40,6 +41,7 @@ InspectorPanelConfig::serialize(void)
   obj.setClass("InspectorPanelConfig");
 
   STORE(inspectorClass);
+  STORE(precise);
 
   return this->persist(obj);
 }
@@ -55,6 +57,7 @@ void
 InspectorPanel::applyConfig(void)
 {
   this->setInspectorClass(this->panelConfig->inspectorClass);
+  this->setPrecise(this->panelConfig->precise);
 }
 
 void
@@ -71,6 +74,12 @@ InspectorPanel::connectAll(void)
         SIGNAL(clicked(bool)),
         this,
         SLOT(onOpenInspector(void)));
+
+  connect(
+        this->ui->preciseCheck,
+        SIGNAL(stateChanged(int)),
+        this,
+        SLOT(onPreciseChanged(void)));
 }
 
 void
@@ -109,6 +118,12 @@ InspectorPanel::setBandwidth(unsigned int freq)
 }
 
 void
+InspectorPanel::setPrecise(bool precise)
+{
+  this->ui->preciseCheck->setChecked(precise);
+}
+
+void
 InspectorPanel::setState(enum State state)
 {
   if (this->state != state) {
@@ -121,6 +136,12 @@ enum InspectorPanel::State
 InspectorPanel::getState(void) const
 {
   return this->state;
+}
+
+bool
+InspectorPanel::getPrecise(void) const
+{
+  return this->ui->preciseCheck->isChecked();
 }
 
 void
@@ -182,4 +203,10 @@ InspectorPanel::onBandwidthChanged(int bw)
 {
   /* this->mainWindow->mainSpectrum->setHiLowCutFrequencies(-bw / 2, bw / 2); */
   emit bandwidthChanged(bw);
+}
+
+void
+InspectorPanel::onPreciseChanged(void)
+{
+  this->panelConfig->precise = this->ui->preciseCheck->isChecked();
 }

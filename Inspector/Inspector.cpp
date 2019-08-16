@@ -34,6 +34,10 @@ Inspector::Inspector(
 
   this->ui = std::make_unique<InspectorUI>(this, &this->config);
   this->ui->setColors(config);
+  this->ui->setBasebandRate(msg.getBasebandRate());
+  this->ui->setSampleRate(msg.getEquivSampleRate());
+  this->ui->setBandwidth(static_cast<unsigned int>(msg.getBandwidth()));
+  this->ui->setLo(static_cast<int>(msg.getLo()));
 
   this->connect(
         this->ui.get(),
@@ -46,6 +50,18 @@ Inspector::Inspector(
         SIGNAL(setSpectrumSource(unsigned int)),
         this,
         SLOT(onSetSpectrumSource(unsigned int)));
+
+  this->connect(
+        this->ui.get(),
+        SIGNAL(loChanged(void)),
+        this,
+        SLOT(onLoChanged(void)));
+
+  this->connect(
+        this->ui.get(),
+        SIGNAL(bandwidthChanged(void)),
+        this,
+        SLOT(onBandwidthChanged(void)));
 
   for (auto p = msg.getSpectrumSources().begin();
        p != msg.getSpectrumSources().end();
@@ -107,4 +123,24 @@ Inspector::onSetSpectrumSource(unsigned int index)
         this->handle,
         index,
         static_cast<Suscan::RequestId>(rand()));
+}
+
+void
+Inspector::onLoChanged(void)
+{
+  if (this->analyzer != nullptr)
+    this->analyzer->setInspectorFreq(
+        this->handle,
+        this->ui->getLo(),
+        0);
+}
+
+void
+Inspector::onBandwidthChanged(void)
+{
+  if (this->analyzer != nullptr)
+    this->analyzer->setInspectorBandwidth(
+        this->handle,
+        this->ui->getBandwidth(),
+        0);
 }
