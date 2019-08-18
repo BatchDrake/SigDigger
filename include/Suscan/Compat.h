@@ -22,6 +22,7 @@
 
 #include <stdexcept>
 #include <memory>
+#include <cmath>
 #include <sigutils/types.h>
 
 #define SU_ATTEMPT(expr)     \

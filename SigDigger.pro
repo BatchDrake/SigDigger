@@ -22,7 +22,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-CONFIG += c++14
+equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
+  QMAKE_CXXFLAGS += -std=gnu++14
+} else {
+  CONFIG += c++14
+}
+
 INCLUDEPATH += $$PWD/include /usr/include/SuWidgets
 SOURCES += \
     App/AppConfig.cpp \

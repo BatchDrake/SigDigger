@@ -23,6 +23,7 @@
 #include <vector>
 #include <mutex>
 
+#include <Suscan/Compat.h>
 #include <sigutils/log.h>
 
 namespace Suscan {
