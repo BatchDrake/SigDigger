@@ -549,6 +549,7 @@ ConfigDialog::onLineEditsChanged(const QString &)
     } else {
       this->ui->sampleRateLine->setStyleSheet("");
       this->profile.setSampleRate(sampRate);
+      this->ui->bwSpin->setMaximum(sampRate);
 
       if (sampRate < this->ui->bwSpin->value())
         this->ui->bwSpin->setValue(sampRate);
