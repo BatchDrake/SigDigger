@@ -192,13 +192,22 @@ void
 SourcePanel::setSampleRate(unsigned int rate)
 {
   if (this->rate != rate) {
+    float step;
     this->rate = rate;
     if (rate == 0) {
       this->ui->sampleRateLabel->setText("N/A");
     } else {
       this->ui->sampleRateLabel->setText(formatSampleRate(rate));
     }
+
     this->ui->bwSpin->setMaximum(this->rate);
+
+    step = SU_POW(10., SU_FLOOR(SU_LOG(this->rate)));
+
+    if (step >= 10.f)
+      step /= 10.f;
+
+    this->ui->bwSpin->setSingleStep(static_cast<int>(step));
   }
 }
 
