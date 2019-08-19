@@ -234,6 +234,7 @@ namespace Suscan {
     void setSampleRate(unsigned int value);
     void setDevice(const Source::Device &dev);
     void setGain(const std::string &, SUFLOAT);
+    void setAntenna(const std::string &);
 
     Config& operator=(const Config &);
     Config& operator=(Config &&);

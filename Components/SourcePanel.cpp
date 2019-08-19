@@ -142,6 +142,12 @@ SourcePanel::connectAll(void)
         SIGNAL(activated(int)),
         this,
         SLOT(onAntennaChanged(int)));
+
+  connect(
+        this->ui->bwSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onBandwidthChanged(void)));
 }
 
 static QString
@@ -192,12 +198,21 @@ SourcePanel::setSampleRate(unsigned int rate)
     } else {
       this->ui->sampleRateLabel->setText(formatSampleRate(rate));
     }
+    this->ui->bwSpin->setMaximum(this->rate);
   }
+}
+
+void
+SourcePanel::setBandwidth(float bw)
+{
+  this->ui->bwSpin->setValue(static_cast<qreal>(bw));
 }
 
 void
 SourcePanel::setProfile(Suscan::Source::Config *config)
 {
+  SUFLOAT bw;
+
   this->profile = config;
   this->refreshGains(*config);
   this->refreshAutoGains(*config);
@@ -209,6 +224,13 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
 
   this->selectAntenna(config->getAntenna());
   this->setSampleRate(config->getSampleRate());
+
+  bw = this->profile->getBandwidth();
+  if (SU_ABS(bw) < 1e-6f)
+    bw = config->getSampleRate();
+
+  this->setBandwidth(bw);
+
   this->refreshUi();
 }
 
@@ -221,7 +243,7 @@ SourcePanel::setThrottleable(bool val)
     this->ui->throttleCheck->setChecked(false);
 
   this->ui->throttleSpin->setEnabled(this->ui->throttleCheck->isChecked());
-
+  this->ui->bwSpin->setEnabled(!val);
   this->saverUI->setEnabled(!val);
 }
 
@@ -438,6 +460,18 @@ SourcePanel::getRecordState(void) const
   return this->saverUI->getRecordState();
 }
 
+std::string
+SourcePanel::getAntenna(void) const
+{
+  return this->ui->antennaCombo->currentText().toStdString();
+}
+
+float
+SourcePanel::getBandwidth(void) const
+{
+  return static_cast<float>(this->ui->bwSpin->value());
+}
+
 ////////////////////////////////// Slots /////////////////////////////////////
 void
 SourcePanel::onGainChanged(QString name, float val)
@@ -471,6 +505,12 @@ SourcePanel::onThrottleChanged(void)
   this->ui->throttleSpin->setEnabled(throttling);
 
   emit throttleConfigChanged();
+}
+
+void
+SourcePanel::onBandwidthChanged(void)
+{
+  emit bandwidthChanged();
 }
 
 void

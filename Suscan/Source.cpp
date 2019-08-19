@@ -318,6 +318,15 @@ Source::Config::setFreq(SUFREQ freq)
 }
 
 void
+Source::Config::setAntenna(const std::string &antenna)
+{
+  if (this->instance == nullptr)
+    return;
+
+  SU_ATTEMPT(suscan_source_config_set_antenna(this->instance, antenna.c_str()));
+}
+
+void
 Source::Config::setBandwidth(SUFLOAT bw)
 {
   if (this->instance == nullptr)

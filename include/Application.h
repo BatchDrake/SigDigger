@@ -111,9 +111,10 @@ namespace SigDigger {
     void onToggleAGCEnabled(void);
     void onParamsChanged(void);
     void onLoChanged(qint64);
-    void onBandwidthChanged(qreal);
+    void onChannelBandwidthChanged(qreal);
     void onAudioChanged(void);
     void onAntennaChanged(QString antenna);
+    void onBandwidthChanged(void);
 
     // Analyzer slots
     void onAnalyzerHalted(void);

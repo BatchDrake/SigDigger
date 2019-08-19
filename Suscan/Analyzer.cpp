@@ -109,6 +109,12 @@ Analyzer::setAntenna(std::string const &name)
 }
 
 void
+Analyzer::setBandwidth(SUFLOAT value)
+{
+  SU_ATTEMPT(suscan_analyzer_set_bw(this->instance, value));
+}
+
+void
 Analyzer::setFrequency(SUFREQ freq)
 {
   SU_ATTEMPT(suscan_analyzer_set_freq(this->instance, freq));

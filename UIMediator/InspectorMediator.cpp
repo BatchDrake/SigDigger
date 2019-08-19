@@ -44,7 +44,7 @@ UIMediator::onInspBandwidthChanged(void)
         this->ui->inspectorPanel->getBandwidth());
   this->appConfig->bandwidth =
       static_cast<unsigned int>(this->ui->spectrum->getBandwidth());
-  emit bandwidthChanged(this->ui->inspectorPanel->getBandwidth());
+  emit channelBandwidthChanged(this->ui->inspectorPanel->getBandwidth());
 }
 
 void

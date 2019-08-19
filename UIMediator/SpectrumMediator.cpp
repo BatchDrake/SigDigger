@@ -28,7 +28,7 @@ UIMediator::connectSpectrum(void)
         this->ui->spectrum,
         SIGNAL(bandwidthChanged(void)),
         this,
-        SLOT(onBandwidthChanged(void)));
+        SLOT(onSpectrumBandwidthChanged(void)));
 
   connect(
         this->ui->spectrum,
@@ -55,14 +55,13 @@ UIMediator::connectSpectrum(void)
         SLOT(onZoomChanged(float)));
 }
 
-
 void
-UIMediator::onBandwidthChanged(void)
+UIMediator::onSpectrumBandwidthChanged(void)
 {
   this->ui->inspectorPanel->setBandwidth(this->ui->spectrum->getBandwidth());
   this->appConfig->bandwidth =
       static_cast<unsigned int>(this->ui->spectrum->getBandwidth());
-  emit bandwidthChanged(this->ui->spectrum->getBandwidth());
+  emit channelBandwidthChanged(this->ui->spectrum->getBandwidth());
 }
 
 void

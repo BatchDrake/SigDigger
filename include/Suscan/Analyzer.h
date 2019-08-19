@@ -72,6 +72,7 @@ namespace Suscan {
     void setFrequency(SUFREQ freq);
     void setGain(std::string const &name, SUFLOAT val);
     void setAntenna(std::string const &name);
+    void setBandwidth(SUFLOAT val);
     void setThrottle(unsigned int throttle);
     void setParams(AnalyzerParams &params);
     void setDCRemove(bool remove);

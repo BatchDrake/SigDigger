@@ -116,7 +116,7 @@ namespace SigDigger {
 
     void frequencyChanged(qint64);
     void loChanged(qint64);
-    void bandwidthChanged(qreal bw);
+    void channelBandwidthChanged(qreal bw);
 
     void toggleRecord(void);
     void throttleConfigChanged(void);
@@ -125,6 +125,7 @@ namespace SigDigger {
     void toggleDCRemove(void);
     void toggleAGCEnabled(void);
     void antennaChanged(QString);
+    void bandwidthChanged(void);
 
     void saveStateChanged(void);
     void requestOpenInspector(void);
@@ -141,7 +142,7 @@ namespace SigDigger {
     void onCloseInspectorTab(int index);
 
     // Spectrum slots
-    void onBandwidthChanged(void);
+    void onSpectrumBandwidthChanged(void);
     void onFrequencyChanged(qint64);
     void onLoChanged(qint64);
     void onRangeChanged(float, float);
@@ -155,6 +156,7 @@ namespace SigDigger {
     void onToggleIQReverse(void);
     void onToggleAGCEnabled(void);
     void onAntennaChanged(QString name);
+    void onBandwidthChanged(void);
 
     // Fft Panel
     void onPaletteChanged(void);

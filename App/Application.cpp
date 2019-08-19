@@ -336,15 +336,21 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
-        SIGNAL(bandwidthChanged(qreal)),
+        SIGNAL(channelBandwidthChanged(qreal)),
         this,
-        SLOT(onBandwidthChanged(qreal)));
+        SLOT(onChannelBandwidthChanged(qreal)));
 
   connect(
         this->mediator,
         SIGNAL(audioChanged(void)),
         this,
         SLOT(onAudioChanged(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(bandwidthChanged(void)),
+        this,
+        SLOT(onBandwidthChanged(void)));
 }
 
 void
@@ -899,7 +905,7 @@ Application::assertAudioInspectorLo(void)
 }
 
 void
-Application::onBandwidthChanged(qreal)
+Application::onChannelBandwidthChanged(qreal)
 {
   if (this->audioConfigured) {
     SUFREQ bw;
@@ -950,4 +956,11 @@ Application::onAntennaChanged(QString name)
 {
   if (this->mediator->getState() == UIMediator::RUNNING)
     this->analyzer->setAntenna(name.toStdString());
+}
+
+void
+Application::onBandwidthChanged(void)
+{
+  if (this->mediator->getState() == UIMediator::RUNNING)
+    this->analyzer->setBandwidth(this->mediator->getProfile()->getBandwidth());
 }

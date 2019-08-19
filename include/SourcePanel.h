@@ -85,6 +85,7 @@ namespace SigDigger {
       void refreshAutoGains(Suscan::Source::Config &config);
       void applyCurrentAutogain(void);
       void selectAntenna(std::string const &name);
+      void setBandwidth(float bw);
       void connectAll(void);
       void refreshUi(void);
 
@@ -156,6 +157,8 @@ namespace SigDigger {
 
       // Getters
       bool getRecordState(void) const;
+      std::string getAntenna(void) const;
+      float getBandwidth(void) const;
 
       // Overriden methods
       Suscan::Serializable *allocConfig(void) override;
@@ -169,6 +172,7 @@ namespace SigDigger {
       void toggleDCRemove(void);
       void toggleIQReverse(void);
       void toggleAGCEnabled(void);
+      void bandwidthChanged(void);
 
     public slots:
       void onGainChanged(QString name, float val);
@@ -182,6 +186,7 @@ namespace SigDigger {
       void onToggleDCRemove(void);
       void onToggleIQReverse(void);
       void onToggleAGCEnabled(void);
+      void onBandwidthChanged(void);
   };
 };
 

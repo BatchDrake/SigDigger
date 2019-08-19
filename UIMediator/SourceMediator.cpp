@@ -65,6 +65,12 @@ UIMediator::connectSourcePanel(void)
         SIGNAL(antennaChanged(QString)),
         this,
         SLOT(onAntennaChanged(QString)));
+
+  connect(
+        this->ui->sourcePanel,
+        SIGNAL(bandwidthChanged(void)),
+        this,
+        SLOT(onBandwidthChanged(void)));
 }
 
 void
@@ -107,5 +113,13 @@ UIMediator::onToggleAGCEnabled(void)
 void
 UIMediator::onAntennaChanged(QString name)
 {
+  this->appConfig->profile.setAntenna(this->ui->sourcePanel->getAntenna());
   emit antennaChanged(name);
+}
+
+void
+UIMediator::onBandwidthChanged(void)
+{
+  this->appConfig->profile.setBandwidth(this->ui->sourcePanel->getBandwidth());
+  emit bandwidthChanged();
 }
