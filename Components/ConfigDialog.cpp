@@ -186,6 +186,17 @@ ConfigDialog::refreshColorUi(void)
 }
 
 void
+ConfigDialog::updateBwStep(void)
+{
+  float step = SU_POW(10., SU_FLOOR(SU_LOG(this->profile.getSampleRate())));
+
+  if (step >= 10.f)
+    step /= 10.f;
+
+  this->ui->bwSpin->setSingleStep(static_cast<int>(step));
+}
+
+void
 ConfigDialog::refreshProfileUi(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
@@ -253,6 +264,7 @@ ConfigDialog::refreshProfileUi(void)
 
   this->refreshUiState();
   this->refreshAntennas();
+  this->updateBwStep();
 }
 
 void
@@ -552,6 +564,8 @@ ConfigDialog::onLineEditsChanged(const QString &)
 
       if (sampRate < this->ui->bwSpin->value())
         this->ui->bwSpin->setValue(sampRate);
+
+      this->updateBwStep();
     }
   }
 }
