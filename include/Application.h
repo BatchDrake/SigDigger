@@ -52,8 +52,8 @@ namespace SigDigger {
     suscan_config_t *audioCfgTemplate = nullptr;
     bool audioInspectorOpened = false;
     bool audioConfigured = false;
-    SUFREQ maxAudioBw;
-    SUFREQ lastAudioLo;
+    SUFREQ maxAudioBw = 0;
+    SUFREQ lastAudioLo = 0;
 
     // Delayed audio parameters
     unsigned int delayedRate = 0;

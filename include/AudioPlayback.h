@@ -70,6 +70,8 @@ namespace SigDigger {
   };
 
   class AudioBufferList {
+    std::vector<AudioBuffer> allocation;
+
     // Free list head. All buffers are initially here
     AudioBuffer *freeList = nullptr;
     unsigned int freeLen = 0;
@@ -92,7 +94,6 @@ namespace SigDigger {
 
   public:
     AudioBufferList(unsigned int num);
-    ~AudioBufferList();
 
     unsigned int
     getFreeLen(void) const

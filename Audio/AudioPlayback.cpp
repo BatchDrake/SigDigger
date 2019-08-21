@@ -94,8 +94,8 @@ AudioBuffer::AudioBuffer()
 
 AudioBuffer::~AudioBuffer()
 {
-  if (data != nullptr)
-    munmap(data, SIGDIGGER_AUDIO_BUFFER_ALLOC);
+  if (this->data != nullptr)
+    munmap(this->data, SIGDIGGER_AUDIO_BUFFER_ALLOC);
 }
 
 ////////////////////////////// AudioBufferList /////////////////////////////////
@@ -103,39 +103,15 @@ AudioBufferList::AudioBufferList(unsigned int num)
 {
   unsigned int i;
 
-  for (i = 0; i < num; ++i) {
-    AudioBuffer *buffer = new AudioBuffer();
+  this->allocation.resize(num);
 
+  for (i = 0; i < num; ++i) {
+    AudioBuffer *buffer = &this->allocation[i];
     buffer->next = this->freeList;
     this->freeList = buffer;
   }
 
   this->freeLen = this->totalLen = num;
-}
-
-AudioBufferList::~AudioBufferList()
-{
-  AudioBuffer *buffer, *next;
-
-  buffer = this->freeList;
-  while (buffer != nullptr) {
-    next = buffer->next;
-    delete buffer;
-    buffer = next;
-  }
-
-  buffer = this->playListHead;
-  while (buffer != nullptr) {
-    next = buffer->next;
-    delete buffer;
-    buffer = next;
-  }
-
-  if (this->current != nullptr)
-    delete this->current;
-
-  if (this->playBuffer != nullptr)
-    delete this->playBuffer;
 }
 
 void
