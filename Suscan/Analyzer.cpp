@@ -350,23 +350,31 @@ Analyzer::Analyzer(AnalyzerParams &params, Source::Config const &config)
         config.instance,
         &mq.mq));
 
-  this->asyncThread = std::make_unique<AsyncThread>(this);
+  this->asyncThread = new AsyncThread(this);
 
   connect(
-        this->asyncThread.get(),
+        this->asyncThread,
         SIGNAL(message(quint32, void *)),
         this,
         SLOT(captureMessage(quint32, void *)),
         Qt::QueuedConnection);
 
-  this->asyncThread.get()->start();
+  this->asyncThread->start();
 }
 
 Analyzer::~Analyzer()
 {
   if (this->instance != nullptr) {
     this->halt(); // Halt while thread is still running, so the thread can be aware of it
+    if (this->asyncThread != nullptr) {
+      this->asyncThread->quit();
+      this->asyncThread->wait();
+      delete this->asyncThread;
+      this->asyncThread = nullptr;
+    }
+    // Async thread is safely destroyed, proceed to destroy instance
     suscan_analyzer_destroy(this->instance);
+    this->instance = nullptr;
   }
 }
 

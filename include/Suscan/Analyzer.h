@@ -46,8 +46,8 @@ namespace Suscan {
     class AsyncThread;
 
   private:
-    suscan_analyzer_t *instance;
-    std::unique_ptr<AsyncThread> asyncThread;
+    suscan_analyzer_t *instance = nullptr;
+    AsyncThread *asyncThread = nullptr;
     MQ mq;
 
     static bool registered;
