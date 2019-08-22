@@ -700,6 +700,13 @@ Application::~Application()
   this->uninstallDataSaver();
 }
 
+/////////////////////////////// Overrides //////////////////////////////////////
+void
+Application::closeEvent(QCloseEvent *)
+{
+  this->stopCapture();
+}
+
 //////////////////////////////// Slots /////////////////////////////////////////
 void
 Application::onCaptureStart(void)

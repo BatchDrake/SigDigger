@@ -96,6 +96,10 @@ namespace SigDigger {
     explicit Application(QWidget *parent = nullptr);
     ~Application();
 
+
+  protected:
+    void closeEvent(QCloseEvent *event);
+
   public slots:
     // UI Slots
     void onCaptureStart(void);
