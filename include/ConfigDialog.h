@@ -51,6 +51,7 @@ namespace SigDigger {
     void refreshProfileUi(void);
     void refreshUi(void);
     void refreshUiState(void);
+    void updateBwStep(void);
     void loadProfile(Suscan::Source::Config &config);
     void saveAnalyzerParams(void);
     void saveColors(void);

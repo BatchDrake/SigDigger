@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>528</width>
-    <height>431</height>
+    <width>551</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -351,11 +351,23 @@
           </item>
           <item row="1" column="3">
            <widget class="QDoubleSpinBox" name="bwSpin">
+            <property name="minimumSize">
+             <size>
+              <width>132</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="suffix">
+             <string> Hz</string>
+            </property>
+            <property name="decimals">
+             <number>0</number>
+            </property>
             <property name="minimum">
              <double>0.000000000000000</double>
             </property>
             <property name="maximum">
-             <double>1000000.000000000000000</double>
+             <double>10000000.000000000000000</double>
             </property>
             <property name="value">
              <double>0.000000000000000</double>
@@ -935,7 +947,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="windowButtonGroup"/>
   <buttongroup name="sourceTypeGroup"/>
+  <buttongroup name="windowButtonGroup"/>
  </buttongroups>
 </ui>
