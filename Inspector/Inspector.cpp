@@ -63,6 +63,18 @@ Inspector::Inspector(
         this,
         SLOT(onBandwidthChanged(void)));
 
+  this->connect(
+        this->ui.get(),
+        SIGNAL(toggleEstimator(Suscan::EstimatorId, bool)),
+        this,
+        SLOT(onToggleEstimator(Suscan::EstimatorId, bool)));
+
+  this->connect(
+        this->ui.get(),
+        SIGNAL(applyEstimation(QString, float)),
+        this,
+        SLOT(onApplyEstimation(QString, float)));
+
   for (auto p = msg.getSpectrumSources().begin();
        p != msg.getSpectrumSources().end();
        ++p)
@@ -95,6 +107,12 @@ Inspector::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
 {
   if (len > 0)
     this->ui->feedSpectrum(data, len, rate);
+}
+
+void
+Inspector::updateEstimator(Suscan::EstimatorId id, float val)
+{
+  this->ui->updateEstimator(id, val);
 }
 
 Inspector::~Inspector()
@@ -143,4 +161,24 @@ Inspector::onBandwidthChanged(void)
         this->handle,
         this->ui->getBandwidth(),
         0);
+}
+
+void
+Inspector::onToggleEstimator(Suscan::EstimatorId id, bool enabled)
+{
+  if (this->analyzer != nullptr)
+    this->analyzer->setInspectorEnabled(this->handle, id, enabled, 0);
+}
+
+void
+Inspector::onApplyEstimation(QString key, float value)
+{
+  this->config.set(key.toStdString(), value);
+  if (this->analyzer != nullptr) {
+    this->ui->refreshInspectorCtls();
+    this->analyzer->setInspectorConfig(
+          this->handle,
+          this->config,
+          static_cast<Suscan::RequestId>(rand()));
+  }
 }

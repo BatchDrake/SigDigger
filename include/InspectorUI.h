@@ -22,6 +22,7 @@
 
 #include <QWidget>
 #include <memory>
+#include <map>
 #include <InspectorCtl.h>
 #include <Suscan/SpectrumSource.h>
 #include <Suscan/Estimator.h>
@@ -34,6 +35,7 @@
 #include "ColorConfig.h"
 #include "DataSaverUI.h"
 #include "AsyncDataSaver.h"
+#include "EstimatorControl.h"
 
 namespace Ui {
   class Inspector;
@@ -74,6 +76,7 @@ namespace SigDigger {
     std::vector<Palette> palettes;
     std::vector<Suscan::Estimator> estimators;
     std::vector<Suscan::SpectrumSource> spectsrcs;
+    std::map<Suscan::EstimatorId, EstimatorControl *> estimatorCtls;
 
     ThrottleControl throttle;
     Ui::Inspector *ui = nullptr;
@@ -104,6 +107,8 @@ namespace SigDigger {
 
       void feed(const SUCOMPLEX *data, unsigned int size);
       void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
+      void updateEstimator(Suscan::EstimatorId id, float val);
+
       void setState(enum State state);
       void refreshUi(void);
       bool setPalette(std::string const &str);
@@ -112,12 +117,11 @@ namespace SigDigger {
       void setColors(ColorConfig const &colors);
       bool installDataSaver(void);
       void uninstallDataSaver(void);
-
       void setBasebandRate(unsigned int);
       void setSampleRate(float rate);
       void setBandwidth(unsigned int bw);
       void setLo(int lo);
-
+      void refreshInspectorCtls(void);
       unsigned int getBandwidth(void) const;
       int getLo(void) const;
 
@@ -142,6 +146,8 @@ namespace SigDigger {
       void onToggleRecord(void);
       void onChangeLo(void);
       void onChangeBandwidth(void);
+      void onToggleEstimator(Suscan::EstimatorId, bool);
+      void onApplyEstimation(QString, float);
 
       // DataSaver slots
       void onSaveError(void);
@@ -154,6 +160,8 @@ namespace SigDigger {
       void setSpectrumSource(unsigned int index);
       void loChanged(void);
       void bandwidthChanged(void);
+      void toggleEstimator(Suscan::EstimatorId, bool);
+      void applyEstimation(QString, float);
   };
 }
 

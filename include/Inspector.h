@@ -51,6 +51,7 @@ namespace SigDigger {
       void setAnalyzer(Suscan::Analyzer *analyzer);
       void feed(const SUCOMPLEX *data, unsigned int size);
       void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
+      void updateEstimator(Suscan::EstimatorId id, float val);
 
       explicit Inspector(
           QWidget *parent,
@@ -64,6 +65,8 @@ namespace SigDigger {
       void onSetSpectrumSource(unsigned int index);
       void onLoChanged(void);
       void onBandwidthChanged(void);
+      void onToggleEstimator(Suscan::EstimatorId, bool);
+      void onApplyEstimation(QString, float);
   };
 }
 

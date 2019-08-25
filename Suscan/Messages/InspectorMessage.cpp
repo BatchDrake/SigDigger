@@ -48,6 +48,7 @@ InspectorMessage::InspectorMessage(struct suscan_analyzer_inspector_msg *msg) :
     this->estimators[i].name  = msg->estimator_list[i]->name;
     this->estimators[i].desc  = msg->estimator_list[i]->desc;
     this->estimators[i].field = msg->estimator_list[i]->field;
+    this->estimators[i].id    = i;
   }
 }
 
@@ -100,6 +101,18 @@ SUFLOAT
 InspectorMessage::getLo(void) const
 {
   return this->message->lo;
+}
+
+Suscan::EstimatorId
+InspectorMessage::getEstimatorId(void) const
+{
+  return this->message->estimator_id;
+}
+
+SUFLOAT
+InspectorMessage::getEstimation(void) const
+{
+  return this->message->value;
 }
 
 enum suscan_analyzer_inspector_msgkind

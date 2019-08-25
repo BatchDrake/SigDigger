@@ -91,6 +91,7 @@ namespace Suscan {
     void setInspectorBandwidth(Handle handle, SUFREQ bw, RequestId req_id);
     void setInspectorWatermark(Handle handle, SUSCOUNT watermark, RequestId id);
     void setSpectrumSource(Handle handle, unsigned int source, RequestId id);
+    void setInspectorEnabled(Handle handle, EstimatorId eid, bool, RequestId id);
     void closeInspector(Handle handle, RequestId id);
 
     // Constructors

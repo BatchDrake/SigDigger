@@ -77,91 +77,91 @@ InspectorUI::InspectorUI(
 
   this->setPalette("Suscan");
 
-  this->connect(
+  connect(
         this->ui->symView,
         SIGNAL(offsetChanged(unsigned int)),
         this,
         SLOT(onOffsetChanged(unsigned int)));
 
-  this->connect(
+  connect(
         this->ui->symView,
         SIGNAL(strideChanged(unsigned int)),
         this,
         SLOT(onStrideChanged(unsigned int)));
 
-  this->connect(
+  connect(
         this->ui->symViewScrollBar,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onScrollBarChanged(int)));
 
-  this->connect(
+  connect(
         this->ui->fpsSpin,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onFPSChanged(void)));
 
-  this->connect(
+  connect(
         this->ui->burnCPUButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onCPUBurnClicked()));
 
-  this->connect(
+  connect(
         this->ui->resetFpsButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onFPSReset()));
 
-  this->connect(
+  connect(
         this->ui->recordButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSymViewControlsChanged()));
 
-  this->connect(
+  connect(
         this->ui->autoScrollButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSymViewControlsChanged()));
 
-  this->connect(
+  connect(
         this->ui->autoFitButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSymViewControlsChanged()));
 
-  this->connect(
+  connect(
         this->ui->widthSpin,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onSymViewControlsChanged()));
 
-  this->connect(
+  connect(
         this->ui->offsetSpin,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onSymViewControlsChanged()));
 
-  this->connect(
+  connect(
         this->ui->saveButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSaveSymView()));
 
-  this->connect(
+  connect(
         this->ui->clearButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onClearSymView()));
 
-  this->connect(
+  connect(
         this->ui->paletteCombo,
         SIGNAL(activated(int)),
         this,
         SLOT(onSpectrumConfigChanged()));
 
-  this->connect(
+  connect(
         this->ui->spectrumSourceCombo,
         SIGNAL(activated(int)),
         this,
@@ -173,37 +173,37 @@ InspectorUI::InspectorUI(
         this,
         SLOT(onRangeChanged(void)));
 
-  this->connect(
+  connect(
         this->ui->peakDetectionButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSpectrumConfigChanged()));
 
-  this->connect(
+  connect(
         this->ui->peakHoldButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSpectrumConfigChanged()));
 
-  this->connect(
+  connect(
         this->ui->snrButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onToggleSNR()));
 
-  this->connect(
+  connect(
         this->ui->snrResetButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onResetSNR()));
 
-  this->connect(
+  connect(
         this->ui->loLcd,
         SIGNAL(valueChanged(void)),
         this,
         SLOT(onChangeLo(void)));
 
-  this->connect(
+  connect(
         this->ui->bwLcd,
         SIGNAL(valueChanged(void)),
         this,
@@ -270,6 +270,13 @@ InspectorUI::setLo(int lo)
   this->ui->loLcd->setValue(lo);
 }
 
+void
+InspectorUI::refreshInspectorCtls(void)
+{
+  for (auto p = this->controls.begin(); p != this->controls.end(); ++p)
+    (*p)->refreshUi();
+}
+
 unsigned int
 InspectorUI::getBandwidth(void) const
 {
@@ -308,31 +315,52 @@ InspectorUI::addSpectrumSource(Suscan::SpectrumSource const &src)
 void
 InspectorUI::addEstimator(Suscan::Estimator const &estimator)
 {
+  int position = static_cast<int>(this->estimators.size());
+  EstimatorControl *ctl;
+  this->ui->estimatorsGrid->setAlignment(Qt::AlignTop);
+
   this->estimators.push_back(estimator);
+
+  ctl = new EstimatorControl(this->owner, estimator);
+  this->estimatorCtls[estimator.id] = ctl;
+
+  this->ui->estimatorsGrid->addWidget(ctl, position, 0, Qt::AlignTop);
+
+  connect(
+        ctl,
+        SIGNAL(estimatorChanged(Suscan::EstimatorId, bool)),
+        this,
+        SLOT(onToggleEstimator(Suscan::EstimatorId, bool)));
+
+  connect(
+        ctl,
+        SIGNAL(apply(QString, float)),
+        this,
+        SLOT(onApplyEstimation(QString, float)));
 }
 
 void
 InspectorUI::connectDataSaver()
 {
-  this->connect(
+  connect(
         this->dataSaver.get(),
         SIGNAL(stopped()),
         this,
         SLOT(onSaveError()));
 
-  this->connect(
+  connect(
         this->dataSaver.get(),
         SIGNAL(swamped()),
         this,
         SLOT(onSaveSwamped()));
 
-  this->connect(
+  connect(
         this->dataSaver.get(),
         SIGNAL(dataRate(qreal)),
         this,
         SLOT(onSaveRate(qreal)));
 
-  this->connect(
+  connect(
         this->dataSaver.get(),
         SIGNAL(commit()),
         this,
@@ -389,7 +417,7 @@ InspectorUI::installDataSaver(void)
     this->dataSaver = std::make_unique<AsyncDataSaver>(this->fd, this);
     this->recordingRate = this->getBaudRate();
     this->dataSaver->setSampleRate(recordingRate);
-    this->connectDataSaver();
+    connectDataSaver();
 
     return true;
   }
@@ -502,6 +530,20 @@ InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
 }
 
 void
+InspectorUI::updateEstimator(Suscan::EstimatorId id, float val)
+{
+  // XXX: Things may change in the future. Null value does not imply
+  // invalid estimation
+
+  if (fabsf(val) > 1e-6f) {
+    this->estimatorCtls[id]->setParameterValue(val);
+    this->estimatorCtls[id]->setParameterAvailable(true);
+  } else {
+    this->estimatorCtls[id]->setParameterAvailable(false);
+  }
+}
+
+void
 InspectorUI::setState(enum State state)
 {
   this->state = state;
@@ -532,7 +574,7 @@ InspectorUI::pushControl(InspectorCtl *ctl)
 
   this->ui->controlsGrid->addWidget(ctl, position, 0, Qt::AlignTop);
 
-  this->connect(
+  connect(
         ctl,
         SIGNAL(changed()),
         this,
@@ -570,7 +612,7 @@ InspectorUI::populate(void)
 
   this->ui->controlsGrid->addWidget(this->saverUI, position, 0, Qt::AlignTop);
 
-  this->connect(
+  connect(
         this->saverUI,
         SIGNAL(recordStateChanged(bool)),
         this,
@@ -931,5 +973,17 @@ void
 InspectorUI::onChangeBandwidth(void)
 {
   emit bandwidthChanged();
+}
+
+void
+InspectorUI::onToggleEstimator(Suscan::EstimatorId id, bool enabled)
+{
+  emit toggleEstimator(id, enabled);
+}
+
+void
+InspectorUI::onApplyEstimation(QString name, float value)
+{
+  emit applyEstimation(name, value);
 }
 

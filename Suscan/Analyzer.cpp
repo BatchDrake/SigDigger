@@ -28,6 +28,7 @@ Q_DECLARE_METATYPE(Suscan::InspectorMessage);
 Q_DECLARE_METATYPE(Suscan::PSDMessage);
 Q_DECLARE_METATYPE(Suscan::SamplesMessage);
 Q_DECLARE_METATYPE(Suscan::GenericMessage);
+Q_DECLARE_METATYPE(Suscan::EstimatorId);
 
 using namespace Suscan;
 
@@ -332,6 +333,22 @@ Analyzer::setSpectrumSource(Handle handle, unsigned int src, RequestId id)
           src,
           id));
 
+}
+
+void
+Analyzer::setInspectorEnabled(
+    Handle handle,
+    EstimatorId eid,
+    bool enabled,
+    RequestId id)
+{
+  SU_ATTEMPT(
+        suscan_analyzer_inspector_estimator_cmd_async(
+          this->instance,
+          handle,
+          eid,
+          enabled,
+          id));
 }
 
 void

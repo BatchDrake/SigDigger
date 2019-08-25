@@ -659,6 +659,12 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
        }
       break;
 
+    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_ESTIMATOR:
+      if ((insp = this->mediator->lookupInspector(msg.getInspectorId())) != nullptr)
+        insp->updateEstimator(msg.getEstimatorId(), msg.getEstimation());
+
+      break;
+
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_CLOSE:
       if (this->audioConfigured && this->audioInspHandle == msg.getHandle()) {
         // Do nothing

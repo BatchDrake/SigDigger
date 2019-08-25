@@ -640,7 +640,7 @@ QToolBox::tab:hover {
       <number>0</number>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <property name="tabSpacing">
       <number>0</number>
@@ -651,7 +651,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>734</height>
+        <height>706</height>
        </rect>
       </property>
       <attribute name="label">
@@ -781,13 +781,78 @@ QToolBox::tab:hover {
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="page_3">
+      <attribute name="label">
+       <string>🠟Parameter estimation</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_10">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QScrollArea" name="scrollArea_2">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents_2">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>300</width>
+            <height>706</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="estimatorsGrid">
+           <property name="leftMargin">
+            <number>3</number>
+           </property>
+           <property name="topMargin">
+            <number>3</number>
+           </property>
+           <property name="rightMargin">
+            <number>3</number>
+           </property>
+           <property name="bottomMargin">
+            <number>3</number>
+           </property>
+           <property name="spacing">
+            <number>3</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QWidget" name="widget" native="true"/>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="page_2">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>734</height>
+        <height>706</height>
        </rect>
       </property>
       <attribute name="label">
@@ -838,7 +903,7 @@ QToolBox::tab:hover {
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>734</height>
+            <height>706</height>
            </rect>
           </property>
           <property name="maximumSize">

@@ -86,7 +86,8 @@ SOURCES += \
     UIMediator/SourceMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
     UIMediator/UIMediator.cpp \
-    main.cpp
+    main.cpp \
+    Components/EstimatorControl.cpp
 
 
 HEADERS += \
@@ -145,7 +146,8 @@ HEADERS += \
     include/SNREstimator.h \
     include/SourcePanel.h \
     include/ToneControl.h \
-    include/UIMediator.h
+    include/UIMediator.h \
+    include/EstimatorControl.h
 
 
 FORMS += \
@@ -168,7 +170,8 @@ FORMS += \
     ui/MfControl.ui \
     ui/SourcePanel.ui \
     ui/ToneControl.ui \
-    ui/SaveProfileDialog.ui
+    ui/SaveProfileDialog.ui \
+    ui/EstimatorControl.ui
 
 
 # Default rules for deployment.

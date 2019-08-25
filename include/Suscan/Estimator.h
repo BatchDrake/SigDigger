@@ -23,10 +23,12 @@
 #include <sigutils/softtune.h>
 
 namespace Suscan {
+  typedef uint32_t EstimatorId;
   struct Estimator {
       std::string name;
       std::string desc;
       std::string field;
+      EstimatorId id;
   };
 }
 
