@@ -163,6 +163,12 @@ FftPanel::connectAll(void)
         SLOT(onFftSizeChanged(void)));
 
   connect(
+        this->ui->rateCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onRefreshRateChanged(void)));
+
+  connect(
         this->ui->lockButton,
         SIGNAL(clicked(bool)),
         this,
@@ -202,11 +208,20 @@ FftPanel::FftPanel(QWidget *parent) :
   for (i = 9; i < 17; ++i)
     this->addFftSize(1 << i);
 
+  this->addRefreshRate(1);
+  this->addRefreshRate(2);
+  this->addRefreshRate(5);
+  this->addRefreshRate(10);
+  this->addRefreshRate(25);
+  this->addRefreshRate(30);
+  this->addRefreshRate(50);
+  this->addRefreshRate(60);
+
   this->connectAll();
 }
 
 void
-FftPanel::refreshFftSizes(void)
+FftPanel::updateFftSizes(void)
 {
   int index = 0;
   this->ui->fftSizeCombo->clear();
@@ -229,9 +244,38 @@ FftPanel::refreshFftSizes(void)
 }
 
 void
+FftPanel::updateRefreshRates(void)
+{
+  int index = 0;
+  this->ui->rateCombo->clear();
+
+  for (auto p = this->refreshRates.begin(); p != this->refreshRates.end(); ++p) {
+    if (*p == 0) {
+      QString defString = this->defaultRefreshRate == 0
+          ? ""
+          : "  (" + QString::number(this->refreshRate) + " fps)";
+      this->ui->rateCombo->addItem("Default" + defString);
+    } else {
+      this->ui->rateCombo->addItem(QString::number(*p) + " fps");
+    }
+
+    if (*p == this->refreshRate)
+      this->ui->rateCombo->setCurrentIndex(index);
+
+    ++index;
+  }
+}
+
+void
 FftPanel::addFftSize(unsigned int size)
 {
   this->sizes.push_back(size);
+}
+
+void
+FftPanel::addRefreshRate(unsigned int rate)
+{
+  this->refreshRates.push_back(rate);
 }
 
 void
@@ -319,6 +363,12 @@ unsigned int
 FftPanel::getFftSize(void) const
 {
   return this->fftSize;
+}
+
+unsigned int
+FftPanel::getRefreshRate(void) const
+{
+  return this->refreshRate;
 }
 
 bool
@@ -421,7 +471,14 @@ void
 FftPanel::setDefaultFftSize(unsigned int size)
 {
   this->defaultFftSize = size;
-  this->refreshFftSizes();
+  this->updateFftSizes();
+}
+
+void
+FftPanel::setDefaultRefreshRate(unsigned int rate)
+{
+  this->defaultRefreshRate = rate;
+  this->updateFftSizes();
 }
 
 void
@@ -429,7 +486,14 @@ FftPanel::setFftSize(unsigned int size)
 {
   this->fftSize = size;
   this->updateRbw();
-  this->refreshFftSizes();
+  this->updateFftSizes();
+}
+
+void
+FftPanel::setRefreshRate(unsigned int rate)
+{
+  this->refreshRate = rate;
+  this->updateRefreshRates();
 }
 
 void
@@ -543,6 +607,19 @@ FftPanel::onFftSizeChanged(void)
   this->updateRbw();
 
   emit fftSizeChanged();
+}
+
+void
+FftPanel::onRefreshRateChanged(void)
+{
+  this->refreshRate =
+      this->refreshRates[
+        static_cast<unsigned>(this->ui->rateCombo->currentIndex())];
+
+  if (this->refreshRate == 0)
+    this->refreshRate = this->defaultRefreshRate;
+
+  emit refreshRateChanged();
 }
 
 void
