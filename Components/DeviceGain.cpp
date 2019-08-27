@@ -30,19 +30,31 @@ DeviceGain::DeviceGain(
   this->ui->setupUi(this);
 
   this->name = desc.getName();
-  this->min  = static_cast<int>(desc.getMin());
-  this->max  = static_cast<int>(desc.getMax());
-  this->step = static_cast<int>(desc.getStep());
+  this->min  = static_cast<float>(desc.getMin());
+  this->max  = static_cast<float>(desc.getMax());
+  this->step = static_cast<float>(desc.getStep());
 
   if (this->step < 1)
     this->step = 1;
 
-  this->defl = static_cast<int>(desc.getDefault());
+  this->defl = static_cast<float>(desc.getDefault());
 
-  this->ui->gainSlider->setMinimum(this->min);
-  this->ui->gainSlider->setMaximum(this->max);
-  this->ui->gainSlider->setTickInterval(this->step);
-  this->ui->gainSlider->setSingleStep(this->step);
+  // The slider must be configured as follows
+  // Min value: 0
+  // Max value: (this->max - this->min) / this->step
+  // Tick interval: 1
+  // Single step: 1
+
+  // Gain to value:
+  // value = (gain - this->min) / this->step
+
+  // Value to gain
+  // gain = this->min + this->step * value
+
+  this->ui->gainSlider->setMinimum(0);
+  this->ui->gainSlider->setMaximum(static_cast<int>((this->max - this->min) / this->step));
+  this->ui->gainSlider->setTickInterval(1);
+  this->ui->gainSlider->setSingleStep(1);
 
   this->ui->nameLabel->setText(QString::fromStdString(this->name));
 
@@ -61,32 +73,32 @@ DeviceGain::DeviceGain(
   this->setGain(this->defl);
 }
 
-void
-DeviceGain::setGain(float val)
+float
+DeviceGain::getGain(void) const
 {
-  float adjusted;
+  int value = this->ui->gainSlider->value();
 
-  if (val < this->min)
-    val = this->min;
-  else if (val > this->max)
-    val = this->max;
+  return value * this->step + this->min;
+}
 
-  adjusted = floor((val - this->min) / this->step) + this->min;
+void
+DeviceGain::setGain(float gain)
+{
+  int value = static_cast<int>((gain - this->min) / this->step);
 
-  this->current = static_cast<int>(adjusted);
+  this->current = value;
 
-  this->ui->gainSlider->setValue(this->current);
-  this->ui->valueLabel->setText(QString::number(this->current) + " dB");
+  this->ui->gainSlider->setValue(value);
+  this->ui->valueLabel->setText(QString::number(static_cast<qreal>(this->getGain())) + " dB");
 }
 
 void
 DeviceGain::onValueChanged(int val)
 {
-  int old = this->current;
-  this->setGain(val);
-
-  if (old != this->current)
+  if (val != this->current) {
+    this->setGain(this->getGain());
     emit gainChanged(QString::fromStdString(this->name), this->current);
+  }
 }
 
 void
