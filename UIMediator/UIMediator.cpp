@@ -240,7 +240,7 @@ UIMediator::addInspectorTab(
   Inspector *insp = new Inspector(
         this->ui->main->mainTab,
         msg,
-        this->appConfig->colors);
+        *this->appConfig);
   oId = this->ui->lastId++;
   insp->setId(oId);
 

@@ -42,6 +42,8 @@ namespace Ui {
 }
 
 namespace SigDigger {
+  class AppConfig;
+
   class InspectorUI : public QObject {
     Q_OBJECT
 
@@ -114,7 +116,7 @@ namespace SigDigger {
       bool setPalette(std::string const &str);
       void addSpectrumSource(Suscan::SpectrumSource const &src);
       void addEstimator(Suscan::Estimator const &estimator);
-      void setColors(ColorConfig const &colors);
+      void setAppConfig(AppConfig const &cfg);
       bool installDataSaver(void);
       void uninstallDataSaver(void);
       void setBasebandRate(unsigned int);
