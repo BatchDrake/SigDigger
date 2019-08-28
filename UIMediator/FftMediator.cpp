@@ -56,6 +56,12 @@ UIMediator::connectFftPanel(void)
 
   connect(
         this->ui->fftPanel,
+        SIGNAL(timeSpanChanged(void)),
+        this,
+        SLOT(onTimeSpanChanged(void)));
+
+  connect(
+        this->ui->fftPanel,
         SIGNAL(windowFunctionChanged(void)),
         this,
         SLOT(onWindowFunctionChanged(void)));
@@ -104,6 +110,12 @@ UIMediator::onRefreshRateChanged(void)
 {
   this->appConfig->analyzerParams.psdUpdateInterval = 1.f / this->ui->fftPanel->getRefreshRate();
   emit analyzerParamsChanged();
+}
+
+void
+UIMediator::onTimeSpanChanged(void)
+{
+  this->ui->spectrum->setTimeSpan(this->ui->fftPanel->getTimeSpan());
 }
 
 void

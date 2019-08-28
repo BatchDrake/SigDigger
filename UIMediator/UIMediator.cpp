@@ -367,6 +367,7 @@ UIMediator::applyConfig(void)
   this->onRangesChanged();
   this->onAveragerChanged();
   this->onThrottleConfigChanged();
+  this->onTimeSpanChanged();
 }
 
 UIMediator::~UIMediator()

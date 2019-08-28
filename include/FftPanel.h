@@ -41,6 +41,8 @@ namespace SigDigger {
     float wfRangeMin = -60;
     float wfRangeMax = -10;
 
+    unsigned int timeSpan = 0;
+
     bool rangeLock = false;
 
     std::string palette = "Suscan";
@@ -71,13 +73,17 @@ namespace SigDigger {
     std::vector<Palette> palettes;
     std::vector<unsigned int> sizes;
     std::vector<unsigned int> refreshRates;
+    std::vector<unsigned int> timeSpans;
+
     Palette *selected = nullptr;
 
     // Private methods
     void addFftSize(unsigned int sz);
+    void addTimeSpan(unsigned int timeSpan);
     void addRefreshRate(unsigned int rate);
     void updateRefreshRates(void);
     void updateFftSizes(void);
+    void updateTimeSpans(void);
     void connectAll(void);
     void updateRbw(void);
 
@@ -98,6 +104,7 @@ namespace SigDigger {
     float getPanWfRatio(void) const;
     unsigned int getFreqZoom(void) const;
     unsigned int getFftSize(void) const;
+    unsigned int getTimeSpan(void) const;
     unsigned int getRefreshRate(void) const;
     bool getPeakHold(void) const;
     bool getPeakDetect(void) const;
@@ -120,6 +127,7 @@ namespace SigDigger {
     void setFftSize(unsigned int);
     void setDefaultRefreshRate(unsigned int);
     void setRefreshRate(unsigned int);
+    void setTimeSpan(unsigned int);
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
 
@@ -135,6 +143,7 @@ namespace SigDigger {
     void onPaletteChanged(int);
     void onFreqZoomChanged(int);
     void onFftSizeChanged(void);
+    void onTimeSpanChanged(void);
     void onRefreshRateChanged(void);
     void onRangeLockChanged(void);
     void onPeakChanged(void);
@@ -147,6 +156,8 @@ namespace SigDigger {
     void fftSizeChanged(void);
     void windowFunctionChanged(void);
     void refreshRateChanged(void);
+    void timeSpanChanged(void);
+
   };
 }
 

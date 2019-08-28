@@ -117,6 +117,12 @@ MainSpectrum::setThrottling(bool value)
 }
 
 void
+MainSpectrum::setTimeSpan(quint64 span)
+{
+  this->ui->mainSpectrum->setWaterfallSpan(span * 1000);
+}
+
+void
 MainSpectrum::setCaptureMode(CaptureMode mode)
 {
   this->mode = mode;

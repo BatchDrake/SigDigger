@@ -82,6 +82,7 @@ namespace SigDigger {
 
     void setZoom(unsigned int zoom);
     void setSampleRate(unsigned int rate);
+    void setTimeSpan(quint64 ms);
 
     // Getters
     bool getThrottling(void) const;
