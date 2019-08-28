@@ -344,7 +344,10 @@ UIMediator::applyConfig(void)
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
   this->ui->fftPanel->setWindowFunction(this->appConfig->analyzerParams.windowFunction);
   this->ui->fftPanel->setFftSize(this->appConfig->analyzerParams.windowSize);  
+  this->ui->fftPanel->setRefreshRate(
+        static_cast<unsigned int>(1.f / this->appConfig->analyzerParams.psdUpdateInterval));
   this->ui->fftPanel->setDefaultFftSize(SIGDIGGER_FFT_WINDOW_SIZE);
+  this->ui->fftPanel->setDefaultRefreshRate(SIGDIGGER_FFT_REFRESH_RATE);
 
   // The rest of them are automatically deserialized
   this->ui->sourcePanel->applyConfig();
@@ -364,6 +367,7 @@ UIMediator::applyConfig(void)
   this->onRangesChanged();
   this->onAveragerChanged();
   this->onThrottleConfigChanged();
+  this->onTimeSpanChanged();
 }
 
 UIMediator::~UIMediator()
