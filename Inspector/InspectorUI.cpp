@@ -28,6 +28,8 @@
 #include "EqualizerControl.h"
 #include "ClockRecovery.h"
 
+#include "AppConfig.h"
+
 #include <QFileDialog>
 #include <QMessageBox>
 #include <Suscan/Library.h>
@@ -791,8 +793,15 @@ InspectorUI::onSymViewControlsChanged(void)
 }
 
 void
-InspectorUI::setColors(ColorConfig const &colors)
+InspectorUI::setAppConfig(AppConfig const &cfg)
 {
+  ColorConfig const &colors = cfg.colors;
+
+  FftPanelConfig fftConfig;
+
+  fftConfig.deserialize(cfg.fftConfig->serialize());
+
+  // Set colors according to application config
   this->ui->constellation->setForegroundColor(colors.constellationForeground);
   this->ui->constellation->setBackgroundColor(colors.constellationBackground);
   this->ui->constellation->setAxesColor(colors.constellationAxes);
@@ -811,6 +820,10 @@ InspectorUI::setColors(ColorConfig const &colors)
   this->ui->wfSpectrum->setFftBgColor(colors.spectrumBackground);
   this->ui->wfSpectrum->setFftAxesColor(colors.spectrumAxes);
   this->ui->wfSpectrum->setFftTextColor(colors.spectrumText);
+
+  // Set palette
+  fftConfig.deserialize(cfg.fftConfig->serialize());
+  (void) this->setPalette(fftConfig.palette);
 }
 
 void

@@ -25,7 +25,7 @@ using namespace SigDigger;
 Inspector::Inspector(
     QWidget *parent,
     const Suscan::InspectorMessage &msg,
-    ColorConfig const &config) :
+    AppConfig const &config) :
   QWidget(parent),
   config(msg.getCConfig())
 {
@@ -33,7 +33,7 @@ Inspector::Inspector(
   this->analyzer = nullptr;
 
   this->ui = std::make_unique<InspectorUI>(this, &this->config);
-  this->ui->setColors(config);
+  this->ui->setAppConfig(config);
   this->ui->setBasebandRate(msg.getBasebandRate());
   this->ui->setSampleRate(msg.getEquivSampleRate());
   this->ui->setBandwidth(static_cast<unsigned int>(msg.getBandwidth()));

@@ -8,6 +8,7 @@
 #include <Suscan/Messages/InspectorMessage.h>
 
 namespace SigDigger {
+  class AppConfig;
   class Inspector : public QWidget
   {
       Q_OBJECT
@@ -56,7 +57,7 @@ namespace SigDigger {
       explicit Inspector(
           QWidget *parent,
           const Suscan::InspectorMessage &msg,
-          ColorConfig const &config);
+          AppConfig const &config);
 
       ~Inspector();
 

@@ -42,6 +42,7 @@ FftPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(palette);
   LOAD(zoom);
   LOAD(rangeLock);
+  LOAD(timeSpan);
 }
 
 Suscan::Object &&
@@ -62,6 +63,7 @@ FftPanelConfig::serialize(void)
   STORE(palette);
   STORE(zoom);
   STORE(rangeLock);
+  STORE(timeSpan);
 
   return this->persist(obj);
 }
@@ -90,6 +92,7 @@ FftPanel::applyConfig(void)
   this->setPeakHold(savedConfig.peakHold);
   this->setPeakDetect(savedConfig.peakDetect);
   this->setRangeLock(savedConfig.rangeLock);
+  this->setTimeSpan(savedConfig.timeSpan);
 }
 
 void
@@ -163,6 +166,18 @@ FftPanel::connectAll(void)
         SLOT(onFftSizeChanged(void)));
 
   connect(
+        this->ui->rateCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onRefreshRateChanged(void)));
+
+  connect(
+        this->ui->timeSpanCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onTimeSpanChanged(void)));
+
+  connect(
         this->ui->lockButton,
         SIGNAL(clicked(bool)),
         this,
@@ -202,11 +217,37 @@ FftPanel::FftPanel(QWidget *parent) :
   for (i = 9; i < 17; ++i)
     this->addFftSize(1 << i);
 
+  // Add refresh rates
+  this->addRefreshRate(1);
+  this->addRefreshRate(2);
+  this->addRefreshRate(5);
+  this->addRefreshRate(10);
+  this->addRefreshRate(25);
+  this->addRefreshRate(30);
+  this->addRefreshRate(50);
+  this->addRefreshRate(60);
+
+  // Add Gqrx time spans
+  this->addTimeSpan(0);
+  this->addTimeSpan(5 * 60);
+  this->addTimeSpan(10 * 60);
+  this->addTimeSpan(15 * 60);
+  this->addTimeSpan(20 * 60);
+  this->addTimeSpan(30 * 60);
+
+  this->addTimeSpan(3600);
+  this->addTimeSpan(2 * 3600);
+  this->addTimeSpan(5 * 3600);
+  this->addTimeSpan(10 * 3600);
+  this->addTimeSpan(16 * 3600);
+  this->addTimeSpan(24 * 3600);
+  this->addTimeSpan(48 * 3600);
+
   this->connectAll();
 }
 
 void
-FftPanel::refreshFftSizes(void)
+FftPanel::updateFftSizes(void)
 {
   int index = 0;
   this->ui->fftSizeCombo->clear();
@@ -229,9 +270,75 @@ FftPanel::refreshFftSizes(void)
 }
 
 void
+FftPanel::updateRefreshRates(void)
+{
+  int index = 0;
+  this->ui->rateCombo->clear();
+
+  for (auto p = this->refreshRates.begin(); p != this->refreshRates.end(); ++p) {
+    if (*p == 0) {
+      QString defString = this->defaultRefreshRate == 0
+          ? ""
+          : "  (" + QString::number(this->refreshRate) + " fps)";
+      this->ui->rateCombo->addItem("Default" + defString);
+    } else {
+      this->ui->rateCombo->addItem(QString::number(*p) + " fps");
+    }
+
+    if (*p == this->refreshRate)
+      this->ui->rateCombo->setCurrentIndex(index);
+
+    ++index;
+  }
+}
+
+static QString
+secondsToString(unsigned int seconds)
+{
+  if (seconds < 60)
+    return QString::number(seconds) + " seconds";
+  if (seconds < 3600)
+    return QString::number(seconds / 60) + " minutes";
+
+  return QString::number(seconds / 3600) + " hours";
+}
+
+void
+FftPanel::updateTimeSpans(void)
+{
+  int index = 0;
+  this->ui->timeSpanCombo->clear();
+
+  for (auto p = this->timeSpans.begin(); p != this->timeSpans.end(); ++p) {
+    if (*p == 0) {
+      this->ui->timeSpanCombo->addItem("Auto");
+    } else {
+      this->ui->timeSpanCombo->addItem(secondsToString(*p));
+    }
+
+    if (*p == this->panelConfig->timeSpan)
+      this->ui->timeSpanCombo->setCurrentIndex(index);
+
+    ++index;
+  }
+}
+
+void
 FftPanel::addFftSize(unsigned int size)
 {
   this->sizes.push_back(size);
+}
+
+void
+FftPanel::addTimeSpan(unsigned int span)
+{
+  this->timeSpans.push_back(span);
+}
+
+void
+FftPanel::addRefreshRate(unsigned int rate)
+{
+  this->refreshRates.push_back(rate);
 }
 
 void
@@ -319,6 +426,18 @@ unsigned int
 FftPanel::getFftSize(void) const
 {
   return this->fftSize;
+}
+
+unsigned int
+FftPanel::getTimeSpan(void) const
+{
+  return this->panelConfig->timeSpan;
+}
+
+unsigned int
+FftPanel::getRefreshRate(void) const
+{
+  return this->refreshRate;
 }
 
 bool
@@ -421,7 +540,14 @@ void
 FftPanel::setDefaultFftSize(unsigned int size)
 {
   this->defaultFftSize = size;
-  this->refreshFftSizes();
+  this->updateFftSizes();
+}
+
+void
+FftPanel::setDefaultRefreshRate(unsigned int rate)
+{
+  this->defaultRefreshRate = rate;
+  this->updateFftSizes();
 }
 
 void
@@ -429,7 +555,21 @@ FftPanel::setFftSize(unsigned int size)
 {
   this->fftSize = size;
   this->updateRbw();
-  this->refreshFftSizes();
+  this->updateFftSizes();
+}
+
+void
+FftPanel::setRefreshRate(unsigned int rate)
+{
+  this->refreshRate = rate;
+  this->updateRefreshRates();
+}
+
+void
+FftPanel::setTimeSpan(unsigned int span)
+{
+  this->panelConfig->timeSpan = span;
+  this->updateTimeSpans();
 }
 
 void
@@ -543,6 +683,29 @@ FftPanel::onFftSizeChanged(void)
   this->updateRbw();
 
   emit fftSizeChanged();
+}
+
+void
+FftPanel::onRefreshRateChanged(void)
+{
+  this->refreshRate =
+      this->refreshRates[
+        static_cast<unsigned>(this->ui->rateCombo->currentIndex())];
+
+  if (this->refreshRate == 0)
+    this->refreshRate = this->defaultRefreshRate;
+
+  emit refreshRateChanged();
+}
+
+void
+FftPanel::onTimeSpanChanged(void)
+{
+  this->panelConfig->timeSpan =
+      this->timeSpans[
+        static_cast<unsigned>(this->ui->timeSpanCombo->currentIndex())];
+
+  emit timeSpanChanged();
 }
 
 void
