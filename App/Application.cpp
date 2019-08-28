@@ -593,7 +593,7 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
   SUFLOAT *data;
   SUSCOUNT len, p;
   Suscan::InspectorId oId;
-  float x, max = 0;
+  float x;
 
   switch (msg.getKind()) {
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_OPEN:
@@ -636,25 +636,18 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
          data = msg.getSpectrumData();
          len = msg.getSpectrumLength();
          p = len / 2;
-         max = 0;
 
-         for (auto i = 0u; i < len; ++i) {
-           data[i] = log10f(data[i]);
-           if (max < data[i])
-             max = data[i];
-         }
-
-         max += 5;
+         for (auto i = 0u; i < len; ++i)
+           data[i] = SU_POWER_DB(data[i]);
 
          for (auto i = 0u; i < len / 2; ++i) {
            x = data[i];
-           data[i] = data[p] - max;
-           data[p] = x - max;
+           data[i] = data[p];
+           data[p] = x;
 
            if (++p == len)
              p = 0;
          }
-
          insp->feedSpectrum(data, len, msg.getSpectrumRate());
        }
       break;
