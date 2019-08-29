@@ -260,10 +260,7 @@ void
 InspectorUI::setBandwidth(unsigned int bandwidth)
 {
   // More COBOL
-  this->ui->bwLcd->setValue(
-        static_cast<int>(bandwidth *
-              static_cast<unsigned int>(this->ui->bwLcd->getMax())
-                         / this->sampleRate));
+  this->ui->bwLcd->setValue(static_cast<int>(bandwidth));
 }
 
 void
