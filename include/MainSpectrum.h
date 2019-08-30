@@ -98,6 +98,7 @@ namespace SigDigger {
   signals:
     void bandwidthChanged(void);
     void frequencyChanged(qint64);
+    void lnbFrequencyChanged(qint64);
     void loChanged(qint64);
     void rangeChanged(float, float);
     void zoomChanged(float);
@@ -109,6 +110,7 @@ namespace SigDigger {
     void onFrequencyChanged(void);
     void onLoChanged(void);
     void onNewZoomLevel(float);
+    void onLnbFrequencyChanged(void);
   };
 }
 

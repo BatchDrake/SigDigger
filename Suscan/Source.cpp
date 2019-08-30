@@ -208,6 +208,15 @@ Source::Config::getFreq(void) const
   return suscan_source_config_get_freq(this->instance);
 }
 
+SUFREQ
+Source::Config::getLnbFreq(void) const
+{
+  if (this->instance == nullptr)
+    return 0;
+
+  return suscan_source_config_get_lnb_freq(this->instance);
+}
+
 unsigned int
 Source::Config::getSampleRate(void) const
 {
@@ -315,6 +324,15 @@ Source::Config::setFreq(SUFREQ freq)
     return;
 
   suscan_source_config_set_freq(this->instance, freq);
+}
+
+void
+Source::Config::setLnbFreq(SUFREQ freq)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_set_lnb_freq(this->instance, freq);
 }
 
 void

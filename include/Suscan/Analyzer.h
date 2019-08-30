@@ -69,7 +69,7 @@ namespace Suscan {
 
     void *read(uint32_t &type);
     void registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t, void *);
-    void setFrequency(SUFREQ freq);
+    void setFrequency(SUFREQ freq, SUFREQ lnbFreq = 0);
     void setGain(std::string const &name, SUFLOAT val);
     void setAntenna(std::string const &name);
     void setBandwidth(SUFLOAT val);

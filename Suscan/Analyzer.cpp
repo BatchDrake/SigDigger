@@ -116,9 +116,9 @@ Analyzer::setBandwidth(SUFLOAT value)
 }
 
 void
-Analyzer::setFrequency(SUFREQ freq)
+Analyzer::setFrequency(SUFREQ freq, SUFREQ lnb)
 {
-  SU_ATTEMPT(suscan_analyzer_set_freq(this->instance, freq));
+  SU_ATTEMPT(suscan_analyzer_set_freq(this->instance, freq, lnb));
 }
 
 void

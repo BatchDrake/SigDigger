@@ -38,6 +38,12 @@ UIMediator::connectSpectrum(void)
 
   connect(
         this->ui->spectrum,
+        SIGNAL(lnbFrequencyChanged(qint64)),
+        this,
+        SLOT(onFrequencyChanged(qint64)));
+
+  connect(
+        this->ui->spectrum,
         SIGNAL(loChanged(qint64)),
         this,
         SLOT(onLoChanged(qint64)));
@@ -72,7 +78,9 @@ UIMediator::onFrequencyChanged(qint64)
   this->ui->inspectorPanel->setDemodFrequency(freq);
   this->appConfig->profile.setFreq(freq);
 
-  emit frequencyChanged(this->ui->spectrum->getCenterFreq());
+  emit frequencyChanged(
+        this->ui->spectrum->getCenterFreq(),
+        this->ui->spectrum->getLnbFreq());
 }
 
 void

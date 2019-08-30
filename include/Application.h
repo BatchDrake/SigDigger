@@ -106,7 +106,7 @@ namespace SigDigger {
     void onCaptureStop(void);
     void onProfileChanged(void);
     void onGainChanged(QString name, float val);
-    void onFrequencyChanged(qint64);
+    void onFrequencyChanged(qint64, qint64);
     void onOpenInspector(void);
     void onThrottleConfigChanged(void);
     void onToggleRecord(void);

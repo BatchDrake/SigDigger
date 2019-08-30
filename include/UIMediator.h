@@ -114,7 +114,7 @@ namespace SigDigger {
     void profileChanged();
     void colorsChanged(ColorConfig config);
 
-    void frequencyChanged(qint64);
+    void frequencyChanged(qint64, qint64);
     void loChanged(qint64);
     void channelBandwidthChanged(qreal bw);
 

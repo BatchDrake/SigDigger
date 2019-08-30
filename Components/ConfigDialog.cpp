@@ -212,6 +212,10 @@ ConfigDialog::refreshProfileUi(void)
         QString::number(
           static_cast<uint64_t>(this->profile.getFreq())));
 
+  this->ui->lnbFrequencyLine->setText(
+        QString::number(
+          static_cast<uint64_t>(this->profile.getLnbFreq())));
+
   this->ui->sampleRateLine->setText(
         QString::number(
           static_cast<uint64_t>(this->profile.getSampleRate())));
@@ -312,6 +316,12 @@ ConfigDialog::connectAll(void)
         SLOT(onLineEditsChanged(const QString &)));
 
   connect(
+        this->ui->lnbFrequencyLine,
+        SIGNAL(textEdited(const QString &)),
+        this,
+        SLOT(onLineEditsChanged(const QString &)));
+
+  connect(
         this->ui->sampleRateLine,
         SIGNAL(textEdited(const QString &)),
         this,
@@ -376,7 +386,9 @@ ConfigDialog::setAnalyzerParams(const Suscan::AnalyzerParams &params)
 void
 ConfigDialog::setProfile(const Suscan::Source::Config &profile)
 {
+  printf("Set profile, %g\n", profile.getLnbFreq());
   this->profile = profile;
+  printf("This profile, %g\n", this->profile.getLnbFreq());
   this->refreshUi();
 }
 
@@ -432,6 +444,7 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
 
   // Setup integer validators
   this->ui->frequencyLine->setValidator(new QDoubleValidator(0.0, 15e6, 0, this));
+  this->ui->lnbFrequencyLine->setValidator(new QDoubleValidator(0.0, 15e6, 0, this));
   this->ui->sampleRateLine->setValidator(new QIntValidator(1, 64000000, this));
   this->ui->fftSizeEdit->setValidator(new QIntValidator(1, 1 << 20, this));
   this->ui->spectrumRefreshEdit->setValidator(new QIntValidator(1, 1 << 20, this));
@@ -551,6 +564,16 @@ ConfigDialog::onLineEditsChanged(const QString &)
     } else {
       this->ui->frequencyLine->setStyleSheet("");
       this->profile.setFreq(freq);
+    }
+
+    if (sscanf(
+          this->ui->lnbFrequencyLine->text().toStdString().c_str(),
+          "%lg",
+          &freq) < 1) {
+      this->ui->lnbFrequencyLine->setStyleSheet("color: red");
+    } else {
+      this->ui->lnbFrequencyLine->setStyleSheet("");
+      this->profile.setLnbFreq(freq);
     }
 
     if (sscanf(

@@ -284,6 +284,9 @@ UIMediator::refreshProfile(void)
   this->ui->configDialog->setProfile(this->appConfig->profile);
   this->ui->spectrum->setCenterFreq(
         static_cast<qint64>(this->appConfig->profile.getFreq()));
+  this->ui->spectrum->setLnbFreq(
+        static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
+
   this->setSampleRate(this->appConfig->profile.getSampleRate());
 }
 

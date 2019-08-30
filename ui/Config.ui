@@ -71,10 +71,13 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QLineEdit" name="sampleRateLine">
          <property name="text">
           <string>1000000</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -98,7 +101,7 @@
          </property>
         </spacer>
        </item>
-       <item row="7" column="0" colspan="7">
+       <item row="8" column="0" colspan="7">
         <widget class="QFrame" name="fileFrame">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -179,14 +182,14 @@
          </layout>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QCheckBox" name="removeDCCheck">
          <property name="text">
           <string>Remove DC</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QRadioButton" name="sdrRadio">
          <property name="text">
           <string>SDR device</string>
@@ -199,7 +202,7 @@
          </attribute>
         </widget>
        </item>
-       <item row="2" column="2">
+       <item row="3" column="2">
         <widget class="QLabel" name="label_6">
          <property name="text">
           <string>sps</string>
@@ -213,7 +216,7 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QCheckBox" name="iqBalanceCheck">
          <property name="text">
           <string>I/Q Balance</string>
@@ -233,10 +236,13 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>Sample rate</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -245,9 +251,12 @@
          <property name="text">
           <string>Frequency</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
-       <item row="2" column="6">
+       <item row="3" column="6">
         <widget class="QLabel" name="label_8">
          <property name="text">
           <string>samples</string>
@@ -259,16 +268,19 @@
          <property name="text">
           <string>Load profile</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
-       <item row="2" column="5">
+       <item row="3" column="5">
         <widget class="QSpinBox" name="averageSpin">
          <property name="enabled">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
+       <item row="7" column="0">
         <widget class="QRadioButton" name="fileRadio">
          <property name="text">
           <string>File source</string>
@@ -278,10 +290,13 @@
          </attribute>
         </widget>
        </item>
-       <item row="2" column="3">
+       <item row="3" column="3">
         <widget class="QLabel" name="label_7">
          <property name="text">
           <string>Average</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -290,9 +305,12 @@
          <property name="text">
           <string>143500000</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
-       <item row="5" column="0" colspan="7">
+       <item row="6" column="0" colspan="7">
         <widget class="QFrame" name="sdrFrame">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -408,6 +426,33 @@
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_20">
+         <property name="text">
+          <string>LNB frequency</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="3">
+        <widget class="QLineEdit" name="lnbFrequencyLine">
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="5">
+        <widget class="QLabel" name="label_21">
+         <property name="text">
+          <string>Hz</string>
+         </property>
         </widget>
        </item>
       </layout>
@@ -947,7 +992,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="sourceTypeGroup"/>
   <buttongroup name="windowButtonGroup"/>
+  <buttongroup name="sourceTypeGroup"/>
  </buttongroups>
 </ui>

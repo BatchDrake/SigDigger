@@ -52,6 +52,12 @@ MainSpectrum::connectAll(void)
         SLOT(onFrequencyChanged(void)));
 
   connect(
+        this->ui->lnbLcd,
+        SIGNAL(valueChanged(void)),
+        this,
+        SLOT(onLnbFrequencyChanged(void)));
+
+  connect(
         this->ui->loLcd,
         SIGNAL(valueChanged(void)),
         this,
@@ -168,6 +174,7 @@ void
 MainSpectrum::setLnbFreq(qint64 lnbFreq)
 {
   this->ui->lnbLcd->setValue(lnbFreq);
+  this->ui->fcLcd->setMin(-lnbFreq);
 }
 
 void
@@ -326,6 +333,14 @@ MainSpectrum::onFrequencyChanged(void)
   qint64 freq = this->ui->fcLcd->getValue();
   this->setCenterFreq(freq);
   emit frequencyChanged(freq);
+}
+
+void
+MainSpectrum::onLnbFrequencyChanged(void)
+{
+  qint64 freq = this->ui->lnbLcd->getValue();
+  this->setLnbFreq(freq);
+  emit lnbFrequencyChanged(freq);
 }
 
 void

@@ -276,9 +276,9 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
-        SIGNAL(frequencyChanged(qint64)),
+        SIGNAL(frequencyChanged(qint64, qint64)),
         this,
-        SLOT(onFrequencyChanged(qint64)));
+        SLOT(onFrequencyChanged(qint64, qint64)));
 
   connect(
         this->mediator,
@@ -735,11 +735,13 @@ Application::onGainChanged(QString name, float val)
 }
 
 void
-Application::onFrequencyChanged(qint64 freq)
+Application::onFrequencyChanged(qint64 freq, qint64 lnb)
 {
   this->mediator->getProfile()->setFreq(freq);
+  this->mediator->getProfile()->setLnbFreq(lnb);
+
   if (this->mediator->getState() == UIMediator::RUNNING)
-    this->analyzer->setFrequency(freq);
+    this->analyzer->setFrequency(freq, lnb);
 }
 
 void

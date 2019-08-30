@@ -209,6 +209,7 @@ namespace Suscan {
     suscan_source_config_t *instance;
     std::string label(void) const;
     SUFREQ getFreq(void) const;
+    SUFREQ getLnbFreq(void) const;
     unsigned int getSampleRate() const;
     enum suscan_source_type getType(void) const;
     bool getLoop(void) const;
@@ -223,6 +224,7 @@ namespace Suscan {
     enum suscan_source_format getFormat(void) const;
 
     void setFreq(SUFREQ freq);
+    void setLnbFreq(SUFREQ freq);
     void setBandwidth(SUFLOAT bw);
     void setLoop(bool);
     void setDCRemove(bool);
