@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DataSaverUI</class>
- <widget class="QWidget" name="DataSaverUI">
+ <class>UDPForwarderUI</class>
+ <widget class="QWidget" name="UDPForwarderUI">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>249</width>
-    <height>133</height>
+    <width>330</width>
+    <height>164</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -59,38 +59,7 @@
       <property name="spacing">
        <number>3</number>
       </property>
-      <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label_18">
-        <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Capture recorder&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_28">
-        <property name="text">
-         <string>Folder</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="savePath">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QPushButton" name="saveButton">
-        <property name="text">
-         <string>Browse...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="label_26">
         <property name="text">
          <string>I/O bandwidth</string>
@@ -100,8 +69,8 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1" colspan="2">
-       <widget class="QProgressBar" name="ioBwProgress">
+      <item row="4" column="1" colspan="2">
+       <widget class="QProgressBar" name="udpIOBwProgress">
         <property name="styleSheet">
          <string notr="true">font-size: 7pt;</string>
         </property>
@@ -113,53 +82,109 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_31">
-        <property name="text">
-         <string>Disk usage</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1" colspan="2">
-       <widget class="QProgressBar" name="diskUsageProgress">
-        <property name="styleSheet">
-         <string notr="true">font-size: 7pt;</string>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_30">
-        <property name="text">
-         <string>Capture size</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLabel" name="captureSizeLabel">
+      <item row="5" column="1">
+       <widget class="QLabel" name="lengthSizeLabel">
         <property name="text">
          <string>0 bytes</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="2">
-       <widget class="QPushButton" name="recordStartStopButton">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_28">
+        <property name="text">
+         <string>Host</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QPushButton" name="udpStartStopButton">
         <property name="styleSheet">
          <string notr="true">font-weight: bold;</string>
         </property>
         <property name="text">
-         <string>Record</string>
+         <string>Forward</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="QLineEdit" name="udpHostLabel">
+        <property name="text">
+         <string>localhost</string>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label_18">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;UDP Forwarding&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Port</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_30">
+        <property name="text">
+         <string>Forwarded</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QSpinBox" name="udpPortLabel">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>65535</number>
+        </property>
+        <property name="value">
+         <number>40404</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
+       <widget class="QSpinBox" name="udpFrameLen">
+        <property name="suffix">
+         <string> bytes</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>65507</number>
+        </property>
+        <property name="value">
+         <number>1472</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Frame size</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>

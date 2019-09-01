@@ -1,5 +1,5 @@
 //
-//    AsyncDataSaver.h: save hight bandwidth data
+//    GenericDataSaver.h: save hight bandwidth data
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,18 +17,23 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include "AsyncDataSaver.h"
+#include "GenericDataSaver.h"
 #include <unistd.h>
 
 using namespace SigDigger;
 
-AsyncDataWorker::AsyncDataWorker(AsyncDataSaver *instance)
+GenericDataWriter::~GenericDataWriter()
+{
+  // ?
+}
+
+GenericDataWorker::GenericDataWorker(GenericDataSaver *instance)
 {
   this->instance = instance;
 }
 
 void
-AsyncDataWorker::onCommit(void)
+GenericDataWorker::onCommit(void)
 {
   if (!this->failed) {
     QMutexLocker locker(&this->instance->dataMutex);
@@ -44,11 +49,12 @@ AsyncDataWorker::onCommit(void)
 
     gettimeofday(&otv, nullptr);
 
+    printf("Commited %d bytes, dumping...\n", remaining);
+
     while (remaining > 0) {
-      dumped = write(
-            this->instance->fd,
+      dumped = this->instance->writer->write(
             buffer,
-            sizeof(float _Complex) * static_cast<unsigned>(remaining));
+            static_cast<unsigned>(remaining));
 
       if (dumped < 1) {
         this->failed = true;
@@ -81,11 +87,11 @@ AsyncDataWorker::onCommit(void)
   }
 }
 
-AsyncDataSaver::AsyncDataSaver(
-    int fd,
+GenericDataSaver::GenericDataSaver(
+    GenericDataWriter *writer,
     QObject *parent) : QObject(parent), workerObject(this)
 {
-  this->fd = fd;
+  this->writer = writer;
   this->setSampleRate(1000000);
   QObject::connect(
         this,
@@ -110,20 +116,20 @@ AsyncDataSaver::AsyncDataSaver(
   this->workerThread.start();
 }
 
-AsyncDataSaver::~AsyncDataSaver()
+GenericDataSaver::~GenericDataSaver()
 {
   this->workerThread.quit();
   this->workerThread.wait();
 
-  if (this->fd != -1) {
+  if (this->writer->canWrite()) {
     QMutexLocker locker(&this->dataMutex);
-    close(this->fd);
+    this->writer->close();
   }
 }
 
 // Protected by mutex
 void
-AsyncDataSaver::doCommit(void)
+GenericDataSaver::doCommit(void)
 {
   // It is okay if the worker thread is still dumping data. This is
   // just a way to signal this situation. If it was not ready, we
@@ -148,7 +154,7 @@ AsyncDataSaver::doCommit(void)
 }
 
 void
-AsyncDataSaver::setSampleRate(unsigned int rate)
+GenericDataSaver::setSampleRate(unsigned int rate)
 {
   if (this->rateHint != rate) {
     QMutexLocker locker(&this->dataMutex);
@@ -165,9 +171,9 @@ AsyncDataSaver::setSampleRate(unsigned int rate)
 }
 
 void
-AsyncDataSaver::write(const float _Complex *data, size_t size)
+GenericDataSaver::write(const float _Complex *data, size_t size)
 {
-  if (this->fd != -1) {
+  if (this->writer->canWrite()) {
     QMutexLocker locker(&this->dataMutex);
     size_t totalSize = this->buffers[this->buffer].size();
     size_t avail = totalSize - this->ptr;
@@ -195,27 +201,26 @@ AsyncDataSaver::write(const float _Complex *data, size_t size)
 }
 
 quint64
-AsyncDataSaver::getSize(void) const
+GenericDataSaver::getSize(void) const
 {
   return this->size;
 }
 
 ////////////////////////////////////// Slots //////////////////////////////////
 void
-AsyncDataSaver::onError(void)
+GenericDataSaver::onError(void)
 {
-  if (this->fd != -1) {
+  if (this->writer->canWrite()) {
     QMutexLocker locker(&this->dataMutex);
 
-    close(this->fd);
-    this->fd = -1;
+    this->writer->close();
 
     emit stopped();
   }
 }
 
 void
-AsyncDataSaver::onWriteFinished(quint64 usec)
+GenericDataSaver::onWriteFinished(quint64 usec)
 {
   this->commitTime = usec;
 

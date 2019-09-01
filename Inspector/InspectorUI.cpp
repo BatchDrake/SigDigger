@@ -366,6 +366,34 @@ InspectorUI::connectDataSaver()
         SLOT(onCommit()));
 }
 
+void
+InspectorUI::connectUDPForwarder()
+{
+  connect(
+        this->udpForwarder.get(),
+        SIGNAL(stopped()),
+        this,
+        SLOT(onUDPError()));
+
+  connect(
+        this->udpForwarder.get(),
+        SIGNAL(swamped()),
+        this,
+        SLOT(onUDPSwamped()));
+
+  connect(
+        this->udpForwarder.get(),
+        SIGNAL(dataRate(qreal)),
+        this,
+        SLOT(onUDPRate(qreal)));
+
+  connect(
+        this->udpForwarder.get(),
+        SIGNAL(commit()),
+        this,
+        SLOT(onUDPCommit()));
+}
+
 std::string
 InspectorUI::captureFileName(void) const
 {
@@ -391,6 +419,31 @@ InspectorUI::captureFileName(void) const
 }
 
 bool
+InspectorUI::installUDPForwarder(void)
+{
+  if (this->udpForwarder.get() == nullptr) {
+    this->udpForwarder = std::make_unique<UDPForwarder>(
+          this->udpForwarderUI->getHost(),
+          this->udpForwarderUI->getPort(),
+          this->udpForwarderUI->getFrameLen(),
+          this);
+    this->recordingRate = this->getBaudRate();
+    this->udpForwarder->setSampleRate(recordingRate);
+    connectUDPForwarder();
+
+    return true;
+  }
+
+  return false;
+}
+
+void
+InspectorUI::uninstallUDPForwarder(void)
+{
+  this->udpForwarder = nullptr;
+}
+
+bool
 InspectorUI::installDataSaver(void)
 {
   if (this->dataSaver.get() == nullptr) {
@@ -413,7 +466,7 @@ InspectorUI::installDataSaver(void)
       return false;
     }
 
-    this->dataSaver = std::make_unique<AsyncDataSaver>(this->fd, this);
+    this->dataSaver = std::make_unique<FileDataSaver>(this->fd, this);
     this->recordingRate = this->getBaudRate();
     this->dataSaver->setSampleRate(recordingRate);
     connectDataSaver();
@@ -497,9 +550,13 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
     }
   }
 
-  if (this->recording) {
+  if (this->recording || this->forwarding) {
     if (this->decider.getDecisionMode() == Decider::MODULUS) {
-      this->dataSaver->write(data, size);
+      if (this->recording)
+        this->dataSaver->write(data, size);
+
+      if (this->forwarding)
+        this->udpForwarder->write(data, size);
     } else {
       if (this->buffer.size() < size)
         this->buffer.resize(size);
@@ -507,7 +564,10 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
       for (unsigned i = 0; i < size; ++i)
         this->buffer[i] = SU_C_ARG(I * data[i]) / PI;
 
-      this->dataSaver->write(this->buffer.data(), size);
+      if (this->recording)
+        this->dataSaver->write(this->buffer.data(), size);
+      if (this->forwarding)
+        this->udpForwarder->write(this->buffer.data(), size);
     }
   }
 }
@@ -583,9 +643,8 @@ InspectorUI::pushControl(InspectorCtl *ctl)
 void
 InspectorUI::populate(void)
 {
-  int position;
-
   this->ui->controlsGrid->setAlignment(Qt::AlignTop);
+  this->ui->forwarderGrid->setAlignment(Qt::AlignTop);
 
   if (this->config->hasPrefix("agc"))
     this->pushControl(new GainControl(this->owner, this->config));
@@ -602,20 +661,27 @@ InspectorUI::populate(void)
   if (this->config->hasPrefix("clock"))
     this->pushControl(new ClockRecovery(this->owner, this->config));
 
-  // Add dataSaver UI here. It is not exactly an inspector control, but
-  // but it definitely should be placed at the end of the demodulator
-  // chain.
+  // Add data forwarder objects
 
-  position = static_cast<int>(this->controls.size());
   this->saverUI = new DataSaverUI(this->owner);
 
-  this->ui->controlsGrid->addWidget(this->saverUI, position, 0, Qt::AlignTop);
+  this->ui->forwarderGrid->addWidget(this->saverUI, 0, 0, Qt::AlignTop);
 
   connect(
         this->saverUI,
         SIGNAL(recordStateChanged(bool)),
         this,
         SLOT(onToggleRecord(void)));
+
+  this->udpForwarderUI = new UDPForwarderUI(this->owner);
+
+  this->ui->forwarderGrid->addWidget(this->udpForwarderUI, 1, 0, Qt::AlignTop);
+
+  connect(
+        this->udpForwarderUI,
+        SIGNAL(forwardStateChanged(bool)),
+        this,
+        SLOT(onToggleUDPForward(void)));
 }
 
 void
@@ -633,6 +699,7 @@ InspectorUI::refreshUi(void)
   this->ui->loLcd->setEnabled(enabled);
   this->ui->bwLcd->setEnabled(enabled);
   this->saverUI->setEnabled(enabled && this->recordingRate != 0);
+  this->udpForwarderUI->setEnabled(enabled && this->recordingRate != 0);
 }
 
 //////////////////////////////////// Slots ////////////////////////////////////
@@ -715,7 +782,20 @@ InspectorUI::onInspectorControlChanged(void)
     this->saverUI->setRecordState(this->recording);
   }
 
+  if (this->forwarding) {
+    if (newRate == 0) {
+      this->uninstallUDPForwarder();
+      this->forwarding = false;
+    } else if (newRate != this->recordingRate) {
+      this->uninstallUDPForwarder();
+      this->forwarding = this->installUDPForwarder();
+    }
+
+    this->saverUI->setRecordState(this->recording);
+  }
+
   this->saverUI->setEnabled(newRate != 0);
+  this->udpForwarderUI->setEnabled(newRate != 0);
 
   this->setBps(this->getBps());
 
@@ -913,6 +993,7 @@ InspectorUI::onRangeChanged(void)
         this->ui->rangeSlider->maximumValue());
 }
 
+// Datasaver
 void
 InspectorUI::onToggleRecord(void)
 {
@@ -928,6 +1009,7 @@ InspectorUI::onToggleRecord(void)
 
   this->saverUI->setRecordState(recording);
 }
+
 
 void
 InspectorUI::onSaveError(void)
@@ -971,6 +1053,69 @@ void
 InspectorUI::onCommit(void)
 {
   this->saverUI->setCaptureSize(this->dataSaver->getSize());
+}
+
+// UDP Forwarder
+void
+InspectorUI::onToggleUDPForward(void)
+{
+  bool forwarding = false;
+
+  if (this->udpForwarderUI->getForwardState()) {
+    forwarding = this->installUDPForwarder();
+  } else {
+    this->uninstallUDPForwarder();
+  }
+
+  this->forwarding = forwarding;
+
+  this->udpForwarderUI->setForwardState(this->forwarding);
+}
+
+
+void
+InspectorUI::onUDPError(void)
+{
+  if (this->udpForwarder.get() != nullptr) {
+    this->uninstallUDPForwarder();
+
+    QMessageBox::warning(
+              this->owner,
+              "SigDigger error",
+              "Failed to forward UDP frames. Check whether the host is correct"
+              " or if the network is up.",
+              QMessageBox::Ok);
+
+    this->udpForwarderUI->setForwardState(false);
+  }
+}
+
+void
+InspectorUI::onUDPSwamped(void)
+{
+  if (this->dataSaver.get() != nullptr) {
+    this->uninstallUDPForwarder();
+
+    QMessageBox::warning(
+          this->owner,
+          "SigDigger error",
+          "Capture thread swamped. Maybe your network interface is too slow.",
+          QMessageBox::Ok);
+
+    this->udpForwarderUI->setForwardState(false);
+  }
+}
+
+void
+InspectorUI::onUDPRate(qreal rate)
+{
+  this->udpForwarderUI->setIORate(rate);
+}
+
+void
+InspectorUI::onUDPCommit(void)
+{
+  this->udpForwarderUI->setCaptureSize(this->udpForwarder->getSize());
 }
 
 void

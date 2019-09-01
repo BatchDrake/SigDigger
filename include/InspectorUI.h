@@ -28,14 +28,16 @@
 #include <Suscan/Estimator.h>
 #include <SNREstimator.h>
 #include <sys/time.h>
+#include <UDPForwarder.h>
 
 #include "ThrottleableWidget.h"
 #include "Decider.h"
 #include "Palette.h"
 #include "ColorConfig.h"
 #include "DataSaverUI.h"
-#include "AsyncDataSaver.h"
+#include "FileDataSaver.h"
 #include "EstimatorControl.h"
+#include "UDPForwarderUI.h"
 
 namespace Ui {
   class Inspector;
@@ -61,6 +63,8 @@ namespace SigDigger {
     bool scrolling = false;
     bool demodulating = true;
     bool recording = false;
+    bool forwarding = false;
+
     unsigned int recordingRate = 0;
     // Inspector config
     Suscan::Config *config; // Weak
@@ -84,7 +88,9 @@ namespace SigDigger {
     Ui::Inspector *ui = nullptr;
     std::vector<InspectorCtl *> controls;
     DataSaverUI *saverUI = nullptr;
-    std::unique_ptr<AsyncDataSaver> dataSaver = nullptr;
+    UDPForwarderUI *udpForwarderUI = nullptr;
+    std::unique_ptr<FileDataSaver> dataSaver = nullptr;
+    std::unique_ptr<UDPForwarder> udpForwarder = nullptr;
 
     State state = DETACHED;
     SUSCOUNT lastLen = 0;
@@ -97,6 +103,7 @@ namespace SigDigger {
     std::string getClassName(void) const;
     void populate(void);
     void connectDataSaver(void);
+    void connectUDPForwarder(void);
 
     std::string captureFileName(void) const;
     int fd = -1;
@@ -119,6 +126,8 @@ namespace SigDigger {
       void setAppConfig(AppConfig const &cfg);
       bool installDataSaver(void);
       void uninstallDataSaver(void);
+      bool installUDPForwarder(void);
+      void uninstallUDPForwarder(void);
       void setBasebandRate(unsigned int);
       void setSampleRate(float rate);
       void setBandwidth(unsigned int bw);
@@ -146,6 +155,7 @@ namespace SigDigger {
       void onToggleSNR(void);
       void onResetSNR(void);
       void onToggleRecord(void);
+      void onToggleUDPForward(void);
       void onChangeLo(void);
       void onChangeBandwidth(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
@@ -156,6 +166,12 @@ namespace SigDigger {
       void onSaveSwamped(void);
       void onSaveRate(qreal rate);
       void onCommit(void);
+
+      // UDP Forwarder slots
+      void onUDPError(void);
+      void onUDPSwamped(void);
+      void onUDPRate(qreal rate);
+      void onUDPCommit(void);
 
     signals:
       void configChanged(void);
@@ -168,3 +184,4 @@ namespace SigDigger {
 }
 
 #endif // INSPECTORUI_H
+

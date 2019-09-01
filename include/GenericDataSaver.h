@@ -1,5 +1,5 @@
 //
-//    AsyncDataSaver.h: save hight bandwidth data
+//    GenericDataSaver.h: Generic data saver
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,9 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#ifndef ASYNCDATASAVER_H
-#define ASYNCDATASAVER_H
+#ifndef GENERICDATASAVER_H
+#define GENERICDATASAVER_H
+
 
 #include <QObject>
 #include <QThread>
@@ -28,26 +29,34 @@
 #include <sys/time.h>
 
 namespace SigDigger {
-  class AsyncDataSaver;
+  class GenericDataSaver;
 
-  class AsyncDataWorker : public QObject {
+  class GenericDataWriter {
+  public:
+    virtual bool canWrite(void) const = 0;
+    virtual ssize_t write(const float _Complex *data, size_t len) = 0;
+    virtual bool close(void) = 0;
+    virtual ~GenericDataWriter();
+  };
+
+  class GenericDataWorker : public QObject {
       Q_OBJECT
 
       bool failed = false;
-      AsyncDataSaver *instance;
+      GenericDataSaver *instance;
 
     private slots:
       void onCommit(void);
 
     public:
-      AsyncDataWorker(AsyncDataSaver *intance);
+      GenericDataWorker(GenericDataSaver *intance);
 
     signals:
       void writeFinished(quint64 usec);
       void error(void);
   };
 
-  class AsyncDataSaver : public QObject
+  class GenericDataSaver : public QObject
   {
       Q_OBJECT
 
@@ -59,11 +68,11 @@ namespace SigDigger {
       unsigned int buffer = 0;
       unsigned int commitedSize;
       unsigned int ptr = 0;
-      int fd = -1;
+      GenericDataWriter *writer = nullptr;
       bool ready = true;
       bool dataWritten = false;
       QThread workerThread;
-      AsyncDataWorker workerObject;
+      GenericDataWorker workerObject;
 
       QMutex dataMutex;
 
@@ -76,8 +85,10 @@ namespace SigDigger {
       void doCommit(void);
 
     public:
-      explicit AsyncDataSaver(int fd, QObject *parent = nullptr);
-      ~AsyncDataSaver();
+      explicit GenericDataSaver(
+          GenericDataWriter *writer,
+          QObject *parent = nullptr);
+      ~GenericDataSaver();
 
       // Public methods
       void setSampleRate(unsigned int i);
@@ -85,7 +96,7 @@ namespace SigDigger {
       quint64 getSize(void) const;
 
       // Friend classes
-      friend class AsyncDataWorker;
+      friend class GenericDataWorker;
 
     signals:
       void commit(void);
@@ -99,4 +110,5 @@ namespace SigDigger {
   };
 }
 
-#endif // ASYNCDATASAVER_H
+
+#endif // GENERICDATASAVER_H

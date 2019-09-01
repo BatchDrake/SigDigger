@@ -27,7 +27,7 @@
 #include "AppConfig.h"
 #include "UIMediator.h"
 #include "AudioPlayback.h"
-#include "AsyncDataSaver.h"
+#include "FileDataSaver.h"
 
 namespace SigDigger {
   class Application : public QMainWindow {
@@ -35,7 +35,7 @@ namespace SigDigger {
 
     // Suscan core object
     std::unique_ptr<Suscan::Analyzer> analyzer = nullptr;
-    std::unique_ptr<AsyncDataSaver> dataSaver = nullptr;
+    std::unique_ptr<FileDataSaver> dataSaver = nullptr;
 
     bool profileSelected = false;
     unsigned int currSampleRate;
@@ -91,7 +91,7 @@ namespace SigDigger {
     bool openAudio(unsigned int rate);
     void closeAudio(void);
 
-    AsyncDataSaver *getSaver(void) const;
+    FileDataSaver *getSaver(void) const;
 
     explicit Application(QWidget *parent = nullptr);
     ~Application();

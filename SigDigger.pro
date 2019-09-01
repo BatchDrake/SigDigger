@@ -59,7 +59,6 @@ SOURCES += \
     InspectorCtl/InspectorCtl.cpp \
     InspectorCtl/MfControl.cpp \
     InspectorCtl/ToneControl.cpp \
-    Misc/AsyncDataSaver.cpp \
     Misc/AutoGain.cpp \
     Misc/Averager.cpp \
     Misc/Palette.cpp \
@@ -87,7 +86,11 @@ SOURCES += \
     UIMediator/SpectrumMediator.cpp \
     UIMediator/UIMediator.cpp \
     main.cpp \
-    Components/EstimatorControl.cpp
+    Components/EstimatorControl.cpp \
+    UDP/UDPForwarder.cpp \
+    Misc/GenericDataSaver.cpp \
+    Misc/FileDataSaver.cpp \
+    Components/UDPForwarderUI.cpp
 
 
 HEADERS += \
@@ -117,7 +120,6 @@ HEADERS += \
     include/Application.h \
     include/AppUI.h \
     include/AskControl.h \
-    include/AsyncDataSaver.h \
     include/AudioPanel.h \
     include/AudioPlayback.h \
     include/AutoGain.h \
@@ -147,7 +149,11 @@ HEADERS += \
     include/SourcePanel.h \
     include/ToneControl.h \
     include/UIMediator.h \
-    include/EstimatorControl.h
+    include/EstimatorControl.h \
+    include/GenericDataSaver.h \
+    include/FileDataSaver.h \
+    include/UDPForwarder.h \
+    include/UDPForwarderUI.h
 
 
 FORMS += \
@@ -171,7 +177,8 @@ FORMS += \
     ui/SourcePanel.ui \
     ui/ToneControl.ui \
     ui/SaveProfileDialog.ui \
-    ui/EstimatorControl.ui
+    ui/EstimatorControl.ui \
+    ui/UDPForwarderUI.ui
 
 
 # Default rules for deployment.

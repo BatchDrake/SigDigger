@@ -57,7 +57,7 @@ Application::run(Suscan::Object const &config)
   this->show();
 }
 
-AsyncDataSaver *
+FileDataSaver *
 Application::getSaver(void) const
 {
   return this->dataSaver.get();
@@ -71,7 +71,7 @@ onBaseBandData(
     SUSCOUNT length)
 {
   Application *app = static_cast<Application *>(privdata);
-  AsyncDataSaver *saver;
+  FileDataSaver *saver;
 
   if ((saver = app->getSaver()) != nullptr)
     saver->write(samples, length);
@@ -117,7 +117,7 @@ void
 Application::installDataSaver(int fd)
 {
   if (this->dataSaver.get() == nullptr && this->analyzer.get() != nullptr) {
-    this->dataSaver = std::make_unique<AsyncDataSaver>(fd, this);
+    this->dataSaver = std::make_unique<FileDataSaver>(fd, this);
     this->dataSaver->setSampleRate(this->mediator->getProfile()->getSampleRate());
     if (!this->filterInstalled) {
       this->analyzer->registerBaseBandFilter(onBaseBandData, this);

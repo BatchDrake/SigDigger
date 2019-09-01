@@ -386,9 +386,7 @@ ConfigDialog::setAnalyzerParams(const Suscan::AnalyzerParams &params)
 void
 ConfigDialog::setProfile(const Suscan::Source::Config &profile)
 {
-  printf("Set profile, %g\n", profile.getLnbFreq());
   this->profile = profile;
-  printf("This profile, %g\n", this->profile.getLnbFreq());
   this->refreshUi();
 }
 
