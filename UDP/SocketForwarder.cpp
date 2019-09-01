@@ -17,7 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include <UDPForwarder.h>
+#include <SocketForwarder.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -26,61 +26,99 @@
 using namespace SigDigger;
 
 namespace SigDigger {
-  class UDPDataWriter : public GenericDataWriter {
+  class SocketDataWriter : public GenericDataWriter {
     std::string host;
     uint16_t port;
     char pad[2];
     struct sockaddr_in addr;
     int fd = -1;
     bool solved = false;
-    char pad2[3];
+    bool tcp = false;
+    char pad2[2];
     unsigned int size = 0;
+    std::string lastError;
 
   public:
-    UDPDataWriter(std::string const &host, uint16_t port, unsigned int size);
+    SocketDataWriter(
+        std::string const &host,
+        uint16_t port,
+        unsigned int size,
+        bool tcp);
+
+    bool prepare(void) override;
+    std::string getError(void) const override;
     bool canWrite(void) const override;
     ssize_t write(const float _Complex *data, size_t len) override;
     bool close(void) override;
-    ~UDPDataWriter() override;
+    ~SocketDataWriter() override;
   };
 }
 
-UDPDataWriter::UDPDataWriter(
+SocketDataWriter::SocketDataWriter(
     std::string const &host,
     uint16_t port,
-    unsigned int size) :
-  host(host), port(port), size(size / sizeof(float _Complex))
+    unsigned int size,
+    bool tcp) :
+  host(host), port(port), tcp(tcp), size(size / sizeof(float _Complex))
 {
   this->pad[0] = this->pad2[0] = 0; // Shut up
 }
 
 bool
-UDPDataWriter::canWrite(void) const
+SocketDataWriter::prepare(void)
 {
-  return !this->solved || this->fd != -1;
-}
-
-ssize_t
-UDPDataWriter::write(const float _Complex *data, size_t len)
-{
-  ssize_t sent;
-
   if (!this->solved) {
     struct hostent *ent;
 
-    if ((ent = gethostbyname(this->host.c_str())) == nullptr)
-      return 0;
+    if ((ent = gethostbyname(this->host.c_str())) == nullptr) {
+      this->lastError = "Failed to resolve hostname " + this->host;
+      return false;
+    }
 
-    if ((this->fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
-      return 0;
+    if ((this->fd = socket(
+           AF_INET,
+           this->tcp ? SOCK_STREAM : SOCK_DGRAM,
+           0)) == -1) {
+      this->lastError = "Failed to open socket: " + std::string(strerror(errno));
+      return false;
+    }
 
     this->addr.sin_family = AF_INET;
     this->addr.sin_port = htons(this->port);
     this->addr.sin_addr = *reinterpret_cast<struct in_addr *>(ent->h_addr);
     memset(this->addr.sin_zero, 0, 8);
 
+    if (this->tcp) {
+      if (connect(
+            this->fd,
+            reinterpret_cast<struct sockaddr *>(&this->addr),
+            sizeof(struct sockaddr_in)) == -1) {
+        this->lastError = "Cannot connect to host: " + std::string(strerror(errno));
+        return false;
+      }
+    }
     this->solved = true;
   }
+
+  return this->solved;
+}
+
+std::string
+SocketDataWriter::getError(void) const
+{
+  return this->lastError;
+}
+
+bool
+SocketDataWriter::canWrite(void) const
+{
+  return !this->solved || this->fd != -1;
+}
+
+ssize_t
+SocketDataWriter::write(const float _Complex *data, size_t len)
+{
+  ssize_t sent;
 
   if (len > this->size)
     len = this->size;
@@ -89,17 +127,22 @@ UDPDataWriter::write(const float _Complex *data, size_t len)
           this->fd,
           data,
           static_cast<size_t>(len) * sizeof(float _Complex),
-          0,
+          MSG_NOSIGNAL,
           reinterpret_cast<struct sockaddr *>(&this->addr),
           sizeof(struct sockaddr_in));
 
+  if (sent < 1)
+    this->lastError = std::string(strerror(errno));
+
+
   sent /= static_cast<ssize_t>(sizeof(float _Complex));
+
 
   return sent;
 }
 
 bool
-UDPDataWriter::close(void)
+SocketDataWriter::close(void)
 {
   bool ok = true;
 
@@ -111,17 +154,20 @@ UDPDataWriter::close(void)
   return ok;
 }
 
-UDPDataWriter::~UDPDataWriter(void)
+SocketDataWriter::~SocketDataWriter(void)
 {
   this->close();
 }
 
-UDPForwarder::UDPForwarder(
+SocketForwarder::SocketForwarder(
     std::string const &host,
     uint16_t port,
     unsigned int size,
+    bool tcp,
     QObject *parent) :
-  GenericDataSaver(this->writer = new UDPDataWriter(host, port, size), parent)
+  GenericDataSaver(
+    this->writer = new SocketDataWriter(host, port, size, tcp),
+    parent)
 {
 
 }

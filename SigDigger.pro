@@ -87,10 +87,11 @@ SOURCES += \
     UIMediator/UIMediator.cpp \
     main.cpp \
     Components/EstimatorControl.cpp \
-    UDP/UDPForwarder.cpp \
     Misc/GenericDataSaver.cpp \
     Misc/FileDataSaver.cpp \
-    Components/UDPForwarderUI.cpp
+    UDP/SocketForwarder.cpp \
+    Components/NetForwarderUI.cpp \
+    Components/WaitingSpinnerWidget.cpp
 
 
 HEADERS += \
@@ -152,8 +153,9 @@ HEADERS += \
     include/EstimatorControl.h \
     include/GenericDataSaver.h \
     include/FileDataSaver.h \
-    include/UDPForwarder.h \
-    include/UDPForwarderUI.h
+    include/SocketForwarder.h \
+    include/NetForwarderUI.h \
+    include/WaitingSpinnerWidget.h
 
 
 FORMS += \
@@ -178,7 +180,7 @@ FORMS += \
     ui/ToneControl.ui \
     ui/SaveProfileDialog.ui \
     ui/EstimatorControl.ui \
-    ui/UDPForwarderUI.ui
+    ui/NetForwarderUI.ui
 
 
 # Default rules for deployment.

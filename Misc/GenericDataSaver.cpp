@@ -32,10 +32,26 @@ GenericDataWorker::GenericDataWorker(GenericDataSaver *instance)
   this->instance = instance;
 }
 
+
+void
+GenericDataWorker::onPrepare(void)
+{
+  if (!this->writerPrepared) {
+    this->writerPrepared = this->instance->writer->prepare();
+    if (!this->writerPrepared)
+      emit error(QString::fromStdString(this->instance->writer->getError()));
+    else
+      emit prepared();
+  }
+}
+
 void
 GenericDataWorker::onCommit(void)
 {
-  if (!this->failed) {
+  if (!this->writerPrepared) {
+    // Silently ignore this buffer
+    this->instance->bufferReady = true;
+  } else if (!this->failed) {
     QMutexLocker locker(&this->instance->dataMutex);
     struct timeval tv, otv, sub;
     ssize_t dumped;
@@ -49,8 +65,6 @@ GenericDataWorker::onCommit(void)
 
     gettimeofday(&otv, nullptr);
 
-    printf("Commited %d bytes, dumping...\n", remaining);
-
     while (remaining > 0) {
       dumped = this->instance->writer->write(
             buffer,
@@ -58,7 +72,7 @@ GenericDataWorker::onCommit(void)
 
       if (dumped < 1) {
         this->failed = true;
-        emit error();
+        emit error(QString::fromStdString(this->instance->writer->getError()));
         return;
       }
 
@@ -74,12 +88,12 @@ GenericDataWorker::onCommit(void)
         thisBuf->resize(allocation);
       } catch (std::exception &) {
         this->failed = true;
-        emit error();
+        emit error("Memory allocation error");
         return;
       }
     }
 
-    this->instance->ready = true;
+    this->instance->bufferReady = true;
     timersub(&tv, &otv, &sub);
 
     emit writeFinished(static_cast<quint64>(
@@ -93,6 +107,13 @@ GenericDataSaver::GenericDataSaver(
 {
   this->writer = writer;
   this->setSampleRate(1000000);
+
+  QObject::connect(
+        this,
+        SIGNAL(prepare()),
+        &this->workerObject,
+        SLOT(onPrepare()));
+
   QObject::connect(
         this,
         SIGNAL(commit()),
@@ -107,13 +128,21 @@ GenericDataSaver::GenericDataSaver(
 
   QObject::connect(
         &this->workerObject,
-        SIGNAL(error(void)),
+        SIGNAL(prepared(void)),
         this,
-        SLOT(onError()));
+        SLOT(onPrepared(void)));
+
+  QObject::connect(
+        &this->workerObject,
+        SIGNAL(error(QString)),
+        this,
+        SLOT(onError(QString)));
 
   // Worker object will run somewhere else
   this->workerObject.moveToThread(&this->workerThread);
   this->workerThread.start();
+
+  emit prepare();
 }
 
 GenericDataSaver::~GenericDataSaver()
@@ -134,7 +163,7 @@ GenericDataSaver::doCommit(void)
   // It is okay if the worker thread is still dumping data. This is
   // just a way to signal this situation. If it was not ready, we
   // do not flip buffers and keep filling the current one.
-  if (this->ready) {
+  if (this->bufferReady) {
     struct timeval otv = this->lastCommit;
     struct timeval sub;
 
@@ -147,7 +176,7 @@ GenericDataSaver::doCommit(void)
     this->commitedSize = this->ptr;
     this->size += this->commitedSize;
     this->ptr = 0;
-    this->ready = false;
+    this->bufferReady = false;
 
     emit commit();
   }
@@ -168,6 +197,13 @@ GenericDataSaver::setSampleRate(unsigned int rate)
       this->buffers[1].resize(this->allocation);
     }
   }
+}
+
+void
+GenericDataSaver::setBufferSize(unsigned int size)
+{
+  this->buffers[0].resize(size);
+  this->buffers[1].resize(size);
 }
 
 void
@@ -206,10 +242,17 @@ GenericDataSaver::getSize(void) const
   return this->size;
 }
 
+QString
+GenericDataSaver::getLastError(void) const
+{
+  return this->lastError;
+}
+
 ////////////////////////////////////// Slots //////////////////////////////////
 void
-GenericDataSaver::onError(void)
+GenericDataSaver::onError(QString error)
 {
+  this->lastError = error;
   if (this->writer->canWrite()) {
     QMutexLocker locker(&this->dataMutex);
 
@@ -229,4 +272,10 @@ GenericDataSaver::onWriteFinished(quint64 usec)
           static_cast<qreal>(this->commitTime)
           / static_cast<qreal>(this->writeTime));
   }
+}
+
+void
+GenericDataSaver::onPrepared(void)
+{
+  emit ready();
 }

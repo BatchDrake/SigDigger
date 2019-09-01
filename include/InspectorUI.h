@@ -28,7 +28,7 @@
 #include <Suscan/Estimator.h>
 #include <SNREstimator.h>
 #include <sys/time.h>
-#include <UDPForwarder.h>
+#include <SocketForwarder.h>
 
 #include "ThrottleableWidget.h"
 #include "Decider.h"
@@ -37,7 +37,7 @@
 #include "DataSaverUI.h"
 #include "FileDataSaver.h"
 #include "EstimatorControl.h"
-#include "UDPForwarderUI.h"
+#include "NetForwarderUI.h"
 
 namespace Ui {
   class Inspector;
@@ -88,9 +88,9 @@ namespace SigDigger {
     Ui::Inspector *ui = nullptr;
     std::vector<InspectorCtl *> controls;
     DataSaverUI *saverUI = nullptr;
-    UDPForwarderUI *udpForwarderUI = nullptr;
-    std::unique_ptr<FileDataSaver> dataSaver = nullptr;
-    std::unique_ptr<UDPForwarder> udpForwarder = nullptr;
+    NetForwarderUI *netForwarderUI = nullptr;
+    FileDataSaver *dataSaver = nullptr;
+    SocketForwarder *socketForwarder = nullptr;
 
     State state = DETACHED;
     SUSCOUNT lastLen = 0;
@@ -103,7 +103,7 @@ namespace SigDigger {
     std::string getClassName(void) const;
     void populate(void);
     void connectDataSaver(void);
-    void connectUDPForwarder(void);
+    void connectNetForwarder(void);
 
     std::string captureFileName(void) const;
     int fd = -1;
@@ -126,8 +126,8 @@ namespace SigDigger {
       void setAppConfig(AppConfig const &cfg);
       bool installDataSaver(void);
       void uninstallDataSaver(void);
-      bool installUDPForwarder(void);
-      void uninstallUDPForwarder(void);
+      bool installNetForwarder(void);
+      void uninstallNetForwarder(void);
       void setBasebandRate(unsigned int);
       void setSampleRate(float rate);
       void setBandwidth(unsigned int bw);
@@ -155,7 +155,7 @@ namespace SigDigger {
       void onToggleSNR(void);
       void onResetSNR(void);
       void onToggleRecord(void);
-      void onToggleUDPForward(void);
+      void onToggleNetForward(void);
       void onChangeLo(void);
       void onChangeBandwidth(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
@@ -167,11 +167,12 @@ namespace SigDigger {
       void onSaveRate(qreal rate);
       void onCommit(void);
 
-      // UDP Forwarder slots
-      void onUDPError(void);
-      void onUDPSwamped(void);
-      void onUDPRate(qreal rate);
-      void onUDPCommit(void);
+      // Net Forwarder slots
+      void onNetReady(void);
+      void onNetError(void);
+      void onNetSwamped(void);
+      void onNetRate(qreal rate);
+      void onNetCommit(void);
 
     signals:
       void configChanged(void);

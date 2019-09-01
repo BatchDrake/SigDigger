@@ -21,23 +21,27 @@
 #define UDPFORWARDERUI_H
 
 #include <QWidget>
+#include <WaitingSpinnerWidget.h>
 
 namespace Ui {
   class UDPForwarderUI;
 }
 
 namespace SigDigger {
-  class UDPForwarderUI : public QWidget
+  class NetForwarderUI : public QWidget
   {
     Q_OBJECT
+
+    WaitingSpinnerWidget *spinner = nullptr;
 
     void connectAll(void);
 
   public:
-    explicit UDPForwarderUI(QWidget *parent = nullptr);
-    ~UDPForwarderUI();
+    explicit NetForwarderUI(QWidget *parent = nullptr);
+    ~NetForwarderUI();
 
     // Setters
+    void setPreparing(bool preparing);
     void setHost(std::string const &name);
     void setPort(uint16_t port);
     void setFrameLen(unsigned int len);
@@ -45,12 +49,14 @@ namespace SigDigger {
     void setForwardState(bool state);
     void setForwardEnabled(bool enabled);
     void setCaptureSize(quint64 size);
+    void setTcp(bool);
 
     // Getters
     std::string getHost(void) const;
     uint16_t getPort(void) const;
     unsigned int getFrameLen(void) const;
     bool getForwardState(void) const;
+    bool getTcp(void) const;
 
   public slots:
     void onForwardStartStop(void);

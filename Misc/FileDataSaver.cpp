@@ -26,15 +26,30 @@ namespace SigDigger {
   class FileDataWriter : public GenericDataWriter {
     int fd = -1;
     int pad;
+    std::string lastError;
 
   public:
     FileDataWriter(int fd);
 
+    bool prepare(void);
     bool canWrite(void) const;
+    std::string getError(void) const;
     ssize_t write(const float _Complex *data, size_t len);
     bool close(void);
     ~FileDataWriter();
   };
+}
+
+std::string
+FileDataWriter::getError(void) const
+{
+  return this->lastError;
+}
+
+bool
+FileDataWriter::prepare(void)
+{
+  return true;
 }
 
 FileDataWriter::FileDataWriter(int fd)
@@ -57,6 +72,9 @@ FileDataWriter::write(const float _Complex *data, size_t len)
     return 0;
 
   result = ::write(this->fd, data, len * sizeof(*data));
+
+  if (result < 1)
+    lastError = "write() failed: " + std::string(strerror(errno));
 
   return result / static_cast<ssize_t>(sizeof(*data));
 }

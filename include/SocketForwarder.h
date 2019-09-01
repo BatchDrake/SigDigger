@@ -26,18 +26,19 @@
   (SIGDIGGER_UDPFORWARDER_MAX_UDP_PAYLOAD_SIZE / static_cast<ssize_t>(sizeof(float _Complex)))
 
 namespace SigDigger {
-  class UDPDataWriter;
+  class SocketDataWriter;
 
-  class UDPForwarder : public GenericDataSaver {
+  class SocketForwarder : public GenericDataSaver {
     Q_OBJECT
 
-    UDPDataWriter *writer = nullptr;
+    SocketDataWriter *writer = nullptr;
 
   public:
-    UDPForwarder(
+    SocketForwarder(
         std::string const &host,
         uint16_t port,
         unsigned int size,
+        bool tcp,
         QObject *parent = nullptr);
   };
 }

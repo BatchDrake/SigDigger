@@ -17,13 +17,13 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include "UDPForwarderUI.h"
-#include "ui_UDPForwarderUI.h"
+#include "NetForwarderUI.h"
+#include "ui_NetForwarderUI.h"
 
 using namespace SigDigger;
 
 void
-UDPForwarderUI::connectAll(void)
+NetForwarderUI::connectAll(void)
 {
   connect(
         this->ui->udpStartStopButton,
@@ -32,59 +32,76 @@ UDPForwarderUI::connectAll(void)
         SLOT(onForwardStartStop(void)));
 }
 
-UDPForwarderUI::UDPForwarderUI(QWidget *parent) :
+NetForwarderUI::NetForwarderUI(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::UDPForwarderUI)
 {
   ui->setupUi(this);
 
+  this->spinner = new WaitingSpinnerWidget(parent);
+  this->spinner->setLineLength(5);
+  this->spinner->setInnerRadius(5);
+  this->ui->spinGrid->addWidget(this->spinner);
+
   this->connectAll();
 }
 
-UDPForwarderUI::~UDPForwarderUI()
+NetForwarderUI::~NetForwarderUI()
 {
+  delete spinner;
   delete ui;
 }
 
 void
-UDPForwarderUI::setHost(std::string const &host)
+NetForwarderUI::setHost(std::string const &host)
 {
-  this->ui->udpHostLabel->setText(QString::fromStdString(host));
+  this->ui->hostEdit->setText(QString::fromStdString(host));
 }
 
 void
-UDPForwarderUI::setPort(uint16_t port)
+NetForwarderUI::setPort(uint16_t port)
 {
-  this->ui->udpPortLabel->setValue(port);
+  this->ui->portSpin->setValue(port);
 }
 
 void
-UDPForwarderUI::setFrameLen(unsigned int len)
+NetForwarderUI::setFrameLen(unsigned int len)
 {
-  this->ui->udpFrameLen->setValue(static_cast<int>(len));
+  this->ui->frameLen->setValue(static_cast<int>(len));
 }
 
 void
-UDPForwarderUI::setIORate(qreal value)
+NetForwarderUI::setIORate(qreal value)
 {
-  this->ui->udpIOBwProgress->setValue(static_cast<int>(value * 100));
+  this->ui->ioBwProgress->setValue(static_cast<int>(value * 100));
 }
 
 void
-UDPForwarderUI::setForwardState(bool state)
+NetForwarderUI::setPreparing(bool preparing)
+{
+  if (preparing)
+    this->spinner->start();
+  else
+    this->spinner->stop();
+}
+
+void
+NetForwarderUI::setForwardState(bool state)
 {
   this->ui->udpStartStopButton->setChecked(state);
 
-  this->ui->udpHostLabel->setEnabled(!state);
-  this->ui->udpPortLabel->setEnabled(!state);
-  this->ui->udpFrameLen->setEnabled(!state);
+  this->ui->hostEdit->setEnabled(!state);
+  this->ui->portSpin->setEnabled(!state);
+  this->ui->frameLen->setEnabled(!state);
 
-  if (!state)
-    this->ui->udpIOBwProgress->setValue(0);
+  if (!state) {
+    this->ui->ioBwProgress->setValue(0);
+    this->setPreparing(false);
+  }
 }
 
 void
-UDPForwarderUI::setForwardEnabled(bool enabled)
+NetForwarderUI::setForwardEnabled(bool enabled)
 {
   if (!enabled)
     this->setForwardState(false);
@@ -106,39 +123,51 @@ formatCaptureSize(quint64 size)
 }
 
 void
-UDPForwarderUI::setCaptureSize(quint64 size)
+NetForwarderUI::setCaptureSize(quint64 size)
 {
-  this->ui->lengthSizeLabel->setText(
+  this->ui->txLenLabel->setText(
         formatCaptureSize(size * sizeof(float _Complex)));
 }
 
-std::string
-UDPForwarderUI::getHost(void) const
+void
+NetForwarderUI::setTcp(bool tcp)
 {
-  return this->ui->udpHostLabel->text().toStdString();
+  this->ui->socketTypeCombo->setCurrentIndex(tcp ? 1 : 0);
+}
+
+std::string
+NetForwarderUI::getHost(void) const
+{
+  return this->ui->hostEdit->text().toStdString();
 }
 
 uint16_t
-UDPForwarderUI::getPort(void) const
+NetForwarderUI::getPort(void) const
 {
-  return static_cast<uint16_t>(this->ui->udpPortLabel->value());
+  return static_cast<uint16_t>(this->ui->portSpin->value());
 }
 
 unsigned int
-UDPForwarderUI::getFrameLen(void) const
+NetForwarderUI::getFrameLen(void) const
 {
-  return static_cast<unsigned int>(this->ui->udpFrameLen->value());
+  return static_cast<unsigned int>(this->ui->frameLen->value());
 }
 
 bool
-UDPForwarderUI::getForwardState(void) const
+NetForwarderUI::getForwardState(void) const
 {
   return this->ui->udpStartStopButton->isChecked();
 }
 
+bool
+NetForwarderUI::getTcp(void) const
+{
+  return this->ui->socketTypeCombo->currentIndex() == 1;
+}
+
 ///////////////////////////////// Slots ///////////////////////////////////////
 void
-UDPForwarderUI::onForwardStartStop(void)
+NetForwarderUI::onForwardStartStop(void)
 {
   emit forwardStateChanged(this->ui->udpStartStopButton->isChecked());
 }

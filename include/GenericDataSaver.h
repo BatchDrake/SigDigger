@@ -31,11 +31,14 @@
 namespace SigDigger {
   class GenericDataSaver;
 
+
   class GenericDataWriter {
   public:
+    virtual bool prepare(void) = 0;
     virtual bool canWrite(void) const = 0;
     virtual ssize_t write(const float _Complex *data, size_t len) = 0;
     virtual bool close(void) = 0;
+    virtual std::string getError(void) const = 0;
     virtual ~GenericDataWriter();
   };
 
@@ -43,17 +46,20 @@ namespace SigDigger {
       Q_OBJECT
 
       bool failed = false;
+      bool writerPrepared = false;
       GenericDataSaver *instance;
 
     private slots:
       void onCommit(void);
+      void onPrepare(void);
 
     public:
       GenericDataWorker(GenericDataSaver *intance);
 
     signals:
+      void prepared(void);
       void writeFinished(quint64 usec);
-      void error(void);
+      void error(QString);
   };
 
   class GenericDataSaver : public QObject
@@ -61,6 +67,7 @@ namespace SigDigger {
       Q_OBJECT
 
       std::vector<float _Complex>buffers[2];
+      QString lastError;
 
       unsigned int rateHint;
       size_t allocation;
@@ -69,7 +76,7 @@ namespace SigDigger {
       unsigned int commitedSize;
       unsigned int ptr = 0;
       GenericDataWriter *writer = nullptr;
-      bool ready = true;
+      bool bufferReady = true;
       bool dataWritten = false;
       QThread workerThread;
       GenericDataWorker workerObject;
@@ -91,21 +98,27 @@ namespace SigDigger {
       ~GenericDataSaver();
 
       // Public methods
+      void setBufferSize(unsigned int size);
       void setSampleRate(unsigned int i);
       void write(const float _Complex *data, size_t size);
+      QString getLastError(void) const;
       quint64 getSize(void) const;
 
       // Friend classes
       friend class GenericDataWorker;
 
     signals:
+      void prepare(void);
       void commit(void);
+
+      void ready(void);
       void stopped(void);
       void swamped(void);
       void dataRate(qreal);
 
     public slots:
-      void onError(void);
+      void onPrepared(void);
+      void onError(QString);
       void onWriteFinished(quint64 usec);
   };
 }
