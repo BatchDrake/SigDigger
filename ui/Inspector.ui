@@ -515,6 +515,9 @@ font-family: Monospace;</string>
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
             <property name="maximum">
              <number>2000000000</number>
             </property>
