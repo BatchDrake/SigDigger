@@ -35,7 +35,7 @@
 #include <Suscan/Library.h>
 #include <DefaultGradient.h>
 #include <QMessageBox>
-
+#include <LayerItem.h>
 #include <iomanip>
 #include <fcntl.h>
 
@@ -58,6 +58,24 @@ InspectorUI::InspectorUI(
     this->decider.setDecisionMode(Decider::MODULUS);
 
   this->ui->wfSpectrum->setFreqUnits(1);
+
+  LayerItem item;
+
+  item.setName("Viterbi decoder");
+  item.setDescription("K = 7, r = 1/2 (Voyager)");
+  this->ui->decoderEditor->add(item);
+
+  item.setName("Correlation packetizer");
+  item.setDescription("Sequence length: 32 bits");
+  this->ui->decoderEditor->add(item);
+
+  item.setName("Additive descrambler");
+  item.setDescription("Offset: 10, degree 8");
+  this->ui->decoderEditor->add(item);
+
+  item.setName("LRPT Preview");
+  item.setDescription("Frame format: CCSDS");
+  this->ui->decoderEditor->add(item);
 
   // TODO: put shared UI objects in a singleton
   this->palettes.push_back(Palette("Suscan", wf_gradient));

@@ -26,6 +26,7 @@
 #include <Suscan/Source.h>
 #include <Suscan/Logger.h>
 #include <Suscan/Config.h>
+#include <Suscan/DecoderFactory.h>
 
 #include <codec/codec.h>
 #include <analyzer/source.h>
@@ -37,13 +38,14 @@
 
 namespace Suscan {
   typedef std::map<std::string, Source::Config> ConfigMap;
-
+  typedef std::map<std::string, DecoderFactory *> DecoderFactoryMap;
   class Singleton {
     static Singleton *instance;
     static Logger *logger;
 
     std::vector<Source::Device> devices;
     ConfigMap profiles;
+    DecoderFactoryMap decoderFactories;
     std::vector<Object> palettes;
     std::vector<Object> autoGains;
     std::vector<Object> uiConfig;
@@ -72,19 +74,24 @@ namespace Suscan {
 
     void sync(void);
 
+
+    // Decoder factories
+    bool registerDecoderFactory(DecoderFactory *factory);
+    DecoderFactoryMap::const_iterator getFirstDecoderFactory(void) const;
+    DecoderFactoryMap::const_iterator getLastDecoderFactory(void) const;
+    DecoderFactory *getDecoderFactory(std::string const &name);
+
+    // Source configs
     void registerSourceConfig(suscan_source_config_t *config);
-
-    void registerSourceDevice(const suscan_source_device_t *dev);
-
-
     ConfigMap::const_iterator getFirstProfile(void) const;
     ConfigMap::const_iterator getLastProfile(void) const;
     Suscan::Source::Config *getProfile(std::string const &name);
     void saveProfile(Suscan::Source::Config const &name);
 
+    // Source devices
+    void registerSourceDevice(const suscan_source_device_t *dev);
     std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
     std::vector<Source::Device>::const_iterator getLastDevice(void) const;
-
 
     std::vector<Object>::const_iterator getFirstPalette(void) const;
     std::vector<Object>::const_iterator getLastPalette(void) const;

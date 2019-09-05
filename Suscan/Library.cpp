@@ -231,6 +231,40 @@ Singleton::sync(void)
 
 // Singleton methods
 
+bool
+Singleton::registerDecoderFactory(DecoderFactory *factory)
+{
+  if (this->decoderFactories.find(factory->getName())
+      != this->decoderFactories.end())
+    return false;
+
+  this->decoderFactories[factory->getName()] = factory;
+
+  return true;
+}
+
+DecoderFactoryMap::const_iterator
+Singleton::getFirstDecoderFactory(void) const
+{
+  return this->decoderFactories.begin();
+}
+
+DecoderFactoryMap::const_iterator
+Singleton::getLastDecoderFactory(void) const
+{
+  return this->decoderFactories.end();
+}
+
+DecoderFactory *
+Singleton::getDecoderFactory(std::string const &name)
+{
+  auto p = this->decoderFactories.find(name);
+  if (p == this->decoderFactories.end())
+    return nullptr;
+
+  return p->second;
+}
+
 void
 Singleton::registerSourceConfig(suscan_source_config_t *config)
 {
@@ -257,10 +291,11 @@ Singleton::getLastProfile(void) const
 Suscan::Source::Config *
 Singleton::getProfile(std::string const &name)
 {
-  if (this->profiles.find(name) == this->profiles.end())
+  auto p = this->profiles.find(name);
+  if (p == this->profiles.end())
     return nullptr;
 
-  return &this->profiles[name];
+  return &p->second;
 }
 
 void

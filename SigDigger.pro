@@ -87,7 +87,10 @@ SOURCES += \
     UIMediator/SpectrumMediator.cpp \
     UIMediator/UIMediator.cpp \
     main.cpp \
-    Components/EstimatorControl.cpp
+    Components/EstimatorControl.cpp \
+    Decoder/Decoder.cpp \
+    Decoder/DecoderStack.cpp \
+    Suscan/DecoderFactory.cpp
 
 
 HEADERS += \
@@ -147,7 +150,10 @@ HEADERS += \
     include/SourcePanel.h \
     include/ToneControl.h \
     include/UIMediator.h \
-    include/EstimatorControl.h
+    include/EstimatorControl.h \
+    include/Decoder.h \
+    include/DecoderStack.h \
+    include/Suscan/DecoderFactory.h
 
 
 FORMS += \
