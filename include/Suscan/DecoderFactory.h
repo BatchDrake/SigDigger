@@ -25,20 +25,59 @@
 class QObject;
 
 namespace Suscan {
-  class Decoder { };
+  struct DecoderObjects;
+  class DecoderFactory;
 
-  class DecoderUI { };
+  class Decoder {
+    DecoderObjects *objs = nullptr;
+
+  public:
+    DecoderObjects *getDecoderObjects(void) const
+    {
+      return this->objs;
+    }
+
+    virtual ~Decoder(void);
+
+    friend class DecoderFactory;
+  };
+
+  class DecoderUI {
+    DecoderObjects *objs = nullptr;
+
+  public:
+    DecoderObjects *getDecoderObjects(void) const
+    {
+      return this->objs;
+    }
+
+    friend class DecoderFactory;
+  };
+
+  struct DecoderObjects {
+    class DecoderFactory *factory = nullptr;
+    class Decoder *decoder = nullptr;
+    class DecoderUI *ui = nullptr;
+    void *userData = nullptr;
+
+    DecoderObjects(Decoder *decoder, DecoderUI *ui)
+      : decoder(decoder), ui(ui) {}
+
+    ~DecoderObjects(void);
+  };
 
   class DecoderFactory
   {
+  protected:
+    DecoderObjects *makeFromObjects(Decoder *decoder, DecoderUI *ui);
+
   public:
     DecoderFactory();
     virtual ~DecoderFactory();
 
     virtual std::string getName(void) const = 0;
     virtual std::string getDescription(void) const = 0;
-    virtual Decoder *makeDecoder(void) const = 0;
-    virtual DecoderUI *makeDecoderUI(QObject *parent = nullptr) const = 0;
+    virtual DecoderObjects *make(QObject *parent = nullptr) = 0;
   };
 }
 

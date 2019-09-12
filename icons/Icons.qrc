@@ -11,5 +11,7 @@
         <file>splash.png</file>
         <file>start-capture.png</file>
         <file>about.png</file>
+        <file>document-open.png</file>
+        <file>document-save-as.png</file>
     </qresource>
 </RCC>

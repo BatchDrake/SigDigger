@@ -1,6 +1,6 @@
 //
-//    DecoderFactory.cpp: Create decoders on demand
-//    Copyright (C) 2019 Gonzalo José Carracedo Carballal
+//    filename: description
+//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,44 +16,25 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+#ifndef VITERBIDECODERUI_H
+#define VITERBIDECODERUI_H
 
-#include <Suscan/DecoderFactory.h>
+#include <QWidget>
 
-using namespace Suscan;
-
-DecoderFactory::DecoderFactory()
-{
-
+namespace Ui {
+  class ViterbiDecoderUI;
 }
 
-DecoderFactory::~DecoderFactory()
+class ViterbiDecoderUI : public QWidget
 {
+  Q_OBJECT
 
-}
+public:
+  explicit ViterbiDecoderUI(QWidget *parent = nullptr);
+  ~ViterbiDecoderUI();
 
-Decoder::~Decoder(void)
-{
+private:
+  Ui::ViterbiDecoderUI *ui;
+};
 
-}
-
-DecoderObjects::~DecoderObjects(void)
-{
-  delete this->ui;
-  delete this->decoder;
-}
-
-DecoderObjects *
-DecoderFactory::makeFromObjects(Decoder *decoder, DecoderUI *ui)
-{
-  DecoderObjects *objects = new DecoderObjects(decoder, ui);
-
-  objects->factory = this;
-
-  if (objects->decoder != nullptr)
-    objects->decoder->objs = objects;
-
-  if (objects->ui != nullptr)
-    objects->ui->objs = objects;
-
-  return objects;
-}
+#endif // VITERBIDECODERUI_H

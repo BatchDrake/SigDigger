@@ -30,6 +30,12 @@
 namespace SigDigger {
   typedef uint32_t FrameId;
 
+  class DummyDecoderConfig : public Suscan::Serializable {
+  public:
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize(void) override;
+  };
+
   class Decoder : public Suscan::Decoder
   {
     std::vector<Symbol> buffer;
@@ -52,10 +58,10 @@ namespace SigDigger {
 
     // Virtual methods
     virtual Suscan::Serializable const &getConfig(void) const = 0;
-    virtual bool setConfig(Suscan::Serializable const &config) = 0;
-
-    virtual bool accepts(uint8_t bps) const = 0;
-    virtual uint8_t outputBps(void) const = 0;
+    virtual bool setConfig(Suscan::Serializable &config) = 0;
+    virtual std::string getStateString(void) const = 0;
+    virtual bool setInputBps(uint8_t bps) = 0;
+    virtual uint8_t getOutputBps(void) const = 0;
     virtual bool work(FrameId frame, const Symbol *buffer, size_t len) = 0;
   };
 }

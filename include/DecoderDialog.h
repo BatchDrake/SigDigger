@@ -1,5 +1,5 @@
 //
-//    DecoderFactory.cpp: Create decoders on demand
+//    DecoderDialog.h: Decoder chooser dialog
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,44 +16,37 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+#ifndef DECODERDIALOG_H
+#define DECODERDIALOG_H
 
-#include <Suscan/DecoderFactory.h>
+#include <QDialog>
 
-using namespace Suscan;
-
-DecoderFactory::DecoderFactory()
-{
-
+namespace Ui {
+  class DecoderDialog;
 }
 
-DecoderFactory::~DecoderFactory()
-{
+namespace Suscan {
+  class DecoderFactory;
+};
 
+namespace SigDigger {
+  class DecoderDialog : public QDialog
+  {
+    Q_OBJECT
+
+    std::vector<Suscan::DecoderFactory *> cache;
+
+    void populate(void);
+
+  public:
+    explicit DecoderDialog(QWidget *parent = nullptr);
+    bool run(void);
+    Suscan::DecoderFactory *getSelected(void) const;
+    ~DecoderDialog();
+
+  private:
+    Ui::DecoderDialog *ui;
+  };
 }
 
-Decoder::~Decoder(void)
-{
-
-}
-
-DecoderObjects::~DecoderObjects(void)
-{
-  delete this->ui;
-  delete this->decoder;
-}
-
-DecoderObjects *
-DecoderFactory::makeFromObjects(Decoder *decoder, DecoderUI *ui)
-{
-  DecoderObjects *objects = new DecoderObjects(decoder, ui);
-
-  objects->factory = this;
-
-  if (objects->decoder != nullptr)
-    objects->decoder->objs = objects;
-
-  if (objects->ui != nullptr)
-    objects->ui->objs = objects;
-
-  return objects;
-}
+#endif // DECODERDIALOG_H

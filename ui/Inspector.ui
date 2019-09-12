@@ -615,450 +615,22 @@ font-family: Monospace;</string>
       <attribute name="title">
        <string>Stream decoder</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_13">
-       <item row="1" column="2" rowspan="2">
-        <widget class="QFrame" name="frame_5">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_11">
-          <property name="leftMargin">
-           <number>3</number>
-          </property>
-          <property name="topMargin">
-           <number>3</number>
-          </property>
-          <property name="rightMargin">
-           <number>3</number>
-          </property>
-          <property name="bottomMargin">
-           <number>3</number>
-          </property>
-          <property name="spacing">
-           <number>3</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QStackedWidget" name="stackedWidget">
-            <widget class="QWidget" name="stackedWidgetPage1">
-             <layout class="QGridLayout" name="gridLayout_14">
-              <property name="leftMargin">
-               <number>3</number>
-              </property>
-              <property name="topMargin">
-               <number>3</number>
-              </property>
-              <property name="rightMargin">
-               <number>3</number>
-              </property>
-              <property name="bottomMargin">
-               <number>3</number>
-              </property>
-              <property name="spacing">
-               <number>3</number>
-              </property>
-              <item row="0" column="0" colspan="2">
-               <widget class="QLabel" name="label_11">
-                <property name="styleSheet">
-                 <string notr="true">font-weight: bold;
-font-size: 18px;</string>
-                </property>
-                <property name="text">
-                 <string>Viterbi decoder</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0" colspan="3">
-               <widget class="QWidget" name="widget_6" native="true">
-                <layout class="QGridLayout" name="gridLayout_15">
-                 <property name="leftMargin">
-                  <number>6</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>6</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>6</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>6</number>
-                 </property>
-                 <property name="spacing">
-                  <number>3</number>
-                 </property>
-                 <item row="0" column="3" rowspan="3">
-                  <widget class="QTableWidget" name="tableWidget_2">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>120</height>
-                    </size>
-                   </property>
-                   <property name="gridStyle">
-                    <enum>Qt::SolidLine</enum>
-                   </property>
-                   <attribute name="horizontalHeaderStretchLastSection">
-                    <bool>true</bool>
-                   </attribute>
-                   <attribute name="verticalHeaderDefaultSectionSize">
-                    <number>18</number>
-                   </attribute>
-                   <row>
-                    <property name="text">
-                     <string>S0</string>
-                    </property>
-                   </row>
-                   <row>
-                    <property name="text">
-                     <string>S1</string>
-                    </property>
-                   </row>
-                   <row>
-                    <property name="text">
-                     <string>S2</string>
-                    </property>
-                   </row>
-                   <row>
-                    <property name="text">
-                     <string>S3</string>
-                    </property>
-                   </row>
-                   <column>
-                    <property name="text">
-                     <string>Bits</string>
-                    </property>
-                   </column>
-                   <item row="0" column="0">
-                    <property name="text">
-                     <string>00</string>
-                    </property>
-                   </item>
-                   <item row="1" column="0">
-                    <property name="text">
-                     <string>01</string>
-                    </property>
-                   </item>
-                   <item row="2" column="0">
-                    <property name="text">
-                     <string>11</string>
-                    </property>
-                   </item>
-                   <item row="3" column="0">
-                    <property name="text">
-                     <string>10</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_12">
-                   <property name="text">
-                    <string>Constraint length (K)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2" rowspan="3">
-                  <widget class="QTableWidget" name="tableWidget">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>120</height>
-                    </size>
-                   </property>
-                   <attribute name="horizontalHeaderDefaultSectionSize">
-                    <number>74</number>
-                   </attribute>
-                   <attribute name="verticalHeaderDefaultSectionSize">
-                    <number>18</number>
-                   </attribute>
-                   <row>
-                    <property name="text">
-                     <string>y0</string>
-                    </property>
-                   </row>
-                   <row>
-                    <property name="text">
-                     <string>y1</string>
-                    </property>
-                   </row>
-                   <column>
-                    <property name="text">
-                     <string>Poly (dec)</string>
-                    </property>
-                   </column>
-                   <column>
-                    <property name="text">
-                     <string>Poly (oct)</string>
-                    </property>
-                   </column>
-                   <column>
-                    <property name="text">
-                     <string>Poly (bin)</string>
-                    </property>
-                   </column>
-                   <item row="0" column="0">
-                    <property name="text">
-                     <string>109</string>
-                    </property>
-                   </item>
-                   <item row="1" column="0">
-                    <property name="text">
-                     <string>79</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QSpinBox" name="spinBox">
-                   <property name="value">
-                    <number>7</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QSpinBox" name="spinBox_2">
-                   <property name="value">
-                    <number>2</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_13">
-                   <property name="text">
-                    <string>Output length (n)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0" colspan="2">
-                  <spacer name="horizontalSpacer_5">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeType">
-                    <enum>QSizePolicy::Minimum</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="3" column="0" colspan="4">
-                  <widget class="QGroupBox" name="groupBox_7">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">QGroupBox {
-font-weight: bold;
-}</string>
-                   </property>
-                   <property name="title">
-                    <string>Viterbi autocracker</string>
-                   </property>
-                   <layout class="QGridLayout" name="gridLayout_16">
-                    <property name="leftMargin">
-                     <number>6</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>6</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>6</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>6</number>
-                    </property>
-                    <property name="spacing">
-                     <number>3</number>
-                    </property>
-                    <item row="0" column="2">
-                     <widget class="QPushButton" name="pushButton_7">
-                      <property name="text">
-                       <string>Set to current size</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="3" rowspan="2">
-                     <widget class="Line" name="line_2">
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="4" colspan="2">
-                     <widget class="QPushButton" name="pushButton_8">
-                      <property name="text">
-                       <string>Start cracking...</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="QSpinBox" name="spinBox_3"/>
-                    </item>
-                    <item row="3" column="0" colspan="7">
-                     <widget class="QProgressBar" name="progressBar">
-                      <property name="value">
-                       <number>24</number>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1" colspan="2">
-                     <widget class="QCheckBox" name="checkBox_2">
-                      <property name="text">
-                       <string>Discard non-Gray</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="0" colspan="7">
-                     <widget class="QTableWidget" name="tableWidget_3">
-                      <attribute name="horizontalHeaderMinimumSectionSize">
-                       <number>19</number>
-                      </attribute>
-                      <attribute name="verticalHeaderDefaultSectionSize">
-                       <number>19</number>
-                      </attribute>
-                      <row>
-                       <property name="text">
-                        <string>0</string>
-                       </property>
-                      </row>
-                      <column>
-                       <property name="text">
-                        <string>Rate</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>K</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>Polynomials</string>
-                       </property>
-                      </column>
-                      <column>
-                       <property name="text">
-                        <string>Gray</string>
-                       </property>
-                      </column>
-                     </widget>
-                    </item>
-                    <item row="1" column="5">
-                     <widget class="QPushButton" name="pushButton_10">
-                      <property name="text">
-                       <string>Apply selected</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QCheckBox" name="checkBox">
-                      <property name="text">
-                       <string>Discard unlikely</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="4">
-                     <widget class="QPushButton" name="pushButton_9">
-                      <property name="text">
-                       <string>Clear</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="label_15">
-                      <property name="text">
-                       <string>Block size for guessing</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="6">
-                     <spacer name="horizontalSpacer_4">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                   </layout>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0" rowspan="2" colspan="2">
-        <widget class="LayerEditor" name="decoderEditor">
-         <property name="maximumSize">
-          <size>
-           <width>200</width>
-           <height>16777215</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="3">
-        <widget class="QLabel" name="label_9">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>The stream decoder allows you to stack different post-processing stages to the demodulator pipeline. It takes the symbols at the demodulator output and performs the transformations specified in the list in the left. Transformations are executed bottom-up and can be dynamically configured.</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
+      <layout class="QGridLayout" name="streamDecoderGrid">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
       </layout>
      </widget>
     </widget>
@@ -1100,7 +672,7 @@ QToolBox::tab:hover {
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>294</width>
+        <width>300</width>
         <height>729</height>
        </rect>
       </property>
@@ -1236,7 +808,7 @@ QToolBox::tab:hover {
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>294</width>
+        <width>300</width>
         <height>729</height>
        </rect>
       </property>
@@ -1275,7 +847,7 @@ QToolBox::tab:hover {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>294</width>
+            <width>300</width>
             <height>729</height>
            </rect>
           </property>
@@ -1309,7 +881,7 @@ QToolBox::tab:hover {
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>294</width>
+        <width>300</width>
         <height>729</height>
        </rect>
       </property>
@@ -1360,7 +932,7 @@ QToolBox::tab:hover {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>294</width>
+            <width>300</width>
             <height>729</height>
            </rect>
           </property>
@@ -1441,11 +1013,6 @@ QToolBox::tab:hover {
    <class>ctkRangeSlider</class>
    <extends>QSlider</extends>
    <header>ctkRangeSlider.h</header>
-  </customwidget>
-  <customwidget>
-   <class>LayerEditor</class>
-   <extends>QWidget</extends>
-   <header>LayerEditor.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

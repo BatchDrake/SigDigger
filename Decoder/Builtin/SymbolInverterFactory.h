@@ -1,5 +1,5 @@
 //
-//    DecoderFactory.cpp: Create decoders on demand
+//    SymbolInverterFactory.h: Make symbol inverters
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,43 +17,20 @@
 //    <http://www.gnu.org/licenses/>
 //
 
+#ifndef SYMBOLINVERTERFACTORY_H
+#define SYMBOLINVERTERFACTORY_H
+
 #include <Suscan/DecoderFactory.h>
+#include <Decoder.h>
 
-using namespace Suscan;
-
-DecoderFactory::DecoderFactory()
-{
-
+namespace SigDigger {
+  class SymbolInverterFactory : public Suscan::DecoderFactory
+  {
+  public:
+    std::string getName(void) const override;
+    std::string getDescription(void) const override;
+    Suscan::DecoderObjects *make(QObject *parent = nullptr) override;
+  };
 }
 
-DecoderFactory::~DecoderFactory()
-{
-
-}
-
-Decoder::~Decoder(void)
-{
-
-}
-
-DecoderObjects::~DecoderObjects(void)
-{
-  delete this->ui;
-  delete this->decoder;
-}
-
-DecoderObjects *
-DecoderFactory::makeFromObjects(Decoder *decoder, DecoderUI *ui)
-{
-  DecoderObjects *objects = new DecoderObjects(decoder, ui);
-
-  objects->factory = this;
-
-  if (objects->decoder != nullptr)
-    objects->decoder->objs = objects;
-
-  if (objects->ui != nullptr)
-    objects->ui->objs = objects;
-
-  return objects;
-}
+#endif // SYMBOLINVERTERFACTORY_H

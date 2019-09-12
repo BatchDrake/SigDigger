@@ -23,6 +23,7 @@
 #include <QMessageBox>
 
 #include <Loader.h>
+#include <BuiltinDecoderCollection.h>
 
 using namespace SigDigger;
 
@@ -33,6 +34,7 @@ void
 InitThread::run()
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
+  BuiltinDecoderCollection *collection = nullptr;
 
   try {
     emit change("Loading signal sources");
@@ -51,9 +53,14 @@ InitThread::run()
     sing->init_autogains();
     emit change("Loading UI config");
     sing->init_ui_config();
+    emit change("Registering decoders");
+    collection = new BuiltinDecoderCollection();
   } catch (Suscan::Exception const &e) {
     emit failure(QString(e.what()));
   }
+
+  if (collection != nullptr)
+    delete collection;
 
   emit done();
 }

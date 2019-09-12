@@ -20,6 +20,19 @@
 
 using namespace SigDigger;
 
+void
+DummyDecoderConfig::deserialize(Suscan::Object const &)
+{
+}
+
+Suscan::Object &&
+DummyDecoderConfig::serialize(void)
+{
+  Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+
+  return this->persist(obj);
+}
+
 Decoder::Decoder(Suscan::DecoderFactory *manufacturer)
 {
   this->manufacturer = manufacturer;
@@ -27,7 +40,6 @@ Decoder::Decoder(Suscan::DecoderFactory *manufacturer)
 
 Decoder::~Decoder(void)
 {
-
 }
 
 Suscan::DecoderFactory *
@@ -74,10 +86,12 @@ Decoder::flush(void)
 {
   bool ok = true;
 
-  if (this->next != nullptr)
-    ok = this->work(this->frame, this->buffer.data(), this->buffer.size());
+  if (this->buffer.size() > 0) {
+    if (this->next != nullptr)
+      ok = this->next->work(this->frame, this->buffer.data(), this->buffer.size());
 
-  this->buffer.clear();
+    this->buffer.clear();
+  }
 
   return ok;
 }
@@ -86,7 +100,7 @@ bool
 Decoder::plug(Decoder *next)
 {
   if (next != nullptr)
-    if (!next->accepts(this->outputBps()))
+    if (!next->setInputBps(this->getOutputBps()))
       return false;
 
   this->next = next;

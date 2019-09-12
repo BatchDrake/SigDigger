@@ -35,9 +35,10 @@ uint8_t
 DecoderStack::getBps(void) const
 {
   if (this->stack.size() == 0)
-    return 0;
+    return this->bps;
 
-  return (*this->stack.end())->outputBps();
+  // Cobol is great for you body and your mind
+  return (*(this->stack.end() - 1))->getOutputBps();
 }
 
 void
@@ -70,7 +71,7 @@ DecoderStack::connect(std::vector<Decoder *> &offending)
   auto p = this->stack.begin();
   this->connected = false;
 
-  if (!(*p)->accepts(this->bps)) {
+  if (!(*p)->setInputBps(this->bps)) {
     offending.push_back(*p);
     fine = false;
   }

@@ -41,6 +41,74 @@
 
 using namespace SigDigger;
 
+/////////////////////////// InspectorTermination ///////////////////////////////
+namespace SigDigger {
+
+  class InspectorUITermination : public SigDigger::Decoder {
+    DummyDecoderConfig config;
+    InspectorUI *ui;
+
+  public:
+    InspectorUITermination(InspectorUI *ui);
+    Suscan::Serializable const &getConfig(void) const override;
+    bool setConfig(Suscan::Serializable &config) override;
+    std::string getStateString(void) const override;
+    bool setInputBps(uint8_t bps) override;
+    uint8_t getOutputBps(void) const override;
+    bool work(FrameId frame, const Symbol *buffer, size_t len) override;
+  };
+}
+
+InspectorUITermination::InspectorUITermination(InspectorUI *ui) :
+  SigDigger::Decoder(nullptr), ui(ui)
+{
+
+}
+
+Suscan::Serializable const &
+InspectorUITermination::getConfig(void) const
+{
+  return this->config;
+}
+
+bool
+InspectorUITermination::setConfig(Suscan::Serializable &config)
+{
+  this->config.deserialize(config.serialize());
+
+  return true;
+}
+
+std::string
+InspectorUITermination::getStateString(void) const
+{
+  return "Inspector decoder UI termination";
+}
+
+bool
+InspectorUITermination::setInputBps(uint8_t bps)
+{
+  this->ui->ui->symView->setBitsPerSymbol(bps);
+
+  return true; // Accepts any bps
+}
+
+uint8_t
+InspectorUITermination::getOutputBps(void) const
+{
+  return 1; // We can ignore this
+}
+
+bool
+InspectorUITermination::work(FrameId, const Symbol *buffer, size_t len)
+{
+  this->ui->ui->symView->feed(buffer, static_cast<unsigned int>(len));
+
+  return true;
+}
+
+
+/////////////////////////////// InspectorUI ////////////////////////////////////
 InspectorUI::InspectorUI(
     QWidget *owner,
     Suscan::Config *config)
@@ -59,23 +127,10 @@ InspectorUI::InspectorUI(
 
   this->ui->wfSpectrum->setFreqUnits(1);
 
-  LayerItem item;
-
-  item.setName("Viterbi decoder");
-  item.setDescription("K = 7, r = 1/2 (Voyager)");
-  this->ui->decoderEditor->add(item);
-
-  item.setName("Correlation packetizer");
-  item.setDescription("Sequence length: 32 bits");
-  this->ui->decoderEditor->add(item);
-
-  item.setName("Additive descrambler");
-  item.setDescription("Offset: 10, degree 8");
-  this->ui->decoderEditor->add(item);
-
-  item.setName("LRPT Preview");
-  item.setDescription("Frame format: CCSDS");
-  this->ui->decoderEditor->add(item);
+  this->decoderTab = new DecoderTab(owner);
+  this->terminationDecoder = new InspectorUITermination(this);
+  this->decoderTab->setTerminationDecoder(this->terminationDecoder);
+  this->ui->streamDecoderGrid->addWidget(this->decoderTab);
 
   // TODO: put shared UI objects in a singleton
   this->palettes.push_back(Palette("Suscan", wf_gradient));
@@ -97,6 +152,140 @@ InspectorUI::InspectorUI(
 
   this->setPalette("Suscan");
 
+  this->connectUI();
+  this->connectDecoderTab();
+
+  this->populate();
+
+  // Configure throttleable widgets
+  this->throttle.setCpuBurn(false);
+  this->ui->constellation->setThrottleControl(&this->throttle);
+  this->ui->symView->setThrottleControl(&this->throttle);
+  this->ui->transition->setThrottleControl(&this->throttle);
+  this->ui->histogram->setThrottleControl(&this->throttle);
+  this->ui->histogram->setDecider(&this->decider);
+  this->ui->wfSpectrum->setCenterFreq(0);
+  this->ui->wfSpectrum->resetHorizontalZoom();
+  this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
+
+  // Refresh Bps
+  this->setBps(1);
+
+  // Refresh UI
+  this->refreshUi();
+}
+
+InspectorUI::~InspectorUI()
+{
+  delete this->terminationDecoder;
+  delete this->ui;
+}
+
+void
+InspectorUI::setBasebandRate(unsigned int rate)
+{
+  this->basebandSampleRate = rate;
+  this->ui->loLcd->setMin(-static_cast<int>(rate) / 2);
+  this->ui->loLcd->setMax(static_cast<int>(rate) / 2);
+}
+
+void
+InspectorUI::setSampleRate(float rate)
+{
+  this->sampleRate = rate;
+  this->ui->sampleRateLabel->setText(
+        "Sample rate: "
+        + QString::number(static_cast<qreal>(rate))
+        + " sps");
+  this->ui->bwLcd->setMin(0);
+  this->ui->bwLcd->setMax(static_cast<qint64>(rate));
+}
+
+void
+InspectorUI::setBandwidth(unsigned int bandwidth)
+{
+  // More COBOL
+  this->ui->bwLcd->setValue(static_cast<int>(bandwidth));
+}
+
+void
+InspectorUI::setLo(int lo)
+{
+  this->ui->loLcd->setValue(lo);
+}
+
+void
+InspectorUI::refreshInspectorCtls(void)
+{
+  for (auto p = this->controls.begin(); p != this->controls.end(); ++p)
+    (*p)->refreshUi();
+}
+
+unsigned int
+InspectorUI::getBandwidth(void) const
+{
+  return static_cast<unsigned int>(this->ui->bwLcd->getValue());
+}
+
+int
+InspectorUI::getLo(void) const
+{
+  return static_cast<int>(this->ui->loLcd->getValue());
+}
+
+bool
+InspectorUI::setPalette(std::string const &str)
+{
+  unsigned int i;
+
+  for (i = 0; i < this->palettes.size(); ++i) {
+    if (this->palettes[i].getName().compare(str) == 0) {
+      this->ui->wfSpectrum->setPalette(this->palettes[i].getGradient());
+      this->ui->paletteCombo->setCurrentIndex(static_cast<int>(i));
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void
+InspectorUI::addSpectrumSource(Suscan::SpectrumSource const &src)
+{
+  this->spectsrcs.push_back(src);
+  this->ui->spectrumSourceCombo->addItem(QString::fromStdString(src.desc));
+}
+
+void
+InspectorUI::addEstimator(Suscan::Estimator const &estimator)
+{
+  int position = static_cast<int>(this->estimators.size());
+  EstimatorControl *ctl;
+  this->ui->estimatorsGrid->setAlignment(Qt::AlignTop);
+
+  this->estimators.push_back(estimator);
+
+  ctl = new EstimatorControl(this->owner, estimator);
+  this->estimatorCtls[estimator.id] = ctl;
+
+  this->ui->estimatorsGrid->addWidget(ctl, position, 0, Qt::AlignTop);
+
+  connect(
+        ctl,
+        SIGNAL(estimatorChanged(Suscan::EstimatorId, bool)),
+        this,
+        SLOT(onToggleEstimator(Suscan::EstimatorId, bool)));
+
+  connect(
+        ctl,
+        SIGNAL(apply(QString, float)),
+        this,
+        SLOT(onApplyEstimation(QString, float)));
+}
+
+void
+InspectorUI::connectUI(void)
+{
   connect(
         this->ui->symView,
         SIGNAL(offsetChanged(unsigned int)),
@@ -228,136 +417,10 @@ InspectorUI::InspectorUI(
         SIGNAL(valueChanged(void)),
         this,
         SLOT(onChangeBandwidth(void)));
-
-  this->populate();
-
-  // Configure throttleable widgets
-  this->throttle.setCpuBurn(false);
-  this->ui->constellation->setThrottleControl(&this->throttle);
-  this->ui->symView->setThrottleControl(&this->throttle);
-  this->ui->transition->setThrottleControl(&this->throttle);
-  this->ui->histogram->setThrottleControl(&this->throttle);
-  this->ui->histogram->setDecider(&this->decider);
-  this->ui->wfSpectrum->setCenterFreq(0);
-  this->ui->wfSpectrum->resetHorizontalZoom();
-  this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
-
-  // Refresh Bps
-  this->setBps(1);
-
-  // Refresh UI
-  this->refreshUi();
-}
-
-InspectorUI::~InspectorUI()
-{
-  delete this->ui;
 }
 
 void
-InspectorUI::setBasebandRate(unsigned int rate)
-{
-  this->basebandSampleRate = rate;
-  this->ui->loLcd->setMin(-static_cast<int>(rate) / 2);
-  this->ui->loLcd->setMax(static_cast<int>(rate) / 2);
-}
-
-void
-InspectorUI::setSampleRate(float rate)
-{
-  this->sampleRate = rate;
-  this->ui->sampleRateLabel->setText(
-        "Sample rate: "
-        + QString::number(static_cast<qreal>(rate))
-        + " sps");
-  this->ui->bwLcd->setMin(0);
-  this->ui->bwLcd->setMax(static_cast<qint64>(rate));
-}
-
-void
-InspectorUI::setBandwidth(unsigned int bandwidth)
-{
-  // More COBOL
-  this->ui->bwLcd->setValue(static_cast<int>(bandwidth));
-}
-
-void
-InspectorUI::setLo(int lo)
-{
-  this->ui->loLcd->setValue(lo);
-}
-
-void
-InspectorUI::refreshInspectorCtls(void)
-{
-  for (auto p = this->controls.begin(); p != this->controls.end(); ++p)
-    (*p)->refreshUi();
-}
-
-unsigned int
-InspectorUI::getBandwidth(void) const
-{
-  return static_cast<unsigned int>(this->ui->bwLcd->getValue());
-}
-
-int
-InspectorUI::getLo(void) const
-{
-  return static_cast<int>(this->ui->loLcd->getValue());
-}
-
-bool
-InspectorUI::setPalette(std::string const &str)
-{
-  unsigned int i;
-
-  for (i = 0; i < this->palettes.size(); ++i) {
-    if (this->palettes[i].getName().compare(str) == 0) {
-      this->ui->wfSpectrum->setPalette(this->palettes[i].getGradient());
-      this->ui->paletteCombo->setCurrentIndex(static_cast<int>(i));
-      return true;
-    }
-  }
-
-  return false;
-}
-
-void
-InspectorUI::addSpectrumSource(Suscan::SpectrumSource const &src)
-{
-  this->spectsrcs.push_back(src);
-  this->ui->spectrumSourceCombo->addItem(QString::fromStdString(src.desc));
-}
-
-void
-InspectorUI::addEstimator(Suscan::Estimator const &estimator)
-{
-  int position = static_cast<int>(this->estimators.size());
-  EstimatorControl *ctl;
-  this->ui->estimatorsGrid->setAlignment(Qt::AlignTop);
-
-  this->estimators.push_back(estimator);
-
-  ctl = new EstimatorControl(this->owner, estimator);
-  this->estimatorCtls[estimator.id] = ctl;
-
-  this->ui->estimatorsGrid->addWidget(ctl, position, 0, Qt::AlignTop);
-
-  connect(
-        ctl,
-        SIGNAL(estimatorChanged(Suscan::EstimatorId, bool)),
-        this,
-        SLOT(onToggleEstimator(Suscan::EstimatorId, bool)));
-
-  connect(
-        ctl,
-        SIGNAL(apply(QString, float)),
-        this,
-        SLOT(onApplyEstimation(QString, float)));
-}
-
-void
-InspectorUI::connectDataSaver()
+InspectorUI::connectDataSaver(void)
 {
   connect(
         this->dataSaver.get(),
@@ -382,6 +445,22 @@ InspectorUI::connectDataSaver()
         SIGNAL(commit()),
         this,
         SLOT(onCommit()));
+}
+
+void
+InspectorUI::connectDecoderTab(void)
+{
+  connect(
+        this->decoderTab,
+        SIGNAL(toggled(void)),
+        this,
+        SLOT(onDecoderTabToggled(void)));
+
+  connect(
+        this->decoderTab,
+        SIGNAL(changed(void)),
+        this,
+        SLOT(onDecoderTabChanged(void)));
 }
 
 std::string
@@ -503,7 +582,14 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
   if (this->demodulating) {
     if (this->decider.getBps() > 0) {
       this->decider.feed(data, size);
-      this->ui->symView->feed(this->decider.get());
+      if (this->decoderChainEnabled) {
+        this->decoderTab->feed(
+              this->decider.get().data(),
+              this->decider.get().size());
+      } else {
+        this->ui->symView->feed(this->decider.get());
+      }
+
       this->ui->transition->feed(this->decider.get());
       this->ui->sizeLabel->setText(
             "Size: " +
@@ -700,13 +786,17 @@ InspectorUI::getBps(void) const
   const Suscan::FieldValue *val;
   unsigned int bps = 0;
 
-  // Check if bits per symbol have changed
-  if ((val = this->config->get("afc.bits-per-symbol")) != nullptr)
-    bps = static_cast<unsigned int>(val->getUint64());
-  else if ((val = this->config->get("fsk.bits-per-symbol")) != nullptr)
-    bps = static_cast<unsigned int>(val->getUint64());
-  else if ((val = this->config->get("ask.bits-per-symbol")) != nullptr)
-    bps = static_cast<unsigned int>(val->getUint64());
+  if (this->decoderChainEnabled) {
+    bps = this->decoderTab->getOutputBps();
+  } else {
+    // Check if bits per symbol have changed
+    if ((val = this->config->get("afc.bits-per-symbol")) != nullptr)
+      bps = static_cast<unsigned int>(val->getUint64());
+    else if ((val = this->config->get("fsk.bits-per-symbol")) != nullptr)
+      bps = static_cast<unsigned int>(val->getUint64());
+    else if ((val = this->config->get("ask.bits-per-symbol")) != nullptr)
+      bps = static_cast<unsigned int>(val->getUint64());
+  }
 
   if (bps == 0)
     bps = 1;
@@ -1015,3 +1105,17 @@ InspectorUI::onApplyEstimation(QString name, float value)
   emit applyEstimation(name, value);
 }
 
+void
+InspectorUI::onDecoderTabToggled(void)
+{
+  this->decoderChainEnabled = this->decoderTab->isEnabled();
+
+  this->setBps(this->getBps());
+}
+
+void
+InspectorUI::onDecoderTabChanged(void)
+{
+  if (this->decoderChainEnabled)
+    this->setBps(this->getBps());
+}

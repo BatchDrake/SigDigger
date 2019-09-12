@@ -90,7 +90,13 @@ SOURCES += \
     Components/EstimatorControl.cpp \
     Decoder/Decoder.cpp \
     Decoder/DecoderStack.cpp \
-    Suscan/DecoderFactory.cpp
+    Suscan/DecoderFactory.cpp \
+    Decoder/DecoderDialog.cpp \
+    Decoder/Builtin/SymbolInverter.cpp \
+    Decoder/Builtin/SymbolInverterFactory.cpp \
+    Decoder/Builtin/BuiltinDecoderCollection.cpp \
+    Decoder/Builtin/ViterbiDecoderUI.cpp \
+    Decoder/DecoderTab.cpp
 
 
 HEADERS += \
@@ -153,7 +159,11 @@ HEADERS += \
     include/EstimatorControl.h \
     include/Decoder.h \
     include/DecoderStack.h \
-    include/Suscan/DecoderFactory.h
+    include/Suscan/DecoderFactory.h \
+    include/DecoderDialog.h \
+    Decoder/Builtin/ViterbiDecoderUI.h \
+    include/DecoderTab.h
+    include/BuiltinDecoderCollection.h
 
 
 FORMS += \
@@ -177,7 +187,10 @@ FORMS += \
     ui/SourcePanel.ui \
     ui/ToneControl.ui \
     ui/SaveProfileDialog.ui \
-    ui/EstimatorControl.ui
+    ui/EstimatorControl.ui \
+    ui/DecoderDialog.ui \
+    ui/ViterbiDecoderUI.ui \
+    ui/DecoderTab.ui
 
 
 # Default rules for deployment.

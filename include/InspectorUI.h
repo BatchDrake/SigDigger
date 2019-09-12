@@ -36,6 +36,8 @@
 #include "DataSaverUI.h"
 #include "AsyncDataSaver.h"
 #include "EstimatorControl.h"
+#include "DecoderDialog.h"
+#include "DecoderTab.h"
 
 namespace Ui {
   class Inspector;
@@ -43,6 +45,7 @@ namespace Ui {
 
 namespace SigDigger {
   class AppConfig;
+  class InspectorUITermination;
 
   class InspectorUI : public QObject {
     Q_OBJECT
@@ -62,6 +65,7 @@ namespace SigDigger {
     bool demodulating = true;
     bool recording = false;
     unsigned int recordingRate = 0;
+
     // Inspector config
     Suscan::Config *config; // Weak
     QWidget *owner;
@@ -84,11 +88,16 @@ namespace SigDigger {
     Ui::Inspector *ui = nullptr;
     std::vector<InspectorCtl *> controls;
     DataSaverUI *saverUI = nullptr;
+    DecoderTab *decoderTab = nullptr;
+    InspectorUITermination *terminationDecoder = nullptr;
     std::unique_ptr<AsyncDataSaver> dataSaver = nullptr;
 
     State state = DETACHED;
+    bool decoderChainEnabled = false;
     SUSCOUNT lastLen = 0;
     SUSCOUNT lastRate = 0;
+
+    // Private methods
 
     void pushControl(InspectorCtl *ctl);
     void setBps(unsigned int bps);
@@ -97,6 +106,8 @@ namespace SigDigger {
     std::string getClassName(void) const;
     void populate(void);
     void connectDataSaver(void);
+    void connectDecoderTab(void);
+    void connectUI(void);
 
     std::string captureFileName(void) const;
     int fd = -1;
@@ -157,6 +168,11 @@ namespace SigDigger {
       void onSaveRate(qreal rate);
       void onCommit(void);
 
+      // DecoderTab slots
+      void onDecoderTabToggled(void);
+      void onDecoderTabChanged(void);
+
+
     signals:
       void configChanged(void);
       void setSpectrumSource(unsigned int index);
@@ -164,6 +180,8 @@ namespace SigDigger {
       void bandwidthChanged(void);
       void toggleEstimator(Suscan::EstimatorId, bool);
       void applyEstimation(QString, float);
+
+    friend class InspectorUITermination;
   };
 }
 
