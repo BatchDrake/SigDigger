@@ -1,6 +1,5 @@
 //
-//
-//    SymbolInverterFactory.h: Make symbol inverters
+//    SymbolInverterFactory.cpp: Make symbol inverters
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -18,19 +17,27 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include <Suscan/Library.h>
-
-#include <BuiltinDecoderCollection.h>
-
-#include "SymbolInverterFactory.h"
 #include "HexTapFactory.h"
+#include "HexTap.h"
+#include "HexTapUI.h"
 
 using namespace SigDigger;
 
-BuiltinDecoderCollection::BuiltinDecoderCollection()
+std::string
+HexTapFactory::getName(void) const
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
-  sus->registerDecoderFactory(new SymbolInverterFactory());
-  sus->registerDecoderFactory(new HexTapFactory());
+  return "Hexadecimal Tap";
 }
+
+std::string
+HexTapFactory::getDescription(void) const
+{
+  return "Hexadecimal dump of the symbol stream";
+}
+
+Suscan::DecoderObjects *
+HexTapFactory::make(QObject *)
+{
+  return this->makeFromObjects(new HexTap(this), nullptr);
+}
+

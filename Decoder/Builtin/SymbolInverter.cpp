@@ -35,7 +35,7 @@ SymbolInverterConfig::serialize(void)
   return this->persist(obj);
 }
 
-
+////////////////////////// Inverter implementation /////////////////////////////
 SymbolInverter::SymbolInverter(Suscan::DecoderFactory *manufacturer) :
   Decoder(manufacturer)
 {

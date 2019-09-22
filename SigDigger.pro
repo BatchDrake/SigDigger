@@ -96,7 +96,10 @@ SOURCES += \
     Decoder/Builtin/SymbolInverterFactory.cpp \
     Decoder/Builtin/BuiltinDecoderCollection.cpp \
     Decoder/Builtin/ViterbiDecoderUI.cpp \
-    Decoder/DecoderTab.cpp
+    Decoder/DecoderTab.cpp \
+    Decoder/Builtin/HexTapUI.cpp \
+    Decoder/Builtin/HexTap.cpp \
+    Decoder/Builtin/HexTapFactory.cpp
 
 
 HEADERS += \
@@ -162,7 +165,10 @@ HEADERS += \
     include/Suscan/DecoderFactory.h \
     include/DecoderDialog.h \
     Decoder/Builtin/ViterbiDecoderUI.h \
-    include/DecoderTab.h
+    include/DecoderTab.h \
+    include/HexTapUI.h \
+    include/HexTap.h \
+    include/HexTapFactory.h
     include/BuiltinDecoderCollection.h
 
 
@@ -190,7 +196,8 @@ FORMS += \
     ui/EstimatorControl.ui \
     ui/DecoderDialog.ui \
     ui/ViterbiDecoderUI.ui \
-    ui/DecoderTab.ui
+    ui/DecoderTab.ui \
+    ui/HexTap.ui
 
 
 # Default rules for deployment.
