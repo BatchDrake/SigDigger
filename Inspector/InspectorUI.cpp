@@ -169,7 +169,7 @@ InspectorUI::InspectorUI(
   this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
 
   // Refresh Bps
-  this->setBps(1);
+  this->refreshBps();
 
   // Refresh UI
   this->refreshUi();
@@ -741,17 +741,18 @@ InspectorUI::refreshUi(void)
 
 //////////////////////////////////// Slots ////////////////////////////////////
 void
-InspectorUI::setBps(unsigned int bps)
+InspectorUI::refreshBps(void)
 {
-  if (this->bps != bps) {
-    this->decider.setBps(bps);
-    this->estimator.setBps(bps);
-    this->ui->symView->setBitsPerSymbol(bps);
-    this->ui->constellation->setOrderHint(bps);
-    this->ui->transition->setOrderHint(bps);
-    this->ui->histogram->setDecider(&this->decider);
-    this->bps = bps; // For caching
-  }
+  unsigned int demodBps = this->getDemodBps();
+  unsigned int outputBps = this->getBps();
+
+  this->decider.setBps(demodBps);
+  this->estimator.setBps(demodBps);
+  this->ui->constellation->setOrderHint(demodBps);
+  this->ui->transition->setOrderHint(demodBps);
+  this->ui->histogram->setDecider(&this->decider);
+
+  this->ui->symView->setBitsPerSymbol(outputBps);
 }
 
 unsigned int
@@ -781,22 +782,36 @@ InspectorUI::getClassName(void) const
 }
 
 unsigned int
+InspectorUI::getDemodBps(void) const
+{
+  unsigned int bps = 1;
+  const Suscan::FieldValue *val;
+
+  if ((val = this->config->get("afc.bits-per-symbol")) != nullptr)
+    bps = static_cast<unsigned int>(val->getUint64());
+  else if ((val = this->config->get("fsk.bits-per-symbol")) != nullptr)
+    bps = static_cast<unsigned int>(val->getUint64());
+  else if ((val = this->config->get("ask.bits-per-symbol")) != nullptr)
+    bps = static_cast<unsigned int>(val->getUint64());
+
+  return bps;
+}
+
+unsigned int
+InspectorUI::getDecoderBps(void) const
+{
+  return this->decoderTab->getOutputBps();
+}
+
+unsigned int
 InspectorUI::getBps(void) const
 {
-  const Suscan::FieldValue *val;
   unsigned int bps = 0;
 
-  if (this->decoderChainEnabled) {
-    bps = this->decoderTab->getOutputBps();
-  } else {
-    // Check if bits per symbol have changed
-    if ((val = this->config->get("afc.bits-per-symbol")) != nullptr)
-      bps = static_cast<unsigned int>(val->getUint64());
-    else if ((val = this->config->get("fsk.bits-per-symbol")) != nullptr)
-      bps = static_cast<unsigned int>(val->getUint64());
-    else if ((val = this->config->get("ask.bits-per-symbol")) != nullptr)
-      bps = static_cast<unsigned int>(val->getUint64());
-  }
+  if (this->decoderChainEnabled)
+    bps = this->getDecoderBps();
+  else
+    bps = this->getDemodBps();
 
   if (bps == 0)
     bps = 1;
@@ -825,7 +840,7 @@ InspectorUI::onInspectorControlChanged(void)
 
   this->saverUI->setEnabled(newRate != 0);
 
-  this->setBps(this->getBps());
+  this->refreshBps();
 
   this->ui->histogram->reset();
 
@@ -1108,14 +1123,15 @@ InspectorUI::onApplyEstimation(QString name, float value)
 void
 InspectorUI::onDecoderTabToggled(void)
 {
+  this->decoderTab->setInputBps(static_cast<uint8_t>(this->getDemodBps()));
   this->decoderChainEnabled = this->decoderTab->isEnabled();
 
-  this->setBps(this->getBps());
+  this->refreshBps();
 }
 
 void
 InspectorUI::onDecoderTabChanged(void)
 {
   if (this->decoderChainEnabled)
-    this->setBps(this->getBps());
+    this->refreshBps();
 }

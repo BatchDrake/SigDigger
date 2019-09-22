@@ -71,7 +71,6 @@ namespace SigDigger {
     QWidget *owner;
 
     // Decider goes here
-    unsigned int bps = 0;
     Decider decider;
     SNREstimator estimator;
     bool estimating = false;
@@ -100,7 +99,9 @@ namespace SigDigger {
     // Private methods
 
     void pushControl(InspectorCtl *ctl);
-    void setBps(unsigned int bps);
+    void refreshBps(void);
+    unsigned int getDemodBps(void) const;
+    unsigned int getDecoderBps(void) const;
     unsigned int getBps(void) const;
     unsigned int getBaudRate(void) const;
     std::string getClassName(void) const;
