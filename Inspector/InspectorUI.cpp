@@ -47,6 +47,7 @@ namespace SigDigger {
   class InspectorUITermination : public SigDigger::Decoder {
     DummyDecoderConfig config;
     InspectorUI *ui;
+    uint8_t bps = 0;
 
   public:
     InspectorUITermination(InspectorUI *ui);
@@ -88,6 +89,7 @@ InspectorUITermination::getStateString(void) const
 bool
 InspectorUITermination::setInputBps(uint8_t bps)
 {
+  this->bps = bps;
   this->ui->ui->symView->setBitsPerSymbol(bps);
 
   return true; // Accepts any bps
@@ -96,7 +98,11 @@ InspectorUITermination::setInputBps(uint8_t bps)
 uint8_t
 InspectorUITermination::getOutputBps(void) const
 {
-  return 1; // We can ignore this
+  // It is extremely important to return the input BPS here as output BPS.
+  // The output BPS of the stack is computed as the output BPS of its last
+  // element, and even though this is a termination, the symView's bps
+  // is updated according to this value.
+  return this->bps;
 }
 
 bool
@@ -582,6 +588,7 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
   if (this->demodulating) {
     if (this->decider.getBps() > 0) {
       this->decider.feed(data, size);
+
       if (this->decoderChainEnabled) {
         this->decoderTab->feed(
               this->decider.get().data(),
