@@ -23,6 +23,7 @@
 #include <BuiltinDecoderCollection.h>
 
 #include "SymbolInverterFactory.h"
+#include "SymbolDifferentiatorFactory.h"
 #include "HexTapFactory.h"
 
 using namespace SigDigger;
@@ -32,5 +33,6 @@ BuiltinDecoderCollection::BuiltinDecoderCollection()
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
   sus->registerDecoderFactory(new SymbolInverterFactory());
+  sus->registerDecoderFactory(new SymbolDifferentiatorFactory());
   sus->registerDecoderFactory(new HexTapFactory());
 }

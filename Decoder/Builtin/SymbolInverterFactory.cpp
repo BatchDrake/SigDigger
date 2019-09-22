@@ -35,7 +35,7 @@ SymbolInverterFactory::getDescription(void) const
 }
 
 Suscan::DecoderObjects *
-SymbolInverterFactory::make(QObject *)
+SymbolInverterFactory::make(QWidget *)
 {
   return this->makeFromObjects(new SymbolInverter(this), nullptr);
 }

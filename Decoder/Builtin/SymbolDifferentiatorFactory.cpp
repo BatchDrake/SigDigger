@@ -1,5 +1,5 @@
 //
-//    SymbolInverterFactory.cpp: Make symbol inverters
+//    SymbolDifferentiatorFactory.cpp: Make symbol Differentiators
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,33 +17,25 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include "HexTapFactory.h"
-#include "HexTap.h"
-#include "HexTapUI.h"
+#include "SymbolDifferentiatorFactory.h"
+#include "SymbolDifferentiator.h"
 
 using namespace SigDigger;
 
 std::string
-HexTapFactory::getName(void) const
+SymbolDifferentiatorFactory::getName(void) const
 {
-  return "Hexadecimal Tap";
+  return "Symbol differentiator";
 }
 
 std::string
-HexTapFactory::getDescription(void) const
+SymbolDifferentiatorFactory::getDescription(void) const
 {
-  return "Hexadecimal dump of the symbol stream";
+  return "Generic differential decoder";
 }
 
 Suscan::DecoderObjects *
-HexTapFactory::make(QWidget *parent)
+SymbolDifferentiatorFactory::make(QWidget *)
 {
-  HexTap *tap = new HexTap(this);
-  Suscan::DecoderObjects *objects =
-      this->makeFromObjects(tap, new HexTapUI(parent));
-
-  tap->delayedConstructor();
-
-  return objects;
+  return this->makeFromObjects(new SymbolDifferentiator(this), nullptr);
 }
-
