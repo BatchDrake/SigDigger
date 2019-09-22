@@ -86,12 +86,6 @@ DecoderTab::connectAll(void)
         SLOT(onMoveDecoder(int, int)));
 
   connect(
-        this->ui->decoderEditor,
-        SIGNAL(addEntry(void)),
-        this,
-        SLOT(onAddDecoder(void)));
-
-  connect(
         this->ui->toggleDecodeButton,
         SIGNAL(clicked(bool)),
         this,
@@ -158,7 +152,6 @@ DecoderTab::onAddDecoder(void)
       Suscan::DecoderObjects *objects = factory->make();
       LayerItem item;
 
-      printf("Objects: %p\b", objects);
       item.setData(QVariant::fromValue(objects));
       item.setName(QString::fromStdString(factory->getName()));
       item.setDescription(QString::fromStdString(factory->getDescription()));
@@ -190,7 +183,6 @@ DecoderTab::onRemoveDecoder(int i)
   Suscan::DecoderObjects *objects =
       item.data().value<Suscan::DecoderObjects *>();
 
-  printf("Objects: %p\n", objects);
   delete objects;
 
   // Take this as a whiteout
