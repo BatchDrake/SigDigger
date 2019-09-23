@@ -34,6 +34,8 @@ namespace Suscan {
   class Decoder;
 }
 
+class QMdiSubWindow;
+
 namespace SigDigger {
   class DecoderTab : public QWidget
   {
@@ -48,6 +50,8 @@ namespace SigDigger {
     bool enabled = false;
     void connectAll(void);
     void rebuildStack(void);
+
+    QMdiSubWindow *findSubWindow(QWidget *widget);
 
   public:
     explicit DecoderTab(QWidget *parent = nullptr);

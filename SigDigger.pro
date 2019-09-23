@@ -105,7 +105,8 @@ SOURCES += \
     Decoder/Builtin/FrameSync.cpp \
     Decoder/Builtin/FrameSyncUI.cpp \
     Decoder/Builtin/FrameSyncFactory.cpp \
-    Decoder/Builtin/chopper.c
+    Decoder/Builtin/chopper.c \
+    Decoder/Builtin/FACFrameSyncUI.cpp
 
 
 HEADERS += \
@@ -180,7 +181,8 @@ HEADERS += \
     include/FrameSync.h \
     include/FrameSyncUI.h \
     include/FrameSyncFactory.h \
-    include/chopper.h
+    include/chopper.h \
+    include/FACFrameSyncUI.h
     include/BuiltinDecoderCollection.h
 
 
@@ -210,7 +212,8 @@ FORMS += \
     ui/ViterbiDecoderUI.ui \
     ui/DecoderTab.ui \
     ui/HexTap.ui \
-    ui/FrameSyncUI.ui
+    ui/FrameSyncUI.ui \
+    ui/FACFrameSyncUI.ui
 
 
 # Default rules for deployment.

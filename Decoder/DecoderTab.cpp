@@ -20,6 +20,7 @@
 #include <DecoderTab.h>
 #include <LayerItem.h>
 #include <Suscan/DecoderFactory.h>
+#include <QMdiSubWindow>
 #include "ui_DecoderTab.h"
 
 using namespace SigDigger;
@@ -154,6 +155,21 @@ DecoderTab::setTerminationDecoder(SigDigger::Decoder *dec)
 }
 
 ////////////////////////////////// Slots ///////////////////////////////////////
+QMdiSubWindow *
+DecoderTab::findSubWindow(QWidget *child)
+{
+  const QList<QMdiSubWindow *> subWindows =
+      this->ui->decoderArea->subWindowList();
+
+  for (QMdiSubWindow *window : subWindows) {
+      QWidget *wChild = qobject_cast<QWidget *>(window->widget());
+      if (wChild == child)
+        return window;
+  }
+
+  return nullptr;
+}
+
 void
 DecoderTab::onAddDecoder(void)
 {
@@ -171,9 +187,13 @@ DecoderTab::onAddDecoder(void)
       this->ui->decoderEditor->add(item);
 
       if (objects->ui != nullptr) {
+        QMdiSubWindow *subWindow;
         objects->ui->setThrottleControl(this->throttle);
-        this->ui->decoderStack->addWidget(objects->ui->asWidget());
-        this->ui->decoderStack->setCurrentWidget(objects->ui->asWidget());
+        subWindow = this->ui->decoderArea->addSubWindow(objects->ui->asWidget());
+        subWindow->show();
+        subWindow->setWindowTitle(QString::fromStdString(factory->getName()));
+        subWindow->setWindowIcon(QIcon(":/decoder.png"));
+        this->ui->decoderArea->setActiveSubWindow(subWindow);
       }
 
       this->rebuildStack();
@@ -197,12 +217,11 @@ DecoderTab::onSelectDecoder(int i)
     Suscan::DecoderObjects *objects =
         item.data().value<Suscan::DecoderObjects *>();
 
-    if (objects->ui == nullptr)
-      this->ui->decoderStack->setCurrentWidget(this->ui->noControlsPage);
-    else
-      this->ui->decoderStack->setCurrentWidget(objects->ui->asWidget());
-  } else {
-    this->ui->decoderStack->setCurrentWidget(this->ui->emptyPage);
+    if (objects->ui != nullptr) {
+      QMdiSubWindow *subWin = this->findSubWindow(objects->ui->asWidget());
+      if (subWin != nullptr)
+        this->ui->decoderArea->setActiveSubWindow(subWin);
+    }
   }
 }
 
@@ -219,8 +238,12 @@ DecoderTab::onRemoveDecoder(int i)
   Suscan::DecoderObjects *objects =
       item.data().value<Suscan::DecoderObjects *>();
 
-  if (objects->ui != nullptr)
-    this->ui->decoderStack->removeWidget(objects->ui->asWidget());
+  if (objects->ui != nullptr) {
+    QMdiSubWindow *subWindow = this->findSubWindow(objects->ui->asWidget());
+    this->ui->decoderArea->removeSubWindow(objects->ui->asWidget());
+    if (subWindow != nullptr)
+      subWindow->close();
+  }
 
   delete objects;
 

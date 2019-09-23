@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>798</width>
-    <height>490</height>
+    <height>377</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -115,7 +115,14 @@
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="EgaConsole" name="egaConsole"/>
+       <widget class="EgaConsole" name="egaConsole">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>300</height>
+         </size>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
