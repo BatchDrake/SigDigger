@@ -49,6 +49,7 @@ namespace SigDigger {
     InspectorUI *ui;
     uint8_t bps = 0;
     FrameId lastFrameId = 0;
+    unsigned long lastLength = 0;
 
   public:
     InspectorUITermination(InspectorUI *ui);
@@ -110,8 +111,10 @@ bool
 InspectorUITermination::work(FrameId frameId, const Symbol *buffer, size_t len)
 {
   if (this->lastFrameId != frameId) {
-    if (this->ui->ui->clearOnFrameButton->isChecked())
-      this->ui->ui->symView->clear();
+    if (this->ui->ui->clearOnFrameButton->isChecked()) {
+      this->ui->ui->symView->setOffset(static_cast<unsigned>(this->lastLength));
+      lastLength = this->ui->ui->symView->getLength();
+    }
 
     this->lastFrameId = frameId;
   }
@@ -346,6 +349,12 @@ InspectorUI::connectUI(void)
 
   connect(
         this->ui->autoScrollButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
+        this->ui->clearOnFrameButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSymViewControlsChanged()));
@@ -912,11 +921,13 @@ InspectorUI::onSymViewControlsChanged(void)
 {
   bool autoStride = this->ui->autoFitButton->isChecked();
   bool autoScroll = this->ui->autoScrollButton->isChecked();
+  bool autoFrame  = this->ui->clearOnFrameButton->isChecked();
 
   this->demodulating = this->ui->recordButton->isChecked();
 
   this->ui->symView->setAutoStride(autoStride);
-  this->ui->symView->setAutoScroll(autoScroll);
+  this->ui->autoScrollButton->setEnabled(!autoFrame);
+  this->ui->symView->setAutoScroll(autoScroll && !autoFrame);
   this->ui->widthSpin->setEnabled(!autoStride);
   this->ui->offsetSpin->setEnabled(!autoScroll);
 

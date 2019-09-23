@@ -609,7 +609,7 @@ font-family: Monospace;</string>
           <item row="1" column="7">
            <widget class="QPushButton" name="clearOnFrameButton">
             <property name="text">
-             <string>Clear on frame</string>
+             <string>Scroll on frame</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
