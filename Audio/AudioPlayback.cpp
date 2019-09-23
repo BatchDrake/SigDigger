@@ -20,15 +20,15 @@
 #include <iostream>
 #include "AudioPlayback.h"
 #include <stdexcept>
-#include <alsa/asoundlib.h>
 #include <sys/mman.h>
+
+using namespace SigDigger;
 
 #define ATTEMPT(expr, what) \
   if ((err = expr) < 0)  \
     throw std::runtime_error("Failed to " + std::string(what) + ": " + std::string(snd_strerror(err)))
 
-
-using namespace SigDigger;
+#ifdef SIGDIGGER_HAVE_ALSA
 
 ///////////////////////////// Playback worker /////////////////////////////////
 PlaybackWorker::PlaybackWorker(AudioBufferList *instance, snd_pcm_t *pcm)
@@ -446,3 +446,23 @@ AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
     }
   }
 }
+
+#else
+AudioPlayback::AudioPlayback(std::string const &, unsigned int)
+{
+
+    throw std::runtime_error(
+        "Cannot create audio playback object: ALSA support disabled at compile time");
+}
+
+void AudioPlayback::onError(void) { }
+
+void AudioPlayback::onStarving(void) { }
+
+AudioPlayback::~AudioPlayback() { }
+
+unsigned int AudioPlayback::getSampleRate(void) const { return 0; }
+
+void AudioPlayback::write(const SUCOMPLEX *, SUSCOUNT) { }
+
+#endif // SIGDIGGER_HAVE_ALSA

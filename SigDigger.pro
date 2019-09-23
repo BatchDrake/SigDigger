@@ -192,7 +192,12 @@ RESOURCES += \
     icons/Icons.qrc
 
 unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += suscan alsa
+unix: PKGCONFIG += suscan
+
+packagesExist(alsa) {
+  PKGCONFIG += alsa
+  DEFINES += SIGDIGGER_HAVE_ALSA
+}
 
 unix: LIBS += -lsuwidgets
 

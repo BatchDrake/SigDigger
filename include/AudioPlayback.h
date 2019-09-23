@@ -24,9 +24,12 @@
 #include <QMutex>
 #include <QThread>
 #include <string>
-#include <alsa/asoundlib.h>
 #include <Suscan/Library.h>
 #include <unistd.h>
+
+#ifdef SIGDIGGER_HAVE_ALSA
+#  include <alsa/asoundlib.h>
+#endif // SIGDIGGER_HAVE_ALSA
 
 #define SIGDIGGER_AUDIO_BUFFER_ALLOC static_cast<size_t>(4 * getpagesize())
 #define SIGDIGGER_AUDIO_BUFFER_SIZE (SIGDIGGER_AUDIO_BUFFER_ALLOC / sizeof (float))
@@ -36,6 +39,8 @@
 #define SIGDIGGER_AUDIO_BUFFERING_WATERMARK 2
 
 namespace SigDigger {
+
+#ifdef SIGDIGGER_HAVE_ALSA
   class AudioBufferList;
 
   class PlaybackWorker : public QObject {
@@ -122,9 +127,12 @@ namespace SigDigger {
     void release(void);
   };
 
+#endif // SIGDIGGER_HAVE_ALSA
+
   class AudioPlayback : public QObject {
     Q_OBJECT
 
+#ifdef SIGDIGGER_HAVE_ALSA
     // Audio buffer list
     AudioBufferList bufferList;
     QThread *workerThread  = nullptr;
@@ -140,6 +148,7 @@ namespace SigDigger {
     unsigned int sampRate;
 
     void startWorker(void);
+#endif // SIGDIGGER_HAVE_ALSA
 
     public:
       AudioPlayback(

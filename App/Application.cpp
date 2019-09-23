@@ -194,7 +194,7 @@ Application::openAudio(unsigned int rate)
         QMessageBox::critical(
                   this,
                   "Internal Suscan exception",
-                  "Failed to open inspector. Error was:\n\n<pre>"
+                  "Failed to open inspector. Error was:<p /><pre>"
                   + QString(e.what()) + "</pre>",
                   QMessageBox::Ok);
         this->playBack = nullptr;
@@ -202,7 +202,7 @@ Application::openAudio(unsigned int rate)
         QMessageBox::warning(
                   this,
                   "Failed to open soundcard device",
-                  "Cannot open audio device. Error was:\n\n<pre>"
+                  "Cannot open audio device. Error was:<p /><pre>"
                   + QString(e.what()) + "</pre>",
                   QMessageBox::Ok);
       }
