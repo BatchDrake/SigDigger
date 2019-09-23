@@ -77,9 +77,15 @@ SymbolInverter::getOutputBps(void) const
 }
 
 bool
-SymbolInverter::work(FrameId, const Symbol *buffer, size_t len)
+SymbolInverter::work(FrameId frameId, const Symbol *buffer, size_t len)
 {
   Symbol sym;
+
+  if (this->lastFrameId != frameId) {
+    this->lastFrameId = frameId;
+    this->nextFrame();
+  }
+
   while (len-- > 0) {
     sym = ~*buffer++ & this->mask;
     if (!this->write(&sym, 1))

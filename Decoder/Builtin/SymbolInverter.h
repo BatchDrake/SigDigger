@@ -33,6 +33,7 @@ namespace SigDigger {
     SymbolInverterConfig config;
     uint8_t bps;
     Symbol mask;
+    FrameId lastFrameId;
 
   public:
     SymbolInverter(Suscan::DecoderFactory *manufacturer);

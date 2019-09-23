@@ -48,6 +48,7 @@ namespace SigDigger {
     DummyDecoderConfig config;
     InspectorUI *ui;
     uint8_t bps = 0;
+    FrameId lastFrameId = 0;
 
   public:
     InspectorUITermination(InspectorUI *ui);
@@ -106,8 +107,15 @@ InspectorUITermination::getOutputBps(void) const
 }
 
 bool
-InspectorUITermination::work(FrameId, const Symbol *buffer, size_t len)
+InspectorUITermination::work(FrameId frameId, const Symbol *buffer, size_t len)
 {
+  if (this->lastFrameId != frameId) {
+    if (this->ui->ui->clearOnFrameButton->isChecked())
+      this->ui->ui->symView->clear();
+
+    this->lastFrameId = frameId;
+  }
+
   this->ui->ui->symView->feed(buffer, static_cast<unsigned int>(len));
 
   return true;
@@ -1134,7 +1142,6 @@ InspectorUI::onDecoderTabToggled(void)
 {
   this->decoderTab->setInputBps(static_cast<uint8_t>(this->getDemodBps()));
   this->decoderChainEnabled = this->decoderTab->isEnabled();
-
   this->refreshBps();
 }
 

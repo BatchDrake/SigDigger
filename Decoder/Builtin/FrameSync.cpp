@@ -100,7 +100,7 @@ FrameSync::work(FrameId, const Symbol *buffer, size_t len)
         }
       }
 
-      if (prevNdx < count)
+      if (prevNdx < len)
         this->write(&buffer[prevNdx], len - prevNdx);
     } else {
       this->write(buffer, len);

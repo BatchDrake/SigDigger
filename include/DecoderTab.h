@@ -45,7 +45,7 @@ namespace SigDigger {
     DecoderStack stack;
     Decoder *termination = nullptr;
     bool ready = false;
-    bool enabled = true;
+    bool enabled = false;
     void connectAll(void);
     void rebuildStack(void);
 

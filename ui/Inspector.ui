@@ -212,7 +212,7 @@ font-family: Monospace;</string>
    <item row="1" column="1" colspan="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -425,16 +425,6 @@ font-family: Monospace;</string>
           <property name="verticalSpacing">
            <number>3</number>
           </property>
-          <item row="0" column="0">
-           <widget class="SymView" name="symView">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
            <widget class="QScrollBar" name="symViewScrollBar">
             <property name="minimum">
@@ -454,6 +444,16 @@ font-family: Monospace;</string>
             </property>
             <property name="invertedControls">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="SymView" name="symView">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
            </widget>
           </item>
@@ -482,16 +482,16 @@ font-family: Monospace;</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
           <property name="leftMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="topMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="rightMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="bottomMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="spacing">
            <number>3</number>
@@ -606,6 +606,16 @@ font-family: Monospace;</string>
             </property>
            </widget>
           </item>
+          <item row="1" column="7">
+           <widget class="QPushButton" name="clearOnFrameButton">
+            <property name="text">
+             <string>Clear on frame</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -673,7 +683,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>729</height>
+        <height>714</height>
        </rect>
       </property>
       <attribute name="label">
@@ -809,7 +819,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>729</height>
+        <height>714</height>
        </rect>
       </property>
       <attribute name="label">
@@ -848,7 +858,7 @@ QToolBox::tab:hover {
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>729</height>
+            <height>714</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="estimatorsGrid">
@@ -882,7 +892,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>729</height>
+        <height>714</height>
        </rect>
       </property>
       <attribute name="label">
@@ -933,7 +943,7 @@ QToolBox::tab:hover {
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>729</height>
+            <height>714</height>
            </rect>
           </property>
           <property name="maximumSize">
