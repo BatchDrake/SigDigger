@@ -9,7 +9,7 @@ namespace SigDigger {
     public:
       std::string getName(void) const override;
       std::string getDescription(void) const override;
-      Suscan::DecoderObjects *make(QObject *parent = nullptr) override;
+      Suscan::DecoderObjects *make(QWidget *parent = nullptr) override;
   };
 }
 

@@ -86,7 +86,7 @@ HexTapUI::repaint(void)
     snprintf(lines, 16, " %02x", (*this->frameBytes)[i]);
     this->ui->egaConsole->print(lines);
 
-    if ((i & 0xf) == 8)
+    if ((i & 7) == 7)
       this->ui->egaConsole->print(" ");
 
     if ((i & 0xf) == 0xf) {
@@ -122,6 +122,8 @@ HexTapUI::setFrameCount(int count)
 {
   this->ui->frameCountLabel->setText("of " + QString::number(count));
   this->ui->frameSpin->setMaximum(count);
+  if (this->autoScroll() && count > 0)
+    this->ui->frameSpin->setValue(count - 1);
 }
 
 void
@@ -169,6 +171,12 @@ bool
 HexTapUI::reverse(void) const
 {
   return this->ui->reverseCheck->isChecked();
+}
+
+bool
+HexTapUI::autoScroll(void) const
+{
+  return this->ui->autoScrollButton->isChecked();
 }
 
 void

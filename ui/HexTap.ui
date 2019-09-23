@@ -29,8 +29,21 @@
    <property name="spacing">
     <number>3</number>
    </property>
-   <item row="0" column="7">
-    <widget class="QSpinBox" name="spinBox_2">
+   <item row="1" column="0">
+    <widget class="QPushButton" name="autoScrollButton">
+     <property name="text">
+      <string>Show last</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="9">
+    <widget class="QSpinBox" name="shiftSpin">
      <property name="minimum">
       <number>-7</number>
      </property>
@@ -39,7 +52,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0">
+   <item row="0" column="1">
     <widget class="QLabel" name="label">
      <property name="text">
       <string>Frame</string>
@@ -49,52 +62,28 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QSpinBox" name="spinBox">
+   <item row="0" column="2">
+    <widget class="QSpinBox" name="frameSpin">
      <property name="minimum">
       <number>1</number>
      </property>
     </widget>
    </item>
-   <item row="0" column="6">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Shift bits</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="5">
-    <widget class="QCheckBox" name="checkBox_3">
-     <property name="text">
-      <string>LSB</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="4">
-    <widget class="QCheckBox" name="checkBox">
-     <property name="text">
-      <string>Pack to bytes</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="3">
-    <widget class="QCheckBox" name="checkBox_2">
+    <widget class="QCheckBox" name="reverseCheck">
      <property name="text">
       <string>Reverse symbols</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
-    <widget class="QLabel" name="label_3">
+   <item row="0" column="3">
+    <widget class="QLabel" name="frameCountLabel">
      <property name="text">
       <string>of 1</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="8">
+   <item row="2" column="0" colspan="11">
     <widget class="QFrame" name="frame">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -118,9 +107,6 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <item row="0" column="0">
-       <widget class="EgaConsole" name="egaConsole"/>
-      </item>
       <item row="0" column="1">
        <widget class="QScrollBar" name="verticalScrollBar">
         <property name="orientation">
@@ -128,7 +114,57 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="EgaConsole" name="egaConsole"/>
+      </item>
      </layout>
+    </widget>
+   </item>
+   <item row="0" column="10">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="0">
+    <widget class="QPushButton" name="clearButton">
+     <property name="text">
+      <string>Clear</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="3">
+    <widget class="QCheckBox" name="packCheck">
+     <property name="text">
+      <string>Pack to bytes</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="7">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Shift bits</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="5">
+    <widget class="QCheckBox" name="lsbCheck">
+     <property name="text">
+      <string>LSB</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
   </layout>

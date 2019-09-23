@@ -21,6 +21,11 @@
 
 using namespace Suscan;
 
+DecoderUI::~DecoderUI()
+{
+
+}
+
 DecoderFactory::DecoderFactory()
 {
 

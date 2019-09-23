@@ -1,5 +1,5 @@
 //
-//    SymbolDifferentiatorFactory.h: Make symbol Differentiators
+//    FrameSyncFactory.cpp: Make frame synchronizers
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,20 +17,32 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#ifndef SYMBOLDIFFERENTIATORFACTORY_H
-#define SYMBOLDIFFERENTIATORFACTORY_H
+#include "FrameSyncFactory.h"
+#include "FrameSync.h"
+#include "FrameSyncUI.h"
 
-#include <Suscan/DecoderFactory.h>
-#include <Decoder.h>
+using namespace SigDigger;
 
-namespace SigDigger {
-  class SymbolDifferentiatorFactory : public Suscan::DecoderFactory
-  {
-  public:
-    std::string getName(void) const override;
-    std::string getDescription(void) const override;
-    Suscan::DecoderObjects *make(QWidget *parent = nullptr) override;
-  };
+std::string
+FrameSyncFactory::getName(void) const
+{
+  return "Frame synchronizer";
 }
 
-#endif // SYMBOLDifferentiatorFACTORY_H
+std::string
+FrameSyncFactory::getDescription(void) const
+{
+  return "Correlation-based synchronizer";
+}
+
+Suscan::DecoderObjects *
+FrameSyncFactory::make(QWidget *parent)
+{
+  FrameSync *fs = new FrameSync(this);
+  Suscan::DecoderObjects *objects =
+      this->makeFromObjects(fs, new FrameSyncUI(parent));
+
+  fs->delayedConstructor();
+
+  return objects;
+}

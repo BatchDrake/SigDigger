@@ -24,6 +24,7 @@
 #include <DecoderDialog.h>
 #include <Suscan/Compat.h>
 #include <DecoderStack.h>
+#include <ThrottleableWidget.h>
 
 namespace Ui {
   class DecoderTab;
@@ -38,6 +39,7 @@ namespace SigDigger {
   {
     Q_OBJECT
 
+    ThrottleControl *throttle = nullptr;
     std::vector<Suscan::Decoder *> decoderList;
     DecoderDialog decoderDialog;
     DecoderStack stack;
@@ -57,14 +59,17 @@ namespace SigDigger {
     uint8_t getOutputBps(void) const;
 
     void feed(const Symbol *samples, size_t len);
+
     bool isReady(void) const;
     bool isEnabled(void) const;
+    void setThrottleControl(ThrottleControl *control);
 
   public slots:
     void onAddDecoder(void);
     void onMoveDecoder(int, int);
     void onRemoveDecoder(int);
     void onToggleDecoder(void);
+    void onSelectDecoder(int);
 
   signals:
     void toggled(void);

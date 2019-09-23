@@ -23,6 +23,8 @@
 #include <string>
 
 class QObject;
+class QWidget;
+class ThrottleControl;
 
 namespace Suscan {
   struct DecoderObjects;
@@ -51,6 +53,10 @@ namespace Suscan {
       return this->objs;
     }
 
+    virtual QWidget *asWidget(void) = 0;
+    virtual void setThrottleControl(ThrottleControl *ptr) = 0;
+    virtual ~DecoderUI(void);
+
     friend class DecoderFactory;
   };
 
@@ -77,7 +83,7 @@ namespace Suscan {
 
     virtual std::string getName(void) const = 0;
     virtual std::string getDescription(void) const = 0;
-    virtual DecoderObjects *make(QObject *parent = nullptr) = 0;
+    virtual DecoderObjects *make(QWidget *parent = nullptr) = 0;
   };
 }
 

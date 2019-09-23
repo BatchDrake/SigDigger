@@ -88,7 +88,6 @@ HexTap::setInputBps(uint8_t bps)
       if (i & (1 << j))
         s |= 1 << (bps - j - 1);
     this->lsb2msb[i] = s;
-    printf("0x%02x -> 0x%02x\n", i, s);
   }
 
   return true; // Accepts any bps
@@ -168,6 +167,7 @@ HexTap::work(FrameId frameId, const Symbol *buffer, size_t len)
     // Baseline state
     this->currFrameId = frameId;
     this->selectedFrameId = 0;
+    this->relFrameId = 0;
     this->empty = false;
 
     // Set frame size to 1
@@ -178,13 +178,18 @@ HexTap::work(FrameId frameId, const Symbol *buffer, size_t len)
   }
 
   if (this->currFrameId != frameId) {
+    this->currFrameId = frameId;
+    ++this->relFrameId;
+    this->nextFrame();
     this->frames.resize(this->frames.size() + 1);
     this->current = &this->frames[this->frames.size() - 1];
+
+    this->ui->setFrameCount(static_cast<int>(this->frames.size()));
   }
 
   this->current->insert(this->current->end(), buffer, buffer + len);
 
-  if (this->selectedFrameId == frameId) {
+  if (this->selectedFrameId == this->relFrameId) {
     bytesLen = this->selectedFrameBytes.size();
     this->feedSelected(buffer, len);
     this->ui->refreshFrom(bytesLen);

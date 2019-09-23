@@ -86,6 +86,12 @@ DecoderTab::connectAll(void)
         SLOT(onMoveDecoder(int, int)));
 
   connect(
+        this->ui->decoderEditor,
+        SIGNAL(selectionChanged(int)),
+        this,
+        SLOT(onSelectDecoder(int)));
+
+  connect(
         this->ui->toggleDecodeButton,
         SIGNAL(clicked(bool)),
         this,
@@ -135,6 +141,12 @@ DecoderTab::isReady(void) const
 }
 
 void
+DecoderTab::setThrottleControl(ThrottleControl *control)
+{
+  this->throttle = control;
+}
+
+void
 DecoderTab::setTerminationDecoder(SigDigger::Decoder *dec)
 {
   this->termination = dec;
@@ -157,6 +169,13 @@ DecoderTab::onAddDecoder(void)
       item.setDescription(QString::fromStdString(factory->getDescription()));
 
       this->ui->decoderEditor->add(item);
+
+      if (objects->ui != nullptr) {
+        objects->ui->setThrottleControl(this->throttle);
+        this->ui->decoderStack->addWidget(objects->ui->asWidget());
+        this->ui->decoderStack->setCurrentWidget(objects->ui->asWidget());
+      }
+
       this->rebuildStack();
     }
   }
@@ -171,6 +190,23 @@ DecoderTab::onToggleDecoder(void)
 }
 
 void
+DecoderTab::onSelectDecoder(int i)
+{
+  if (i != -1) {
+    LayerItem &item = this->ui->decoderEditor->get(i);
+    Suscan::DecoderObjects *objects =
+        item.data().value<Suscan::DecoderObjects *>();
+
+    if (objects->ui == nullptr)
+      this->ui->decoderStack->setCurrentWidget(this->ui->noControlsPage);
+    else
+      this->ui->decoderStack->setCurrentWidget(objects->ui->asWidget());
+  } else {
+    this->ui->decoderStack->setCurrentWidget(this->ui->emptyPage);
+  }
+}
+
+void
 DecoderTab::onMoveDecoder(int, int)
 {
   this->rebuildStack();
@@ -182,6 +218,9 @@ DecoderTab::onRemoveDecoder(int i)
   LayerItem &item = this->ui->decoderEditor->get(i);
   Suscan::DecoderObjects *objects =
       item.data().value<Suscan::DecoderObjects *>();
+
+  if (objects->ui != nullptr)
+    this->ui->decoderStack->removeWidget(objects->ui->asWidget());
 
   delete objects;
 

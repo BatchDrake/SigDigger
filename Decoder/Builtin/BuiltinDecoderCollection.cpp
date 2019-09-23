@@ -25,6 +25,7 @@
 #include "SymbolInverterFactory.h"
 #include "SymbolDifferentiatorFactory.h"
 #include "HexTapFactory.h"
+#include "FrameSyncFactory.h"
 
 using namespace SigDigger;
 
@@ -34,5 +35,6 @@ BuiltinDecoderCollection::BuiltinDecoderCollection()
 
   sus->registerDecoderFactory(new SymbolInverterFactory());
   sus->registerDecoderFactory(new SymbolDifferentiatorFactory());
+  sus->registerDecoderFactory(new FrameSyncFactory());
   sus->registerDecoderFactory(new HexTapFactory());
 }

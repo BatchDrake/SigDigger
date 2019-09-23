@@ -1,5 +1,5 @@
 //
-//    SymbolDifferentiatorFactory.h: Make symbol Differentiators
+//    FrameSyncFactory.h: Make symbol Differentiators
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,14 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#ifndef SYMBOLDIFFERENTIATORFACTORY_H
-#define SYMBOLDIFFERENTIATORFACTORY_H
+#ifndef FrameSyncFACTORY_H
+#define FrameSyncFACTORY_H
 
 #include <Suscan/DecoderFactory.h>
 #include <Decoder.h>
 
 namespace SigDigger {
-  class SymbolDifferentiatorFactory : public Suscan::DecoderFactory
+  class FrameSyncFactory : public Suscan::DecoderFactory
   {
   public:
     std::string getName(void) const override;
@@ -33,4 +33,4 @@ namespace SigDigger {
   };
 }
 
-#endif // SYMBOLDifferentiatorFACTORY_H
+#endif // FrameSyncFACTORY_H

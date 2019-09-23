@@ -169,6 +169,8 @@ InspectorUI::InspectorUI(
   this->ui->symView->setThrottleControl(&this->throttle);
   this->ui->transition->setThrottleControl(&this->throttle);
   this->ui->histogram->setThrottleControl(&this->throttle);
+  this->decoderTab->setThrottleControl(&this->throttle);
+
   this->ui->histogram->setDecider(&this->decider);
   this->ui->wfSpectrum->setCenterFreq(0);
   this->ui->wfSpectrum->resetHorizontalZoom();

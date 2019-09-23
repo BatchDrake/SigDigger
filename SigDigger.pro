@@ -99,7 +99,13 @@ SOURCES += \
     Decoder/DecoderTab.cpp \
     Decoder/Builtin/HexTapUI.cpp \
     Decoder/Builtin/HexTap.cpp \
-    Decoder/Builtin/HexTapFactory.cpp
+    Decoder/Builtin/HexTapFactory.cpp \
+    Decoder/Builtin/SymbolDifferentiator.cpp \
+    Decoder/Builtin/SymbolDifferentiatorFactory.cpp \
+    Decoder/Builtin/FrameSync.cpp \
+    Decoder/Builtin/FrameSyncUI.cpp \
+    Decoder/Builtin/FrameSyncFactory.cpp \
+    Decoder/Builtin/chopper.c
 
 
 HEADERS += \
@@ -168,7 +174,13 @@ HEADERS += \
     include/DecoderTab.h \
     include/HexTapUI.h \
     include/HexTap.h \
-    include/HexTapFactory.h
+    include/HexTapFactory.h \
+    include/SymbolDifferentiator.h \
+    include/SymbolDifferentiatorFactory.h \
+    include/FrameSync.h \
+    include/FrameSyncUI.h \
+    include/FrameSyncFactory.h \
+    include/chopper.h
     include/BuiltinDecoderCollection.h
 
 
@@ -197,7 +209,8 @@ FORMS += \
     ui/DecoderDialog.ui \
     ui/ViterbiDecoderUI.ui \
     ui/DecoderTab.ui \
-    ui/HexTap.ui
+    ui/HexTap.ui \
+    ui/FrameSyncUI.ui
 
 
 # Default rules for deployment.

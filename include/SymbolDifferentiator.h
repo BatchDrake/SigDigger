@@ -1,11 +1,52 @@
+//
+//    SymbolDifferentiator.h: Symbol differentiator
+//    Copyright (C) 2019 Gonzalo José Carracedo Carballal
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as
+//    published by the Free Software Foundation, either version 3 of the
+//    License, or (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful, but
+//    WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this program.  If not, see
+//    <http://www.gnu.org/licenses/>
+//
+
 #ifndef SYMBOLDIFFERENTIATOR_H
 #define SYMBOLDIFFERENTIATOR_H
 
+#include <Decoder.h>
 
-class SymbolDifferentiator : public Suscan::Decoder
-{
+namespace SigDigger {
+  class SymbolDifferentiatorConfig : public Suscan::Serializable {
   public:
-    SymbolDifferentiator();
-};
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize(void) override;
+  };
+
+  class SymbolDifferentiator : public Decoder
+  {
+    SymbolDifferentiatorConfig config;
+    uint8_t bps;
+    Symbol mask;
+    Symbol prev;
+
+  public:
+    SymbolDifferentiator(Suscan::DecoderFactory *manufacturer);
+
+    Suscan::Serializable const &getConfig(void) const override;
+    bool setConfig(Suscan::Serializable &config) override;
+
+    std::string getStateString(void) const override;
+    bool setInputBps(uint8_t bps) override;
+    uint8_t getOutputBps(void) const override;
+    bool work(FrameId frame, const Symbol *buffer, size_t len) override;
+  };
+}
 
 #endif // SYMBOLDIFFERENTIATOR_H
