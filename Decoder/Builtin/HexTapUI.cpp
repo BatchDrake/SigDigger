@@ -71,6 +71,7 @@ HexTapUI::repaint(void)
 {
   size_t len = this->frameBytes->size();
   char lines[17];
+  bool ascii = this->pack();
 
   lines[16] = 0;
 
@@ -93,9 +94,16 @@ HexTapUI::repaint(void)
       this->ui->egaConsole->print(" ");
       this->ui->egaConsole->setForeground(QColor(255, 255, 255));
 
-      this->ui->egaConsole->put(
-          reinterpret_cast<const char *>(&(*this->frameBytes)[i - 15]),
-          16);
+      if (ascii) {
+        this->ui->egaConsole->put(
+            reinterpret_cast<const char *>(&(*this->frameBytes)[i - 15]),
+            16);
+      } else {
+        for (size_t j = 0; j < 16; ++j)
+          lines[j] = '0' + static_cast<char>((*this->frameBytes)[i - j - 15]);
+        this->ui->egaConsole->put(lines, 16);
+      }
+
       this->ui->egaConsole->print("\n");
     }
   }

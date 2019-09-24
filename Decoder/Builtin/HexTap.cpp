@@ -148,6 +148,7 @@ HexTap::selectFrame(FrameId id)
   if (this->selectedFrameId != id) {
     this->selectedFrameId = id;
     this->recalcSelectedFrameBytes();
+    this->ui->setFrameBytes(&this->selectedFrameBytes);
   }
 }
 
@@ -186,6 +187,9 @@ HexTap::work(FrameId frameId, const Symbol *buffer, size_t len)
 
     this->ui->setFrameCount(static_cast<int>(this->frames.size()));
   }
+
+  if (this->ui->autoScroll())
+    this->selectFrame(this->relFrameId);
 
   this->current->insert(this->current->end(), buffer, buffer + len);
 

@@ -27,6 +27,44 @@ using namespace SigDigger;
 
 Q_DECLARE_METATYPE(Suscan::DecoderObjects *);
 
+//////////////////////// Subwindow event filter ////////////////////////////////
+SubWindowCloseFilter::SubWindowCloseFilter(QObject *parent, DecoderTab *tab) :
+  QObject(parent)
+{
+  this->decoderTab = tab;
+}
+
+SubWindowCloseFilter::~SubWindowCloseFilter()
+{
+  // And the vtable is created
+}
+
+bool
+SubWindowCloseFilter::eventFilter(QObject *obj, QEvent *event)
+{
+  if (event->type() == QEvent::Close) {
+    printf("Event!!\n");
+    QMdiSubWindow *subWindow = dynamic_cast<QMdiSubWindow*>(obj);
+    QWidget *child = subWindow->widget();
+
+    printf("Child: %p\n", child);
+    int index = this->decoderTab->findLayerItem(child);
+    printf("Index: %d\n", index);
+    if (index != -1) {
+      LayerItem &item = this->decoderTab->ui->decoderEditor->get(index);
+      Suscan::DecoderObjects *objects =
+          item.data().value<Suscan::DecoderObjects *>();
+      this->decoderTab->ui->decoderEditor->remove(index);
+      delete objects;
+      this->decoderTab->rebuildStack();
+    }
+  }
+
+  // Call overriden method
+  return QObject::eventFilter(obj, event);
+}
+
+///////////////////////// Decoder tab implementation ///////////////////////////
 void
 DecoderTab::rebuildStack(void)
 {
@@ -105,6 +143,8 @@ DecoderTab::DecoderTab(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  this->closeFilter = new SubWindowCloseFilter(parent, this);
+
   this->connectAll();
 }
 
@@ -170,6 +210,26 @@ DecoderTab::findSubWindow(QWidget *child)
   return nullptr;
 }
 
+int
+DecoderTab::findLayerItem(QWidget *ui)
+{
+  int count = this->ui->decoderEditor->size();
+
+  for (auto i = 0; i < count; ++i) {
+    LayerItem &item = this->ui->decoderEditor->get(i);
+
+    Suscan::DecoderObjects *objects =
+        item.data().value<Suscan::DecoderObjects *>();
+
+    if (objects != nullptr
+        && objects->ui != nullptr
+        && objects->ui->asWidget() == ui)
+      return i;
+  }
+
+  return -1;
+}
+
 void
 DecoderTab::onAddDecoder(void)
 {
@@ -190,6 +250,8 @@ DecoderTab::onAddDecoder(void)
         QMdiSubWindow *subWindow;
         objects->ui->setThrottleControl(this->throttle);
         subWindow = this->ui->decoderArea->addSubWindow(objects->ui->asWidget());
+        subWindow->installEventFilter(this->closeFilter);
+        subWindow->setAttribute(Qt::WA_DeleteOnClose, false);
         subWindow->show();
         subWindow->setWindowTitle(QString::fromStdString(factory->getName()));
         subWindow->setWindowIcon(QIcon(":/decoder.png"));
@@ -217,6 +279,7 @@ DecoderTab::onSelectDecoder(int i)
     Suscan::DecoderObjects *objects =
         item.data().value<Suscan::DecoderObjects *>();
 
+    printf("Select decoder, objects %p\n", objects);
     if (objects->ui != nullptr) {
       QMdiSubWindow *subWin = this->findSubWindow(objects->ui->asWidget());
       if (subWin != nullptr)
@@ -245,10 +308,9 @@ DecoderTab::onRemoveDecoder(int i)
       subWindow->close();
   }
 
-  delete objects;
-
   // Take this as a whiteout
   item.setData(QVariant::fromValue<Suscan::DecoderObjects *>(nullptr));
+  delete objects;
 
   this->rebuildStack();
 }
@@ -258,5 +320,6 @@ DecoderTab::~DecoderTab()
   while (this->ui->decoderEditor->size() > 0)
     this->ui->decoderEditor->remove(0);
 
+  delete closeFilter;
   delete ui;
 }

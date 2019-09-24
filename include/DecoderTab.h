@@ -37,6 +37,25 @@ namespace Suscan {
 class QMdiSubWindow;
 
 namespace SigDigger {
+  class DecoderTab;
+
+  // Vtable hint: because of the crooked MOC system, if you place the definition
+  // of this class inside the .cpp file, the vtable is never emitted.
+
+  class SubWindowCloseFilter : public QObject
+  {
+      Q_OBJECT
+
+      DecoderTab *decoderTab;
+
+    protected:
+      bool eventFilter(QObject *obj, QEvent *event) override;
+
+    public:
+      SubWindowCloseFilter(QObject *parent, DecoderTab *tab);
+      ~SubWindowCloseFilter() override;
+  };
+
   class DecoderTab : public QWidget
   {
     Q_OBJECT
@@ -52,6 +71,11 @@ namespace SigDigger {
     void rebuildStack(void);
 
     QMdiSubWindow *findSubWindow(QWidget *widget);
+    int findLayerItem(QWidget *ui);
+
+    SubWindowCloseFilter *closeFilter = nullptr;
+
+    friend class SubWindowCloseFilter;
 
   public:
     explicit DecoderTab(QWidget *parent = nullptr);
