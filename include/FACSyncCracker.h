@@ -59,10 +59,11 @@ namespace SigDigger {
       };
 
     private:
-
       State state = ACQUIRING;
       std::vector<Symbol> buffer;
       std::vector<SUFLOAT> fac;
+      Symbol maxSym = 1;
+      uint8_t bps = 1;
       unsigned int p = 0;
       float sigmas = 5;
       FACSyncWorker *worker = nullptr;
@@ -70,6 +71,7 @@ namespace SigDigger {
 
       // Computed members
       int delay = -1;
+      float relAmp;
       std::vector<Symbol> syncSeq;
       int syncSeqStart;
 
@@ -82,7 +84,10 @@ namespace SigDigger {
       void setBufferSize(size_t len);
       void restart(void);
       void feed(const Symbol *buffer, size_t len);
+      void setBps(uint8_t bps);
       int get(void) const;
+      float significance(void) const;
+
       std::vector<Symbol> syncSymbols(void) const;
 
     signals:

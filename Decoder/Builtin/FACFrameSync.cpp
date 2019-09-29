@@ -119,6 +119,7 @@ FACFrameSync::setInputBps(uint8_t bps)
 {
   this->bps = bps;
   this->mask = static_cast<Symbol>((1 << bps) - 1);
+  this->cracker->setBps(bps);
 
   return true; // Accepts any bps
 }

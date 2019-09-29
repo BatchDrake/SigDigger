@@ -70,7 +70,7 @@ void
 HexTapUI::repaint(void)
 {
   size_t len = this->frameBytes->size();
-  char lines[17];
+  char lines[20];
   bool ascii = this->pack();
 
   lines[16] = 0;
@@ -78,7 +78,7 @@ HexTapUI::repaint(void)
   for (size_t i = this->lastLen; i < len; ++i) {
     if ((i & 0xf) == 0) {
       this->ui->egaConsole->setForeground(QColor(255, 0, 0));
-      snprintf(lines, 16, "%08lx ", i);
+      snprintf(lines, 18, "%08lx ", i);
       this->ui->egaConsole->print(lines);
 
       this->ui->egaConsole->setForeground(QColor(0, 255, 0));

@@ -195,6 +195,13 @@ FACSyncCracker::feed(const Symbol *buffer, size_t len)
 }
 
 void
+FACSyncCracker::setBps(uint8_t bps)
+{
+  this->bps = bps;
+  this->maxSym = static_cast<Symbol>((1 << bps) - 1);
+}
+
+void
 FACSyncCracker::restart(void)
 {
   this->p = 0;
@@ -213,11 +220,18 @@ FACSyncCracker::syncSymbols(void) const
   return this->syncSeq;
 }
 
+float
+FACSyncCracker::significance(void) const
+{
+  return this->relAmp;
+}
+
 void
 FACSyncCracker::findSync(void)
 {
-  std::vector<SUFLOAT> mu;
+  std::vector<SUFLOAT> mode;
   std::vector<SUFLOAT> sigma2;
+  std::vector<unsigned int> histogram;
   SUFLOAT sqSigmas = this->sigmas * this->sigmas;
   SUFLOAT sqSigmaMax =  0;
   SUFLOAT sqSigmaThreshold;
@@ -225,39 +239,55 @@ FACSyncCracker::findSync(void)
   int packets;
   unsigned ui, uf;
   int first = 0;
-  Symbol maxSym = 0; // TODO: Use symbol information
   int candidateStart = 0;
   int candidateLength = 0;
 
   Q_ASSERT(this->delay > 0);
 
-  mu.resize(static_cast<size_t>(this->delay));
+  mode.resize(static_cast<size_t>(this->delay));
   sigma2.resize(static_cast<size_t>(this->delay));
+  histogram.resize(this->maxSym + 1);
 
-  std::fill(mu.begin(), mu.end(), 0);
+  std::fill(sigma2.begin(), sigma2.end(), 0);
 
   packets = static_cast<int>(this->buffer.size()) / this->delay;
 
   K = 1.f / packets;
 
-  // Christ I swear I hate this language. Anyways, this is not the best
-  // approach.
-  // TODO: Use mode instead of average.
-  for (int j = 0; j < packets; ++j)
-    for (int i = 0; i < this->delay; ++i) {
-      ui = static_cast<unsigned>(i);
+  // Christ I swear I hate this language.
+  for (int i = 0; i < this->delay; ++i) {
+    unsigned int maxCount = 0;
+    Symbol sym = 0;
+
+    ui = static_cast<unsigned>(i);
+    std::fill(histogram.begin(), histogram.end(), 0);
+
+    for (int j = 0; j < packets; ++j) {
       uf = static_cast<unsigned>(i + j * this->delay);
-      if (maxSym < this->buffer[uf])
-        maxSym = this->buffer[uf];
-      mu[ui] += K * this->buffer[uf];
+      ++histogram[this->buffer[uf] & this->maxSym];
     }
 
+    // Traverse histogram and find max
+    for (int j = 0; j <= this->maxSym; ++j) {
+      uf = static_cast<unsigned int>(j);
+      if (histogram[uf] > maxCount) {
+        maxCount = histogram[uf];
+        sym = static_cast<Symbol>(j);
+      }
+    }
+
+    // Update mode
+    mode[ui] = sym;
+  }
+
+  // This is a special variance. It is not calculated based on a deviation
+  // from the mean, but from the mode.
   for (int j = 0; j < packets; ++j)
     for (int i = 0; i < this->delay; ++i) {
       ui = static_cast<unsigned>(i);
       uf = static_cast<unsigned>(i + j * this->delay);
 
-      sigma2[ui] += K * (this->buffer[uf] - mu[ui]) * (this->buffer[uf] - mu[ui]);
+      sigma2[ui] += K * (this->buffer[uf] - mode[ui]) * (this->buffer[uf] - mode[ui]);
     }
 
   // Alright, now we have the average symbol plus its standard deviation.
@@ -265,9 +295,9 @@ FACSyncCracker::findSync(void)
 
   // For purely random data, we expect mu to be maxSym / 2. We can easily
   // estimate a maximum value for the variance
-  for (int i = 0; i <= maxSym; ++i)
-    sqSigmaMax += (i - .5f * maxSym) * (i - .5f * maxSym);
-  sqSigmaMax /= maxSym + 1;
+  for (int i = 0; i <= this->maxSym; ++i)
+    sqSigmaMax += (i - .5f * this->maxSym) * (i - .5f * this->maxSym);
+  sqSigmaMax /= this->maxSym + 1;
 
   // Now we can use this value as a threshold. If the variance is
   // below certain value (let's say 25 times below the maximum),
@@ -304,7 +334,7 @@ FACSyncCracker::findSync(void)
   for (int i = 0; i < candidateLength; ++i)
     this->syncSeq[static_cast<unsigned>(i)] =
         static_cast<Symbol>(
-          round(mu[static_cast<unsigned>(i + candidateStart)]));
+          round(mode[static_cast<unsigned>(i + candidateStart)]));
 }
 
 void
@@ -312,7 +342,8 @@ FACSyncCracker::guess(void)
 {
   // First step: compute standard deviation
   SUFLOAT avg = 0;
-  SUFLOAT std = 0;
+  SUFLOAT var = 0;
+  SUFLOAT sqSigmas = this->sigmas * this->sigmas;
   size_t maxNdx = 0;
   SUFLOAT max = 0;
 
@@ -321,9 +352,8 @@ FACSyncCracker::guess(void)
   avg /= this->fac.size();
 
   for (size_t i = 0; i < this->fac.size(); ++i)
-    std += (this->fac[i] - avg) * (this->fac[i] - avg);
-  std /= this->fac.size();
-  std = SU_SQRT(std);
+    var += (this->fac[i] - avg) * (this->fac[i] - avg);
+  var /= this->fac.size();
 
   // Second step: look for the biggest coefficient (ignoring the first)
   for (size_t i = 1; i < this->fac.size() / 2; ++i) {
@@ -334,8 +364,9 @@ FACSyncCracker::guess(void)
   }
 
   // Third step: is this maximum significant?
-  if (max >= this->sigmas * std) {
+  if (max * max >= var * sqSigmas) {
     this->delay = static_cast<int>(maxNdx);
+    this->relAmp = max / SU_SQRT(var);
     this->findSync();
   } else {
     this->delay = -1;
