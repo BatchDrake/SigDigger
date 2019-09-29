@@ -1,6 +1,5 @@
 //
-//
-//    SymbolInverterFactory.h: Make symbol inverters
+//    FACFrameSyncFactory.cpp: Make FAC frame synchronizers
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -18,25 +17,33 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include <Suscan/Library.h>
-
-#include <BuiltinDecoderCollection.h>
-
-#include "SymbolInverterFactory.h"
-#include "SymbolDifferentiatorFactory.h"
-#include "HexTapFactory.h"
-#include "FrameSyncFactory.h"
 #include "FACFrameSyncFactory.h"
+#include "FACFrameSync.h"
+#include "FACFrameSyncUI.h"
 
 using namespace SigDigger;
 
-BuiltinDecoderCollection::BuiltinDecoderCollection()
+std::string
+FACFrameSyncFactory::getName(void) const
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
-  sus->registerDecoderFactory(new SymbolInverterFactory());
-  sus->registerDecoderFactory(new SymbolDifferentiatorFactory());
-  sus->registerDecoderFactory(new FrameSyncFactory());
-  sus->registerDecoderFactory(new FACFrameSyncFactory());
-  sus->registerDecoderFactory(new HexTapFactory());
+  return "FAC Frame Sync";
 }
+
+std::string
+FACFrameSyncFactory::getDescription(void) const
+{
+  return "Autocorrelation-based frame synchronizer";
+}
+
+Suscan::DecoderObjects *
+FACFrameSyncFactory::make(QWidget *parent)
+{
+  FACFrameSync *tap = new FACFrameSync(this);
+  Suscan::DecoderObjects *objects =
+      this->makeFromObjects(tap, new FACFrameSyncUI(parent));
+
+  tap->delayedConstructor();
+
+  return objects;
+}
+

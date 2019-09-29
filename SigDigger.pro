@@ -106,7 +106,10 @@ SOURCES += \
     Decoder/Builtin/FrameSyncUI.cpp \
     Decoder/Builtin/FrameSyncFactory.cpp \
     Decoder/Builtin/chopper.c \
-    Decoder/Builtin/FACFrameSyncUI.cpp
+    Decoder/Builtin/FACFrameSyncUI.cpp \
+    Decoder/Builtin/FACFrameSync.cpp \
+    Misc/FACSyncCracker.cpp \
+    Decoder/Builtin/FACFrameSyncFactory.cpp
 
 
 HEADERS += \
@@ -182,7 +185,10 @@ HEADERS += \
     include/FrameSyncUI.h \
     include/FrameSyncFactory.h \
     include/chopper.h \
-    include/FACFrameSyncUI.h
+    include/FACFrameSyncUI.h \
+    include/FACFrameSync.h \
+    include/FACSyncCracker.h \
+    include/FACFrameSyncFactory.h
     include/BuiltinDecoderCollection.h
 
 

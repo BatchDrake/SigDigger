@@ -15,7 +15,6 @@ namespace SigDigger {
 
   class FrameSyncUI;
 
-
   class FrameSync : public QObject, public Decoder
   {
       Q_OBJECT

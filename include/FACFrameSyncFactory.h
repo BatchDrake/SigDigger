@@ -1,6 +1,5 @@
 //
-//
-//    SymbolInverterFactory.h: Make symbol inverters
+//    FACFrameSyncFactory.h: Make FAC frame synchronizers
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,26 +16,19 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+#ifndef FACFRAMESYNCFACTORY_H
+#define FACFRAMESYNCFACTORY_H
 
-#include <Suscan/Library.h>
+#include <Suscan/DecoderFactory.h>
 
-#include <BuiltinDecoderCollection.h>
-
-#include "SymbolInverterFactory.h"
-#include "SymbolDifferentiatorFactory.h"
-#include "HexTapFactory.h"
-#include "FrameSyncFactory.h"
-#include "FACFrameSyncFactory.h"
-
-using namespace SigDigger;
-
-BuiltinDecoderCollection::BuiltinDecoderCollection()
-{
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
-  sus->registerDecoderFactory(new SymbolInverterFactory());
-  sus->registerDecoderFactory(new SymbolDifferentiatorFactory());
-  sus->registerDecoderFactory(new FrameSyncFactory());
-  sus->registerDecoderFactory(new FACFrameSyncFactory());
-  sus->registerDecoderFactory(new HexTapFactory());
+namespace SigDigger {
+  class FACFrameSyncFactory : public Suscan::DecoderFactory
+  {
+    public:
+      std::string getName(void) const override;
+      std::string getDescription(void) const override;
+      Suscan::DecoderObjects *make(QWidget *parent = nullptr) override;
+  };
 }
+
+#endif // FACFRAMESYNCFACTORY_H

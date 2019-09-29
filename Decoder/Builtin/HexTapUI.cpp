@@ -100,7 +100,8 @@ HexTapUI::repaint(void)
             16);
       } else {
         for (size_t j = 0; j < 16; ++j)
-          lines[j] = '0' + static_cast<char>((*this->frameBytes)[i - j - 15]);
+          lines[j] = '0' + static_cast<char>((*this->frameBytes)[i + j - 15]);
+        lines[16] = 0;
         this->ui->egaConsole->put(lines, 16);
       }
 
