@@ -28,7 +28,9 @@ equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
   CONFIG += c++14
 }
 
-INCLUDEPATH += $$PWD/include /usr/include/SuWidgets
+SUWIDGETS_LIB_PATH = -L$$[QT_INSTALL_LIBS]
+                     
+INCLUDEPATH += $$PWD/include /usr/local/include/SuWidgets /usr/local/include
 SOURCES += \
     App/AppConfig.cpp \
     App/Application.cpp \
@@ -199,7 +201,7 @@ packagesExist(alsa) {
   DEFINES += SIGDIGGER_HAVE_ALSA
 }
 
-unix: LIBS += -lsuwidgets
+unix: LIBS += -lsuwidgets $$SUWIDGETS_LIB_PATH
 
 DISTFILES += \
     icons/icon-alpha.png \
