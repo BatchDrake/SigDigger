@@ -530,6 +530,32 @@ InspectorUI::onResetSNR(void)
 
 }
 
+static QString
+format2nUnits(unsigned long rate, QString const &units)
+{
+  if (rate < (1 << 10))
+    return QString::number(rate) + " " + units;
+  else if (rate < (1 << 20))
+    return QString::number(static_cast<qreal>(rate) / (1 << 10), 'f', 3) + " Ki" + units;
+  else if (rate < (1 << 30))
+    return QString::number(static_cast<qreal>(rate) / (1 << 20), 'f', 3) + " Mi" + units;
+
+  return QString::number(static_cast<qreal>(rate) / (1 << 30), 'f', 3) + " Gi" + units;
+}
+
+static QString
+formatUnits(unsigned long rate, QString const &units)
+{
+  if (rate < 1000)
+    return QString::number(rate) + " " + units;
+  else if (rate < 1000000)
+    return QString::number(rate / 1e3, 'f', 3) + " k" + units;
+  else if (rate < 1000000000)
+    return QString::number(rate / 1e6, 'f', 3) + " M" + units;
+
+  return QString::number(rate / 1e9, 'f', 3) + " G" + units;
+}
+
 void
 InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
 {  
@@ -558,13 +584,21 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
       this->decider.feed(data, size);
       this->ui->symView->feed(this->decider.get());
       this->ui->transition->feed(this->decider.get());
-      this->ui->sizeLabel->setText(
-            "Size: " +
-            QString::number(this->ui->symView->getLength()) +
-            " symbols (" +
-            QString::number(this->ui->symView->getLength() * this->decider.getBps()) +
-            " bits)");
 
+
+      this->ui->sizeLabel->setText(
+            "Capture size: " +
+            formatUnits(this->ui->symView->getLength(), "sym"));
+
+      this->ui->dataSizeLabel->setText(
+            "Data size: " +
+            formatUnits(
+              this->ui->symView->getLength() * this->decider.getBps(),
+              "bits")
+            + " (" +
+            format2nUnits(
+              this->ui->symView->getLength() * this->decider.getBps() >> 3,
+              "B") + ")");
     }
   }
 
