@@ -132,6 +132,7 @@ namespace SigDigger {
     void requestOpenInspector(void);
     void inspectorClosed(Suscan::Handle handle);
     void analyzerParamsChanged(void);
+    void uiQuit(void);
 
     void audioChanged(void);
 
@@ -141,6 +142,12 @@ namespace SigDigger {
     void onToggleCapture(bool);
     void onToggleAbout(bool);
     void onCloseInspectorTab(int index);
+    void onTriggerStart(bool);
+    void onTriggerStop(bool);
+    void onTriggerImport(bool);
+    void onTriggerExport(bool);
+    void onTriggerDevices(bool);
+    void onTriggerQuit(bool);
 
     // Spectrum slots
     void onSpectrumBandwidthChanged(void);

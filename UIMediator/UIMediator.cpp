@@ -41,11 +41,15 @@ UIMediator::refreshUI(void)
       this->setProcessRate(0);
       this->ui->main->actionRun->setEnabled(true);
       this->ui->main->actionRun->setChecked(false);
+      this->ui->main->actionStart_capture->setEnabled(true);
+      this->ui->main->actionStop_capture->setEnabled(false);
       break;
 
     case HALTING:
       stateString = QString("Halting...");
       this->ui->main->actionRun->setEnabled(false);
+      this->ui->main->actionStart_capture->setEnabled(false);
+      this->ui->main->actionStop_capture->setEnabled(false);
       break;
 
     case RUNNING:
@@ -57,11 +61,15 @@ UIMediator::refreshUI(void)
 
       this->ui->main->actionRun->setEnabled(true);
       this->ui->main->actionRun->setChecked(true);
+      this->ui->main->actionStart_capture->setEnabled(false);
+      this->ui->main->actionStop_capture->setEnabled(true);
       break;
 
     case RESTARTING:
       stateString = QString("Restarting...");
       this->ui->main->actionRun->setEnabled(false);
+      this->ui->main->actionStart_capture->setEnabled(false);
+      this->ui->main->actionStop_capture->setEnabled(false);
       break;
   }
 
@@ -72,10 +80,94 @@ UIMediator::refreshUI(void)
 }
 
 void
+UIMediator::onTriggerStart(bool)
+{
+  emit captureStart();
+}
+
+void
+UIMediator::onTriggerStop(bool)
+{
+  emit captureEnd();
+}
+
+void
+UIMediator::onTriggerImport(bool)
+{
+
+}
+
+void
+UIMediator::onTriggerExport(bool)
+{
+
+}
+
+void
+UIMediator::onTriggerDevices(bool)
+{
+
+}
+
+void
+UIMediator::onTriggerQuit(bool)
+{
+  emit uiQuit();
+}
+
+void
 UIMediator::connectMainWindow(void)
 {
   connect(
         this->ui->main->actionSetup,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerSetup(bool)));
+
+  connect(
+        this->ui->main->actionOptions,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerSetup(bool)));
+
+  connect(
+        this->ui->main->actionImport_profile,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerImport(bool)));
+
+  connect(
+        this->ui->main->actionExport_profile,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerExport(bool)));
+
+  connect(
+        this->ui->main->actionDevices,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerDevices(bool)));
+
+  connect(
+        this->ui->main->actionStart_capture,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerStart(bool)));
+
+  connect(
+        this->ui->main->actionStop_capture,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerStop(bool)));
+
+  connect(
+        this->ui->main->actionQuit,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerQuit(bool)));
+
+  connect(
+        this->ui->main->actionOptions,
         SIGNAL(triggered(bool)),
         this,
         SLOT(onTriggerSetup(bool)));

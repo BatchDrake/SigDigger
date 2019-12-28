@@ -351,6 +351,12 @@ Application::connectUI(void)
         SIGNAL(bandwidthChanged(void)),
         this,
         SLOT(onBandwidthChanged(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(uiQuit(void)),
+        this,
+        SLOT(quit(void)));
 }
 
 void
@@ -709,6 +715,13 @@ Application::closeEvent(QCloseEvent *)
 }
 
 //////////////////////////////// Slots /////////////////////////////////////////
+void
+Application::quit(void)
+{
+  this->stopCapture();
+  QApplication::quit();
+}
+
 void
 Application::onCaptureStart(void)
 {

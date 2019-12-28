@@ -119,6 +119,7 @@ namespace SigDigger {
     void onAudioChanged(void);
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
+    void quit(void);
 
     // Analyzer slots
     void onAnalyzerHalted(void);
