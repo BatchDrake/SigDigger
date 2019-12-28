@@ -80,6 +80,7 @@ namespace SigDigger {
     State getState(void) const;
 
     // Data methods
+    void setProcessRate(unsigned int rate);
     void feedPSD(const Suscan::PSDMessage &msg);
     void setCaptureSize(quint64 size);
 

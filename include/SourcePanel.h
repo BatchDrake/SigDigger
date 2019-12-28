@@ -71,6 +71,7 @@ namespace SigDigger {
 
       // UI State
       unsigned int rate = 0;
+      unsigned int processRate = 0;
       State state = DETACHED;
       std::map<std::string, std::vector<AutoGain>> autoGains;
       bool throttleable = false;
@@ -133,6 +134,14 @@ namespace SigDigger {
         return this->panelConfig->throttleRate;
       }
 
+      unsigned int
+      getEffectiveRate(void) const
+      {
+        return this->throttleable && this->isThrottleEnabled()
+            ? this->getThrottleRate()
+            : this->rate;
+      }
+
       explicit SourcePanel(QWidget *parent = nullptr);
       ~SourcePanel() override;
 
@@ -142,6 +151,7 @@ namespace SigDigger {
       void setThrottleable(bool val);
       void setProfile(Suscan::Source::Config *);
       void setSampleRate(unsigned int rate);
+      void setProcessRate(unsigned int rate);
 
       void setGain(std::string const &name, SUFLOAT val);
 

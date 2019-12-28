@@ -11,5 +11,11 @@
         <file>splash.png</file>
         <file>start-capture.png</file>
         <file>about.png</file>
+        <file>critical.png</file>
+        <file>Icons.qrc</file>
+        <file>splash.xcf</file>
+        <file>splash-background</file>
+        <file>warning.png</file>
+        <file>transparent.png</file>
     </qresource>
 </RCC>

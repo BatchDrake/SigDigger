@@ -163,6 +163,13 @@ Analyzer::getSampleRate(void) const
   return suscan_analyzer_get_samp_rate(this->instance);
 }
 
+SUSCOUNT
+Analyzer::getMeasuredSampleRate(void) const
+{
+  return static_cast<SUSCOUNT>(
+        suscan_analyzer_get_measured_samp_rate(this->instance));
+}
+
 void
 Analyzer::halt(void)
 {
