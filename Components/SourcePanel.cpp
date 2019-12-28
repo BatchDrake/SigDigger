@@ -195,6 +195,7 @@ SourcePanel::setSampleRate(unsigned int rate)
     float step;
     this->rate = rate;
     if (rate == 0) {
+      this->setProcessRate(0);
       this->ui->sampleRateLabel->setText("N/A");
     } else {
       this->ui->sampleRateLabel->setText(formatSampleRate(rate));
@@ -208,6 +209,39 @@ SourcePanel::setSampleRate(unsigned int rate)
       step /= 10.f;
 
     this->ui->bwSpin->setSingleStep(static_cast<int>(step));
+  }
+}
+
+void
+SourcePanel::setProcessRate(unsigned int rate)
+{
+  if (rate != this->processRate) {
+    SUFLOAT percentUsage = 1;
+    this->processRate = rate;
+
+    if (this->rate == 0 || this->processRate == 0) {
+      this->ui->processingRateLabel->setText("N/A");
+      this->ui->deliveryProgress->setEnabled(false);
+    } else {
+      this->ui->deliveryProgress->setEnabled(true);
+      this->ui->processingRateLabel->setText(
+            formatSampleRate(this->processRate));
+      percentUsage =
+          static_cast<SUFLOAT>(this->processRate) /
+          static_cast<SUFLOAT>(this->getEffectiveRate());
+    }
+
+    this->ui->deliveryProgress->setValue(static_cast<int>(percentUsage * 100));
+
+    if (percentUsage >= SU_ADDSFX(.95))
+      this->ui->deliveryLabel->setPixmap(
+          QPixmap(QString::fromUtf8(":/icons/transparent.png")));
+    else if (percentUsage >= SU_ADDSFX(.85))
+      this->ui->deliveryLabel->setPixmap(
+          QPixmap(QString::fromUtf8(":/icons/warning.png")));
+    else
+      this->ui->deliveryLabel->setPixmap(
+          QPixmap(QString::fromUtf8(":/icons/critical.png")));
   }
 }
 

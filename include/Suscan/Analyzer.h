@@ -66,6 +66,7 @@ namespace Suscan {
 
   public:
     SUSCOUNT getSampleRate(void) const;
+    SUSCOUNT getMeasuredSampleRate(void) const;
 
     void *read(uint32_t &type);
     void registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t, void *);

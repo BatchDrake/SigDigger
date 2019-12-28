@@ -570,6 +570,8 @@ Application::onAnalyzerEos(void)
 void
 Application::onPSDMessage(const Suscan::PSDMessage &msg)
 {
+  this->mediator->setProcessRate(
+        static_cast<unsigned int>(this->analyzer->getMeasuredSampleRate()));
   this->mediator->feedPSD(msg);
 }
 

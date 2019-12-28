@@ -38,6 +38,7 @@ UIMediator::refreshUI(void)
     case HALTED:
       stateString = QString("Idle");
       this->ui->spectrum->setCaptureMode(MainSpectrum::UNAVAILABLE);
+      this->setProcessRate(0);
       this->ui->main->actionRun->setEnabled(true);
       this->ui->main->actionRun->setChecked(false);
       break;
@@ -149,6 +150,12 @@ UIMediator::setBandwidth(unsigned int bw)
 {
   this->ui->spectrum->setFilterBandwidth(bw);
   this->ui->inspectorPanel->setBandwidth(bw);
+}
+
+void
+UIMediator::setProcessRate(unsigned int rate)
+{
+  this->ui->sourcePanel->setProcessRate(rate);
 }
 
 void
