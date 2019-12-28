@@ -17,5 +17,13 @@
         <file>splash-background</file>
         <file>warning.png</file>
         <file>transparent.png</file>
+        <file>application-exit.png</file>
+        <file>document-export.png</file>
+        <file>document-import.png</file>
+        <file>media-playback-start.png</file>
+        <file>media-playback-stop.png</file>
+        <file>preferences-16.png</file>
+        <file>devices.png</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

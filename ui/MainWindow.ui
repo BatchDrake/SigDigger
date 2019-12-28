@@ -62,6 +62,21 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuStart">
+     <property name="title">
+      <string>Start...</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="action_None"/>
+    </widget>
+    <addaction name="actionStart_capture"/>
+    <addaction name="actionStop_capture"/>
+    <addaction name="menuStart"/>
+    <addaction name="separator"/>
+    <addaction name="actionImport_profile"/>
+    <addaction name="actionExport_profile"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -69,7 +84,16 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionDevices"/>
+    <addaction name="separator"/>
+    <addaction name="actionOptions"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -130,9 +154,78 @@
     <string>About SigDigger</string>
    </property>
   </action>
+  <action name="actionStart_capture">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/media-playback-start.png</normaloff>:/icons/media-playback-start.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start capture</string>
+   </property>
+  </action>
+  <action name="actionStop_capture">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/media-playback-stop.png</normaloff>:/icons/media-playback-stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stop capture</string>
+   </property>
+  </action>
+  <action name="action_None">
+   <property name="text">
+    <string>(None)</string>
+   </property>
+  </action>
+  <action name="actionImport_profile">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/document-import.png</normaloff>:/icons/document-import.png</iconset>
+   </property>
+   <property name="text">
+    <string>Import profile</string>
+   </property>
+  </action>
+  <action name="actionExport_profile">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/document-export.png</normaloff>:/icons/document-export.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export profile</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/application-exit.png</normaloff>:/icons/application-exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionDevices">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/devices.png</normaloff>:/icons/devices.png</iconset>
+   </property>
+   <property name="text">
+    <string>Devices...</string>
+   </property>
+  </action>
+  <action name="actionOptions">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/preferences-16.png</normaloff>:/icons/preferences-16.png</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
+  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>
  <connections/>
