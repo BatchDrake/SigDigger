@@ -23,6 +23,7 @@
 #include <Suscan/Compat.h>
 
 #include <util/object.h>
+#include <vector>
 
 namespace Suscan {
   class Object {
@@ -93,6 +94,49 @@ namespace Suscan {
       getInstance(void) const
       {
         return this->instance;
+      }
+
+      std::vector<char>
+      serialize(void) const
+      {
+        if (!this->isHollow()) {
+          void *data = nullptr;
+          size_t size;
+
+          SU_ATTEMPT(suscan_object_to_xml(this->instance, &data, &size));
+
+          std::vector<char> serialization(
+                static_cast<uint8_t *>(data),
+                static_cast<uint8_t *>(data) + size);
+
+          free(data);
+
+          return serialization;
+        } else {
+          return std::vector<char>();
+        }
+      }
+
+      void
+      deserialize(
+          std::string const &url,
+          std::vector<char> const &data)
+      {
+        suscan_object_t *object = nullptr;
+
+        SU_ATTEMPT(object = suscan_object_from_xml(
+              url.c_str(),
+              data.data(),
+              data.size()));
+
+        if (!this->isBorrowed()) {
+          if (!this->isHollow())
+            suscan_object_destroy(this->instance);
+        } else {
+          this->borrowed = false;
+        }
+
+        this->instance = object;
       }
 
       std::string

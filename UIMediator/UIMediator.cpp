@@ -25,7 +25,10 @@
 
 #include <QGuiApplication>
 #include <QDockWidget>
+#include <QMessageBox>
 #include <QScreen>
+
+#include <fstream>
 
 using namespace SigDigger;
 
@@ -94,13 +97,147 @@ UIMediator::onTriggerStop(bool)
 void
 UIMediator::onTriggerImport(bool)
 {
+  QString path = QFileDialog::getOpenFileName(
+        this,
+        "Import SigDigger profile",
+        QString(),
+        "SigDigger profile files (*.xml)");
 
+  if (!path.isEmpty()) {
+    std::ifstream in(
+          path.toStdString().c_str(),
+          std::ifstream::ate | std::ifstream::binary);
+
+    if (!in.is_open()) {
+      QMessageBox::warning(
+            this->ui->main->centralWidget,
+            "Cannot open file",
+            "Selected profile file could not be opened. Please check its "
+            "access rights or whether the file still exists and try again.",
+            QMessageBox::Ok);
+    } else if (in.tellg() > SIGDIGGER_PROFILE_FILE_MAX_SIZE) {
+        QMessageBox::critical(
+              this->ui->main->centralWidget,
+              "Cannot open file",
+              "Invalid profile file",
+              QMessageBox::Ok);
+    } else {
+      std::vector<char> data;
+      data.resize(static_cast<size_t>(in.tellg()));
+      in.seekg(0);
+      in.read(&data[0], static_cast<int>(data.size()));
+
+      if (in.eof()) {
+        QMessageBox::critical(
+              this->ui->main->centralWidget,
+              "Cannot open file",
+              "Unexpected end of file",
+              QMessageBox::Ok);
+      } else {
+        try {
+          Suscan::Object envelope(
+                path.toStdString(),
+                reinterpret_cast<const uint8_t *>(data.data()),
+                data.size());
+          Suscan::Object profObj = envelope[0];
+          QString className = QString::fromStdString(profObj.getClass());
+
+          if (className.isEmpty()) {
+            QMessageBox::warning(
+                  this->ui->main->centralWidget,
+                  "Cannot open file",
+                  "Invalid file: serialized object class is undefined",
+                  QMessageBox::Ok);
+          } else if (className != "source_config") {
+            QMessageBox::warning(
+                  this->ui->main->centralWidget,
+                  "Cannot open file",
+                  "Invalid file: objects of class `" + className + "' are "
+                  "not profiles.",
+                  QMessageBox::Ok);
+          } else {
+            try {
+              Suscan::Source::Config config(profObj);
+              this->appConfig->profile = config;
+              this->refreshProfile();
+              this->refreshUI();
+              emit profileChanged();
+            } catch (Suscan::Exception &e) {
+              QMessageBox::critical(
+                    this->ui->main->centralWidget,
+                    "Cannot open file",
+                    "Failed to create source configuration from profile object: "
+                    + QString(e.what()),
+                    QMessageBox::Ok);
+            }
+          }
+        } catch (Suscan::Exception &e) {
+          QMessageBox::critical(
+                this->ui->main->centralWidget,
+                "Cannot open file",
+                "Failed to load profile object from file: " + QString(e.what()),
+                QMessageBox::Ok);
+        }
+      }
+    }
+  }
 }
 
 void
 UIMediator::onTriggerExport(bool)
 {
+  bool done = false;
 
+  do {
+    QFileDialog dialog(this);
+
+    dialog.setFileMode(QFileDialog::FileMode::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setWindowTitle(QString("Save current profile"));
+    dialog.setNameFilter(QString("SigDigger profile files (*.xml)"));
+
+    if (dialog.exec()) {
+      QString path = dialog.selectedFiles().first();
+      try {
+        Suscan::Object profileObj = this->getProfile()->serialize();
+        Suscan::Object envelope(SUSCAN_OBJECT_TYPE_SET);
+
+        envelope.append(profileObj);
+
+        std::vector<char> data = envelope.serialize();
+        std::ofstream of(path.toStdString().c_str(), std::ofstream::binary);
+
+        if (!of.is_open()) {
+          QMessageBox::warning(
+                this->ui->main->centralWidget,
+                "Cannot open file",
+                "Cannote save file in the specified location. Please choose "
+                "a different location and try again.",
+                QMessageBox::Ok);
+        } else {
+          of.write(&data[0], static_cast<int>(data.size()));
+
+          if (of.fail()) {
+            QMessageBox::critical(
+                  this->ui->main->centralWidget,
+                  "Cannot serialize profile",
+                  "Write error. Profile has not been saved. Please try again.",
+                  QMessageBox::Ok);
+          } else {
+            done = true;
+          }
+        }
+      } catch (Suscan::Exception &e) {
+        QMessageBox::critical(
+              this->ui->main->centralWidget,
+              "Cannot serialize profile",
+              "Serialization of profile data failed: " + QString(e.what()),
+              QMessageBox::Ok);
+      }
+    } else {
+      done = true;
+    }
+  } while (!done);
 }
 
 void

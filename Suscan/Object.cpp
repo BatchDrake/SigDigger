@@ -60,6 +60,7 @@ Object::Object(Object const &obj) : Object(obj.instance)
 Object::~Object()
 {
   if (!this->borrowed)
-    if (this->instance != nullptr)
+    if (this->instance != nullptr) {
       suscan_object_destroy(this->instance);
+    }
 }

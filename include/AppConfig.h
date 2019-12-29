@@ -36,6 +36,8 @@
 #define SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH   200000
 #define SIGDIGGER_AUDIO_INSPECTOR_REQID       0xaaaaaaaa
 
+#define SIGDIGGER_PROFILE_FILE_MAX_SIZE       (1 << 20)
+
 namespace SigDigger {  
   class AppConfig : public Suscan::Serializable {
     public:
