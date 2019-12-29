@@ -304,12 +304,6 @@ UIMediator::connectMainWindow(void)
         SLOT(onTriggerQuit(bool)));
 
   connect(
-        this->ui->main->actionOptions,
-        SIGNAL(triggered(bool)),
-        this,
-        SLOT(onTriggerSetup(bool)));
-
-  connect(
         this->ui->main->actionRun,
         SIGNAL(triggered(bool)),
         this,
