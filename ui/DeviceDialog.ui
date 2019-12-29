@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>DeviceDialog</class>
  <widget class="QDialog" name="DeviceDialog">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,6 +15,9 @@
   </property>
   <property name="windowTitle">
    <string>Capture devices</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="3" column="1">
@@ -47,7 +53,10 @@
    <item row="0" column="0" colspan="4">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Available capture devices</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the list of capture devices and SDR receivers that are or have been available in your system for use with live signal sources. However, in some cases, device initialization can take a while and may be seen as unavailable during SigDigger startup.&lt;/p&gt;&lt;p&gt;If you have just plugged a device that does not appear in the source configuration dialog, click on &amp;quot;Refresh&amp;quot; and try again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -59,8 +68,14 @@
      <property name="value">
       <number>-1</number>
      </property>
+     <property name="textVisible">
+      <bool>true</bool>
+     </property>
      <property name="invertedAppearance">
       <bool>false</bool>
+     </property>
+     <property name="format">
+      <string>Loading</string>
      </property>
     </widget>
    </item>

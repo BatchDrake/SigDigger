@@ -366,6 +366,7 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->connectFftPanel();
   this->connectAudioPanel();
   this->connectInspectorPanel();
+  this->connectDeviceDialog();
 }
 
 void
@@ -415,6 +416,13 @@ UIMediator::State
 UIMediator::getState(void) const
 {
   return this->state;
+}
+
+void
+UIMediator::refreshDevicesDone(void)
+{
+  this->ui->deviceDialog->refreshDone();
+  this->ui->configDialog->notifySingletonChanges();
 }
 
 void
@@ -672,4 +680,3 @@ UIMediator::onCloseInspectorTab(int ndx)
     this->closeInspectorTab(insp);
   }
 }
-

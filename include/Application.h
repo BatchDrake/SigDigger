@@ -30,6 +30,24 @@
 #include "FileDataSaver.h"
 
 namespace SigDigger {
+  class DeviceDetectWorker : public QObject {
+      Q_OBJECT
+
+  public:
+      DeviceDetectWorker();
+      ~DeviceDetectWorker();
+
+  public slots:
+      void process();
+
+  signals:
+      void finished();
+
+  private:
+      Suscan::Singleton *instance = nullptr;
+  };
+
+
   class Application : public QMainWindow {
     Q_OBJECT
 
@@ -61,11 +79,16 @@ namespace SigDigger {
     SUFLOAT delayedVolume = 0;
     unsigned int delayedDemod = 0;
 
+    // Rediscover devices
+    QThread *deviceDetectThread;
+    DeviceDetectWorker *deviceDetectWorker;
+
     // Private methods
     QString getLogText(void);
     void connectUI(void);
     void connectAnalyzer(void);
     void connectDataSaver(void);
+    void connectDeviceDetect(void);
     int  openCaptureFile(void);
     void installDataSaver(int fd);
     void uninstallDataSaver(void);
@@ -100,6 +123,9 @@ namespace SigDigger {
   protected:
     void closeEvent(QCloseEvent *event);
 
+  signals:
+    void detectDevices(void);
+
   public slots:
     // UI Slots
     void onCaptureStart(void);
@@ -119,6 +145,7 @@ namespace SigDigger {
     void onAudioChanged(void);
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
+    void onDeviceRefresh(void);
     void quit(void);
 
     // Analyzer slots
@@ -134,6 +161,9 @@ namespace SigDigger {
     void onSaveSwamped(void);
     void onSaveRate(qreal rate);
     void onCommit(void);
+
+    // Device detect slots
+    void onDetectFinished(void);
   };
 }
 

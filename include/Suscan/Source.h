@@ -169,6 +169,13 @@ namespace Suscan {
       return suscan_source_device_is_populated(this->instance);
     }
 
+    bool
+    isAvailable(void) const
+    {
+      if (this->instance == nullptr)
+        return false;
+      return suscan_source_device_is_available(this->instance);
+    }
 
     std::vector<std::string>::const_iterator
     getFirstAntenna(void) const

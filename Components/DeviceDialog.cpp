@@ -37,9 +37,12 @@ DeviceDialog::~DeviceDialog()
 
 
 QPixmap
-DeviceDialog::getDeviceIcon(Suscan::Source::Device const &)
+DeviceDialog::getDeviceIcon(Suscan::Source::Device const &dev)
 {
-  return QPixmap(QString::fromUtf8(":/icons/devices.png"));
+  if (!dev.isAvailable())
+    return QPixmap(QString::fromUtf8(":/icons/devices-unavail.png"));
+  else
+    return QPixmap(QString::fromUtf8(":/icons/devices.png"));
 }
 
 void
@@ -60,6 +63,7 @@ void
 DeviceDialog::refreshDone(void)
 {
   this->setRefreshing(false);
+  this->refreshDevices();
 }
 
 void

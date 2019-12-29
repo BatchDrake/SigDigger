@@ -92,7 +92,8 @@ SOURCES += \
     UDP/SocketForwarder.cpp \
     Components/NetForwarderUI.cpp \
     Components/WaitingSpinnerWidget.cpp \
-    Components/DeviceDialog.cpp
+    Components/DeviceDialog.cpp \
+    UIMediator/DeviceDialogMediator.cpp
 
 
 HEADERS += \

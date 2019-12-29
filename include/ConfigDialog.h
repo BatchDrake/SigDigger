@@ -64,6 +64,7 @@ namespace SigDigger {
     void setColors(const ColorConfig &config);
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
+    void notifySingletonChanges(void);
 
     float getGain(std::string const &name);
     Suscan::Source::Config getProfile(void);

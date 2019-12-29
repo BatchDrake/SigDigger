@@ -63,6 +63,7 @@ namespace SigDigger {
     void connectFftPanel(void);
     void connectAudioPanel(void);
     void connectInspectorPanel(void);
+    void connectDeviceDialog(void);
 
     void refreshUI(void);
 
@@ -83,6 +84,7 @@ namespace SigDigger {
     void setProcessRate(unsigned int rate);
     void feedPSD(const Suscan::PSDMessage &msg);
     void setCaptureSize(quint64 size);
+    void refreshDevicesDone(void);
 
     // Inspector handling
     Inspector *lookupInspector(Suscan::InspectorId id) const;
@@ -132,6 +134,7 @@ namespace SigDigger {
     void requestOpenInspector(void);
     void inspectorClosed(Suscan::Handle handle);
     void analyzerParamsChanged(void);
+    void refreshDevices(void);
     void uiQuit(void);
 
     void audioChanged(void);
@@ -182,6 +185,8 @@ namespace SigDigger {
     void onInspBandwidthChanged(void);
     void onOpenInspector(void);
 
+    // Device dialog
+    void onRefreshDevices(void);
   };
 };
 

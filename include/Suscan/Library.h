@@ -69,6 +69,7 @@ namespace Suscan {
     void init_palettes(void);
     void init_autogains(void);
     void init_ui_config(void);
+    void detect_devices(void);
 
     void sync(void);
 

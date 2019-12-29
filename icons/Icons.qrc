@@ -24,6 +24,7 @@
         <file>media-playback-stop.png</file>
         <file>preferences-16.png</file>
         <file>devices.png</file>
+        <file>devices-unavail.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

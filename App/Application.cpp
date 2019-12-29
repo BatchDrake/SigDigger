@@ -26,9 +26,31 @@
 
 using namespace SigDigger;
 
+DeviceDetectWorker::DeviceDetectWorker()
+{
+  this->instance = Suscan::Singleton::get_instance();
+}
+
+DeviceDetectWorker::~DeviceDetectWorker()
+{
+
+}
+
+void
+DeviceDetectWorker::process()
+{
+  this->instance->detect_devices();
+  emit finished();
+}
+
+
 Application::Application(QWidget *parent) : QMainWindow(parent), ui(this)
 {
   this->mediator = new UIMediator(this, &this->ui);
+  this->deviceDetectThread = new QThread(this);
+  this->deviceDetectWorker = new DeviceDetectWorker();
+  this->deviceDetectWorker->moveToThread(this->deviceDetectThread);
+  this->deviceDetectThread->start();
 }
 
 Suscan::Object &&
@@ -53,6 +75,7 @@ Application::run(Suscan::Object const &config)
   this->mediator->setState(UIMediator::HALTED);
 
   this->connectUI();
+  this->connectDeviceDetect();
 
   this->show();
 }
@@ -357,6 +380,12 @@ Application::connectUI(void)
         SIGNAL(uiQuit(void)),
         this,
         SLOT(quit(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(refreshDevices(void)),
+        this,
+        SLOT(onDeviceRefresh(void)));
 }
 
 void
@@ -397,6 +426,22 @@ Application::connectAnalyzer(void)
         SIGNAL(samples_message(const Suscan::SamplesMessage &)),
         this,
         SLOT(onInspectorSamples(const Suscan::SamplesMessage &)));
+}
+
+void
+Application::connectDeviceDetect(void)
+{
+  connect(
+        this,
+        SIGNAL(detectDevices()),
+        this->deviceDetectWorker,
+        SLOT(process()));
+
+  connect(
+        this->deviceDetectWorker,
+        SIGNAL(finished()),
+        this,
+        SLOT(onDetectFinished()));
 }
 
 QString
@@ -705,6 +750,10 @@ Application::~Application()
   this->playBack = nullptr;
   this->analyzer = nullptr;
   this->uninstallDataSaver();
+
+  this->deviceDetectThread->quit();
+  this->deviceDetectThread->deleteLater();
+  this->deviceDetectWorker->deleteLater();
 }
 
 /////////////////////////////// Overrides //////////////////////////////////////
@@ -979,6 +1028,18 @@ Application::onAntennaChanged(QString name)
 {
   if (this->mediator->getState() == UIMediator::RUNNING)
     this->analyzer->setAntenna(name.toStdString());
+}
+
+void
+Application::onDeviceRefresh(void)
+{
+  emit detectDevices();
+}
+
+void
+Application::onDetectFinished(void)
+{
+  this->mediator->refreshDevicesDone();
 }
 
 void

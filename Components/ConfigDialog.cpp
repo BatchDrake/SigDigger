@@ -397,6 +397,13 @@ ConfigDialog::setFrequency(qint64 val)
 }
 
 void
+ConfigDialog::notifySingletonChanges(void)
+{
+  this->populateCombos();
+  this->refreshUi();
+}
+
+void
 ConfigDialog::setGain(std::string const &name, float value)
 {
   this->profile.setGain(name, value);

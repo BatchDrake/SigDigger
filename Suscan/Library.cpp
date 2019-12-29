@@ -192,6 +192,14 @@ Singleton::init_autogains(void)
 }
 
 void
+Singleton::detect_devices(void)
+{
+  suscan_source_detect_devices();
+  this->devices.clear();
+  suscan_source_device_walk(walk_all_devices, static_cast<void *>(this));
+}
+
+void
 Singleton::init_ui_config(void)
 {
   unsigned int i, count;
