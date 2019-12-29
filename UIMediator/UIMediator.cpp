@@ -243,7 +243,7 @@ UIMediator::onTriggerExport(bool)
 void
 UIMediator::onTriggerDevices(bool)
 {
-
+  this->ui->deviceDialog->run();
 }
 
 void

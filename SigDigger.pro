@@ -91,7 +91,8 @@ SOURCES += \
     Misc/FileDataSaver.cpp \
     UDP/SocketForwarder.cpp \
     Components/NetForwarderUI.cpp \
-    Components/WaitingSpinnerWidget.cpp
+    Components/WaitingSpinnerWidget.cpp \
+    Components/DeviceDialog.cpp
 
 
 HEADERS += \
@@ -155,7 +156,8 @@ HEADERS += \
     include/FileDataSaver.h \
     include/SocketForwarder.h \
     include/NetForwarderUI.h \
-    include/WaitingSpinnerWidget.h
+    include/WaitingSpinnerWidget.h \
+    include/DeviceDialog.h
 
 
 FORMS += \
@@ -180,7 +182,8 @@ FORMS += \
     ui/ToneControl.ui \
     ui/SaveProfileDialog.ui \
     ui/EstimatorControl.ui \
-    ui/NetForwarderUI.ui
+    ui/NetForwarderUI.ui \
+    ui/DeviceDialog.ui
 
 
 # Default rules for deployment.

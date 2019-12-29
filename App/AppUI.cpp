@@ -33,6 +33,7 @@ AppUI::AppUI(QMainWindow *owner)
   this->fftPanel = new FftPanel(owner);
   this->audioPanel = new AudioPanel(owner);
   this->aboutDialog = new AboutDialog(owner);
+  this->deviceDialog = new DeviceDialog(owner);
 }
 
 void
