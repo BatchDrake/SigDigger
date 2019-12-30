@@ -107,6 +107,7 @@ namespace SigDigger {
     void refreshConfig(void);
     void run(Suscan::Object const &config);
 
+    void updateRecent(void);
     void startCapture(void);
     void restartCapture(void);
     void stopCapture(void);
@@ -146,6 +147,8 @@ namespace SigDigger {
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
     void onDeviceRefresh(void);
+    void onRecentSelected(QString profile);
+    void onRecentCleared(void);
     void quit(void);
 
     // Analyzer slots

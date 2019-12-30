@@ -51,6 +51,8 @@ InitThread::run()
     sing->init_autogains();
     emit change("Loading UI config");
     sing->init_ui_config();
+    emit change("Loading profile history");
+    sing->init_recent_list();
   } catch (Suscan::Exception const &e) {
     emit failure(QString(e.what()));
   }
@@ -200,6 +202,7 @@ Loader::saveConfig(void)
     sing->putUIConfig(this->confIndex, std::move(obj));
 
     sing->sync();
+
     Suscan::ConfigContext::saveAll();
   } catch (Suscan::Exception const &e) {
     (void) QMessageBox::critical(

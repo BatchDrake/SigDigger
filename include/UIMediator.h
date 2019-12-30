@@ -52,6 +52,7 @@ namespace SigDigger {
     // UI Data
     Averager averager;
     unsigned int rate = 0;
+    unsigned int recentCount = 0;
 
     // UI State
     State state = HALTED;
@@ -80,6 +81,11 @@ namespace SigDigger {
     void setState(enum State);
     State getState(void) const;
 
+    // Recent list handling
+    void clearRecent(void);
+    void addRecent(std::string const &);
+    void finishRecent(void);
+
     // Data methods
     void setProcessRate(unsigned int rate);
     void feedPSD(const Suscan::PSDMessage &msg);
@@ -103,6 +109,7 @@ namespace SigDigger {
     void setRecordState(bool state);
     void setIORate(qreal rate);
     void saveGeometry(void);
+    void setProfile(Suscan::Source::Config const &config);
 
     // Overriden methods
     Suscan::Serializable *allocConfig() override;
@@ -137,6 +144,8 @@ namespace SigDigger {
     void refreshDevices(void);
     void uiQuit(void);
 
+    void recentSelected(QString);
+    void recentCleared(void);
     void audioChanged(void);
 
   public slots:
@@ -151,6 +160,8 @@ namespace SigDigger {
     void onTriggerExport(bool);
     void onTriggerDevices(bool);
     void onTriggerQuit(bool);
+    void onTriggerClear(bool);
+    void onTriggerRecent(bool);
 
     // Spectrum slots
     void onSpectrumBandwidthChanged(void);

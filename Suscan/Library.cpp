@@ -63,8 +63,6 @@ Singleton::init_codecs(void)
     SU_ATTEMPT(suscan_codec_class_register_builtin());
 }
 
-#include <iostream>
-
 static SUBOOL
 walk_all_sources(suscan_source_config_t *config, void *privdata)
 {
@@ -217,7 +215,43 @@ Singleton::init_ui_config(void)
 }
 
 void
-Singleton::sync(void)
+Singleton::init_recent_list(void)
+{
+  unsigned int i, count;
+  ConfigContext ctx("recent");
+
+  Object list = ctx.listObject();
+
+  count = list.length();
+
+  for (i = 0; i < count; ++i) {
+    try {
+      if (list[i].getType() == SUSCAN_OBJECT_TYPE_FIELD) {
+        this->recentProfiles.push_back(list[i].value());
+      }
+    } catch (Suscan::Exception const &) { }
+  }
+}
+
+void
+Singleton::syncRecent(void)
+{
+  ConfigContext ctx("recent");
+  Object list = ctx.listObject();
+
+  list.clear();
+
+  for (auto p : this->recentProfiles) {
+    try {
+      list.append(Object::makeField(p));
+    } catch (Suscan::Exception const &) {
+      // Don't even bother to warn
+    }
+  }
+}
+
+void
+Singleton::syncUI(void)
 {
   unsigned int i, count;
   ConfigContext ctx("uiconfig");
@@ -237,8 +271,14 @@ Singleton::sync(void)
   }
 }
 
-// Singleton methods
+void
+Singleton::sync(void)
+{
+  this->syncRecent();
+  this->syncUI();
+}
 
+// Singleton methods
 void
 Singleton::registerSourceConfig(suscan_source_config_t *config)
 {
@@ -351,4 +391,55 @@ Singleton::getDeviceAt(unsigned int index) const
     return &this->devices[index];
 
   return nullptr;
+}
+
+std::list<std::string>::const_iterator
+Singleton::getFirstRecent(void) const
+{
+  return this->recentProfiles.cbegin();
+}
+
+std::list<std::string>::const_iterator
+Singleton::getLastRecent(void) const
+{
+  return this->recentProfiles.cend();
+}
+
+bool
+Singleton::notifyRecent(std::string const &name)
+{
+  bool found = false;
+
+  found = this->removeRecent(name);
+
+  this->recentProfiles.push_front(name);
+
+  return found;
+}
+
+bool
+Singleton::removeRecent(std::string const &name)
+{
+  bool found = false;
+
+  for (auto p = this->getFirstRecent(); p != this->getLastRecent(); ++p) {
+    if (*p == name) {
+      auto current = p;
+      --current;
+
+      this->recentProfiles.erase(p);
+
+      p = current;
+      found = true;
+      continue;
+    }
+  }
+
+  return found;
+}
+
+void
+Singleton::clearRecent(void)
+{
+  this->recentProfiles.clear();
 }

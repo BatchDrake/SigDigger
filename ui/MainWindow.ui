@@ -66,8 +66,9 @@
      <property name="title">
       <string>Start...</string>
      </property>
+     <addaction name="action_None_2"/>
      <addaction name="separator"/>
-     <addaction name="action_None"/>
+     <addaction name="actionClear"/>
     </widget>
     <addaction name="actionStart_capture"/>
     <addaction name="actionStop_capture"/>
@@ -222,9 +223,25 @@
     <string>Settings</string>
    </property>
   </action>
+  <action name="actionClear_recent">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+  <action name="action_None_2">
+   <property name="text">
+    <string>(None)</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
+  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>

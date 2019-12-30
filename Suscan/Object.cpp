@@ -64,3 +64,21 @@ Object::~Object()
       suscan_object_destroy(this->instance);
     }
 }
+
+void
+Object::clear(void)
+{
+  switch (this->getType()) {
+    case SUSCAN_OBJECT_TYPE_FIELD:
+      suscan_object_set_value(this->instance, "");
+      break;
+
+    case SUSCAN_OBJECT_TYPE_SET:
+      suscan_object_set_clear(this->instance);
+      break;
+
+    case SUSCAN_OBJECT_TYPE_OBJECT:
+      suscan_object_clear_fields(this->instance);
+      break;
+  }
+}

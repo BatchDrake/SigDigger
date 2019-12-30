@@ -34,6 +34,7 @@
 #include <analyzer/inspector/inspector.h>
 
 #include <map>
+#include <list>
 
 namespace Suscan {
   typedef std::map<std::string, Source::Config> ConfigMap;
@@ -47,6 +48,7 @@ namespace Suscan {
     std::vector<Object> palettes;
     std::vector<Object> autoGains;
     std::vector<Object> uiConfig;
+    std::list<std::string> recentProfiles;
 
     bool codecs_initd;
     bool sources_initd;
@@ -60,6 +62,9 @@ namespace Suscan {
     bool havePalette(std::string const &name);
     bool haveAutoGain(std::string const &name);
 
+    void syncUI(void);
+    void syncRecent(void);
+
   public:
     void init_codecs(void);
     void init_sources(void);
@@ -69,6 +74,7 @@ namespace Suscan {
     void init_palettes(void);
     void init_autogains(void);
     void init_ui_config(void);
+    void init_recent_list(void);
     void detect_devices(void);
 
     void sync(void);
@@ -86,7 +92,6 @@ namespace Suscan {
     std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
     std::vector<Source::Device>::const_iterator getLastDevice(void) const;
 
-
     std::vector<Object>::const_iterator getFirstPalette(void) const;
     std::vector<Object>::const_iterator getLastPalette(void) const;
 
@@ -95,6 +100,13 @@ namespace Suscan {
 
     std::vector<Object>::iterator getFirstUIConfig(void);
     std::vector<Object>::iterator getLastUIConfig(void);
+
+    std::list<std::string>::const_iterator getFirstRecent(void) const;
+    std::list<std::string>::const_iterator getLastRecent(void) const;
+
+    bool notifyRecent(std::string const &name);
+    bool removeRecent(std::string const &name);
+    void clearRecent(void);
 
     void putUIConfig(unsigned int where, Object &&rv);
 

@@ -33,6 +33,52 @@
 using namespace SigDigger;
 
 void
+UIMediator::clearRecent(void)
+{
+  this->ui->main->menuStart->clear();
+  this->recentCount = 0;
+}
+
+void
+UIMediator::addRecent(std::string const &name)
+{
+  QAction *action = new QAction(
+        QString::fromStdString(name),
+        this->ui->main->menuStart);
+
+  this->ui->main->menuStart->addAction(action);
+  ++this->recentCount;
+
+  connect(action, SIGNAL(triggered(bool)), this, SLOT(onTriggerRecent(bool)));
+}
+
+void
+UIMediator::finishRecent(void)
+{
+  QAction *action = new QAction("Clear", this->ui->main->menuStart);
+
+  if (this->recentCount == 0) {
+    QAction *stub = new QAction("(Empty)", this->ui->main->menuStart);
+    stub->setEnabled(false);
+    this->ui->main->menuStart->addAction(stub);
+  }
+
+  this->ui->main->menuStart->addSeparator();
+  this->ui->main->menuStart->addAction(action);
+
+  connect(action, SIGNAL(triggered(bool)), this, SLOT(onTriggerClear(bool)));
+}
+
+void
+UIMediator::setProfile(Suscan::Source::Config const &prof)
+{
+  this->appConfig->profile = prof;
+  this->refreshProfile();
+  this->refreshUI();
+  emit profileChanged();
+}
+
+void
 UIMediator::refreshUI(void)
 {
   QString stateString;
@@ -158,10 +204,7 @@ UIMediator::onTriggerImport(bool)
           } else {
             try {
               Suscan::Source::Config config(profObj);
-              this->appConfig->profile = config;
-              this->refreshProfile();
-              this->refreshUI();
-              emit profileChanged();
+              this->setProfile(config);
             } catch (Suscan::Exception &e) {
               QMessageBox::critical(
                     this->ui->main->centralWidget,
@@ -244,6 +287,23 @@ void
 UIMediator::onTriggerDevices(bool)
 {
   this->ui->deviceDialog->run();
+}
+
+void
+UIMediator::onTriggerClear(bool)
+{
+  this->clearRecent();
+  this->finishRecent();
+
+  emit recentCleared();
+}
+
+void
+UIMediator::onTriggerRecent(bool)
+{
+  QAction *sender = qobject_cast<QAction *>(QObject::sender());
+
+  emit recentSelected(sender->text());
 }
 
 void
@@ -624,17 +684,11 @@ UIMediator::onTriggerSetup(bool)
   this->ui->configDialog->setAnalyzerParams(*this->getAnalyzerParams());
 
   if (this->ui->configDialog->run()) {
-    this->appConfig->profile = this->ui->configDialog->getProfile();
-
     this->appConfig->analyzerParams = this->ui->configDialog->getAnalyzerParams();
     this->ui->fftPanel->setFftSize(this->getFftSize());
-    this->refreshProfile();
-
     this->appConfig->colors = this->ui->configDialog->getColors();
     this->ui->spectrum->setColorConfig(this->appConfig->colors);
-    this->refreshUI();
-
-    emit profileChanged();
+    this->setProfile(this->ui->configDialog->getProfile());
   }
 }
 

@@ -41,6 +41,14 @@ namespace Suscan {
       ~Object();
 
       static Object
+      makeField(std::string const &val)
+      {
+        Object obj(SUSCAN_OBJECT_TYPE_FIELD);
+        obj.setValue(val);
+        return obj;
+      }
+
+      static Object
       wrap(suscan_object_t *instance)
       {
         Object obj;
@@ -275,6 +283,12 @@ namespace Suscan {
         SU_ATTEMPT(suscan_object_set_field_value(this->instance, field.c_str(), val.c_str()));
       }
 
+      void
+      setValue(std::string const &val)
+      {
+        SU_ATTEMPT(suscan_object_set_value(this->instance, val.c_str()));
+      }
+
       std::string
       name(void) const
       {
@@ -331,6 +345,19 @@ namespace Suscan {
 
         obj.borrowed = true;
       }
+
+      void
+      append(Object &&obj)
+      {
+        if (obj.isBorrowed())
+          throw Suscan::Exception("Cannot put borrowed objects into a set");
+
+        SU_ATTEMPT(suscan_object_set_append(this->instance, obj.instance));
+
+        obj.borrowed = true;
+      }
+
+      void clear(void);
   };
 }
 

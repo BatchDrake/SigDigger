@@ -66,16 +66,27 @@ Application::refreshConfig(void)
 }
 
 void
+Application::updateRecent(void)
+{
+  Suscan::Singleton *sing = Suscan::Singleton::get_instance();
+
+  this->mediator->clearRecent();
+  for (auto p = sing->getFirstRecent(); p != sing->getLastRecent(); ++p)
+    this->mediator->addRecent(*p);
+  this->mediator->finishRecent();
+}
+
+void
 Application::run(Suscan::Object const &config)
 {
   this->ui.postLoadInit(this);
 
   this->mediator->loadSerializedConfig(config);
-
   this->mediator->setState(UIMediator::HALTED);
 
   this->connectUI();
   this->connectDeviceDetect();
+  this->updateRecent();
 
   this->show();
 }
@@ -386,6 +397,18 @@ Application::connectUI(void)
         SIGNAL(refreshDevices(void)),
         this,
         SLOT(onDeviceRefresh(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(recentSelected(QString)),
+        this,
+        SLOT(onRecentSelected(QString)));
+
+  connect(
+        this->mediator,
+        SIGNAL(recentCleared(void)),
+        this,
+        SLOT(onRecentCleared(void)));
 }
 
 void
@@ -786,6 +809,12 @@ Application::onCaptureStop(void)
 void
 Application::onProfileChanged(void)
 {
+  if (this->mediator->getProfile()->label() != "") {
+    Suscan::Singleton *sing = Suscan::Singleton::get_instance();
+    sing->notifyRecent(this->mediator->getProfile()->label());
+    this->updateRecent();
+  }
+
   this->restartCapture();
 }
 
@@ -1047,4 +1076,34 @@ Application::onBandwidthChanged(void)
 {
   if (this->mediator->getState() == UIMediator::RUNNING)
     this->analyzer->setBandwidth(this->mediator->getProfile()->getBandwidth());
+}
+
+void
+Application::onRecentSelected(QString profile)
+{
+  Suscan::Singleton *sing = Suscan::Singleton::get_instance();
+  Suscan::Source::Config *config = sing->getProfile(profile.toStdString());
+
+  if (config != nullptr) {
+    bool forceStart = this->mediator->getState() == UIMediator::HALTED;
+    this->mediator->setProfile(*config);
+    if (forceStart)
+      this->startCapture();
+  } else {
+    (void) sing->removeRecent(profile.toStdString());
+    QMessageBox::warning(
+          this,
+          "Failed to load recent profile",
+          "Cannot load this profile. It was either renamed or deleted "
+          "before the history was updated. The profile has been removed from history.",
+              QMessageBox::Ok);
+  }
+}
+
+void
+Application::onRecentCleared(void)
+{
+  Suscan::Singleton *sing = Suscan::Singleton::get_instance();
+
+  sing->clearRecent();
 }
