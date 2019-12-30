@@ -60,7 +60,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <widget class="QMenu" name="menuStart">
      <property name="title">
@@ -81,13 +81,13 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
     <addaction name="actionDevices"/>
     <addaction name="separator"/>
@@ -152,7 +152,7 @@
      <normaloff>:/icons/about.png</normaloff>:/icons/about.png</iconset>
    </property>
    <property name="text">
-    <string>About SigDigger</string>
+    <string>&amp;About SigDigger</string>
    </property>
   </action>
   <action name="actionStart_capture">
@@ -161,7 +161,7 @@
      <normaloff>:/icons/media-playback-start.png</normaloff>:/icons/media-playback-start.png</iconset>
    </property>
    <property name="text">
-    <string>Start capture</string>
+    <string>&amp;Start capture</string>
    </property>
   </action>
   <action name="actionStop_capture">
@@ -170,7 +170,7 @@
      <normaloff>:/icons/media-playback-stop.png</normaloff>:/icons/media-playback-stop.png</iconset>
    </property>
    <property name="text">
-    <string>Stop capture</string>
+    <string>S&amp;top capture</string>
    </property>
   </action>
   <action name="action_None">
@@ -184,7 +184,7 @@
      <normaloff>:/icons/document-import.png</normaloff>:/icons/document-import.png</iconset>
    </property>
    <property name="text">
-    <string>Import profile</string>
+    <string>&amp;Import profile</string>
    </property>
   </action>
   <action name="actionExport_profile">
@@ -193,7 +193,7 @@
      <normaloff>:/icons/document-export.png</normaloff>:/icons/document-export.png</iconset>
    </property>
    <property name="text">
-    <string>Export profile</string>
+    <string>&amp;Export profile</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -202,7 +202,7 @@
      <normaloff>:/icons/application-exit.png</normaloff>:/icons/application-exit.png</iconset>
    </property>
    <property name="text">
-    <string>Quit</string>
+    <string>&amp;Quit</string>
    </property>
   </action>
   <action name="actionDevices">
@@ -211,7 +211,7 @@
      <normaloff>:/icons/devices.png</normaloff>:/icons/devices.png</iconset>
    </property>
    <property name="text">
-    <string>Devices...</string>
+    <string>&amp;Devices...</string>
    </property>
   </action>
   <action name="actionOptions">
@@ -220,7 +220,7 @@
      <normaloff>:/icons/preferences-16.png</normaloff>:/icons/preferences-16.png</iconset>
    </property>
    <property name="text">
-    <string>Settings</string>
+    <string>&amp;Settings</string>
    </property>
   </action>
   <action name="actionClear_recent">

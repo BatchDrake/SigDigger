@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>566</width>
-    <height>381</height>
+    <height>595</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@
    <item row="3" column="3">
     <widget class="QPushButton" name="okButton">
      <property name="text">
-      <string>&amp;OK</string>
+      <string>&amp;Close</string>
      </property>
      <property name="default">
       <bool>true</bool>
@@ -53,7 +53,7 @@
    <item row="0" column="0" colspan="4">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the list of capture devices and SDR receivers that are or have been available in your system for use with live signal sources. However, in some cases, device initialization can take a while and may be seen as unavailable during SigDigger startup.&lt;/p&gt;&lt;p&gt;If you have just plugged a device that does not appear in the source configuration dialog, click on &amp;quot;Refresh&amp;quot; and try again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the list of capture devices and SDR receivers that are or have been available in your system. However, since device initialization can take a while, some devices could have been detected as unavailable during program startup.&lt;/p&gt;&lt;p&gt;If you have just plugged a device and it does not appear in the source configuration dialog, click on the &amp;quot;Refresh&amp;quot; button and try again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -116,7 +116,7 @@
      </attribute>
      <column>
       <property name="text">
-       <string> </string>
+       <string/>
       </property>
      </column>
      <column>
