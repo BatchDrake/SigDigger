@@ -70,6 +70,7 @@ function embed_soapysdr()
     EXCLUDED='libc\.so\.6'
     try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
     try "Testing SoapySDR dir..." test -d "/usr/lib/`uname -m`-linux-gnu/SoapySDR/modules$SOAPYSDRVER"
+    try "Creating symlinks..." ln -s . "$APPIMAGEROOT"/usr/lib/`uname -m`-linux-gnu
     try "Creating SoapySDR module dir..." mkdir -p "$APPIMAGEROOT"/usr/lib/SoapySDR
 
     SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib"
@@ -167,8 +168,8 @@ if [ "$SIGDIGGER_EMBED_SOAPYSDR" != "" ]; then
     echo '#!/bin/sh
 SELF=$(readlink -f "$0")
 HERE=${SELF%/*}
-export SUSCAN_CONFIG_PATH="${HERE}/usr/share/suscan/config"
-export SOAPY_SDR_ROOT="${HERE}"
+export SUSCAN_CONFIG_PATH="${HERE}/../share/suscan/config"
+export SOAPY_SDR_ROOT="${HERE}/.."
 if [ "x$SIGDIGGER_SOAPY_SDR_ROOT" != "x" ]; then
   export SOAPY_SDR_ROOT="$SIGDIGGER_SOAPY_SDR_ROOT"
 fi
@@ -177,7 +178,7 @@ else
     echo '#!/bin/sh
 SELF=$(readlink -f "$0")
 HERE=${SELF%/*}
-export SUSCAN_CONFIG_PATH="${HERE}/usr/share/suscan/config"
+export SUSCAN_CONFIG_PATH="${HERE}/../share/suscan/config"
 exec "${HERE}"/SigDigger.app "$@"' > "$APPIMAGEROOT"/usr/bin/SigDigger
 fi
 try "Setting permissions to wrapper script..." chmod a+x "$APPIMAGEROOT"/usr/bin/SigDigger
