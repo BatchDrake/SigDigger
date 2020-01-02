@@ -39,7 +39,7 @@ isEmpty(SUWIDGETS_PREFIX) {
   SUWIDGETS_INSTALL_HEADERS=$$SUWIDGETS_PREFIX/include/SuWidgets
 }
 
-isEmpty(SUSCAN_PREFIX) {
+isEmpty(SIGDIGGER_PREFIX) {
   # Default rules for deployment.
   qnx: target.path = /tmp/$${TARGET}/bin
   else: unix:!android: target.path = /opt/$${TARGET}/bin
