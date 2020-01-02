@@ -28,7 +28,26 @@ equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
   CONFIG += c++14
 }
 
-INCLUDEPATH += $$PWD/include /usr/include/SuWidgets
+CONFIG(release, debug|release): QMAKE_CXXFLAGS=-D__FILENAME__=\\\"SigDigger\\\"
+CONFIG(debug, debug|release):   QMAKE_CXXFLAGS=-D__FILENAME__=__FILE__
+
+isEmpty(SUWIDGETS_PREFIX) {
+  SUWIDGETS_INSTALL_LIBS=$$[QT_INSTALL_LIBS]
+  SUWIDGETS_INSTALL_HEADERS=$$[QT_INSTALL_HEADERS]/SuWidgets
+} else {
+  SUWIDGETS_INSTALL_LIBS=$$SUWIDGETS_PREFIX/lib
+  SUWIDGETS_INSTALL_HEADERS=$$SUWIDGETS_PREFIX/include/SuWidgets
+}
+
+isEmpty(SUSCAN_PREFIX) {
+  # Default rules for deployment.
+  qnx: target.path = /tmp/$${TARGET}/bin
+  else: unix:!android: target.path = /opt/$${TARGET}/bin
+} else {
+  target.path=$$SIGDIGGER_PREFIX/bin
+}
+
+INCLUDEPATH += $$PWD/include $$SUWIDGETS_INSTALL_HEADERS
 SOURCES += \
     App/AppConfig.cpp \
     App/Application.cpp \
@@ -186,10 +205,6 @@ FORMS += \
     ui/NetForwarderUI.ui \
     ui/DeviceDialog.ui
 
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
@@ -203,7 +218,7 @@ packagesExist(alsa) {
   DEFINES += SIGDIGGER_HAVE_ALSA
 }
 
-unix: LIBS += -lsuwidgets
+unix: LIBS += -L$$SUWIDGETS_INSTALL_LIBS -lsuwidgets
 
 DISTFILES += \
     icons/icon-alpha.png \
