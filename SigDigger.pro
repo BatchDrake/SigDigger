@@ -101,6 +101,7 @@ SOURCES += \
     UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
+    UIMediator/PanoramicDialogMediator.cpp \
     UIMediator/SourceMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
     UIMediator/UIMediator.cpp \
@@ -112,7 +113,9 @@ SOURCES += \
     Components/NetForwarderUI.cpp \
     Components/WaitingSpinnerWidget.cpp \
     Components/DeviceDialog.cpp \
-    UIMediator/DeviceDialogMediator.cpp
+    UIMediator/DeviceDialogMediator.cpp \
+    Components/PanoramicDialog.cpp \
+    Panoramic/Scanner.cpp
 
 
 HEADERS += \
@@ -177,7 +180,9 @@ HEADERS += \
     include/SocketForwarder.h \
     include/NetForwarderUI.h \
     include/WaitingSpinnerWidget.h \
-    include/DeviceDialog.h
+    include/DeviceDialog.h \
+    include/PanoramicDialog.h \
+    include/Scanner.h
 
 
 FORMS += \
@@ -203,7 +208,8 @@ FORMS += \
     ui/SaveProfileDialog.ui \
     ui/EstimatorControl.ui \
     ui/NetForwarderUI.ui \
-    ui/DeviceDialog.ui
+    ui/DeviceDialog.ui \
+    ui/PanoramicDialog.ui
 
 !isEmpty(target.path): INSTALLS += target
 

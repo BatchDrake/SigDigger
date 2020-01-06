@@ -65,6 +65,7 @@ namespace SigDigger {
     void connectAudioPanel(void);
     void connectInspectorPanel(void);
     void connectDeviceDialog(void);
+    void connectPanoramicDialog(void);
 
     void refreshUI(void);
 
@@ -89,6 +90,11 @@ namespace SigDigger {
     // Data methods
     void setProcessRate(unsigned int rate);
     void feedPSD(const Suscan::PSDMessage &msg);
+    void feedPanSpectrum(
+        quint64 freqStart,
+        quint64 freqEnd,
+        float *data,
+        size_t size);
     void setCaptureSize(quint64 size);
     void refreshDevicesDone(void);
 
@@ -103,6 +109,10 @@ namespace SigDigger {
     // Convenience getters
     Suscan::Source::Config *getProfile(void) const;
     Suscan::AnalyzerParams *getAnalyzerParams(void) const;
+    bool getPanSpectrumDevice(Suscan::Source::Device &) const;
+    bool getPanSpectrumRange(quint64 &min, quint64 &max) const;
+    unsigned int getPanSpectrumRttMs(void) const;
+    float getPanSpectrumRelBw(void) const;
     unsigned int getFftSize(void) const;
 
     // Mediated setters
@@ -110,6 +120,7 @@ namespace SigDigger {
     void setIORate(qreal rate);
     void saveGeometry(void);
     void setProfile(Suscan::Source::Config const &config);
+    void setPanSpectrumRunning(bool state);
 
     // Overriden methods
     Suscan::Serializable *allocConfig() override;
@@ -148,6 +159,12 @@ namespace SigDigger {
     void recentCleared(void);
     void audioChanged(void);
 
+    void panSpectrumStart(void);
+    void panSpectrumStop(void);
+    void panSpectrumRangeChanged(quint64 min, quint64 max);
+    void panSpectrumSkipChanged(void);
+    void panSpectrumRelBwChanged(void);
+
   public slots:
     // Main Window slots
     void onTriggerSetup(bool);
@@ -162,6 +179,7 @@ namespace SigDigger {
     void onTriggerQuit(bool);
     void onTriggerClear(bool);
     void onTriggerRecent(bool);
+    void onTriggerPanoramicSpectrum(bool);
 
     // Spectrum slots
     void onSpectrumBandwidthChanged(void);
@@ -198,6 +216,11 @@ namespace SigDigger {
 
     // Device dialog
     void onRefreshDevices(void);
+
+    // Panoramic spectrum dialog
+    void onPanoramicSpectrumStart(void);
+    void onPanoramicSpectrumStop(void);
+    void onPanoramicSpectrumDetailChanged(quint64 min, quint64 max);
   };
 };
 

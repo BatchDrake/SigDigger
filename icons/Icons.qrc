@@ -25,6 +25,7 @@
         <file>preferences-16.png</file>
         <file>devices.png</file>
         <file>devices-unavail.png</file>
+        <file>panspect.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

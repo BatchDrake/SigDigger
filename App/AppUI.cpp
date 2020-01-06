@@ -34,6 +34,7 @@ AppUI::AppUI(QMainWindow *owner)
   this->audioPanel = new AudioPanel(owner);
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);
+  this->panoramicDialog = new PanoramicDialog(owner);
 }
 
 void

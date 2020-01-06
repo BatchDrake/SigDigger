@@ -28,6 +28,7 @@
 #include "UIMediator.h"
 #include "AudioPlayback.h"
 #include "FileDataSaver.h"
+#include "Scanner.h"
 
 namespace SigDigger {
   class DeviceDetectWorker : public QObject {
@@ -73,6 +74,11 @@ namespace SigDigger {
     SUFREQ maxAudioBw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
     SUFREQ lastAudioLo = 0;
 
+    // Panoramic spectrum
+    Scanner *scanner = nullptr;
+    SUFREQ scanMinFreq;
+    SUFREQ scanMaxFreq;
+
     // Delayed audio parameters
     unsigned int delayedRate = 0;
     SUFLOAT delayedCutOff = 0;
@@ -89,6 +95,8 @@ namespace SigDigger {
     void connectAnalyzer(void);
     void connectDataSaver(void);
     void connectDeviceDetect(void);
+    void connectScanner(void);
+
     int  openCaptureFile(void);
     void installDataSaver(int fd);
     void uninstallDataSaver(void);
@@ -167,6 +175,15 @@ namespace SigDigger {
 
     // Device detect slots
     void onDetectFinished(void);
+
+    // Panoramic spectrum slots
+    void onPanSpectrumStart(void);
+    void onPanSpectrumStop(void);
+    void onPanSpectrumRangeChanged(quint64, quint64);
+    void onPanSpectrumSkipChanged(void);
+    void onPanSpectrumRelBwChanged(void);
+    void onScannerUpdated(void);
+    void onScannerStopped(void);
   };
 }
 

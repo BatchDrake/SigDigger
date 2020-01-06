@@ -253,6 +253,26 @@ namespace Suscan {
         return val;
       }
 
+      double
+      get(std::string const &field, double dfl) const
+      {
+        const char *val;
+        double asDbl;
+
+        val = suscan_object_get_field_value(this->instance, field.c_str());
+
+        if (val == nullptr)
+          return dfl;
+
+        try {
+          asDbl = std::stod(val);
+        } catch (const std::exception &) {
+          asDbl = dfl;
+        }
+
+        return asDbl;
+      }
+
       void
       set(std::string const &field, int val)
       {
@@ -275,6 +295,16 @@ namespace Suscan {
       set(std::string const &field, SUFLOAT val)
       {
         SU_ATTEMPT(suscan_object_set_field_float(this->instance, field.c_str(), val));
+      }
+
+      void
+      set(std::string const &field, double val)
+      {
+        char asString[24];
+
+        snprintf(asString, sizeof(asString), "%.18e", val);
+
+        SU_ATTEMPT(suscan_object_set_field_value(this->instance, field.c_str(), asString));
       }
 
       void

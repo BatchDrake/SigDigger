@@ -36,4 +36,3 @@ UIMediator::onRefreshDevices(void)
 {
   emit refreshDevices();
 }
-

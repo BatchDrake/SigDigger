@@ -157,6 +157,19 @@ Analyzer::setAGC(bool enabled)
 
 }
 
+void
+Analyzer::setHopRange(SUFREQ min, SUFREQ max)
+{
+  SU_ATTEMPT(
+        suscan_analyzer_set_hop_range(this->instance, min, max));
+}
+
+void
+Analyzer::setBufferingSize(SUSCOUNT len)
+{
+  SU_ATTEMPT(suscan_analyzer_set_buffering_size(this->instance, len));
+}
+
 SUSCOUNT
 Analyzer::getSampleRate(void) const
 {

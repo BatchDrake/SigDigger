@@ -79,7 +79,8 @@ namespace Suscan {
     void setDCRemove(bool remove);
     void setIQReverse(bool reverse);
     void setAGC(bool enabled);
-
+    void setHopRange(SUFREQ min, SUFREQ max);
+    void setBufferingSize(SUSCOUNT len);
     void halt(void);
 
     // Analyzer asynchronous requests

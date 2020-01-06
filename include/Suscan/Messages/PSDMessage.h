@@ -31,6 +31,7 @@ namespace Suscan {
 
   public:
     SUSCOUNT size(void) const;
+    SUFREQ getFrequency(void) const;
     unsigned int getSampleRate(void) const;
     const SUFLOAT *get(void) const;
 

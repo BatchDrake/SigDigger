@@ -31,7 +31,10 @@ AnalyzerParams::updateExposedParams(void)
   this->nAvgAlpha             = this->c_params.detector_params.gamma;
   this->snr                   = this->c_params.detector_params.snr;
   this->windowSize            = this->c_params.detector_params.window_size;
-
+  this->minFreq               = this->c_params.min_freq;
+  this->maxFreq               = this->c_params.max_freq;
+  this->mode                  =
+      static_cast<enum Mode>(this->c_params.mode);
   this->windowFunction        =
       static_cast<enum WindowFunction>(this->c_params.detector_params.window);
 }
@@ -52,6 +55,8 @@ AnalyzerParams::getCParams(void)
 {
   this->c_params.channel_update_int     = this->channelUpdateInterval;
   this->c_params.psd_update_int         = this->psdUpdateInterval;
+  this->c_params.min_freq               = this->minFreq;
+  this->c_params.max_freq               = this->maxFreq;
   this->c_params.detector_params.alpha  = this->spectrumAvgAlpha;
   this->c_params.detector_params.beta   = this->sAvgAlpha;
   this->c_params.detector_params.gamma  = this->nAvgAlpha;
@@ -59,6 +64,8 @@ AnalyzerParams::getCParams(void)
   this->c_params.detector_params.window_size = this->windowSize;
   this->c_params.detector_params.window =
       static_cast<enum sigutils_channel_detector_window>(this->windowFunction);
+  this->c_params.mode                   =
+      static_cast<enum suscan_analyzer_mode>(this->mode);
 
   return this->c_params;
 }
@@ -71,6 +78,7 @@ void
 AnalyzerParams::deserialize(Object const &conf)
 {
   std::string wFunc;
+  std::string mode;
 
   LOAD(channelUpdateInterval);
   LOAD(psdUpdateInterval);
@@ -79,6 +87,8 @@ AnalyzerParams::deserialize(Object const &conf)
   LOAD(nAvgAlpha);
   LOAD(snr);
   LOAD(windowSize);
+  LOAD(minFreq);
+  LOAD(maxFreq);
 
   wFunc = conf.get("windowFunction", std::string("none"));
 
@@ -92,6 +102,12 @@ AnalyzerParams::deserialize(Object const &conf)
     this->windowFunction = WindowFunction::FLAT_TOP;
   else if (wFunc == "blackmann-harris")
     this->windowFunction = WindowFunction::BLACKMANN_HARRIS;
+
+  mode = conf.get("mode", std::string("channel"));
+  if (mode == "channel")
+    this->mode = Mode::CHANNEL;
+  else if (mode == "wide-spectrum")
+    this->mode = Mode::WIDE_SPECTRUM;
 }
 
 Object &&
@@ -108,6 +124,8 @@ AnalyzerParams::serialize(void)
   STORE(nAvgAlpha);
   STORE(snr);
   STORE(windowSize);
+  STORE(minFreq);
+  STORE(maxFreq);
 
   switch (this->windowFunction) {
     case NONE:
@@ -128,6 +146,16 @@ AnalyzerParams::serialize(void)
 
     case BLACKMANN_HARRIS:
       obj.set("windowFunction", std::string("blackmann-harris"));
+      break;
+  }
+
+  switch (this->mode) {
+    case CHANNEL:
+      obj.set("mode", std::string("channel"));
+      break;
+
+    case WIDE_SPECTRUM:
+      obj.set("mode", std::string("wide-spectrum"));
       break;
   }
 

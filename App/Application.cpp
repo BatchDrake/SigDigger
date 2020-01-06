@@ -409,6 +409,36 @@ Application::connectUI(void)
         SIGNAL(recentCleared(void)),
         this,
         SLOT(onRecentCleared(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(panSpectrumStart(void)),
+        this,
+        SLOT(onPanSpectrumStart(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(panSpectrumRangeChanged(quint64, quint64)),
+        this,
+        SLOT(onPanSpectrumRangeChanged(quint64, quint64)));
+
+  connect(
+        this->mediator,
+        SIGNAL(panSpectrumStop(void)),
+        this,
+        SLOT(onPanSpectrumStop(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(panSpectrumSkipChanged(void)),
+        this,
+        SLOT(onPanSpectrumSkipChanged(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(panSpectrumRelBwChanged(void)),
+        this,
+        SLOT(onPanSpectrumRelBwChanged(void)));
 }
 
 void
@@ -449,6 +479,22 @@ Application::connectAnalyzer(void)
         SIGNAL(samples_message(const Suscan::SamplesMessage &)),
         this,
         SLOT(onInspectorSamples(const Suscan::SamplesMessage &)));
+}
+
+void
+Application::connectScanner(void)
+{
+  connect(
+        this->scanner,
+        SIGNAL(spectrumUpdated(void)),
+        this,
+        SLOT(onScannerUpdated(void)));
+
+  connect(
+        this->scanner,
+        SIGNAL(stopped(void)),
+        this,
+        SLOT(onScannerStopped(void)));
 }
 
 void
@@ -509,6 +555,7 @@ Application::startCapture(void)
     this->filterInstalled = false;
 
     if (this->mediator->getState() == UIMediator::HALTED) {
+      Suscan::AnalyzerParams params = *this->mediator->getAnalyzerParams();
       std::unique_ptr<Suscan::Analyzer> analyzer;
       //int maxIfFreq;
 
@@ -547,8 +594,10 @@ Application::startCapture(void)
         return;
       }
 
+      // Ensure we run this analyzer in channel mode.
+      params.mode = Suscan::AnalyzerParams::Mode::CHANNEL;
       analyzer = std::make_unique<Suscan::Analyzer>(
-            *this->mediator->getAnalyzerParams(),
+            params,
             *this->mediator->getProfile());
 
       // Enable throttling, if requested
@@ -769,6 +818,9 @@ Application::~Application()
 {
   if (this->audioCfgTemplate != nullptr)
     suscan_config_destroy(this->audioCfgTemplate);
+
+  if (this->scanner != nullptr)
+    delete this->scanner;
 
   this->playBack = nullptr;
   this->analyzer = nullptr;
@@ -1107,3 +1159,115 @@ Application::onRecentCleared(void)
 
   sing->clearRecent();
 }
+
+void
+Application::onPanSpectrumStart(void)
+{
+  if (this->scanner == nullptr) {
+    quint64 freqMin;
+    quint64 freqMax;
+    Suscan::Source::Device device;
+
+    if (this->mediator->getPanSpectrumRange(freqMin, freqMax)
+        && this->mediator->getPanSpectrumDevice(device)) {
+      Suscan::Source::Config config(
+            SUSCAN_SOURCE_TYPE_SDR,
+            SUSCAN_SOURCE_FORMAT_AUTO);
+
+      this->scanMinFreq = static_cast<SUFREQ>(freqMin);
+      this->scanMaxFreq = static_cast<SUFREQ>(freqMax);
+
+      config.setDevice(device);
+      config.setSampleRate(SIGDIGGER_SCANNER_PREFERRED_FS);
+      config.setDCRemove(true);
+      config.setBandwidth(SIGDIGGER_SCANNER_PREFERRED_FS);
+
+      try {
+        Suscan::Logger::getInstance()->flush();
+        this->scanner = new Scanner(this, freqMin, freqMax, config);
+        this->scanner->setRelativeBw(this->mediator->getPanSpectrumRelBw());
+        this->scanner->setRttMs(this->mediator->getPanSpectrumRttMs());
+        this->connectScanner();
+        Suscan::Logger::getInstance()->flush();
+      } catch (Suscan::Exception &) {
+        (void)  QMessageBox::critical(
+              this,
+              "SigDigger error",
+              "Failed to start capture due to errors:<p /><pre>"
+              + getLogText()
+              + "</pre>",
+              QMessageBox::Ok);
+      }
+    }
+  }
+
+  this->mediator->setPanSpectrumRunning(this->scanner != nullptr);
+}
+
+void
+Application::onPanSpectrumStop(void)
+{
+  if (this->scanner != nullptr) {
+    delete this->scanner;
+    this->scanner = nullptr;
+  }
+
+  this->mediator->setPanSpectrumRunning(this->scanner != nullptr);
+}
+
+void
+Application::onPanSpectrumRangeChanged(quint64 min, quint64 max)
+{
+  if (this->scanner != nullptr)
+    this->scanner->setViewRange(min, max);
+}
+
+void
+Application::onPanSpectrumSkipChanged(void)
+{
+  if (this->scanner != nullptr)
+    this->scanner->setRttMs(this->mediator->getPanSpectrumRttMs());
+}
+
+void
+Application::onPanSpectrumRelBwChanged(void)
+{
+  if (this->scanner != nullptr)
+    this->scanner->setRelativeBw(this->mediator->getPanSpectrumRelBw());
+}
+
+void
+Application::onScannerStopped(void)
+{
+  QString messages = getLogText();
+
+  if (this->scanner != nullptr) {
+    delete this->scanner;
+    this->scanner = nullptr;
+  }
+
+  if (messages.size() > 0) {
+    (void)  QMessageBox::warning(
+          this,
+          "Scanner stopped",
+          "Running scanner has stopped. The error log was:<p /><pre>"
+          + getLogText()
+          + "</pre>",
+          QMessageBox::Ok);
+  }
+
+  this->mediator->setPanSpectrumRunning(this->scanner != nullptr);
+}
+
+void
+Application::onScannerUpdated(void)
+{
+  SpectrumView &view = this->scanner->getSpectrumView();
+
+  this->mediator->feedPanSpectrum(
+        static_cast<quint64>(view.freqMin),
+        static_cast<quint64>(view.freqMax),
+        view.psd,
+        SIGDIGGER_SCANNER_SPECTRUM_SIZE);
+}
+
