@@ -28,6 +28,7 @@ PanoramicDialog::PanoramicDialog(QWidget *parent) :
   ui(new Ui::PanoramicDialog)
 {
   ui->setupUi(static_cast<QDialog *>(this));
+  this->setWindowFlags(Qt::Window);
   this->connectAll();
 }
 
