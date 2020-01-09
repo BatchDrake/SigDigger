@@ -70,7 +70,9 @@ function embed_soapysdr()
     EXCLUDED='libc\.so\.6'
     try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
     try "Testing SoapySDR dir..." test -d "/usr/lib/`uname -m`-linux-gnu/SoapySDR/modules$SOAPYSDRVER"
-    try "Creating symlinks..." ln -s . "$APPIMAGEROOT"/usr/lib/`uname -m`-linux-gnu
+    if [ ! -L  "$APPIMAGEROOT"/usr/lib/`uname -m`-linux-gnu ]; then
+	try "Creating symlinks..." ln -s . "$APPIMAGEROOT"/usr/lib/`uname -m`-linux-gnu
+    fi
     try "Creating SoapySDR module dir..." mkdir -p "$APPIMAGEROOT"/usr/lib/SoapySDR
 
     SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib"
@@ -101,7 +103,7 @@ if [ "$SIGDIGGER_SKIPBUILD" == "" ]; then
 
     cd "$BUILDROOT"
     export PKG_CONFIG_PATH="$APPIMAGEROOT/usr/lib/pkgconfig:$PKG_CONFIG"
-    export LD_LIBRARY_PATH="$APPIMAGEROOT/usr/lib:$PKG_CONFIG"
+    export LD_LIBRARY_PATH="$APPIMAGEROOT/usr/lib:$LD_LIBRARY_PATH"
 
     try "Cloning sigutils..."          git clone https://github.com/BatchDrake/sigutils
     try "Cloning suscan..."            git clone https://github.com/BatchDrake/suscan
