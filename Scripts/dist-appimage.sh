@@ -67,7 +67,7 @@ function skip()
 function embed_soapysdr()
 {
     SOAPYSDRVER=`ldd $APPIMAGEROOT/usr/bin/SigDigger | grep Soapy | sed 's/ =>.*$//g' | sed 's/^.*\.so\.//g'`
-    EXCLUDED='libc\.so\.6'
+    EXCLUDED='libc\.so\.6|libpthread|libdl'
     try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
     try "Testing SoapySDR dir..." test -d "/usr/lib/`uname -m`-linux-gnu/SoapySDR/modules$SOAPYSDRVER"
     if [ ! -L  "$APPIMAGEROOT"/usr/lib/`uname -m`-linux-gnu ]; then
@@ -91,6 +91,7 @@ function embed_soapysdr()
 	if [ ! -f "$APPIMAGEROOT"/usr/lib/"$name" ] && ! echo "$i" | egrep "$EXCLUDED" > /dev/null; then
 	    try "Bringing $name..." cp -L "$i" "$APPIMAGEROOT"/usr/lib
 	else
+	    rm -f "$APPIMAGEROOT"/usr/lib/"$name"
 	    skip "Skipping $name..."
 	fi
     done
