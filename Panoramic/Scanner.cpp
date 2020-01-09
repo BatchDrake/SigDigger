@@ -18,8 +18,14 @@
 //
 
 #include "Scanner.h"
+#include <cmath>
+#include <cassert>
 
 using namespace SigDigger;
+
+#ifndef isnan(x)
+#define isnan(x) std::isnan(x)
+#endif // isnan
 
 SpectrumView::SpectrumView()
 {
