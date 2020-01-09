@@ -183,4 +183,4 @@ exec "${HERE}"/SigDigger.app "$@"' > "$APPIMAGEROOT"/usr/bin/SigDigger
 fi
 try "Setting permissions to wrapper script..." chmod a+x "$APPIMAGEROOT"/usr/bin/SigDigger
 try "Calling AppImageTool and finishing..." appimagetool "$APPIMAGEROOT"
-try "Renaming to $APPIMAGE_NAME..." mv "$SRC_APPIMAGE_NAME" "$APPIMAGE_NAME"
+try "Renaming to $APPIMAGE_NAME..." mv "$SRC_APPIMAGE_NAME" "$DISTROOT/$APPIMAGE_NAME"
