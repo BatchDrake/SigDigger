@@ -28,6 +28,8 @@
 #
 
 DISTROOT="$PWD"
+SCRIPTPATH=`realpath $0`
+SCRIPTDIR=`dirname "$SCRIPTPATH"`
 APPIMAGEROOT="$DISTROOT/appimage-root"
 BUILDROOT="$DISTROOT/appimage-buildroot"
 THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
@@ -138,8 +140,10 @@ else
     echo "Skipping build..."
 fi
 
-try "Creating appdir..."  mkdir -p "$APPIMAGEROOT"/usr/share/applications
-try "Creating icondir..."  mkdir -p "$APPIMAGEROOT"/usr/share/icons/hicolor/256x256/apps
+try "Creating appdir..."    mkdir -p "$APPIMAGEROOT"/usr/share/applications
+try "Creating metainfo..."  mkdir -p "$APPIMAGEROOT"/usr/share/metainfo
+try "Copying metainfo..."   cp "$SCRIPTDIR/SigDigger.appdata.xml" "$APPIMAGEROOT"/usr/share/metainfo
+try "Creating icondir..."   mkdir -p "$APPIMAGEROOT"/usr/share/icons/hicolor/256x256/apps
 
 try "Copying icons..." cp "$BUILDROOT"/SigDigger/icons/icon-256x256.png "$APPIMAGEROOT"/usr/share/icons/hicolor/256x256/apps/SigDigger.png
 echo "[Desktop Entry]
