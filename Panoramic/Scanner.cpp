@@ -23,10 +23,6 @@
 
 using namespace SigDigger;
 
-#ifndef isnan(x)
-#define isnan(x) std::isnan(x)
-#endif // isnan
-
 SpectrumView::SpectrumView()
 {
   this->reset();
@@ -49,8 +45,9 @@ SpectrumView::interpolate(void)
   unsigned int count = 1;
   unsigned int zero_pos = 0;
   SUFLOAT t = 0;
+  bool first = true;
   SUFLOAT left = SIGDIGGER_SCANNER_DEFAULT_BIN_VALUE;
-  SUFLOAT right;
+  SUFLOAT right = SIGDIGGER_SCANNER_DEFAULT_BIN_VALUE;
   bool inGap = false;
 
   // Find a bin with zero entries, measure its width,
@@ -60,51 +57,56 @@ SpectrumView::interpolate(void)
 
   for (i = 0; i < SIGDIGGER_SCANNER_SPECTRUM_SIZE; ++i) {
     if (!inGap) {
-      if (this->count[i] <= 1e-12f) {
+      if (this->psdCount[i] <= 1) {
         // Found zero!
         inGap = true;
         zero_pos = i;
         count = 1;
-        if (i > 0)
+
+        first = i == 0;
+        if (!first)
           left = this->psd[i - 1];
+
       } else {
-        this->psd[i] = this->psdAccum[i] / this->count[i];
-        if (this->count[i] > SIGDIGGER_SCANNER_COUNT_MAX) {
-          this->count[i]    = SIGDIGGER_SCANNER_COUNT_RESET;
+        this->psd[i] = this->psdAccum[i] / this->psdCount[i];
+        if (this->psdCount[i] > SIGDIGGER_SCANNER_COUNT_MAX) {
+          this->psdCount[i]    = SIGDIGGER_SCANNER_COUNT_RESET;
           this->psdAccum[i] = this->psd[i] * SIGDIGGER_SCANNER_COUNT_RESET;
         }
       }
     } else {
-      if (this->count[i] <= 1e-12f) {
+      if (this->psdCount[i] <= 1) {
         ++count;
       } else {
         // End of gap of zeroes. Compute right and interpolate
         inGap = false;
-        right = this->psd[i] = this->psdAccum[i] / this->count[i];
-
-        for (j = 0; j < count; ++j) {
-          t = static_cast<SUFLOAT>(j + .5f) / count;
-          this->psd[j + zero_pos] = (1 - t) * left + t * right;
+        right = this->psd[i] = this->psdAccum[i] / this->psdCount[i];
+        if (first) {
+          for (j = 0; j < count; ++j)
+            this->psd[j + zero_pos] = right;
+        } else {
+          for (j = 0; j < count; ++j) {
+            t = static_cast<SUFLOAT>(j + .5f) / count;
+            this->psd[j + zero_pos] = (1 - t) * left + t * right;
+          }
         }
       }
     }
   }
 
   // Deal with trailing zeroes, if any
-  if (inGap) {
-    right = SIGDIGGER_SCANNER_DEFAULT_BIN_VALUE;
-    for (j = 0; j < count; ++j) {
-      t = static_cast<SUFLOAT>(j + .5f) / count;
-      this->psd[j + zero_pos] = (1 - t) * left + t * right;
-    }
-  }
+  if (inGap)
+    for (j = 0; j < count; ++j)
+      this->psd[j + zero_pos] = right;
 }
 
 void
 SpectrumView::feedLinearMode(
     const SUFLOAT *psdData,
+    const SUFLOAT *countData,
     SUFREQ freqMin,
-    SUFREQ freqMax)
+    SUFREQ freqMax,
+    bool adjustSides)
 {
   SUFREQ inpBw;
   SUFREQ bw;
@@ -115,11 +117,11 @@ SpectrumView::feedLinearMode(
   int pieceWidth;
   int startBin, endBin;
   int scaledLen;
-  SUFLOAT accum = 0;
+  SUFLOAT psdAccum = 0, psdCount = 0;
   SUFREQ pos = 0;
-  SUFLOAT prev;
-  SUFLOAT curr;
-  SUFLOAT x;
+  SUFLOAT accPrev, accCurr;
+  SUFLOAT cntPrev, cntCurr;
+  SUFLOAT x, c;
   SUFLOAT t = 0;
   SUFLOAT delta;
   SUFREQ freqSkip;
@@ -127,8 +129,13 @@ SpectrumView::feedLinearMode(
 
   // Compute subrange inside PSD message
   inpBw = freqMax - freqMin;
-  skip = static_cast<int>(
-        .5f * (1 - this->fftRelBw) * SIGDIGGER_SCANNER_SPECTRUM_SIZE);
+  if (adjustSides) {
+    skip = static_cast<int>(
+          .5f * (1 - this->fftRelBw) * SIGDIGGER_SCANNER_SPECTRUM_SIZE);
+  } else {
+    skip = 0;
+  }
+
   freqSkip = static_cast<SUFREQ>(skip) / SIGDIGGER_SCANNER_SPECTRUM_SIZE
       * inpBw;
   pieceWidth = SIGDIGGER_SCANNER_SPECTRUM_SIZE - 2 * skip;
@@ -146,27 +153,38 @@ SpectrumView::feedLinearMode(
   delta     = static_cast<SUFLOAT>(pieceWidth - 1) / bins;
   scaledLen = static_cast<int>(SU_FLOOR(bins));
 
+  if (scaledLen > SIGDIGGER_SCANNER_SPECTRUM_SIZE)
+    scaledLen = SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+
   // This is basically a linear scale
   for (i = 0; i < scaledLen; ++i) {
     startBin  = static_cast<int>(SU_FLOOR(i * delta));
     endBin    = static_cast<int>(SU_FLOOR((i + 1) * delta));
     tStart    =  1 - (i * delta - startBin);
     tEnd      =  (i + 1) * delta - endBin;
-    accum     = 0;
+    psdAccum  = 0;
+    psdCount  = 0;
 
     for (j = startBin; j <= endBin; ++j) {
-      if (j == startBin)
-        accum += tStart * psdData[j + skip];
-      else if (j == endBin)
-        accum += tEnd * psdData[j + skip];
-      else
-        accum += psdData[j + skip];
+      x = psdData[j + skip];
+      c = countData != nullptr ? countData[j + skip] : 1;
+      if (j == startBin) {
+        psdAccum += tStart * x;
+        psdCount += tStart * c;
+      } else if (j == endBin) {
+        psdAccum += tEnd * x;
+        psdCount += tEnd * c;
+      } else {
+        psdAccum += x;
+        psdCount += c;
+      }
     }
 
-    this->averaged[i] = accum / delta;
+    this->scaledPsdAccum[i] = psdAccum / delta;
+    this->scaledPsdCount[i] = psdCount / delta;
   }
 
-  p = scaledLen;
+  p = i;
 
   // Delicate step 2: we have bpfft samples inside averaged. These
   // samples now must be placed via interpolation in this->psd.
@@ -179,30 +197,27 @@ SpectrumView::feedLinearMode(
   j = static_cast<int>(floor(pos));
   t = static_cast<SUFLOAT>(pos - j);
 
-  assert(!isnan(pos));
+  assert(!std::isnan(pos));
 
-  prev = 0;
+  accPrev = cntPrev = 0;
   for (i = 1; i <= p; ++i, ++j) {
-    curr = i < p ? this->averaged[i] : 0;
-    assert(!isnan(curr));
-    x = (1 - t) * prev + t * curr;
-    assert(!isnan(x));
+    accCurr = i < p ? this->scaledPsdAccum[i] : 0;
+    cntCurr = i < p ? this->scaledPsdCount[i] : 0;
+
+    assert(!std::isnan(accCurr));
+    x = (1 - t) * accPrev + t * accCurr;
+    c = (1 - t) * cntPrev + t * cntCurr;
+    assert(!std::isnan(x));
 
     if (j >= 0 && j < SIGDIGGER_SCANNER_SPECTRUM_SIZE) {
       // Add, taking into account the interpolation parameter
       // and the weight of the last coefficient.
       this->psdAccum[j] += x;
-      if (i == 1)
-        delta = static_cast<SUFLOAT>(t);
-      else if (i == p)
-        delta = static_cast<SUFLOAT>(1.f - t);
-      else
-        delta = 1;
-
-      this->count[j] += delta;
+      this->psdCount[j] += c;
     }
 
-    prev = curr;
+    accPrev = accCurr;
+    cntPrev = cntCurr;
   }
 }
 
@@ -233,33 +248,38 @@ SpectrumView::feedHistogramMode(
 
   accum *= inv;
 
-  assert(!isnan(inv));
-  assert(!isnan(accum));
+  assert(!std::isnan(inv));
+  assert(!std::isnan(accum));
 
   if (floor(fStart) != floor(fEnd)) {
     // Between two bins.
     t = static_cast<SUFLOAT>((fStart - floor(fStart)) / relBw);
 
-    this->count[j] += 1 - t;
+    this->psdCount[j] += 1 - t;
     this->psdAccum[j] += (1 - t) * accum;
 
     if (j + 1 < SIGDIGGER_SCANNER_SPECTRUM_SIZE) {
-      this->count[j + 1] += t;
+      this->psdCount[j + 1] += t;
       this->psdAccum[j + 1] += t * accum;
     }
   } else {
-    this->count[j] += 1;
+    this->psdCount[j] += 1;
     this->psdAccum[j] += accum;
   }
 }
 
 void
-SpectrumView::feed(const SUFLOAT *psd, SUFREQ freqMin, SUFREQ freqMax)
+SpectrumView::feed(
+    const SUFLOAT *psd,
+    const SUFLOAT *count,
+    SUFREQ freqMin,
+    SUFREQ freqMax,
+    bool adjustSides)
 {
   SUFREQ fftCount = (freqMax - freqMin) / this->freqRange;
 
   if (fftCount < SIGDIGGER_SCANNER_SPECTRUM_SIZE)
-    this->feedLinearMode(psd, freqMin, freqMax);
+    this->feedLinearMode(psd, count, freqMin, freqMax, adjustSides);
   else
     this->feedHistogramMode(psd, freqMin, freqMax);
 
@@ -267,21 +287,29 @@ SpectrumView::feed(const SUFLOAT *psd, SUFREQ freqMin, SUFREQ freqMax)
 }
 
 void
-SpectrumView::feed(const SUFLOAT *psd, SUFREQ center)
+SpectrumView::feed(
+    const SUFLOAT *psd,
+    const SUFLOAT *count,
+    SUFREQ center,
+    bool adjustSides)
 {
   this->feed(
         psd,
+        count,
         center - this->fftBandwidth / 2,
-        center + this->fftBandwidth / 2);
+        center + this->fftBandwidth / 2,
+        adjustSides);
 }
 
 void
 SpectrumView::feed(SpectrumView const &detail)
 {
   this->feed(
-        detail.psd,
+        detail.psdAccum,
+        detail.psdCount,
         detail.freqMin,
-        detail.freqMax);
+        detail.freqMax,
+        false);
 }
 
 void
@@ -289,8 +317,9 @@ SpectrumView::reset(void)
 {
   memset(this->psd, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
   memset(this->psdAccum, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
-  memset(this->averaged, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
-  memset(this->count, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
+  memset(this->psdCount, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
+  memset(this->scaledPsdAccum, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
+  memset(this->scaledPsdCount, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
 }
 
 Scanner::Scanner(
@@ -307,15 +336,15 @@ Scanner::Scanner(
     freqMax = tmp;
   }
 
+  this->freqMin = freqMin;
+  this->freqMax = freqMax;
+
   params.channelUpdateInterval = 0;
   params.spectrumAvgAlpha = .001f;
   params.sAvgAlpha = 0.001f;
   params.nAvgAlpha = 0.5;
   params.snr = 2;
   params.windowSize = SIGDIGGER_SCANNER_SPECTRUM_SIZE;
-
-  this->mainView.freqMin = freqMin;
-  this->mainView.freqMax = freqMax;
 
   params.mode = Suscan::AnalyzerParams::Mode::WIDE_SPECTRUM;
   params.minFreq = freqMin;
@@ -362,26 +391,33 @@ Scanner::setRelativeBw(float ratio)
   else if (ratio < 2.f / SIGDIGGER_SCANNER_SPECTRUM_SIZE)
     ratio = 2.f / SIGDIGGER_SCANNER_SPECTRUM_SIZE;
 
-  this->mainView.fftRelBw   = ratio;
-  this->detailView.fftRelBw = ratio;
+  this->getSpectrumView().fftRelBw   = ratio;
+  this->getSpectrumView().fftRelBw = ratio;
 }
 
 SpectrumView &
 Scanner::getSpectrumView(void)
 {
-  return this->zoomMode ? this->detailView : this->mainView;
+  return this->views[this->view];
 }
 
 SpectrumView const &
 Scanner::getSpectrumView(void) const
 {
-  return this->zoomMode ? this->detailView : this->mainView;
+  return this->views[this->view];
 }
 
 void
 Scanner::stop(void)
 {
   this->analyzer->halt();
+}
+
+void
+Scanner::flip(void)
+{
+  this->view = 1 - this->view;
+  this->getSpectrumView().reset();
 }
 
 void
@@ -403,11 +439,11 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax)
     SUFREQ searchMin, searchMax;
     // Scanner in zoom mode, copy this view back to mainView
     try {
-      if (freqMin < this->mainView.freqMin)
-        freqMin = this->mainView.freqMin;
+      if (freqMin < this->freqMin)
+        freqMin = this->freqMin;
 
-      if (freqMax > this->mainView.freqMax)
-        freqMax = this->mainView.freqMax;
+      if (freqMax > this->freqMax)
+        freqMax = this->freqMax;
 
       searchMin = freqMin - fs / 2;
       searchMax = freqMax + fs / 2;
@@ -415,14 +451,19 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax)
       if (searchMin < 0)
         searchMin = 0;
 
-      this->analyzer->setHopRange(searchMin, searchMax);
-
-      if (freqMin > this->mainView.freqMin
-          || freqMax < this->mainView.freqMax) {
-        this->zoomMode = true;
-        this->detailView.setRange(freqMin, freqMax);
-      } else {
-        this->zoomMode = false;
+      // Limits adjusted.
+      if (std::fabs(this->getSpectrumView().freqMin - freqMin) >=
+          std::numeric_limits<SUFREQ>::epsilon() ||
+          std::fabs(this->getSpectrumView().freqMax - freqMax) >=
+          std::numeric_limits<SUFREQ>::epsilon()) {
+        SpectrumView &previous = this->getSpectrumView();
+        this->flip();
+        this->analyzer->setHopRange(searchMin, searchMax);
+        this->getSpectrumView().setRange(freqMin, freqMax);
+        if (!this->firstFlip)
+          this->getSpectrumView().feed(previous);
+        else
+          this->firstFlip = false;
       }
     } catch (Suscan::Exception const &) {
       // Invalid limits, warn?
@@ -448,16 +489,14 @@ Scanner::onPSDMessage(const Suscan::PSDMessage &msg)
     this->analyzer->setBufferingSize(this->rtt * this->fs / 1000);
     this->analyzer->setBandwidth(this->fs);
     this->fsGuessed = true;
-    this->mainView.fftBandwidth =
-        this->detailView.fftBandwidth = this->fs;
-    this->mainView.setRange(
-          this->mainView.freqMin,
-          this->mainView.freqMax);
+    this->views[0].fftBandwidth = this->views[1].fftBandwidth = this->fs;
+    this->getSpectrumView().setRange(this->freqMin, this->freqMax);
   }
 
   if (msg.size() == SIGDIGGER_SCANNER_SPECTRUM_SIZE) {
     this->getSpectrumView().feed(
           msg.get(),
+          nullptr,
           msg.getFrequency());
   }
 

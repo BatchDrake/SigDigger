@@ -27,7 +27,9 @@
 // PSD and the panoramic view. We use this size for both thigs.
 //
 #define SIGDIGGER_SCANNER_SPECTRUM_SIZE     8192
-#define SIGDIGGER_SCANNER_DEFAULT_BIN_VALUE -80.0f
+#define SIGDIGGER_SCANNER_DEFAULT_BIN_VALUE -200.0f
+#define SIGDIGGER_SCANNER_MIN_BIN_VALUE     -150.0f
+
 #define SIGDIGGER_SCANNER_COUNT_MAX         3.0f
 #define SIGDIGGER_SCANNER_COUNT_RESET       1.0f
 #define SIGDIGGER_SCANNER_PREFERRED_FS      20000000
@@ -70,16 +72,30 @@ namespace SigDigger {
       SUFLOAT fftRelBw = .5f;
 
       SUFLOAT psd[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
+
+      // TODO: Use complex?
       SUFLOAT psdAccum[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
-      SUFLOAT averaged[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
-      SUFLOAT count[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
+      SUFLOAT psdCount[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
+
+      SUFLOAT scaledPsdAccum[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
+      SUFLOAT scaledPsdCount[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
 
       SpectrumView();
 
       void setRange(SUFREQ freqMin, SUFREQ freqMax);
 
-      void feed(const SUFLOAT *, SUFREQ freqMin, SUFREQ freqMax);
-      void feed(const SUFLOAT *, SUFREQ center);
+      void feed(
+          const SUFLOAT *,
+          const SUFLOAT *,
+          SUFREQ freqMin,
+          SUFREQ freqMax,
+          bool adjustSides = true);
+
+      void feed(
+          const SUFLOAT *,
+          const SUFLOAT *,
+          SUFREQ center,
+          bool adjustSides = true);
 
       void feed(SpectrumView const &);
 
@@ -87,21 +103,33 @@ namespace SigDigger {
       void interpolate(void); // Interpolate empty bins
 
     private:
-      void feedLinearMode(const SUFLOAT *, SUFREQ freqMin, SUFREQ freqMax);
-      void feedHistogramMode(const SUFLOAT *, SUFREQ freqMin, SUFREQ freqMax);
+      void feedLinearMode(
+          const SUFLOAT *,
+          const SUFLOAT *,
+          SUFREQ freqMin,
+          SUFREQ freqMax,
+          bool adjustSides = true);
+
+      void feedHistogramMode(
+          const SUFLOAT *,
+          SUFREQ freqMin,
+          SUFREQ freqMax);
   };
 
   class Scanner : public QObject
   {
       Q_OBJECT
 
-      bool zoomMode = false;
+      SUFREQ freqMin;
+      SUFREQ freqMax;
+
+      bool firstFlip = true;
       bool fsGuessed = false;
       float relBw = .5f;
       unsigned int fs = 0;
       unsigned int rtt = 15;
-      SpectrumView mainView;
-      SpectrumView detailView;
+      SpectrumView views[2];
+      int view = 0;
 
       Suscan::Analyzer *analyzer = nullptr;
 
@@ -115,6 +143,7 @@ namespace SigDigger {
       void setRelativeBw(float ratio);
       void setRttMs(unsigned int);
       void setViewRange(SUFREQ min, SUFREQ max);
+      void flip(void);
       SpectrumView &getSpectrumView(void);
       SpectrumView const &getSpectrumView(void) const;
       void stop(void);
