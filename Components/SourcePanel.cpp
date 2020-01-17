@@ -293,6 +293,7 @@ SourcePanel::setThrottleable(bool val)
 DeviceGain *
 SourcePanel::lookupGain(std::string const &name)
 {
+  // Why is this? Use a map instead.
   for (auto p = this->gainControls.begin();
        p != this->gainControls.end();
        ++p) {

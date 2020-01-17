@@ -432,9 +432,6 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax)
   if (fs == 0)
       return;
 
-  if (freqMax - freqMin < fs)
-    freqMax = freqMin + fs;
-
   if (freqMax - freqMin >= fs) {
     SUFREQ searchMin, searchMax;
     // Scanner in zoom mode, copy this view back to mainView

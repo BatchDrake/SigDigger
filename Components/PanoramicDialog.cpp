@@ -331,6 +331,82 @@ PanoramicDialog::getRelBw(void) const
   return this->ui->relBwSlider->value() / 100.f;
 }
 
+DeviceGain *
+PanoramicDialog::lookupGain(std::string const &name)
+{
+  // Why is this? Use a map instead.
+  for (auto p = this->gainControls.begin();
+       p != this->gainControls.end();
+       ++p) {
+    if ((*p)->getName() == name)
+      return *p;
+  }
+
+  return nullptr;
+}
+
+void
+PanoramicDialog::clearGains(void)
+{
+  int i, len;
+
+  len = static_cast<int>(this->gainControls.size());
+
+  if (len == 0) {
+    QLayoutItem *item = this->ui->gainGridLayout->takeAt(0);
+    if (item != nullptr) {
+      item->widget()->deleteLater();
+      delete item;
+    }
+  } else {
+    for (i = 0; i < len; ++i) {
+      QLayoutItem *item = this->ui->gainGridLayout->takeAt(i);
+      delete item;
+
+      // This is what C++ is for.
+      this->gainControls[static_cast<unsigned long>(i)]->deleteLater();
+    }
+
+    this->gainControls.clear();
+  }
+}
+
+void
+PanoramicDialog::refreshGains(Suscan::Source::Device &device)
+{
+  DeviceGain *gain = nullptr;
+
+  this->clearGains();
+
+  for (auto p = device.getFirstGain();
+       p != device.getLastGain();
+       ++p) {
+    gain = new DeviceGain(nullptr, *p);
+    this->gainControls.push_back(gain);
+    this->ui->gainGridLayout->addWidget(
+          gain,
+          static_cast<int>(this->gainControls.size() - 1),
+          0,
+          1,
+          1);
+
+    connect(
+          gain,
+          SIGNAL(gainChanged(QString, float)),
+          this,
+          SLOT(onGainChanged(QString, float)));
+    gain->setGain(p->getDefault());
+  }
+
+  if (this->gainControls.size() == 0) {
+    this->ui->gainGridLayout->addWidget(
+        new QLabel("(device has no gains)"),
+        0,
+        0,
+        Qt::AlignCenter | Qt::AlignVCenter);
+  }
+}
+
 ////////////////////////////// Slots //////////////////////////////////////
 void
 PanoramicDialog::onDeviceChanged(void)
@@ -339,10 +415,13 @@ PanoramicDialog::onDeviceChanged(void)
 
   if (this->getSelectedDevice(dev)) {
     this->setRanges(dev);
+    this->refreshGains(dev);
     if (this->ui->fullRangeCheck->isChecked()) {
       this->ui->rangeStartSpin->setValue(dev.getMinFreq());
       this->ui->rangeEndSpin->setValue(dev.getMaxFreq());
     }
+  } else {
+    this->clearGains();
   }
 }
 

@@ -24,6 +24,7 @@
 #include <Suscan/Source.h>
 #include "ColorConfig.h"
 #include "ui_PanoramicDialog.h"
+#include "DeviceGain.h"
 
 namespace Ui {
   class PanoramicDialog;
@@ -35,7 +36,7 @@ namespace SigDigger {
       Q_OBJECT
 
       bool running = false;
-
+      std::vector<DeviceGain *> gainControls;
       std::map<std::string, Suscan::Source::Device> deviceMap;
       void setRanges(Suscan::Source::Device const &);
       void setWfRange(quint64 min, quint64 max);
@@ -51,6 +52,10 @@ namespace SigDigger {
       void redrawMeasures(void);
 
       bool adjustingRange = false;
+
+      DeviceGain *lookupGain(std::string const &name);
+      void clearGains(void);
+      void refreshGains(Suscan::Source::Device &device);
 
     public:
       explicit PanoramicDialog(QWidget *parent = nullptr);
