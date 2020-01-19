@@ -110,6 +110,22 @@ Analyzer::setAntenna(std::string const &name)
 }
 
 void
+Analyzer::setSweepStrategy(SweepStrategy strategy)
+{
+  SU_ATTEMPT(suscan_analyzer_set_sweep_stratrgy(
+               this->instance,
+               static_cast<enum suscan_analyzer_sweep_strategy>(strategy)));
+}
+
+void
+Analyzer::setSpectrumPartitioning(SpectrumPartitioning partitioning)
+{
+  SU_ATTEMPT(suscan_analyzer_set_spectrum_partitioning(
+               this->instance,
+               static_cast<enum suscan_analyzer_spectrum_partitioning>(partitioning)));
+}
+
+void
 Analyzer::setBandwidth(SUFLOAT value)
 {
   SU_ATTEMPT(suscan_analyzer_set_bw(this->instance, value));

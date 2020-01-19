@@ -30,7 +30,7 @@
 #define SIGDIGGER_SCANNER_DEFAULT_BIN_VALUE -200.0f
 #define SIGDIGGER_SCANNER_MIN_BIN_VALUE     -150.0f
 
-#define SIGDIGGER_SCANNER_COUNT_MAX         3.0f
+#define SIGDIGGER_SCANNER_COUNT_MAX         5.0f
 #define SIGDIGGER_SCANNER_COUNT_RESET       1.0f
 #define SIGDIGGER_SCANNER_PREFERRED_FS      20000000
 
@@ -122,8 +122,8 @@ namespace SigDigger {
 
       SUFREQ freqMin;
       SUFREQ freqMax;
+      SUFREQ lnb;
 
-      bool firstFlip = true;
       bool fsGuessed = false;
       float relBw = .5f;
       unsigned int fs = 0;
@@ -142,7 +142,12 @@ namespace SigDigger {
 
       void setRelativeBw(float ratio);
       void setRttMs(unsigned int);
-      void setViewRange(SUFREQ min, SUFREQ max);
+      void setViewRange(SUFREQ min, SUFREQ max, bool noHop = false);
+      void setStrategy(Suscan::Analyzer::SweepStrategy);
+      void setPartitioning(Suscan::Analyzer::SpectrumPartitioning);
+      void setGain(QString const &, float);
+
+      unsigned int getFs(void) const;
       void flip(void);
       SpectrumView &getSpectrumView(void);
       SpectrumView const &getSpectrumView(void) const;

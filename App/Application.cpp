@@ -418,9 +418,9 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
-        SIGNAL(panSpectrumRangeChanged(quint64, quint64)),
+        SIGNAL(panSpectrumRangeChanged(quint64, quint64, bool)),
         this,
-        SLOT(onPanSpectrumRangeChanged(quint64, quint64)));
+        SLOT(onPanSpectrumRangeChanged(quint64, quint64, bool)));
 
   connect(
         this->mediator,
@@ -439,6 +439,30 @@ Application::connectUI(void)
         SIGNAL(panSpectrumRelBwChanged(void)),
         this,
         SLOT(onPanSpectrumRelBwChanged(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(panSpectrumReset(void)),
+        this,
+        SLOT(onPanSpectrumReset(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(panSpectrumStrategyChanged(QString)),
+        this,
+        SLOT(onPanSpectrumStrategyChanged(QString)));
+
+  connect(
+        this->mediator,
+        SIGNAL(panSpectrumPartitioningChanged(QString)),
+        this,
+        SLOT(onPanSpectrumPartitioningChanged(QString)));
+
+  connect(
+        this->mediator,
+        SIGNAL(panSpectrumGainChanged(QString, float)),
+        this,
+        SLOT(onPanSpectrumGainChanged(QString, float)));
 }
 
 void
@@ -1181,12 +1205,26 @@ Application::onPanSpectrumStart(void)
       config.setSampleRate(SIGDIGGER_SCANNER_PREFERRED_FS);
       config.setDCRemove(true);
       config.setBandwidth(SIGDIGGER_SCANNER_PREFERRED_FS);
-
+      config.setLnbFreq(this->mediator->getPanSpectrumLnbOffset());
       try {
         Suscan::Logger::getInstance()->flush();
         this->scanner = new Scanner(this, freqMin, freqMax, config);
         this->scanner->setRelativeBw(this->mediator->getPanSpectrumRelBw());
         this->scanner->setRttMs(this->mediator->getPanSpectrumRttMs());
+        this->onPanSpectrumStrategyChanged(
+              this->mediator->getPanSpectrumStrategy());
+        this->onPanSpectrumPartitioningChanged(
+              this->mediator->getPanSpectrumPartition());
+
+        for (auto p = device.getFirstGain();
+             p != device.getLastGain();
+             ++p) {
+          this->scanner->setGain(
+                QString::fromStdString(p->getName()),
+                this->mediator->getPanSpectrumGain(
+                  QString::fromStdString(p->getName())));
+        }
+
         this->connectScanner();
         Suscan::Logger::getInstance()->flush();
       } catch (Suscan::Exception &) {
@@ -1216,10 +1254,10 @@ Application::onPanSpectrumStop(void)
 }
 
 void
-Application::onPanSpectrumRangeChanged(quint64 min, quint64 max)
+Application::onPanSpectrumRangeChanged(quint64 min, quint64 max, bool noHop)
 {
   if (this->scanner != nullptr)
-    this->scanner->setViewRange(min, max);
+    this->scanner->setViewRange(min, max, noHop);
 }
 
 void
@@ -1234,6 +1272,44 @@ Application::onPanSpectrumRelBwChanged(void)
 {
   if (this->scanner != nullptr)
     this->scanner->setRelativeBw(this->mediator->getPanSpectrumRelBw());
+}
+
+void
+Application::onPanSpectrumReset(void)
+{
+  if (this->scanner != nullptr) {
+    this->scanner->flip();
+    this->scanner->flip();
+  }
+}
+
+void
+Application::onPanSpectrumStrategyChanged(QString strategy)
+{
+  if (this->scanner != nullptr) {
+    if (strategy.toStdString() == "Stochastic")
+      this->scanner->setStrategy(Suscan::Analyzer::STOCHASTIC);
+    else if (strategy.toStdString() == "Progressive")
+      this->scanner->setStrategy(Suscan::Analyzer::PROGRESSIVE);
+  }
+}
+
+void
+Application::onPanSpectrumPartitioningChanged(QString partitioning)
+{
+  if (this->scanner != nullptr) {
+    if (partitioning.toStdString() == "Continuous")
+      this->scanner->setPartitioning(Suscan::Analyzer::CONTINUOUS);
+    else if (partitioning.toStdString() == "Discrete")
+      this->scanner->setPartitioning(Suscan::Analyzer::DISCRETE);
+  }
+}
+
+void
+Application::onPanSpectrumGainChanged(QString name, float value)
+{
+  if (this->scanner != nullptr)
+    this->scanner->setGain(name, value);
 }
 
 void
@@ -1263,6 +1339,8 @@ void
 Application::onScannerUpdated(void)
 {
   SpectrumView &view = this->scanner->getSpectrumView();
+
+  this->mediator->setMinPanSpectrumBw(this->scanner->getFs());
 
   this->mediator->feedPanSpectrum(
         static_cast<quint64>(view.freqMin),

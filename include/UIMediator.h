@@ -53,6 +53,7 @@ namespace SigDigger {
     Averager averager;
     unsigned int rate = 0;
     unsigned int recentCount = 0;
+    bool panDlgPaletteSet = false;
 
     // UI State
     State state = HALTED;
@@ -90,6 +91,7 @@ namespace SigDigger {
     // Data methods
     void setProcessRate(unsigned int rate);
     void feedPSD(const Suscan::PSDMessage &msg);
+    void setMinPanSpectrumBw(quint64 bw);
     void feedPanSpectrum(
         quint64 freqStart,
         quint64 freqEnd,
@@ -113,6 +115,10 @@ namespace SigDigger {
     bool getPanSpectrumRange(quint64 &min, quint64 &max) const;
     unsigned int getPanSpectrumRttMs(void) const;
     float getPanSpectrumRelBw(void) const;
+    float getPanSpectrumGain(QString const &) const;
+    SUFREQ getPanSpectrumLnbOffset(void) const;
+    QString getPanSpectrumStrategy(void) const;
+    QString getPanSpectrumPartition(void) const;
     unsigned int getFftSize(void) const;
 
     // Mediated setters
@@ -161,9 +167,13 @@ namespace SigDigger {
 
     void panSpectrumStart(void);
     void panSpectrumStop(void);
-    void panSpectrumRangeChanged(quint64 min, quint64 max);
+    void panSpectrumRangeChanged(quint64 min, quint64 max, bool);
     void panSpectrumSkipChanged(void);
     void panSpectrumRelBwChanged(void);
+    void panSpectrumReset(void);
+    void panSpectrumStrategyChanged(QString);
+    void panSpectrumPartitioningChanged(QString);
+    void panSpectrumGainChanged(QString, float);
 
   public slots:
     // Main Window slots
@@ -220,7 +230,7 @@ namespace SigDigger {
     // Panoramic spectrum dialog
     void onPanoramicSpectrumStart(void);
     void onPanoramicSpectrumStop(void);
-    void onPanoramicSpectrumDetailChanged(quint64 min, quint64 max);
+    void onPanoramicSpectrumDetailChanged(quint64 min, quint64 max, bool);
   };
 };
 

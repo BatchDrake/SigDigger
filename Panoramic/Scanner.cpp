@@ -57,7 +57,7 @@ SpectrumView::interpolate(void)
 
   for (i = 0; i < SIGDIGGER_SCANNER_SPECTRUM_SIZE; ++i) {
     if (!inGap) {
-      if (this->psdCount[i] <= 1) {
+      if (this->psdCount[i] < 1) {
         // Found zero!
         inGap = true;
         zero_pos = i;
@@ -75,7 +75,7 @@ SpectrumView::interpolate(void)
         }
       }
     } else {
-      if (this->psdCount[i] <= 1) {
+      if (this->psdCount[i] < 1) {
         ++count;
       } else {
         // End of gap of zeroes. Compute right and interpolate
@@ -391,8 +391,8 @@ Scanner::setRelativeBw(float ratio)
   else if (ratio < 2.f / SIGDIGGER_SCANNER_SPECTRUM_SIZE)
     ratio = 2.f / SIGDIGGER_SCANNER_SPECTRUM_SIZE;
 
-  this->getSpectrumView().fftRelBw   = ratio;
-  this->getSpectrumView().fftRelBw = ratio;
+  this->views[0].fftRelBw = this->views[1].fftRelBw = ratio;
+  this->relBw = ratio;
 }
 
 SpectrumView &
@@ -421,50 +421,74 @@ Scanner::flip(void)
 }
 
 void
-Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax)
+Scanner::setStrategy(Suscan::Analyzer::SweepStrategy strategy)
 {
+  this->analyzer->setSweepStrategy(strategy);
+}
+
+void
+Scanner::setPartitioning(Suscan::Analyzer::SpectrumPartitioning partitioning)
+{
+  this->analyzer->setSpectrumPartitioning(partitioning);
+}
+
+void
+Scanner::setGain(QString const &name, float value)
+{
+  this->analyzer->setGain(name.toStdString(), value);
+}
+
+unsigned int
+Scanner::getFs(void) const
+{
+  return this->fs;
+}
+
+void
+Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
+{
+  SUFREQ searchMin, searchMax;
+
+  if (fs == 0)
+      return;
+
   if (freqMin > freqMax) {
     SUFREQ tmp = freqMin;
     freqMin = freqMax;
     freqMax = tmp;
   }
 
-  if (fs == 0)
-      return;
+  if (freqMin < this->freqMin)
+    freqMin = this->freqMin;
 
-  if (freqMax - freqMin >= fs) {
-    SUFREQ searchMin, searchMax;
-    // Scanner in zoom mode, copy this view back to mainView
-    try {
-      if (freqMin < this->freqMin)
-        freqMin = this->freqMin;
+  if (freqMax > this->freqMax)
+    freqMax = this->freqMax;
 
-      if (freqMax > this->freqMax)
-        freqMax = this->freqMax;
+  if (!noHop) {
+    searchMin = freqMin - fs / 2;
+    searchMax = freqMax + fs / 2;
+  } else {
+    searchMin = searchMax = .5 * (freqMin + freqMax);
+    freqMin = searchMin - fs / 2;
+    freqMax = searchMax + fs / 2;
+  }
 
-      searchMin = freqMin - fs / 2;
-      searchMax = freqMax + fs / 2;
+  // Scanner in zoom mode, copy this view back to mainView
+  try {
+    if (searchMin < 0)
+      searchMin = 0;
 
-      if (searchMin < 0)
-        searchMin = 0;
-
-      // Limits adjusted.
-      if (std::fabs(this->getSpectrumView().freqMin - freqMin) >=
-          std::numeric_limits<SUFREQ>::epsilon() ||
-          std::fabs(this->getSpectrumView().freqMax - freqMax) >=
-          std::numeric_limits<SUFREQ>::epsilon()) {
-        SpectrumView &previous = this->getSpectrumView();
-        this->flip();
-        this->analyzer->setHopRange(searchMin, searchMax);
-        this->getSpectrumView().setRange(freqMin, freqMax);
-        if (!this->firstFlip)
-          this->getSpectrumView().feed(previous);
-        else
-          this->firstFlip = false;
-      }
-    } catch (Suscan::Exception const &) {
-      // Invalid limits, warn?
+    // Limits adjusted.
+    if (std::fabs(this->getSpectrumView().freqMin - freqMin) > 1 ||
+        std::fabs(this->getSpectrumView().freqMax - freqMax) > 1) {
+      SpectrumView &previous = this->getSpectrumView();
+      this->flip();
+      this->getSpectrumView().setRange(freqMin, freqMax);
+      this->getSpectrumView().feed(previous);
     }
+    this->analyzer->setHopRange(searchMin, searchMax);
+  } catch (Suscan::Exception const &) {
+    // Invalid limits, warn?
   }
 }
 

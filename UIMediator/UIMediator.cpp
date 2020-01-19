@@ -241,8 +241,6 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   // Configure main spectrum
   this->ui->spectrum->setPaletteGradient(
         this->ui->fftPanel->getPaletteGradient());
-  this->ui->panoramicDialog->setPaletteGradient(
-        this->ui->fftPanel->getPaletteGradient());
 
   this->connectMainWindow();
   this->connectSpectrum();
@@ -307,6 +305,12 @@ void
 UIMediator::setPanSpectrumRunning(bool running)
 {
   this->ui->panoramicDialog->setRunning(running);
+}
+
+void
+UIMediator::setMinPanSpectrumBw(quint64 bw)
+{
+  this->ui->panoramicDialog->setMinBwForZoom(bw);
 }
 
 void
@@ -382,6 +386,30 @@ float
 UIMediator::getPanSpectrumRelBw(void) const
 {
   return this->ui->panoramicDialog->getRelBw();
+}
+
+float
+UIMediator::getPanSpectrumGain(QString const &name) const
+{
+  return this->ui->panoramicDialog->getGain(name);
+}
+
+SUFREQ
+UIMediator::getPanSpectrumLnbOffset(void) const
+{
+  return this->ui->panoramicDialog->getLnbOffset();
+}
+
+QString
+UIMediator::getPanSpectrumStrategy(void) const
+{
+  return this->ui->panoramicDialog->getStrategy();
+}
+
+QString
+UIMediator::getPanSpectrumPartition(void) const
+{
+  return this->ui->panoramicDialog->getPartitioning();
 }
 
 QString
@@ -794,6 +822,12 @@ UIMediator::onTriggerQuit(bool)
 void
 UIMediator::onTriggerPanoramicSpectrum(bool)
 {
+  if (!this->panDlgPaletteSet) {
+    this->panDlgPaletteSet = true;
+    this->ui->panoramicDialog->setPaletteGradient(
+          QString::fromStdString(this->ui->fftPanel->getPalette()));
+  }
+
   this->ui->panoramicDialog->run();
 }
 

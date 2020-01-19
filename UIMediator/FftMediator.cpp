@@ -72,8 +72,6 @@ UIMediator::onPaletteChanged(void)
 {
   this->ui->spectrum->setPaletteGradient(
         this->ui->fftPanel->getPaletteGradient());
-  this->ui->panoramicDialog->setPaletteGradient(
-        this->ui->fftPanel->getPaletteGradient());
 }
 
 void

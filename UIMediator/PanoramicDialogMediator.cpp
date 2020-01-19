@@ -38,9 +38,9 @@ UIMediator::connectPanoramicDialog(void)
 
   connect(
         this->ui->panoramicDialog,
-        SIGNAL(detailChanged(quint64, quint64)),
+        SIGNAL(detailChanged(quint64, quint64, bool)),
         this,
-        SLOT(onPanoramicSpectrumDetailChanged(quint64, quint64)));
+        SLOT(onPanoramicSpectrumDetailChanged(quint64, quint64, bool)));
 
   connect(
         this->ui->panoramicDialog,
@@ -53,6 +53,30 @@ UIMediator::connectPanoramicDialog(void)
         SIGNAL(relBandwidthChanged(void)),
         this,
         SIGNAL(panSpectrumRelBwChanged(void)));
+
+  connect(
+        this->ui->panoramicDialog,
+        SIGNAL(reset(void)),
+        this,
+        SIGNAL(panSpectrumReset(void)));
+
+  connect(
+        this->ui->panoramicDialog,
+        SIGNAL(strategyChanged(QString)),
+        this,
+        SIGNAL(panSpectrumStrategyChanged(QString)));
+
+  connect(
+        this->ui->panoramicDialog,
+        SIGNAL(partitioningChanged(QString)),
+        this,
+        SIGNAL(panSpectrumPartitioningChanged(QString)));
+
+  connect(
+        this->ui->panoramicDialog,
+        SIGNAL(gainChanged(QString, float)),
+        this,
+        SIGNAL(panSpectrumGainChanged(QString, float)));
 }
 
 void
@@ -68,7 +92,7 @@ UIMediator::onPanoramicSpectrumStop(void)
 }
 
 void
-UIMediator::onPanoramicSpectrumDetailChanged(quint64 min, quint64 max)
+UIMediator::onPanoramicSpectrumDetailChanged(quint64 min, quint64 max, bool noHop)
 {
-  emit panSpectrumRangeChanged(min, max);
+  emit panSpectrumRangeChanged(min, max, noHop);
 }

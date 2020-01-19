@@ -99,22 +99,24 @@ void
 FftPanel::deserializePalettes(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  unsigned int ndx = 0;
+  int ndx = 0;
 
+  // Fill palette vector
   for (auto i = sus->getFirstPalette();
        i != sus->getLastPalette();
-       i++) {
-    ndx = static_cast<unsigned int>(i - sus->getFirstPalette());
-
+       i++)
     this->palettes.push_back(Palette(*i));
 
-    this->ui->paletteCombo->insertItem(
-          static_cast<int>(ndx),
-          QIcon(QPixmap::fromImage(this->palettes[ndx].getThumbnail())),
-          QString::fromStdString(this->palettes[ndx].getName()),
-          QVariant::fromValue(ndx));
+  this->ui->paletteCombo->clear();
 
-    this->palettes[ndx].getThumbnail();
+  // Populate combo
+  for (auto p : this->palettes) {
+    this->ui->paletteCombo->insertItem(
+          ndx,
+          QIcon(QPixmap::fromImage(p.getThumbnail())),
+          QString::fromStdString(p.getName()),
+          QVariant::fromValue(ndx));
+    ++ndx;
   }
 }
 
@@ -361,14 +363,10 @@ FftPanel::~FftPanel()
 std::string
 FftPanel::getPalette(void) const
 {
-  unsigned int index =
-      static_cast<unsigned int>(
-        this->ui->paletteCombo->currentIndex());
+  if (this->selected != nullptr)
+    return this->selected->getName();
 
-  if (index < this->palettes.size())
-    return this->palettes[index].getName();
-
-  return "Suscan";
+  return this->palettes[0].getName();
 }
 
 float
