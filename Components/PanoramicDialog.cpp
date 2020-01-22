@@ -723,7 +723,7 @@ PanoramicDialog::onNewCenterFreq(qint64 freq)
 void
 PanoramicDialog::onPaletteChanged(int)
 {
-  this->setPaletteGradient(this->ui->partitioningCombo->currentText());
+  this->setPaletteGradient(this->ui->paletteCombo->currentText());
 }
 
 void
