@@ -53,7 +53,6 @@ namespace SigDigger {
     Averager averager;
     unsigned int rate = 0;
     unsigned int recentCount = 0;
-    bool panDlgPaletteSet = false;
 
     // UI State
     State state = HALTED;
@@ -117,6 +116,7 @@ namespace SigDigger {
     float getPanSpectrumRelBw(void) const;
     float getPanSpectrumGain(QString const &) const;
     SUFREQ getPanSpectrumLnbOffset(void) const;
+    float getPanSpectrumPreferredSampleRate(void) const;
     QString getPanSpectrumStrategy(void) const;
     QString getPanSpectrumPartition(void) const;
     unsigned int getFftSize(void) const;

@@ -32,7 +32,6 @@
 
 #define SIGDIGGER_SCANNER_COUNT_MAX         5.0f
 #define SIGDIGGER_SCANNER_COUNT_RESET       1.0f
-#define SIGDIGGER_SCANNER_PREFERRED_FS      20000000
 
 namespace SigDigger {
   //

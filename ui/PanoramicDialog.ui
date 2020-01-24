@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>867</width>
+    <width>971</width>
     <height>571</height>
    </rect>
   </property>
@@ -74,6 +74,58 @@
       <property name="spacing">
        <number>3</number>
       </property>
+      <item row="4" column="4">
+       <widget class="QDoubleSpinBox" name="rangeEndSpin">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="suffix">
+         <string> Hz</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <double>4000000000.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Device</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="3">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Partitioning</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="3">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Relative BW</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" colspan="3">
+       <widget class="QComboBox" name="deviceCombo"/>
+      </item>
       <item row="5" column="1">
        <widget class="QLabel" name="label_8">
         <property name="text">
@@ -84,13 +136,33 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="label_13">
+      <item row="1" column="5">
+       <widget class="QPushButton" name="resetButton">
         <property name="text">
-         <string>Sample rate</string>
+         <string>Reset</string>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </widget>
+      </item>
+      <item row="6" column="5">
+       <widget class="QComboBox" name="paletteCombo">
+        <property name="iconSize">
+         <size>
+          <width>64</width>
+          <height>16</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <widget class="QPushButton" name="scanButton">
+        <property name="text">
+         <string>Scan</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="default">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -113,32 +185,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="5">
-       <widget class="QPushButton" name="scanButton">
-        <property name="text">
-         <string>Scan</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="default">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QLabel" name="label_12">
-        <property name="text">
-         <string>LNB</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::PlainText</enum>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
       <item row="6" column="2">
        <widget class="QComboBox" name="walkStrategyCombo">
         <item>
@@ -153,61 +199,13 @@
         </item>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QLineEdit" name="sampRateEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_13">
         <property name="text">
-         <string>0</string>
+         <string>Sample rate</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="2">
-       <widget class="QDoubleSpinBox" name="rangeStartSpin">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="suffix">
-         <string> Hz</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <double>4000000000.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="3">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Relative BW</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" colspan="3">
-       <widget class="QComboBox" name="deviceCombo"/>
-      </item>
-      <item row="4" column="4">
-       <widget class="QDoubleSpinBox" name="rangeEndSpin">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="suffix">
-         <string> Hz</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <double>4000000000.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -219,53 +217,6 @@
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="4">
-       <widget class="QSpinBox" name="lnbSpinBox">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="suffix">
-         <string> Hz</string>
-        </property>
-        <property name="maximum">
-         <number>2000000000</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Device</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Walk strategy</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="4">
-       <widget class="QComboBox" name="partitioningCombo">
-        <item>
-         <property name="text">
-          <string>Continuous</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Discrete</string>
-         </property>
-        </item>
        </widget>
       </item>
       <item row="5" column="4" colspan="2">
@@ -300,10 +251,13 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="3">
-       <widget class="QLabel" name="label_11">
+      <item row="1" column="3">
+       <widget class="QLabel" name="label_12">
         <property name="text">
-         <string>Partitioning</string>
+         <string>LNB</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::PlainText</enum>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -320,20 +274,81 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="5">
-       <widget class="QPushButton" name="resetButton">
-        <property name="text">
-         <string>Reset</string>
+      <item row="4" column="2">
+       <widget class="QDoubleSpinBox" name="rangeStartSpin">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="suffix">
+         <string> Hz</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <double>4000000000.000000000000000</double>
         </property>
        </widget>
       </item>
-      <item row="6" column="5">
-       <widget class="QComboBox" name="paletteCombo">
-        <property name="iconSize">
-         <size>
-          <width>64</width>
-          <height>16</height>
-         </size>
+      <item row="6" column="4">
+       <widget class="QComboBox" name="partitioningCombo">
+        <item>
+         <property name="text">
+          <string>Continuous</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Discrete</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Walk strategy</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QSpinBox" name="sampleRateSpin">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="suffix">
+         <string> sps</string>
+        </property>
+        <property name="maximum">
+         <number>64000000</number>
+        </property>
+        <property name="value">
+         <number>20000000</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="4">
+       <widget class="QDoubleSpinBox" name="lnbDoubleSpinBox">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <double>20000000000.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -351,6 +366,12 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="minimumSize">
+      <size>
+       <width>359</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="title">
       <string>Device gains</string>
      </property>
@@ -359,19 +380,19 @@
      </property>
      <layout class="QGridLayout" name="gainGridLayout">
       <property name="leftMargin">
-       <number>3</number>
+       <number>0</number>
       </property>
       <property name="topMargin">
        <number>3</number>
       </property>
       <property name="rightMargin">
-       <number>3</number>
+       <number>0</number>
       </property>
       <property name="bottomMargin">
        <number>3</number>
       </property>
       <property name="spacing">
-       <number>3</number>
+       <number>0</number>
       </property>
      </layout>
     </widget>

@@ -26,14 +26,14 @@ PersistentWidget::PersistentWidget(QWidget *parent) : QWidget(parent)
 }
 
 void
-PersistentWidget::assertConfig(void)
+PersistentObject::assertConfig(void)
 {
   if (this->config == nullptr)
     this->config = this->allocConfig();
 }
 
 void
-PersistentWidget::loadSerializedConfig(Suscan::Object const &object)
+PersistentObject::loadSerializedConfig(Suscan::Object const &object)
 {
   this->assertConfig();
 
@@ -43,12 +43,12 @@ PersistentWidget::loadSerializedConfig(Suscan::Object const &object)
 }
 
 Suscan::Object &&
-PersistentWidget::getSerializedConfig(void)
+PersistentObject::getSerializedConfig(void)
 {
   return this->config->serialize();
 }
 
-PersistentWidget::~PersistentWidget()
+PersistentObject::~PersistentObject()
 {
   if (this->config != nullptr)
     delete this->config;

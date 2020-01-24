@@ -214,6 +214,9 @@
    <property name="text">
     <string>&amp;Devices...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
   </action>
   <action name="actionOptions">
    <property name="icon">

@@ -22,6 +22,7 @@
 #include <QDialog>
 #include <map>
 #include <Suscan/Source.h>
+#include <PersistentWidget.h>
 #include "ColorConfig.h"
 #include "ui_PanoramicDialog.h"
 #include "DeviceGain.h"
@@ -41,14 +42,42 @@ namespace SigDigger {
     bool exportToFile(QString const &path);
   };
 
-  class PanoramicDialog : public QDialog
+  class PanoramicDialogConfig : public Suscan::Serializable {
+  public:
+    bool fullRange = true;
+    SUFREQ rangeMin;
+    SUFREQ rangeMax;
+    SUFLOAT panRangeMin = -90;
+    SUFLOAT panRangeMax = 0;
+    SUFREQ lnbFreq;
+    int sampRate = 20000000;
+    std::string device;
+    std::string strategy;
+    std::string partitioning;
+    std::string palette;
+
+    std::map<std::string, float> gains;
+    bool hasGain(std::string const &dev, std::string const &name) const;
+    SUFLOAT getGain(std::string const &dev, std::string const &name) const;
+    void setGain(std::string const &dev, std::string const &name, SUFLOAT val);
+
+    // Overriden methods
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize(void) override;
+  };
+
+  class PanoramicDialog : public QDialog, public PersistentObject
   {
       Q_OBJECT
 
+      PanoramicDialogConfig *dialogConfig = nullptr;
       bool running = false;
+      QWidget *noGainLabel = nullptr;
       std::vector<DeviceGain *> gainControls;
       std::vector<Palette> palettes;
       std::map<std::string, Suscan::Source::Device> deviceMap;
+
+      QString bannedDevice;
 
       SavedSpectrum saved;
 
@@ -76,9 +105,11 @@ namespace SigDigger {
       void setWfRange(qint64 min, qint64 max);
       void adjustRanges(void);
 
+      static unsigned int preferredRttMs(Suscan::Source::Device const &dev);
+
     public:
       explicit PanoramicDialog(QWidget *parent = nullptr);
-      ~PanoramicDialog();
+      ~PanoramicDialog() override;
 
       void feed(
           quint64 freqStart,
@@ -89,6 +120,7 @@ namespace SigDigger {
       SUFREQ getMinFreq(void) const;
       SUFREQ getMaxFreq(void) const;
       SUFREQ getLnbOffset(void) const;
+      SUFLOAT getPreferredSampleRate(void) const;
 
       void setColors(ColorConfig const &config);
       void setPaletteGradient(QString const &gradient);
@@ -103,6 +135,12 @@ namespace SigDigger {
       QString getStrategy(void) const;
       QString getPartitioning(void) const;
       float getGain(QString const &) const;
+      void setBannedDevice(QString const &);
+      void saveConfig(void);
+
+      // Overriden methods
+      Suscan::Serializable *allocConfig(void) override;
+      void applyConfig(void) override;
 
     signals:
       void detailChanged(quint64 freqMin, quint64 freqMax, bool noHop);
@@ -129,6 +167,8 @@ namespace SigDigger {
       void onStrategyChanged(QString);
       void onLnbOffsetChanged(void);
       void onExport(void);
+      void onGainChanged(QString name, float val);
+      void onSampleRateSpinChanged(void);
 
     private:
       Ui::PanoramicDialog *ui;

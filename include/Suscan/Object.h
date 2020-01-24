@@ -300,7 +300,7 @@ namespace Suscan {
       void
       set(std::string const &field, double val)
       {
-        char asString[24];
+        char asString[32];
 
         snprintf(asString, sizeof(asString), "%.18e", val);
 

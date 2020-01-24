@@ -92,6 +92,8 @@ UIMediator::refreshUI(void)
       this->ui->main->actionRun->setChecked(false);
       this->ui->main->actionStart_capture->setEnabled(true);
       this->ui->main->actionStop_capture->setEnabled(false);
+      this->ui->panoramicDialog->setBannedDevice("");
+
       break;
 
     case HALTING:
@@ -103,6 +105,7 @@ UIMediator::refreshUI(void)
 
     case RUNNING:
       stateString = QString("Running");
+
       if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR)
         this->ui->spectrum->setCaptureMode(MainSpectrum::CAPTURE);
       else
@@ -112,6 +115,9 @@ UIMediator::refreshUI(void)
       this->ui->main->actionRun->setChecked(true);
       this->ui->main->actionStart_capture->setEnabled(false);
       this->ui->main->actionStop_capture->setEnabled(true);
+      this->ui->panoramicDialog->setBannedDevice(
+            QString::fromStdString(
+              this->appConfig->profile.getDevice().getDesc()));
       break;
 
     case RESTARTING:
@@ -400,6 +406,12 @@ UIMediator::getPanSpectrumLnbOffset(void) const
   return this->ui->panoramicDialog->getLnbOffset();
 }
 
+float
+UIMediator::getPanSpectrumPreferredSampleRate(void) const
+{
+  return this->ui->panoramicDialog->getPreferredSampleRate();
+}
+
 QString
 UIMediator::getPanSpectrumStrategy(void) const
 {
@@ -555,6 +567,7 @@ UIMediator::applyConfig(void)
   this->ui->fftPanel->applyConfig();
   this->ui->inspectorPanel->applyConfig();
   this->ui->audioPanel->applyConfig();
+  this->ui->panoramicDialog->applyConfig();
 
   this->refreshProfile();
 
@@ -822,12 +835,6 @@ UIMediator::onTriggerQuit(bool)
 void
 UIMediator::onTriggerPanoramicSpectrum(bool)
 {
-  if (!this->panDlgPaletteSet) {
-    this->panDlgPaletteSet = true;
-    this->ui->panoramicDialog->setPaletteGradient(
-          QString::fromStdString(this->ui->fftPanel->getPalette()));
-  }
-
   this->ui->panoramicDialog->run();
 }
 

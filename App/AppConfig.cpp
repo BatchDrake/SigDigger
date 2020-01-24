@@ -23,10 +23,11 @@ using namespace SigDigger;
 
 AppConfig::AppConfig(AppUI *ui)
 {
-  this->sourceConfig    = ui->sourcePanel->getConfig();
-  this->fftConfig       = ui->fftPanel->getConfig();
-  this->inspectorConfig = ui->inspectorPanel->getConfig();
-  this->audioConfig     = ui->audioPanel->getConfig();
+  this->sourceConfig      = ui->sourcePanel->getConfig();
+  this->fftConfig         = ui->fftPanel->getConfig();
+  this->inspectorConfig   = ui->inspectorPanel->getConfig();
+  this->audioConfig       = ui->audioPanel->getConfig();
+  this->panSpectrumConfig = ui->panoramicDialog->getConfig();
 }
 
 Suscan::Object &&
@@ -51,6 +52,7 @@ AppConfig::serialize(void)
   obj.setField("fftPanel", this->fftConfig->serialize());
   obj.setField("audioPanel", this->audioConfig->serialize());
   obj.setField("inspectorPanel", this->inspectorConfig->serialize());
+  obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
 
   // Welcome to the world of stupid C++ hacks
   return this->persist(obj);
@@ -78,6 +80,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->fftConfig->deserialize(conf.getField("fftPanel")));
     TRYSILENT(this->audioConfig->deserialize(conf.getField("audioPanel")));
     TRYSILENT(this->inspectorConfig->deserialize(conf.getField("inspectorPanel")));
+    TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
 
     TRYSILENT(this->width  = conf.get("width", this->width));
     TRYSILENT(this->height = conf.get("height", this->height));

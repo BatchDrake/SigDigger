@@ -24,28 +24,33 @@
 #include <Suscan/Serializable.h>
 
 namespace SigDigger {
-  class PersistentWidget : public QWidget
+  class PersistentObject {
+    Suscan::Serializable *config = nullptr;
+
+  public:
+    virtual ~PersistentObject();
+
+    Suscan::Serializable *
+    getConfig(void) const
+    {
+      return this->config;
+    }
+
+    void assertConfig(void);
+    void loadSerializedConfig(Suscan::Object const &object);
+    Suscan::Object &&getSerializedConfig(void);
+
+    virtual Suscan::Serializable *allocConfig(void) = 0;
+    virtual void applyConfig(void) = 0;
+
+  };
+
+  class PersistentWidget : public QWidget, public PersistentObject
   {
       Q_OBJECT
 
-      Suscan::Serializable *config = nullptr;
-
     public:
       explicit PersistentWidget(QWidget *parent = nullptr);
-      ~PersistentWidget();
-
-      Suscan::Serializable *
-      getConfig(void) const
-      {
-        return this->config;
-      }
-
-      void assertConfig(void);
-      void loadSerializedConfig(Suscan::Object const &object);
-      Suscan::Object &&getSerializedConfig(void);
-
-      virtual Suscan::Serializable *allocConfig(void) = 0;
-      virtual void applyConfig(void) = 0;
 
     signals:
 

@@ -1202,9 +1202,11 @@ Application::onPanSpectrumStart(void)
       this->scanMaxFreq = static_cast<SUFREQ>(freqMax);
 
       config.setDevice(device);
-      config.setSampleRate(SIGDIGGER_SCANNER_PREFERRED_FS);
+      config.setSampleRate(
+            static_cast<unsigned int>(
+              this->mediator->getPanSpectrumPreferredSampleRate()));
       config.setDCRemove(true);
-      config.setBandwidth(SIGDIGGER_SCANNER_PREFERRED_FS);
+      config.setBandwidth(this->mediator->getPanSpectrumPreferredSampleRate());
       config.setLnbFreq(this->mediator->getPanSpectrumLnbOffset());
       try {
         Suscan::Logger::getInstance()->flush();
