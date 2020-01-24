@@ -88,6 +88,8 @@ namespace Suscan {
     const suscan_source_device_t *instance; // Always borrowed
     std::vector<std::string> antennas;
     std::vector<Source::GainDescription> gains;
+    SUFREQ freqMin = 0;
+    SUFREQ freqMax = 0;
 
     friend class Config;
 
@@ -201,6 +203,17 @@ namespace Suscan {
       return this->gains.end();
     }
 
+    SUFREQ
+    getMinFreq(void) const
+    {
+      return this->freqMin;
+    }
+
+    SUFREQ
+    getMaxFreq(void) const
+    {
+      return this->freqMax;
+    }
   };
 
   class Source::Config {

@@ -34,12 +34,14 @@
 #include "ui_MainWindow.h"
 #include "ConfigDialog.h"
 #include "DeviceDialog.h"
+#include "PanoramicDialog.h"
 
 namespace SigDigger {
   struct AppUI {
     Ui_MainWindow *main = nullptr;
     ConfigDialog *configDialog = nullptr;
     DeviceDialog *deviceDialog = nullptr;
+    PanoramicDialog *panoramicDialog = nullptr;
     MainSpectrum *spectrum = nullptr;
     SourcePanel *sourcePanel = nullptr;
     InspectorPanel *inspectorPanel = nullptr;

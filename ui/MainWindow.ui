@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>1251</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -90,6 +90,7 @@
      <string>&amp;View</string>
     </property>
     <addaction name="actionDevices"/>
+    <addaction name="actionPanoramicSpectrum"/>
     <addaction name="separator"/>
     <addaction name="actionOptions"/>
    </widget>
@@ -213,6 +214,9 @@
    <property name="text">
     <string>&amp;Devices...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
   </action>
   <action name="actionOptions">
    <property name="icon">
@@ -236,6 +240,18 @@
   <action name="actionClear">
    <property name="text">
     <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionPanoramicSpectrum">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/panspect.png</normaloff>:/icons/panspect.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Panoramic spectrum</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>

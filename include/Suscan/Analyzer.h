@@ -45,6 +45,17 @@ namespace Suscan {
 
     class AsyncThread;
 
+  public:
+    enum SweepStrategy {
+      STOCHASTIC = SUSCAN_ANALYZER_SWEEP_STRATEGY_STOCHASTIC,
+      PROGRESSIVE = SUSCAN_ANALYZER_SWEEP_STRATEGY_PROGRESSIVE
+    };
+
+    enum SpectrumPartitioning {
+      DISCRETE   = SUSCAN_ANALYZER_SPECTRUM_PARTITIONING_DISCRETE,
+      CONTINUOUS = SUSCAN_ANALYZER_SPECTRUM_PARTITIONING_CONTINUOUS
+    };
+
   private:
     suscan_analyzer_t *instance = nullptr;
     AsyncThread *asyncThread = nullptr;
@@ -72,6 +83,8 @@ namespace Suscan {
     void registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t, void *);
     void setFrequency(SUFREQ freq, SUFREQ lnbFreq = 0);
     void setGain(std::string const &name, SUFLOAT val);
+    void setSweepStrategy(SweepStrategy);
+    void setSpectrumPartitioning(SpectrumPartitioning);
     void setAntenna(std::string const &name);
     void setBandwidth(SUFLOAT val);
     void setThrottle(unsigned int throttle);
@@ -79,7 +92,8 @@ namespace Suscan {
     void setDCRemove(bool remove);
     void setIQReverse(bool reverse);
     void setAGC(bool enabled);
-
+    void setHopRange(SUFREQ min, SUFREQ max);
+    void setBufferingSize(SUSCOUNT len);
     void halt(void);
 
     // Analyzer asynchronous requests

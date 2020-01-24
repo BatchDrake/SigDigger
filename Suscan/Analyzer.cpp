@@ -110,6 +110,22 @@ Analyzer::setAntenna(std::string const &name)
 }
 
 void
+Analyzer::setSweepStrategy(SweepStrategy strategy)
+{
+  SU_ATTEMPT(suscan_analyzer_set_sweep_stratrgy(
+               this->instance,
+               static_cast<enum suscan_analyzer_sweep_strategy>(strategy)));
+}
+
+void
+Analyzer::setSpectrumPartitioning(SpectrumPartitioning partitioning)
+{
+  SU_ATTEMPT(suscan_analyzer_set_spectrum_partitioning(
+               this->instance,
+               static_cast<enum suscan_analyzer_spectrum_partitioning>(partitioning)));
+}
+
+void
 Analyzer::setBandwidth(SUFLOAT value)
 {
   SU_ATTEMPT(suscan_analyzer_set_bw(this->instance, value));
@@ -155,6 +171,19 @@ Analyzer::setAGC(bool enabled)
   SU_ATTEMPT(
         suscan_analyzer_set_agc(this->instance, enabled ? SU_TRUE : SU_FALSE));
 
+}
+
+void
+Analyzer::setHopRange(SUFREQ min, SUFREQ max)
+{
+  SU_ATTEMPT(
+        suscan_analyzer_set_hop_range(this->instance, min, max));
+}
+
+void
+Analyzer::setBufferingSize(SUSCOUNT len)
+{
+  SU_ATTEMPT(suscan_analyzer_set_buffering_size(this->instance, len));
 }
 
 SUSCOUNT

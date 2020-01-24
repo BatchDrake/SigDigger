@@ -48,6 +48,7 @@ namespace SigDigger {
       Suscan::Serializable *fftConfig = nullptr;
       Suscan::Serializable *inspectorConfig = nullptr;
       Suscan::Serializable *audioConfig = nullptr;
+      Suscan::Serializable *panSpectrumConfig = nullptr;
 
       int width = 1280;
       int height = 1024;

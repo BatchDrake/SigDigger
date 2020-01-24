@@ -41,14 +41,22 @@ namespace Suscan {
         BLACKMANN_HARRIS = SU_CHANNEL_DETECTOR_WINDOW_BLACKMANN_HARRIS
       };
 
+      enum Mode {
+        CHANNEL = SUSCAN_ANALYZER_MODE_CHANNEL,
+        WIDE_SPECTRUM = SUSCAN_ANALYZER_MODE_WIDE_SPECTRUM
+      };
+
       float channelUpdateInterval;
       float psdUpdateInterval;
       float spectrumAvgAlpha;
       float sAvgAlpha;
       float nAvgAlpha;
       float snr;
+      double minFreq;
+      double maxFreq;
       unsigned int windowSize;
       WindowFunction windowFunction;
+      Mode mode;
 
       struct suscan_analyzer_params const &getCParams(void);
 

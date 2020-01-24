@@ -54,6 +54,15 @@ PSDMessage::getSampleRate(void) const
   return static_cast<unsigned int>(msg->samp_rate);
 }
 
+SUFREQ
+PSDMessage::getFrequency(void) const
+{
+  const struct suscan_analyzer_psd_msg *msg
+      = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
+
+  return msg->fc;
+}
+
 const SUFLOAT *
 PSDMessage::get(void) const
 {
