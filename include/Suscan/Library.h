@@ -48,6 +48,7 @@ namespace Suscan {
     std::vector<Object> palettes;
     std::vector<Object> autoGains;
     std::vector<Object> uiConfig;
+    std::vector<Object> FATs;
     std::list<std::string> recentProfiles;
 
     bool codecs_initd;
@@ -61,7 +62,7 @@ namespace Suscan {
 
     bool havePalette(std::string const &name);
     bool haveAutoGain(std::string const &name);
-
+    bool haveFAT(std::string const &name);
     void syncUI(void);
     void syncRecent(void);
 
@@ -72,6 +73,7 @@ namespace Suscan {
     void init_spectrum_sources(void);
     void init_inspectors(void);
     void init_palettes(void);
+    void init_fats(void);
     void init_autogains(void);
     void init_ui_config(void);
     void init_recent_list(void);
@@ -97,6 +99,9 @@ namespace Suscan {
 
     std::vector<Object>::const_iterator getFirstAutoGain(void) const;
     std::vector<Object>::const_iterator getLastAutoGain(void) const;
+
+    std::vector<Object>::const_iterator getFirstFAT(void) const;
+    std::vector<Object>::const_iterator getLastFAT(void) const;
 
     std::vector<Object>::iterator getFirstUIConfig(void);
     std::vector<Object>::iterator getLastUIConfig(void);

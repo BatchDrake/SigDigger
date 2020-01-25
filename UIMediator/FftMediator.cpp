@@ -65,6 +65,18 @@ UIMediator::connectFftPanel(void)
         SIGNAL(windowFunctionChanged(void)),
         this,
         SLOT(onWindowFunctionChanged(void)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(setShowFATs(bool)),
+        this,
+        SLOT(onSetShowFATs(bool)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(setFATVisible(QString, bool)),
+        this,
+        SLOT(onSetFATVisible(QString, bool)));
 }
 
 void
@@ -125,4 +137,22 @@ UIMediator::onWindowFunctionChanged(void)
       this->ui->fftPanel->getWindowFunction();
 
   emit analyzerParamsChanged();
+}
+
+void
+UIMediator::onSetShowFATs(bool show)
+{
+  this->ui->spectrum->setShowFATs(show);
+}
+
+void
+UIMediator::onSetFATVisible(QString name, bool visible)
+{
+  if (visible) {
+    FrequencyAllocationTable *fat = this->ui->fftPanel->getFAT(name);
+    if (fat != nullptr)
+      this->ui->spectrum->pushFAT(fat);
+  } else {
+    this->ui->spectrum->removeFAT(name);
+  }
 }

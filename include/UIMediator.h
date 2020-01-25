@@ -216,6 +216,8 @@ namespace SigDigger {
     void onWindowFunctionChanged(void);
     void onRefreshRateChanged(void);
     void onTimeSpanChanged(void);
+    void onSetShowFATs(bool);
+    void onSetFATVisible(QString, bool);
 
     // Audio panel
     void onAudioChanged(void);

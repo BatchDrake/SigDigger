@@ -139,6 +139,23 @@ Singleton::haveAutoGain(std::string const &name)
 }
 
 bool
+Singleton::haveFAT(std::string const &name)
+{
+  for (auto p = this->FATs.begin();
+       p != this->FATs.end();
+       ++p) {
+    try {
+      if (p->getField("name").value() == name)
+        return true;
+    } catch (Suscan::Exception const &) {
+
+    }
+  }
+
+  return false;
+}
+
+bool
 Singleton::havePalette(std::string const &name)
 {
   for (auto p = this->palettes.begin();
@@ -185,6 +202,23 @@ Singleton::init_autogains(void)
     try {
       if (!this->haveAutoGain(list[i].getField("name").value()))
         this->autoGains.push_back(list[i]);
+    } catch (Suscan::Exception const &) { }
+  }
+}
+
+void
+Singleton::init_fats(void)
+{
+  unsigned int i, count;
+  ConfigContext ctx("frequency_allocations");
+  Object list = ctx.listObject();
+
+  count = list.length();
+
+  for (i = 0; i < count; ++i) {
+    try {
+      if (!this->haveFAT(list[i].getField("name").value()))
+        this->FATs.push_back(list[i]);
     } catch (Suscan::Exception const &) { }
   }
 }
@@ -373,6 +407,18 @@ std::vector<Object>::iterator
 Singleton::getLastUIConfig(void)
 {
   return this->uiConfig.end();
+}
+
+std::vector<Object>::const_iterator
+Singleton::getFirstFAT(void) const
+{
+  return this->FATs.begin();
+}
+
+std::vector<Object>::const_iterator
+Singleton::getLastFAT(void) const
+{
+  return this->FATs.end();
 }
 
 void

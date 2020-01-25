@@ -22,6 +22,7 @@
 #include <PersistentWidget.h>
 #include <Suscan/Messages/PSDMessage.h>
 #include <ColorConfig.h>
+#include <Waterfall.h>
 
 namespace Ui {
   class MainSpectrum;
@@ -84,6 +85,10 @@ namespace SigDigger {
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
 
+    void setShowFATs(bool);
+    void pushFAT(FrequencyAllocationTable *);
+    void removeFAT(QString const &name);
+
     // Getters
     bool getThrottling(void) const;
     CaptureMode getCaptureMode(void) const;
@@ -108,6 +113,7 @@ namespace SigDigger {
     void onWfBandwidthChanged(int, int);
     void onWfLoChanged(void);
     void onFrequencyChanged(void);
+    void onNewCenterFreq(qint64);
     void onLoChanged(void);
     void onNewZoomLevel(float);
     void onLnbFrequencyChanged(void);

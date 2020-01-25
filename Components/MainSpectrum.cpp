@@ -77,6 +77,12 @@ MainSpectrum::connectAll(void)
 
   connect(
         this->ui->mainSpectrum,
+        SIGNAL(newCenterFreq(qint64)),
+        this,
+        SLOT(onNewCenterFreq(qint64)));
+
+  connect(
+        this->ui->mainSpectrum,
         SIGNAL(newZoomLevel(float)),
         this,
         SLOT(onNewZoomLevel(float)));
@@ -282,6 +288,25 @@ MainSpectrum::setSampleRate(unsigned int rate)
   }
 }
 
+void
+MainSpectrum::setShowFATs(bool show)
+{
+  this->ui->mainSpectrum->setFATsVisible(show);
+}
+
+void
+MainSpectrum::pushFAT(FrequencyAllocationTable *fat)
+{
+  this->ui->mainSpectrum->pushFAT(fat);
+}
+
+void
+MainSpectrum::removeFAT(QString const &name)
+{
+  this->ui->mainSpectrum->removeFAT(name.toStdString());
+}
+
+
 ////////////////////////////////// Getters ////////////////////////////////////
 bool
 MainSpectrum::getThrottling(void) const
@@ -331,6 +356,13 @@ void
 MainSpectrum::onFrequencyChanged(void)
 {
   qint64 freq = this->ui->fcLcd->getValue();
+  this->setCenterFreq(freq);
+  emit frequencyChanged(freq);
+}
+
+void
+MainSpectrum::onNewCenterFreq(qint64 freq)
+{
   this->setCenterFreq(freq);
   emit frequencyChanged(freq);
 }

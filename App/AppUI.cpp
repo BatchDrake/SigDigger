@@ -42,6 +42,7 @@ AppUI::postLoadInit(QMainWindow *owner)
 {
   this->configDialog = new ConfigDialog(owner);
   this->fftPanel->deserializePalettes();
+  this->fftPanel->deserializeFATs();
   this->sourcePanel->deserializeAutoGains();
 }
 
