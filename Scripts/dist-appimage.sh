@@ -69,7 +69,7 @@ function skip()
 function embed_soapysdr()
 {
     SOAPYSDRVER=`ldd $APPIMAGEROOT/usr/bin/SigDigger | grep Soapy | sed 's/ =>.*$//g' | sed 's/^.*\.so\.//g'`
-    EXCLUDED='libc\.so\.6|libpthread|libdl'
+    EXCLUDED='libc\.so\.6|libpthread|libdl|libz\.so\.1|libm\.so\.6|\libusb-1\.0'
     try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
     try "Testing SoapySDR dir..." test -d "/usr/lib/`uname -m`-linux-gnu/SoapySDR/modules$SOAPYSDRVER"
     if [ ! -L  "$APPIMAGEROOT"/usr/lib/`uname -m`-linux-gnu ]; then
@@ -177,6 +177,7 @@ SELF=$(readlink -f "$0")
 HERE=${SELF%/*}
 export SUSCAN_CONFIG_PATH="${HERE}/../share/suscan/config"
 export SOAPY_SDR_ROOT="${HERE}/.."
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HERE}/../lib"
 if [ "x$SIGDIGGER_SOAPY_SDR_ROOT" != "x" ]; then
   export SOAPY_SDR_ROOT="$SIGDIGGER_SOAPY_SDR_ROOT"
 fi
@@ -189,5 +190,5 @@ export SUSCAN_CONFIG_PATH="${HERE}/../share/suscan/config"
 exec "${HERE}"/SigDigger.app "$@"' > "$APPIMAGEROOT"/usr/bin/SigDigger
 fi
 try "Setting permissions to wrapper script..." chmod a+x "$APPIMAGEROOT"/usr/bin/SigDigger
-try "Calling AppImageTool and finishing..." appimagetool "$APPIMAGEROOT"
+try "Calling AppImageTool and finishing..." appimagetool -n "$APPIMAGEROOT"
 try "Renaming to $APPIMAGE_NAME..." mv "$SRC_APPIMAGE_NAME" "$DISTROOT/$APPIMAGE_NAME"
