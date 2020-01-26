@@ -62,7 +62,7 @@ Application::getConfig(void)
 void
 Application::refreshConfig(void)
 {
-  this->mediator->saveGeometry();
+  this->mediator->saveUIConfig();
 }
 
 void

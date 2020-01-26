@@ -48,6 +48,7 @@ namespace SigDigger {
     QDockWidget *inspectorPanelDock = nullptr;
     QDockWidget *fftPanelDock = nullptr;
     QDockWidget *audioPanelDock = nullptr;
+    std::map<std::string, QAction *> bandPlanMap;
 
     // UI Data
     Averager averager;
@@ -87,6 +88,9 @@ namespace SigDigger {
     void addRecent(std::string const &);
     void finishRecent(void);
 
+    // Bandplan menu
+    void addBandPlan(std::string const &);
+
     // Data methods
     void setProcessRate(unsigned int rate);
     void feedPSD(const Suscan::PSDMessage &msg);
@@ -124,7 +128,7 @@ namespace SigDigger {
     // Mediated setters
     void setRecordState(bool state);
     void setIORate(qreal rate);
-    void saveGeometry(void);
+    void saveUIConfig(void);
     void setProfile(Suscan::Source::Config const &config);
     void setPanSpectrumRunning(bool state);
 
@@ -190,6 +194,7 @@ namespace SigDigger {
     void onTriggerClear(bool);
     void onTriggerRecent(bool);
     void onTriggerPanoramicSpectrum(bool);
+    void onTriggerBandPlan(void);
 
     // Spectrum slots
     void onSpectrumBandwidthChanged(void);
@@ -197,6 +202,7 @@ namespace SigDigger {
     void onLoChanged(qint64);
     void onRangeChanged(float, float);
     void onZoomChanged(float);
+    void onNewBandPlan(QString);
 
     // Source panel
     void onToggleRecord(void);
@@ -216,8 +222,6 @@ namespace SigDigger {
     void onWindowFunctionChanged(void);
     void onRefreshRateChanged(void);
     void onTimeSpanChanged(void);
-    void onSetShowFATs(bool);
-    void onSetFATVisible(QString, bool);
 
     // Audio panel
     void onAudioChanged(void);

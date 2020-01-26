@@ -95,23 +95,6 @@ FftPanel::applyConfig(void)
   this->setTimeSpan(savedConfig.timeSpan);
 }
 
-FrequencyBand
-FftPanel::deserializeFrequencyBand(Suscan::Object const &obj)
-{
-  FrequencyBand band;
-
-  band.min = static_cast<qint64>(obj.get("min", 0.f));
-  band.max = static_cast<qint64>(obj.get("max", 0.f));
-  band.primary = obj.get("primary", std::string());
-  band.secondary = obj.get("secondary", std::string());
-  band.footnotes = obj.get("footnotes", std::string());
-
-  band.color.setNamedColor(
-        QString::fromStdString(obj.get("color", std::string("#1f1f1f"))));
-
-  return band;
-}
-
 void
 FftPanel::deserializePalettes(void)
 {
@@ -135,47 +118,6 @@ FftPanel::deserializePalettes(void)
           QVariant::fromValue(ndx));
     ++ndx;
   }
-}
-
-void
-FftPanel::deserializeFATs(void)
-{
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  Suscan::Object bands;
-  unsigned int i, count, ndx = 0;
-
-  for (auto p = sus->getFirstFAT();
-       p != sus->getLastFAT();
-       p++) {
-    this->FATs.resize(ndx + 1);
-    this->FATs[ndx] = new FrequencyAllocationTable(p->getField("name").value());
-    bands = p->getField("bands");
-
-    SU_ATTEMPT(bands.getType() == SUSCAN_OBJECT_TYPE_SET);
-
-    count = bands.length();
-
-    for (i = 0; i < count; ++i) {
-      try {
-        this->FATs[ndx]->pushBand(deserializeFrequencyBand(bands[i]));
-      } catch (Suscan::Exception &) {
-      }
-    }
-
-    QListWidgetItem *item = new QListWidgetItem;
-
-    item->setData(
-          Qt::DisplayRole,
-          QString::fromStdString(this->FATs[ndx]->getName()));
-
-    item->setData(Qt::CheckStateRole, Qt::Unchecked);
-    this->ui->FATList->addItem(item);
-
-    ++ndx;
-  }
-
-  this->ui->showFATCheck->setEnabled(ndx > 0);
-  this->onToggleShowFATs();
 }
 
 void
@@ -259,18 +201,6 @@ FftPanel::connectAll(void)
         SIGNAL(activated(int)),
         this,
         SLOT(onWindowFunctionChanged(void)));
-
-  connect(
-        this->ui->showFATCheck,
-        SIGNAL(stateChanged(int)),
-        this,
-        SLOT(onToggleShowFATs(void)));
-
-  connect(
-        this->ui->FATList,
-        SIGNAL(itemChanged(QListWidgetItem *)),
-        this,
-        SLOT(onFATItemChanged(QListWidgetItem *)));
 }
 
 FftPanel::FftPanel(QWidget *parent) :
@@ -425,9 +355,6 @@ FftPanel::updateRbw(void)
 
 FftPanel::~FftPanel()
 {
-  for (auto p : this->FATs)
-    delete p;
-
   delete ui;
 }
 
@@ -533,18 +460,6 @@ FftPanel::getWindowFunction(void) const
 {
   return static_cast<enum Suscan::AnalyzerParams::WindowFunction>(
         this->ui->windowCombo->currentIndex());
-}
-
-FrequencyAllocationTable *
-FftPanel::getFAT(QString const &name) const
-{
-  std::string asStdString = name.toStdString();
-
-  for (auto p : this->FATs)
-    if (p->getName() == asStdString)
-      return p;
-
-  return nullptr;
 }
 
 ///////////////////////////////// Setters //////////////////////////////////////
@@ -809,19 +724,4 @@ void
 FftPanel::onWindowFunctionChanged(void)
 {
   emit windowFunctionChanged();
-}
-
-void
-FftPanel::onToggleShowFATs(void)
-{
-  this->ui->FATList->setEnabled(this->ui->showFATCheck->isChecked());
-  emit setShowFATs(this->ui->showFATCheck->isChecked());
-}
-
-void
-FftPanel::onFATItemChanged(QListWidgetItem *item)
-{
-  emit setFATVisible(
-        item->text(),
-        item->checkState() == Qt::Checked);
 }

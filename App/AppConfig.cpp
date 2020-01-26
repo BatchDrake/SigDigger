@@ -35,6 +35,7 @@ AppConfig::serialize(void)
 {
   Suscan::Object profileObj = this->profile.serialize();
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+  Suscan::Object bandPlans(SUSCAN_OBJECT_TYPE_SET);
 
   obj.setClass("qtui");
 
@@ -53,6 +54,14 @@ AppConfig::serialize(void)
   obj.setField("audioPanel", this->audioConfig->serialize());
   obj.setField("inspectorPanel", this->inspectorConfig->serialize());
   obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
+
+  obj.setField("bandPlans", bandPlans);
+
+  for (auto p : this->enabledBandPlans) {
+    Suscan::Object entry(SUSCAN_OBJECT_TYPE_FIELD);
+    entry.setValue(p);
+    bandPlans.append(entry);
+  }
 
   // Welcome to the world of stupid C++ hacks
   return this->persist(obj);
@@ -88,6 +97,14 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->y      = conf.get("y", this->y));
     TRYSILENT(this->loFreq = conf.get("loFreq", this->loFreq));
     TRYSILENT(this->bandwidth = conf.get("bandwidth", this->bandwidth));
+
+    try {
+      Suscan::Object set = conf.getField("bandPlans");
+      for (unsigned int i = 0; i < set.length(); ++i)
+        this->enabledBandPlans.push_back(set[i].value());
+    } catch (Suscan::Exception &) {
+
+    }
   }
 }
 

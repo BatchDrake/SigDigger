@@ -33,6 +33,21 @@
 using namespace SigDigger;
 
 void
+UIMediator::addBandPlan(std::string const &name)
+{
+  QAction *action = new QAction(
+        QString::fromStdString(name),
+        this->ui->main->menuStart);
+
+  action->setCheckable(true);
+
+  this->ui->main->menuBand_plans->addAction(action);
+  this->bandPlanMap[name] = action;
+
+  connect(action, SIGNAL(triggered(bool)), this, SLOT(onTriggerBandPlan(void)));
+}
+
+void
 UIMediator::clearRecent(void)
 {
   this->ui->main->menuStart->clear();
@@ -524,12 +539,18 @@ UIMediator::allocConfig(void)
 }
 
 void
-UIMediator::saveGeometry(void)
+UIMediator::saveUIConfig(void)
 {
   this->appConfig->x = this->owner->geometry().x();
   this->appConfig->y = this->owner->geometry().y();
   this->appConfig->width  = this->owner->geometry().width();
   this->appConfig->height = this->owner->geometry().height();
+
+  this->appConfig->enabledBandPlans.clear();
+
+  for (auto p : this->bandPlanMap)
+    if (p.second->isChecked())
+      this->appConfig->enabledBandPlans.push_back(p.first);
 }
 
 void
@@ -562,6 +583,17 @@ UIMediator::applyConfig(void)
   this->ui->fftPanel->setDefaultFftSize(SIGDIGGER_FFT_WINDOW_SIZE);
   this->ui->fftPanel->setDefaultRefreshRate(SIGDIGGER_FFT_REFRESH_RATE);
 
+  // Apply enabled bandplans
+  for (auto p : this->appConfig->enabledBandPlans)
+    if (this->bandPlanMap.find(p) != this->bandPlanMap.cend()) {
+      FrequencyAllocationTable *table =
+          this->ui->spectrum->getFAT(QString::fromStdString(p));
+
+      if (table != nullptr) {
+        this->bandPlanMap[p]->setChecked(true);
+        this->ui->spectrum->pushFAT(table);
+      }
+    }
   // The rest of them are automatically deserialized
   this->ui->sourcePanel->applyConfig();
   this->ui->fftPanel->applyConfig();
@@ -838,3 +870,17 @@ UIMediator::onTriggerPanoramicSpectrum(bool)
   this->ui->panoramicDialog->run();
 }
 
+void
+UIMediator::onTriggerBandPlan(void)
+{
+  QObject* obj = sender();
+  QAction *asAction = qobject_cast<QAction *>(obj);
+
+  if (asAction->isChecked()) {
+    FrequencyAllocationTable *fat = this->ui->spectrum->getFAT(asAction->text());
+    if (fat != nullptr)
+      this->ui->spectrum->pushFAT(fat);
+  } else {
+    this->ui->spectrum->removeFAT(asAction->text());
+  }
+}

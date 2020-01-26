@@ -74,7 +74,6 @@ namespace SigDigger {
     unsigned int refreshRate = 0;
     unsigned int defaultRefreshRate = 0;
     std::vector<Palette> palettes;
-    std::vector<FrequencyAllocationTable *> FATs;
     std::vector<unsigned int> sizes;
     std::vector<unsigned int> refreshRates;
     std::vector<unsigned int> timeSpans;
@@ -91,14 +90,11 @@ namespace SigDigger {
     void connectAll(void);
     void updateRbw(void);
 
-    static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
-
   public:
     explicit FftPanel(QWidget *parent = nullptr);
     ~FftPanel() override;
 
     void deserializePalettes(void);
-    void deserializeFATs(void);
 
     // Getters
     const QColor *getPaletteGradient(void) const;
@@ -117,7 +113,6 @@ namespace SigDigger {
     bool getPeakDetect(void) const;
     bool getRangeLock(void) const;
     enum Suscan::AnalyzerParams::WindowFunction getWindowFunction(void) const;
-    FrequencyAllocationTable *getFAT(QString const &) const;
 
     // Setters
     void setPeakHold(bool);
@@ -156,8 +151,6 @@ namespace SigDigger {
     void onRangeLockChanged(void);
     void onPeakChanged(void);
     void onWindowFunctionChanged(void);
-    void onToggleShowFATs(void);
-    void onFATItemChanged(QListWidgetItem *item);
 
   signals:
     void paletteChanged(void);
@@ -167,8 +160,6 @@ namespace SigDigger {
     void windowFunctionChanged(void);
     void refreshRateChanged(void);
     void timeSpanChanged(void);
-    void setShowFATs(bool);
-    void setFATVisible(QString, bool);
   };
 }
 

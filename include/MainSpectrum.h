@@ -44,6 +44,7 @@ namespace SigDigger {
   private:
     // UI Objects
     Ui::MainSpectrum *ui = nullptr;
+    std::vector<FrequencyAllocationTable *> FATs;
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
@@ -58,12 +59,15 @@ namespace SigDigger {
     void connectAll(void);
     void refreshUi(void);
 
+    static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
+
   public:
     explicit MainSpectrum(QWidget *parent = nullptr);
     ~MainSpectrum();
 
     // Actions
     void feed(float *data, int size);
+    void deserializeFATs(void);
 
     // Setters
     void setThrottling(bool);
@@ -97,6 +101,7 @@ namespace SigDigger {
     qint64 getLnbFreq(void) const;
     unsigned int getBandwidth(void) const;
     unsigned int getZoom(void) const;
+    FrequencyAllocationTable *getFAT(QString const &) const;
 
     static int getFrequencyUnits(qint64 frew);
 
@@ -107,6 +112,7 @@ namespace SigDigger {
     void loChanged(qint64);
     void rangeChanged(float, float);
     void zoomChanged(float);
+    void newBandPlan(QString);
 
   public slots:
     void onRangeChanged(float, float);

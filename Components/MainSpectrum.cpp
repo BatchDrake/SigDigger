@@ -19,6 +19,7 @@
 
 #include "MainSpectrum.h"
 #include "ui_MainSpectrum.h"
+#include <Suscan/Library.h>
 
 using namespace SigDigger;
 
@@ -29,10 +30,14 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   ui->setupUi(this);
   this->connectAll();
   this->setCenterFreq(0);
+  this->setShowFATs(true);
 }
 
 MainSpectrum::~MainSpectrum()
-{
+{  
+  for (auto p : this->FATs)
+    delete p;
+
   delete ui;
 }
 
@@ -306,6 +311,64 @@ MainSpectrum::removeFAT(QString const &name)
   this->ui->mainSpectrum->removeFAT(name.toStdString());
 }
 
+FrequencyBand
+MainSpectrum::deserializeFrequencyBand(Suscan::Object const &obj)
+{
+  FrequencyBand band;
+
+  band.min = static_cast<qint64>(obj.get("min", 0.f));
+  band.max = static_cast<qint64>(obj.get("max", 0.f));
+  band.primary = obj.get("primary", std::string());
+  band.secondary = obj.get("secondary", std::string());
+  band.footnotes = obj.get("footnotes", std::string());
+
+  band.color.setNamedColor(
+        QString::fromStdString(obj.get("color", std::string("#1f1f1f"))));
+
+  return band;
+}
+
+FrequencyAllocationTable *
+MainSpectrum::getFAT(QString const &name) const
+{
+  std::string asStdString = name.toStdString();
+
+  for (auto p : this->FATs)
+    if (p->getName() == asStdString)
+      return p;
+
+  return nullptr;
+}
+
+void
+MainSpectrum::deserializeFATs(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  Suscan::Object bands;
+  unsigned int i, count, ndx = 0;
+
+  for (auto p = sus->getFirstFAT();
+       p != sus->getLastFAT();
+       p++) {
+    this->FATs.resize(ndx + 1);
+    this->FATs[ndx] = new FrequencyAllocationTable(p->getField("name").value());
+    bands = p->getField("bands");
+
+    SU_ATTEMPT(bands.getType() == SUSCAN_OBJECT_TYPE_SET);
+
+    count = bands.length();
+
+    for (i = 0; i < count; ++i) {
+      try {
+        this->FATs[ndx]->pushBand(deserializeFrequencyBand(bands[i]));
+      } catch (Suscan::Exception &) {
+      }
+    }
+
+    emit newBandPlan(QString::fromStdString(this->FATs[ndx]->getName()));
+    ++ndx;
+  }
+}
 
 ////////////////////////////////// Getters ////////////////////////////////////
 bool

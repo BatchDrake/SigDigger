@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
+  this->ui->menuBand_plans->clear();
 }
 
 MainWindow::~MainWindow()

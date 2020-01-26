@@ -41,9 +41,9 @@ void
 AppUI::postLoadInit(QMainWindow *owner)
 {
   this->configDialog = new ConfigDialog(owner);
-  this->fftPanel->deserializePalettes();
-  this->fftPanel->deserializeFATs();
+  this->fftPanel->deserializePalettes();  
   this->sourcePanel->deserializeAutoGains();
+  this->spectrum->deserializeFATs();
 }
 
 AppUI::~AppUI(void)

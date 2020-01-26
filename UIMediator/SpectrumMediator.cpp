@@ -59,6 +59,12 @@ UIMediator::connectSpectrum(void)
         SIGNAL(zoomChanged(float)),
         this,
         SLOT(onZoomChanged(float)));
+
+  connect(
+        this->ui->spectrum,
+        SIGNAL(newBandPlan(QString)),
+        this,
+        SLOT(onNewBandPlan(QString)));
 }
 
 void
@@ -112,4 +118,10 @@ void
 UIMediator::onZoomChanged(float level)
 {
   this->ui->fftPanel->setFreqZoom(static_cast<int>(level));
+}
+
+void
+UIMediator::onNewBandPlan(QString plan)
+{
+  this->addBandPlan(plan.toStdString());
 }

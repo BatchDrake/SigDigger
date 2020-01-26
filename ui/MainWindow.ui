@@ -89,6 +89,15 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <widget class="QMenu" name="menuBand_plans">
+     <property name="title">
+      <string>Band plans</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="separator"/>
+    </widget>
+    <addaction name="menuBand_plans"/>
+    <addaction name="separator"/>
     <addaction name="actionDevices"/>
     <addaction name="actionPanoramicSpectrum"/>
     <addaction name="separator"/>
