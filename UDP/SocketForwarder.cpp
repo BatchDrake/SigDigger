@@ -23,6 +23,10 @@
 #include <netdb.h>
 #include <stdexcept>
 
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
 using namespace SigDigger;
 
 #ifdef __APPLE__
