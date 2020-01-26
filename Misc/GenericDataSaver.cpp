@@ -56,9 +56,9 @@ GenericDataWorker::onCommit(void)
     struct timeval tv, otv, sub;
     ssize_t dumped;
     size_t allocation = this->instance->allocation;
-    std::vector<float _Complex> *thisBuf =
+    std::vector<SUCOMPLEX> *thisBuf =
         &this->instance->buffers[1 - this->instance->buffer];
-    float _Complex *buffer = thisBuf->data();
+    SUCOMPLEX *buffer = thisBuf->data();
     int remaining = static_cast<int>(this->instance->commitedSize);
 
     locker.unlock();
@@ -207,7 +207,7 @@ GenericDataSaver::setBufferSize(unsigned int size)
 }
 
 void
-GenericDataSaver::write(const float _Complex *data, size_t size)
+GenericDataSaver::write(const SUCOMPLEX *data, size_t size)
 {
   if (this->writer->canWrite()) {
     QMutexLocker locker(&this->dataMutex);
@@ -225,7 +225,7 @@ GenericDataSaver::write(const float _Complex *data, size_t size)
     memcpy(
       this->buffers[this->buffer].data() + this->ptr,
       data,
-      size * sizeof(float _Complex));
+      size * sizeof(SUCOMPLEX));
 
     this->ptr += size;
 

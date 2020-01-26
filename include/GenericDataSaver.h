@@ -36,7 +36,7 @@ namespace SigDigger {
   public:
     virtual bool prepare(void) = 0;
     virtual bool canWrite(void) const = 0;
-    virtual ssize_t write(const float _Complex *data, size_t len) = 0;
+    virtual ssize_t write(const SUCOMPLEX *data, size_t len) = 0;
     virtual bool close(void) = 0;
     virtual std::string getError(void) const = 0;
     virtual ~GenericDataWriter();
@@ -66,7 +66,7 @@ namespace SigDigger {
   {
       Q_OBJECT
 
-      std::vector<float _Complex>buffers[2];
+      std::vector<SUCOMPLEX>buffers[2];
       QString lastError;
 
       unsigned int rateHint;
@@ -100,7 +100,7 @@ namespace SigDigger {
       // Public methods
       void setBufferSize(unsigned int size);
       void setSampleRate(unsigned int i);
-      void write(const float _Complex *data, size_t size);
+      void write(const SUCOMPLEX *data, size_t size);
       QString getLastError(void) const;
       quint64 getSize(void) const;
 
