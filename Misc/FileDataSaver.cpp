@@ -34,7 +34,7 @@ namespace SigDigger {
     bool prepare(void);
     bool canWrite(void) const;
     std::string getError(void) const;
-    ssize_t write(const float _Complex *data, size_t len);
+    ssize_t write(const SUCOMPLEX *data, size_t len);
     bool close(void);
     ~FileDataWriter();
   };
@@ -64,7 +64,7 @@ FileDataWriter::canWrite(void) const
 }
 
 ssize_t
-FileDataWriter::write(const float _Complex *data, size_t len)
+FileDataWriter::write(const SUCOMPLEX *data, size_t len)
 {
   ssize_t result;
 

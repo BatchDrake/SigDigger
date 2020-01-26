@@ -21,7 +21,6 @@
 
 #include <PersistentWidget.h>
 #include <Suscan/AnalyzerParams.h>
-#include <SuWidgets/Waterfall.h>
 #include <QListWidgetItem>
 
 #include "Palette.h"

@@ -219,6 +219,10 @@ RESOURCES += \
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += suscan
 
+packagesExist(volk) {
+  PKGCONFIG += volk
+}
+  
 packagesExist(alsa) {
   PKGCONFIG += alsa
   DEFINES += SIGDIGGER_HAVE_ALSA
