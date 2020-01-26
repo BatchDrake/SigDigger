@@ -24,14 +24,10 @@
 #include <stdexcept>
 
 #ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL 0
-#endif
+#  define MSG_NOSIGNAL 0
+#endif // MSG_NOSIGNAL
 
 using namespace SigDigger;
-
-#ifdef __APPLE__
-#  define MSG_NOSIGNAL 0
-#endif // __APPLE__
 
 namespace SigDigger {
   class SocketDataWriter : public GenericDataWriter {
