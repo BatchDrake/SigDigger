@@ -155,8 +155,14 @@
       </item>
       <item row="0" column="5">
        <widget class="QPushButton" name="scanButton">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
         <property name="text">
-         <string>Scan</string>
+         <string>Start scan</string>
         </property>
         <property name="checkable">
          <bool>true</bool>

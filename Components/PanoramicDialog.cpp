@@ -843,17 +843,25 @@ PanoramicDialog::onToggleScan(void)
     this->getSelectedDevice(dev);
 
     if (this->bannedDevice.length() > 0
-        && dev.getDesc() == this->bannedDevice.toStdString())
+        && dev.getDesc() == this->bannedDevice.toStdString()) {
       (void)  QMessageBox::critical(
             this,
             "Panoramic spectrum error error",
             "Scan cannot start because the selected device is in use by the main window.",
             QMessageBox::Ok);
-    else
+      this->ui->scanButton->setChecked(false);
+    } else {
       emit start();
+    }
   } else {
     emit stop();
   }
+
+  this->ui->scanButton->setText(
+        this->ui->scanButton->isChecked()
+        ? "Stop"
+        : "Start scan");
+
 }
 
 void
