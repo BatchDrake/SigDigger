@@ -97,6 +97,10 @@ void
 UIMediator::refreshUI(void)
 {
   QString stateString;
+  QString sourceDesc;
+
+  Suscan::Source::Config *config = this->getProfile();
+  const Suscan::Source::Device &dev = config->getDevice();
 
   switch (this->state) {
     case HALTED:
@@ -143,9 +147,16 @@ UIMediator::refreshUI(void)
       break;
   }
 
+  if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {
+    sourceDesc = QString::fromStdString(dev.getDesc());
+  } else {
+    QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
+    sourceDesc = fi.fileName();
+  }
+
   this->owner->setWindowTitle(
         "SigDigger - "
-        + QString::fromStdString(this->getProfile()->label())
+        + sourceDesc
         + " - " + stateString);
 }
 
