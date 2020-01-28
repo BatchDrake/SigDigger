@@ -62,6 +62,7 @@ SOURCES += \
     Components/DeviceGain.cpp \
     Components/FftPanel.cpp \
     Components/GainSlider.cpp \
+    Components/GenericDataSaverUI.cpp \
     Components/InspectorPanel.cpp \
     Components/MainSpectrum.cpp \
     Components/MainWindow.cpp \
@@ -119,6 +120,7 @@ SOURCES += \
 
 
 HEADERS += \
+    include/GenericDataSaverUI.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \
     include/Suscan/Messages/InspectorMessage.h \

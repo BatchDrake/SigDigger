@@ -20,6 +20,7 @@
 #define AUDIOPANEL_H
 
 #include <PersistentWidget.h>
+#include <GenericDataSaverUI.h>
 
 namespace Ui {
   class AudioPanel;
@@ -37,6 +38,7 @@ namespace SigDigger {
   public:
     bool enabled = false;
     std::string demod;
+    std::string savePath;
     unsigned int rate = 44100;
     SUFLOAT cutOff = 15000;
     SUFLOAT volume = 50;
@@ -46,7 +48,7 @@ namespace SigDigger {
     Suscan::Object &&serialize(void) override;
   };
 
-  class AudioPanel : public PersistentWidget
+  class AudioPanel : public GenericDataSaverUI
   {
     Q_OBJECT
 
@@ -64,6 +66,9 @@ namespace SigDigger {
     static AudioDemod strToDemod(std::string const &str);
     static std::string demodToStr(AudioDemod);
 
+  protected:
+      void setDiskUsage(qreal) override;
+
   public:
     explicit AudioPanel(QWidget *parent = nullptr);
     ~AudioPanel() override;
@@ -76,6 +81,13 @@ namespace SigDigger {
     void setCutOff(SUFLOAT);
     void setVolume(SUFLOAT);
 
+    // Overriden setters
+    void setRecordSavePath(std::string const &) override;
+    void setSaveEnabled(bool enabled) override;
+    void setCaptureSize(quint64) override;
+    void setIORate(qreal) override;
+    void setRecordState(bool state) override;
+
     // Getters
     SUFLOAT getBandwidth(void) const;
     bool getEnabled(void) const;
@@ -83,6 +95,10 @@ namespace SigDigger {
     unsigned int getSampleRate(void) const;
     SUFLOAT getCutOff(void) const;
     SUFLOAT getVolume(void) const;
+
+    // Overriden getters
+    bool getRecordState(void) const override;
+    std::string getRecordSavePath(void) const override;
 
     // Overriden methods
     Suscan::Serializable *allocConfig(void) override;
@@ -94,6 +110,9 @@ namespace SigDigger {
     void onFilterChanged(void);
     void onVolumeChanged(void);
     void onEnabledChanged(void);
+
+    void onChangeSavePath(void);
+    void onRecordStartStop(void);
 
   signals:
     void changed(void);
