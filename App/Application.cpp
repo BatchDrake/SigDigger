@@ -148,6 +148,35 @@ Application::connectDataSaver()
 }
 
 void
+Application::connectAudioFileSaver()
+{
+  this->connect(
+        this->audioFileSaver.get(),
+        SIGNAL(stopped()),
+        this,
+        SLOT(onAudioSaveError()));
+
+  this->connect(
+        this->audioFileSaver.get(),
+        SIGNAL(swamped()),
+        this,
+        SLOT(onAudioSaveSwamped()));
+
+  this->connect(
+        this->audioFileSaver.get(),
+        SIGNAL(dataRate(qreal)),
+        this,
+        SLOT(onAudioSaveRate(qreal)));
+
+  this->connect(
+        this->audioFileSaver.get(),
+        SIGNAL(commit()),
+        this,
+        SLOT(onAudioCommit()));
+}
+
+
+void
 Application::installDataSaver(int fd)
 {
   if (this->dataSaver.get() == nullptr && this->analyzer.get() != nullptr) {
@@ -182,6 +211,37 @@ Application::setAudioInspectorParams(
     this->delayedVolume  = volume;
     this->delayedDemod   = demod;
   }
+}
+
+bool
+Application::openAudioFileSaver(void)
+{
+  bool opened = false;
+
+  if (this->audioFileSaver == nullptr) {
+    AudioFileSaver::AudioFileParams params;
+    params.sampRate   = this->ui.audioPanel->getSampleRate();
+    params.savePath   = this->mediator->getAudioRecordSavePath();
+    params.frequency  =
+        this->ui.spectrum->getCenterFreq() + this->ui.spectrum->getLoFreq();
+    params.modulation = this->ui.audioPanel->getDemod();
+
+    this->audioFileSaver = std::make_unique<AudioFileSaver>(params, nullptr);
+    this->connectAudioFileSaver();
+    opened = true;
+  }
+
+  return opened;
+}
+
+void
+Application::closeAudioFileSaver(void)
+{
+  if (this->audioFileSaver != nullptr)
+    this->audioFileSaver = nullptr;
+
+  this->mediator->setAudioRecordSize(0);
+  this->mediator->setAudioRecordState(false);
 }
 
 bool
@@ -252,6 +312,7 @@ Application::closeAudio(void)
   if (this->mediator->getState() == UIMediator::RUNNING
       && this->audioInspectorOpened)
     this->analyzer->closeInspector(this->audioInspHandle, 0);
+  this->closeAudioFileSaver();
   this->audioInspectorOpened = false;
   this->audioSampleRate = 0;
   this->audioInspHandle = 0;
@@ -379,6 +440,12 @@ Application::connectUI(void)
         SIGNAL(audioChanged(void)),
         this,
         SLOT(onAudioChanged(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(audioRecordStateChanged(void)),
+        this,
+        SLOT(onAudioRecordStateChanged(void)));
 
   connect(
         this->mediator,
@@ -694,6 +761,8 @@ Application::onAnalyzerHalted(void)
 
   if (restart)
     this->startCapture();
+  else
+    this->closeAudioFileSaver();
 }
 
 void
@@ -727,11 +796,15 @@ Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
 {
   Inspector *insp;
 
-  if (this->playBack != nullptr
-      && msg.getInspectorId() == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
-    this->playBack->write(msg.getSamples(), msg.getCount());
-  } else if ((insp = this->mediator->lookupInspector(msg.getInspectorId())) != nullptr)
+  if (msg.getInspectorId() == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
+    if (this->playBack != nullptr)
+      this->playBack->write(msg.getSamples(), msg.getCount());
+    if (this->audioFileSaver != nullptr)
+      this->audioFileSaver->write(msg.getSamples(), msg.getCount());
+  } else if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
+             != nullptr) {
     insp->feed(msg.getSamples(), msg.getCount());
+  }
 }
 
 
@@ -849,6 +922,7 @@ Application::~Application()
   this->playBack = nullptr;
   this->analyzer = nullptr;
   this->uninstallDataSaver();
+  this->audioFileSaver = nullptr;
 
   this->deviceDetectThread->quit();
   this->deviceDetectThread->deleteLater();
@@ -1064,6 +1138,48 @@ Application::onCommit(void)
 }
 
 void
+Application::onAudioSaveError(void)
+{
+  if (this->audioFileSaver != nullptr) {
+    this->closeAudioFileSaver();
+
+    QMessageBox::warning(
+              this,
+              "SigDigger error",
+              "Capture audio file write error. Disk full?",
+              QMessageBox::Ok);
+  }
+}
+
+void
+Application::onAudioSaveSwamped(void)
+{
+  if (this->audioFileSaver != nullptr) {
+    this->closeAudioFileSaver();
+
+    QMessageBox::warning(
+          this,
+          "SigDigger error",
+          "Audiofile thread swamped. Maybe your storage device is too slow",
+          QMessageBox::Ok);
+  }
+}
+
+void
+Application::onAudioSaveRate(qreal rate)
+{
+  this->mediator->setAudioRecordIORate(rate);
+}
+
+void
+Application::onAudioCommit(void)
+{
+  this->mediator->setAudioRecordSize(
+        this->audioFileSaver->getSize() * sizeof(uint16_t) / sizeof(SUCOMPLEX));
+}
+
+
+void
 Application::onLoChanged(qint64)
 {
   if (this->audioConfigured)
@@ -1097,10 +1213,24 @@ void
 Application::onAudioChanged(void)
 {
   if (this->mediator->getState() == UIMediator::RUNNING) {
+    if (this->audioFileSaver != nullptr) {
+      // If any parameter affecting the sample rate or even the name of
+      // the file has changed, we must stop the audio file saver and restart
+      // it again.
+
+      if (this->ui.audioPanel->getDemod()
+            != this->audioFileSaver->params.modulation
+          || this->ui.audioPanel->getSampleRate()
+            != this->audioFileSaver->params.sampRate) {
+        this->closeAudioFileSaver();
+        this->openAudioFileSaver();
+      }
+    }
+
     if (this->playBack == nullptr) {
       if (this->ui.audioPanel->getEnabled()) {
         // Audio enabled, open it.
-        (void) openAudio(this->ui.audioPanel->getSampleRate());
+        (void) this->openAudio(this->ui.audioPanel->getSampleRate());
       }
     } else {
      if (this->ui.audioPanel->getEnabled()) {
@@ -1125,6 +1255,16 @@ Application::onAudioChanged(void)
        closeAudio();
      }
     }
+  }
+}
+
+void
+Application::onAudioRecordStateChanged(void)
+{
+  if (this->mediator->getAudioRecordState()) {
+    this->openAudioFileSaver();
+  } else {
+    this->closeAudioFileSaver();
   }
 }
 

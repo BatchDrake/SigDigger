@@ -21,19 +21,13 @@
 
 #include <PersistentWidget.h>
 #include <GenericDataSaverUI.h>
+#include <AudioFileSaver.h>
 
 namespace Ui {
   class AudioPanel;
 }
 
 namespace SigDigger {
-  enum AudioDemod {
-    AM,
-    FM,
-    USB,
-    LSB
-  };
-
   class AudioPanelConfig : public Suscan::Serializable {
   public:
     bool enabled = false;

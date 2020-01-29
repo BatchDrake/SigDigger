@@ -54,6 +54,7 @@ SOURCES += \
     App/AppUI.cpp \
     App/ColorConfig.cpp \
     App/Loader.cpp \
+    Audio/AudioFileSaver.cpp \
     Audio/AudioPlayback.cpp \
     Components/AboutDialog.cpp \
     Components/AudioPanel.cpp \
@@ -120,6 +121,7 @@ SOURCES += \
 
 
 HEADERS += \
+    include/AudioFileSaver.h \
     include/GenericDataSaverUI.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \
