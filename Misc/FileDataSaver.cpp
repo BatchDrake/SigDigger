@@ -25,7 +25,6 @@ using namespace SigDigger;
 namespace SigDigger {
   class FileDataWriter : public GenericDataWriter {
     int fd = -1;
-    int pad;
     std::string lastError;
 
   public:

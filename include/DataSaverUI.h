@@ -20,46 +20,55 @@
 #ifndef DATASAVERUI_H
 #define DATASAVERUI_H
 
-#include <QWidget>
+#include <GenericDataSaverUI.h>
 
 namespace Ui {
   class DataSaverUI;
 }
 
 namespace SigDigger {
-  class DataSaverUI : public QWidget
+  class DataSaverConfig : public Suscan::Serializable {
+  public:
+    std::string path;
+
+    // Overriden methods
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize(void) override;
+  };
+
+  class DataSaverUI : public GenericDataSaverUI
   {
       Q_OBJECT
-
+    DataSaverConfig *config = nullptr;
       void connectAll(void);
-      void setDiskUsage(qreal);
 
-    public:
-      void refreshDiskUsage(void);
+  protected:
+      void setDiskUsage(qreal) override;
 
+  public:
       // Setters
-      void setRecordSavePath(std::string const &);
-      void setSaveEnabled(bool enabled);
-      void setCaptureSize(quint64);
-      void setIORate(qreal);
-      void setRecordState(bool state);
+      void setRecordSavePath(std::string const &) override;
+      void setSaveEnabled(bool enabled) override;
+      void setCaptureSize(quint64) override;
+      void setIORate(qreal) override;
+      void setRecordState(bool state) override;
 
       // Getters
-      bool getRecordState(void) const;
-      std::string getRecordSavePath(void) const;
+      bool getRecordState(void) const override;
+      std::string getRecordSavePath(void) const override;
+
+      // Other overriden methods
+      Suscan::Serializable *allocConfig(void) override;
+      void applyConfig(void) override;
 
       explicit DataSaverUI(QWidget *parent = nullptr);
-      ~DataSaverUI();
+      ~DataSaverUI() override;
 
-    public slots:
+  public slots:
       void onChangeSavePath(void);
       void onRecordStartStop(void);
 
-    signals:
-      void recordSavePathChanged(QString);
-      void recordStateChanged(bool state);
-
-    private:
+  private:
       Ui::DataSaverUI *ui;
   };
 }

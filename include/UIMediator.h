@@ -114,6 +114,9 @@ namespace SigDigger {
     // Convenience getters
     Suscan::Source::Config *getProfile(void) const;
     Suscan::AnalyzerParams *getAnalyzerParams(void) const;
+    bool getAudioRecordState(void) const;
+    std::string getAudioRecordSavePath(void) const;
+
     bool getPanSpectrumDevice(Suscan::Source::Device &) const;
     bool getPanSpectrumRange(quint64 &min, quint64 &max) const;
     unsigned int getPanSpectrumRttMs(void) const;
@@ -127,6 +130,9 @@ namespace SigDigger {
 
     // Mediated setters
     void setRecordState(bool state);
+    void setAudioRecordState(bool);
+    void setAudioRecordSize(quint64 size);
+    void setAudioRecordIORate(qreal rate);
     void setIORate(qreal rate);
     void saveUIConfig(void);
     void setProfile(Suscan::Source::Config const &config);
@@ -167,7 +173,9 @@ namespace SigDigger {
 
     void recentSelected(QString);
     void recentCleared(void);
+
     void audioChanged(void);
+    void audioRecordStateChanged(void);
 
     void panSpectrumStart(void);
     void panSpectrumStop(void);
@@ -225,6 +233,7 @@ namespace SigDigger {
 
     // Audio panel
     void onAudioChanged(void);
+    void onAudioRecordStateChanged(void);
 
     // Inspector
     void onInspBandwidthChanged(void);

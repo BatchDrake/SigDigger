@@ -48,6 +48,8 @@ namespace SigDigger {
     FftPanel *fftPanel = nullptr;
     AudioPanel *audioPanel = nullptr;
     AboutDialog *aboutDialog = nullptr;
+    DataSaverUI * dataSaverUI = nullptr;
+
     std::map<Suscan::InspectorId, Inspector *> inspectorTable;
     Suscan::InspectorId lastId = 0;
 

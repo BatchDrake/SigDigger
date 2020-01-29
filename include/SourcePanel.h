@@ -34,13 +34,13 @@ namespace Ui {
 namespace SigDigger {
   class SourcePanelConfig : public Suscan::Serializable {
     public:
+      Suscan::Serializable *dataSaverConfig = nullptr;
       bool throttle = false;
       bool dcRemove = false;
       bool iqRev = false;
       bool agcEnabled = false;
 
       unsigned int throttleRate = 196000;
-      std::string captureFolder;
 
       // Overriden methods
       void deserialize(Suscan::Object const &conf) override;
@@ -101,7 +101,7 @@ namespace SigDigger {
       std::string
       getRecordSavePath(void) const
       {
-        return this->panelConfig->captureFolder;
+        return this->saverUI->getRecordSavePath();
       }
 
       bool
@@ -187,7 +187,6 @@ namespace SigDigger {
     public slots:
       void onGainChanged(QString name, float val);
       void onAntennaChanged(int);
-      void onChangeSavePath(void);
       void onRecordStartStop(void);
       void onSelectAutoGain(void);
       void onToggleAutoGain(void);

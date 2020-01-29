@@ -28,6 +28,7 @@
 #include "UIMediator.h"
 #include "AudioPlayback.h"
 #include "FileDataSaver.h"
+#include "AudioFileSaver.h"
 #include "Scanner.h"
 
 namespace SigDigger {
@@ -55,6 +56,7 @@ namespace SigDigger {
     // Suscan core object
     std::unique_ptr<Suscan::Analyzer> analyzer = nullptr;
     std::unique_ptr<FileDataSaver> dataSaver = nullptr;
+    std::unique_ptr<AudioFileSaver> audioFileSaver = nullptr;
 
     bool profileSelected = false;
     unsigned int currSampleRate;
@@ -94,12 +96,15 @@ namespace SigDigger {
     void connectUI(void);
     void connectAnalyzer(void);
     void connectDataSaver(void);
+    void connectAudioFileSaver(void);
     void connectDeviceDetect(void);
     void connectScanner(void);
 
     int  openCaptureFile(void);
     void installDataSaver(int fd);
     void uninstallDataSaver(void);
+    bool openAudioFileSaver(void);
+    void closeAudioFileSaver(void);
     void setAudioInspectorParams(
         unsigned int rate,
         SUFLOAT cutOff,
@@ -152,6 +157,7 @@ namespace SigDigger {
     void onLoChanged(qint64);
     void onChannelBandwidthChanged(qreal);
     void onAudioChanged(void);
+    void onAudioRecordStateChanged(void);
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
     void onDeviceRefresh(void);
@@ -172,6 +178,12 @@ namespace SigDigger {
     void onSaveSwamped(void);
     void onSaveRate(qreal rate);
     void onCommit(void);
+
+    // AudioFileSaver slots
+    void onAudioSaveError(void);
+    void onAudioSaveSwamped(void);
+    void onAudioSaveRate(qreal rate);
+    void onAudioCommit(void);
 
     // Device detect slots
     void onDetectFinished(void);

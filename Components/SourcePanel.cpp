@@ -38,25 +38,35 @@ SourcePanelConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(throttle);
   LOAD(throttleRate);
-  LOAD(captureFolder);
   LOAD(dcRemove);
   LOAD(iqRev);
   LOAD(agcEnabled);
+
+  try {
+    Suscan::Object field = conf.getField("DataSaverConfig");
+    this->dataSaverConfig->deserialize(field);
+  } catch (Suscan::Exception const &) {
+
+  }
 }
 
 Suscan::Object &&
 SourcePanelConfig::serialize(void)
 {
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+  Suscan::Object dataSaverConfig;
 
   obj.setClass("SourcePanelConfig");
 
   STORE(throttle);
   STORE(throttleRate);
-  STORE(captureFolder);
   STORE(dcRemove);
   STORE(iqRev);
   STORE(agcEnabled);
+
+  dataSaverConfig = this->dataSaverConfig->serialize();
+
+  obj.setField("DataSaverConfig", dataSaverConfig);
 
   return this->persist(obj);
 }
@@ -88,12 +98,6 @@ SourcePanel::connectAll(void)
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onThrottleChanged(void)));
-
-  connect(
-        this->saverUI,
-        SIGNAL(recordSavePathChanged(QString)),
-        this,
-        SLOT(onChangeSavePath()));
 
   connect(
         this->saverUI,
@@ -429,7 +433,10 @@ SourcePanel::applyCurrentAutogain(void)
 Suscan::Serializable *
 SourcePanel::allocConfig(void)
 {
-  return this->panelConfig = new SourcePanelConfig();
+  this->panelConfig = new SourcePanelConfig();
+  this->panelConfig->dataSaverConfig = this->saverUI->allocConfig();
+
+  return this->panelConfig;
 }
 
 void
@@ -440,9 +447,8 @@ SourcePanel::applyConfig(void)
   this->ui->swapIQCheck->setChecked(this->panelConfig->iqRev);
   this->ui->agcEnabledCheck->setChecked(this->panelConfig->agcEnabled);
   this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
-  if (this->panelConfig->captureFolder.size() == 0)
-    this->panelConfig->captureFolder = QDir::currentPath().toStdString();
-  this->setSavePath(this->panelConfig->captureFolder);
+
+  this->saverUI->applyConfig();
 }
 
 void
@@ -524,12 +530,6 @@ SourcePanel::onGainChanged(QString name, float val)
 
   this->setAGCEnabled(false);
   emit gainChanged(name, val);
-}
-
-void
-SourcePanel::onChangeSavePath(void)
-{
-  this->panelConfig->captureFolder = this->saverUI->getRecordSavePath();
 }
 
 void

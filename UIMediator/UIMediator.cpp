@@ -321,6 +321,24 @@ UIMediator::setSampleRate(unsigned int rate)
 }
 
 void
+UIMediator::setAudioRecordState(bool state)
+{
+  this->ui->audioPanel->setRecordState(state);
+}
+
+void
+UIMediator::setAudioRecordSize(quint64 size)
+{
+  this->ui->audioPanel->setCaptureSize(size);
+}
+
+void
+UIMediator::setAudioRecordIORate(qreal rate)
+{
+  this->ui->audioPanel->setIORate(rate);
+}
+
+void
 UIMediator::setState(State state)
 {
   this->state = state;
@@ -388,6 +406,18 @@ UIMediator::lookupInspector(Suscan::InspectorId handle) const
   } catch (std::out_of_range &) { }
 
   return entry;
+}
+
+bool
+UIMediator::getAudioRecordState(void) const
+{
+  return this->ui->audioPanel->getRecordState();
+}
+
+std::string
+UIMediator::getAudioRecordSavePath(void) const
+{
+  return this->ui->audioPanel->getRecordSavePath();
 }
 
 bool

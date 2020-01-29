@@ -1,6 +1,6 @@
 //
-//    AudioMediator.cpp: Mediate audio panel events
-//    Copyright (C) 2019 Gonzalo José Carracedo Carballal
+//    GenericDataSaverUI.cpp: Base class for data saver widgets
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -17,34 +17,32 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include "UIMediator.h"
+#include <GenericDataSaverUI.h>
+#include <sys/statvfs.h>
+#include <cmath>
 
 using namespace SigDigger;
 
-void
-UIMediator::connectAudioPanel(void)
+GenericDataSaverUI::GenericDataSaverUI(QWidget *parent) : PersistentWidget(parent)
 {
-  connect(
-        this->ui->audioPanel,
-        SIGNAL(changed(void)),
-        this,
-        SLOT(onAudioChanged(void)));
 
-  connect(
-        this->ui->audioPanel,
-        SIGNAL(recordStateChanged(bool)),
-        this,
-        SLOT(onAudioRecordStateChanged(void)));
+}
+
+GenericDataSaverUI::~GenericDataSaverUI(void)
+{
+
 }
 
 void
-UIMediator::onAudioChanged(void)
+GenericDataSaverUI::refreshDiskUsage(void)
 {
-  emit audioChanged();
-}
+  std::string path = this->getRecordSavePath().c_str();
+  struct statvfs svfs;
 
-void
-UIMediator::onAudioRecordStateChanged(void)
-{
-  emit audioRecordStateChanged();
+  if (statvfs(path.c_str(), &svfs) != -1)
+    this->setDiskUsage(
+          1. - static_cast<qreal>(svfs.f_bavail) /
+          static_cast<qreal>(svfs.f_blocks));
+  else
+    this->setDiskUsage(std::nan(""));
 }

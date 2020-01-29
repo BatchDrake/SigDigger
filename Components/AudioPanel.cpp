@@ -18,6 +18,8 @@
 //
 #include "AudioPanel.h"
 #include "ui_AudioPanel.h"
+#include <QDir>
+#include <QFileDialog>
 
 using namespace SigDigger;
 
@@ -41,6 +43,7 @@ AudioPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(rate);
   LOAD(cutOff);
   LOAD(volume);
+  LOAD(savePath);
 }
 
 Suscan::Object &&
@@ -55,6 +58,7 @@ AudioPanelConfig::serialize(void)
   STORE(rate);
   STORE(cutOff);
   STORE(volume);
+  STORE(savePath);
 
   return this->persist(obj);
 }
@@ -127,6 +131,18 @@ AudioPanel::connectAll(void)
       SIGNAL(valueChanged(int)),
       this,
       SLOT(onVolumeChanged(void)));
+
+  connect(
+        this->ui->saveButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onChangeSavePath(void)));
+
+  connect(
+        this->ui->recordStartStopButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onRecordStartStop(void)));
 }
 
 void
@@ -154,23 +170,26 @@ AudioPanel::refreshUi(void)
     this->ui->demodCombo->setEnabled(false);
     this->ui->sampleRateCombo->setEnabled(false);
     this->ui->cutoffSlider->setEnabled(false);
+    this->ui->recordStartStopButton->setEnabled(false);
   } else {
     bool enabled = this->getEnabled();
     this->ui->audioPreviewCheck->setEnabled(true);
     this->ui->demodCombo->setEnabled(enabled);
     this->ui->sampleRateCombo->setEnabled(enabled);
     this->ui->cutoffSlider->setEnabled(enabled);
-
+    this->ui->recordStartStopButton->setEnabled(enabled);
     this->setCutOff(this->panelConfig->cutOff);
     this->setVolume(this->panelConfig->volume);
   }
 }
 
 AudioPanel::AudioPanel(QWidget *parent) :
-  PersistentWidget(parent),
+  GenericDataSaverUI(parent),
   ui(new Ui::AudioPanel)
 {
   ui->setupUi(this);
+
+  this->setRecordSavePath(QDir::currentPath().toStdString());
 
   this->assertConfig();
   this->populateRates();
@@ -249,6 +268,70 @@ AudioPanel::setVolume(SUFLOAT volume)
         QString::number(this->ui->volumeSlider->value()) + "%");
 }
 
+// Overriden setters
+void
+AudioPanel::setRecordSavePath(std::string const &path)
+{
+  this->ui->savePath->setText(QString::fromStdString(path));
+  this->refreshDiskUsage();
+}
+
+void
+AudioPanel::setSaveEnabled(bool enabled)
+{
+  if (!enabled)
+    this->ui->saveButton->setChecked(false);
+
+  this->ui->saveButton->setEnabled(enabled);
+}
+
+static QString
+formatCaptureSize(quint64 size)
+{
+  if (size < (1ull << 10))
+    return QString::number(size) + " bytes";
+  else if (size < (1ull << 20))
+    return QString::number(size >> 10) + " KiB";
+  else if (size < (1ull << 30))
+    return QString::number(size >> 20) + " MiB";
+
+  return QString::number(size >> 30) + " GiB";
+}
+
+void
+AudioPanel::setCaptureSize(quint64 size)
+{
+  this->ui->captureSizeLabel->setText(
+        formatCaptureSize(size * sizeof(float _Complex)));
+}
+
+void
+AudioPanel::setDiskUsage(qreal usage)
+{
+  if (std::isnan(usage)) {
+    this->ui->diskUsageProgress->setEnabled(false);
+    this->ui->diskUsageProgress->setValue(100);
+  } else {
+    this->ui->diskUsageProgress->setEnabled(true);
+    this->ui->diskUsageProgress->setValue(static_cast<int>(usage * 100));
+  }
+}
+
+void
+AudioPanel::setIORate(qreal rate)
+{
+  this->ui->ioBwProgress->setValue(static_cast<int>(rate * 100));
+  this->refreshDiskUsage();
+}
+
+void
+AudioPanel::setRecordState(bool state)
+{
+  this->ui->recordStartStopButton->setChecked(state);
+
+  if (!state)
+    this->ui->ioBwProgress->setValue(0);
+}
 
 // Getters
 SUFLOAT
@@ -290,6 +373,19 @@ AudioPanel::getVolume(void) const
   return this->ui->volumeSlider->value();
 }
 
+// Overriden getters
+bool
+AudioPanel::getRecordState(void) const
+{
+  return this->ui->recordStartStopButton->isChecked();
+}
+
+std::string
+AudioPanel::getRecordSavePath(void) const
+{
+  return this->ui->savePath->text().toStdString();
+}
+
 // Overriden methods
 Suscan::Serializable *
 AudioPanel::allocConfig(void)
@@ -305,6 +401,9 @@ AudioPanel::applyConfig(void)
   this->setVolume(this->panelConfig->volume);
   this->setDemod(strToDemod(this->panelConfig->demod));
   this->setEnabled(this->panelConfig->enabled);
+
+  if (this->panelConfig->savePath.size() > 0)
+    this->setRecordSavePath(this->panelConfig->savePath);
 }
 
 //////////////////////////////// Slots ////////////////////////////////////////
@@ -346,4 +445,27 @@ AudioPanel::onEnabledChanged(void)
   this->setEnabled(this->getEnabled());
 
   emit changed();
+}
+
+void
+AudioPanel::onChangeSavePath(void)
+{
+  QFileDialog dialog(this->ui->saveButton);
+
+  dialog.setFileMode(QFileDialog::DirectoryOnly);
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+  dialog.setWindowTitle(QString("Select current save directory"));
+
+  if (dialog.exec()) {
+    QString path = dialog.selectedFiles().first();
+    this->ui->savePath->setText(path);
+    this->panelConfig->savePath = path.toStdString();
+    emit recordSavePathChanged(path);
+  }
+}
+
+void
+AudioPanel::onRecordStartStop(void)
+{
+  emit recordStateChanged(this->ui->recordStartStopButton->isChecked());
 }
