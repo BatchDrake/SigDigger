@@ -320,7 +320,7 @@ AudioPanel::setDiskUsage(qreal usage)
 void
 AudioPanel::setIORate(qreal rate)
 {
-  this->ui->ioBwProgress->setValue(static_cast<int>(rate * 100));
+  // Do nothing. This is in general slow.
   this->refreshDiskUsage();
 }
 
@@ -328,9 +328,6 @@ void
 AudioPanel::setRecordState(bool state)
 {
   this->ui->recordStartStopButton->setChecked(state);
-
-  if (!state)
-    this->ui->ioBwProgress->setValue(0);
 }
 
 // Getters
@@ -460,6 +457,7 @@ AudioPanel::onChangeSavePath(void)
     QString path = dialog.selectedFiles().first();
     this->ui->savePath->setText(path);
     this->panelConfig->savePath = path.toStdString();
+    this->refreshDiskUsage();
     emit recordSavePathChanged(path);
   }
 }

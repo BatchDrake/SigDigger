@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>296</width>
-    <height>261</height>
+    <height>239</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -75,17 +75,20 @@
       <property name="spacing">
        <number>3</number>
       </property>
-      <item row="6" column="2">
-       <widget class="QLineEdit" name="savePath">
-        <property name="readOnly">
-         <bool>true</bool>
+      <item row="3" column="3">
+       <widget class="QLabel" name="volumeLabel">
+        <property name="text">
+         <string>0%</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_6">
+      <item row="1" column="1" colspan="2">
+       <widget class="QComboBox" name="sampleRateCombo"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Volume</string>
+         <string>Audio cutoff</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -105,7 +108,44 @@
         </property>
        </widget>
       </item>
+      <item row="6" column="3">
+       <widget class="QPushButton" name="saveButton">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
       <item row="8" column="0" colspan="2">
+       <widget class="QLabel" name="label_30">
+        <property name="text">
+         <string>Capture size</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="2" colspan="2">
+       <widget class="QProgressBar" name="diskUsageProgress">
+        <property name="styleSheet">
+         <string notr="true">font-size: 7pt;</string>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Demodulator</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" colspan="2">
        <widget class="QLabel" name="label_31">
         <property name="text">
          <string>Disk usage</string>
@@ -115,17 +155,16 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0" colspan="4">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+      <item row="2" column="3">
+       <widget class="QLabel" name="cutoffLabel">
+        <property name="minimumSize">
+         <size>
+          <width>62</width>
+          <height>0</height>
+         </size>
         </property>
-       </widget>
-      </item>
-      <item row="6" column="3">
-       <widget class="QPushButton" name="saveButton">
         <property name="text">
-         <string>Browse...</string>
+         <string>22222 Hz</string>
         </property>
        </widget>
       </item>
@@ -153,67 +192,17 @@
         </item>
        </widget>
       </item>
-      <item row="8" column="2" colspan="2">
-       <widget class="QProgressBar" name="diskUsageProgress">
-        <property name="styleSheet">
-         <string notr="true">font-size: 7pt;</string>
-        </property>
-        <property name="value">
-         <number>0</number>
+      <item row="6" column="2">
+       <widget class="QLineEdit" name="savePath">
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="9" column="2">
-       <widget class="QLabel" name="captureSizeLabel">
-        <property name="text">
-         <string>0 bytes</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Demodulator</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Sample rate</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QLabel" name="label_28">
-        <property name="text">
-         <string>Folder</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QLabel" name="volumeLabel">
-        <property name="text">
-         <string>0%</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" colspan="2">
-       <widget class="QLabel" name="label_26">
-        <property name="text">
-         <string>I/O bandwidth</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <item row="4" column="0" colspan="4">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
@@ -233,46 +222,24 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="3">
-       <widget class="QLabel" name="cutoffLabel">
-        <property name="minimumSize">
-         <size>
-          <width>62</width>
-          <height>0</height>
-         </size>
-        </property>
+      <item row="8" column="2">
+       <widget class="QLabel" name="captureSizeLabel">
         <property name="text">
-         <string>22222 Hz</string>
+         <string>0 bytes</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="0" colspan="2">
-       <widget class="QLabel" name="label_30">
+      <item row="6" column="0" colspan="2">
+       <widget class="QLabel" name="label_28">
         <property name="text">
-         <string>Capture size</string>
+         <string>Folder</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QComboBox" name="sampleRateCombo"/>
-      </item>
-      <item row="7" column="2" colspan="2">
-       <widget class="QProgressBar" name="ioBwProgress">
-        <property name="styleSheet">
-         <string notr="true">font-size: 7pt;</string>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="textVisible">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="3">
+      <item row="8" column="3">
        <widget class="QPushButton" name="recordStartStopButton">
         <property name="styleSheet">
          <string notr="true">font-weight: bold;</string>
@@ -285,10 +252,20 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Audio cutoff</string>
+         <string>Volume</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Sample rate</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
