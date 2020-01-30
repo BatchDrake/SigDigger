@@ -1053,18 +1053,24 @@ Application::onThrottleConfigChanged(void)
   }
 }
 
+//
+// sigdigger_XXXXXXXXXX_XXXXXXXXXXXXXXXXXXXX_float32_iq.raw
+//
 int
 Application::openCaptureFile(void)
 {
   int fd = -1;
-  QString baseName =
-      "sigdigger_"
-      + QString::number(this->mediator->getProfile()->getSampleRate())
-      + "_"
-      + QString::number(this->mediator->getProfile()->getFreq())
-      + "_float32_iq.raw";
+  char baseName[64];
+
+  snprintf(
+        baseName,
+        64,
+        "sigdigger_%d_%.0lf_float32_iq.raw",
+        this->mediator->getProfile()->getSampleRate(),
+        this->mediator->getProfile()->getFreq());
+
   std::string fullPath =
-      this->ui.sourcePanel->getRecordSavePath() + "/" + baseName.toStdString();
+      this->ui.sourcePanel->getRecordSavePath() + "/" + baseName;
 
   if ((fd = creat(fullPath.c_str(), 0600)) == -1) {
     QMessageBox::warning(
