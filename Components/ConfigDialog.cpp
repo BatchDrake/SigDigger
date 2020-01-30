@@ -625,6 +625,52 @@ ConfigDialog::onAccepted(void)
 }
 
 void
+ConfigDialog::guessParamsFromFileName(void)
+{
+  QFileInfo fi(QString::fromStdString(this->profile.getPath()));
+  std::string baseName = fi.baseName().toStdString();
+  SUFREQ fc;
+  unsigned int fs;
+  unsigned int date, time;
+  bool haveFc = false;
+  bool haveFs = false;
+
+  if (sscanf(
+        baseName.c_str(),
+        "sigdigger_%d_%lg_float32_iq",
+        &fs,
+        &fc) == 2) {
+    haveFc = true;
+    haveFs = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "gqrx_%08d_%06d_%lg_%d_fc",
+        &date,
+        &time,
+        &fc,
+        &fs) == 4) {
+    haveFc = true;
+    haveFs = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "SDRSharp_%08d_%06dZ_%lg_IQ",
+        &date,
+        &time,
+        &fc) == 3) {
+    haveFc = true;
+  }
+
+  if (haveFs)
+    this->profile.setSampleRate(fs);
+
+  if (haveFc)
+    this->profile.setFreq(fc);
+
+  if (haveFs || haveFc)
+    this->refreshUi();
+}
+
+void
 ConfigDialog::onBrowseCaptureFile(void)
 {
   QString format;
@@ -657,6 +703,7 @@ ConfigDialog::onBrowseCaptureFile(void)
   if (!path.isEmpty()) {
     this->ui->pathEdit->setText(path);
     this->profile.setPath(path.toStdString());
+    this->guessParamsFromFileName();
   }
 }
 

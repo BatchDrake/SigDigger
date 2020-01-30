@@ -55,6 +55,7 @@ namespace SigDigger {
     void loadProfile(Suscan::Source::Config &config);
     void saveAnalyzerParams(void);
     void saveColors(void);
+    void guessParamsFromFileName(void);
 
     static QString getBaseName(const QString &string);
 
