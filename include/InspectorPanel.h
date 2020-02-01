@@ -20,6 +20,7 @@
 #define INSPECTORPANEL_H
 
 #include <PersistentWidget.h>
+#include <TimeWindow.h>
 
 namespace Ui {
   class InspectorPanel;
@@ -50,6 +51,9 @@ namespace SigDigger {
 
     // UI objects
     Ui::InspectorPanel *ui = nullptr;
+
+    // TODO: Allow multiple TimeWindows
+    TimeWindow *timeWindow = nullptr;
 
     // UI State
     State state = DETACHED;
@@ -82,6 +86,8 @@ namespace SigDigger {
     void onOpenInspector(void);
     void onBandwidthChanged(int);
     void onPreciseChanged(void);
+    void onPressHold(void);
+    void onReleaseHold(void);
 
   signals:
     void bandwidthChanged(int);

@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TimeWindow</class>
+ <widget class="QMainWindow" name="TimeWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>6</number>
+    </property>
+    <property name="topMargin">
+     <number>6</number>
+    </property>
+    <property name="rightMargin">
+     <number>6</number>
+    </property>
+    <property name="bottomMargin">
+     <number>6</number>
+    </property>
+    <property name="spacing">
+     <number>3</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QFrame" name="frame">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <property name="leftMargin">
+        <number>6</number>
+       </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
+        <number>6</number>
+       </property>
+       <property name="spacing">
+        <number>3</number>
+       </property>
+       <item row="1" column="5">
+        <widget class="QLabel" name="meanLabel">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QLabel" name="selStartLabel">
+         <property name="text">
+          <string>0 ms (0)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Selection end:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="durationLabel">
+         <property name="text">
+          <string>0 ms</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="6">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Mag/phase:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QLabel" name="selEndLabel">
+         <property name="text">
+          <string>0 ms (0)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Length:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Sample rate:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QLabel" name="limitsLabel">
+         <property name="text">
+          <string>0 - 0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Duration:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QLabel" name="selLengthLabel">
+         <property name="text">
+          <string>0 ms (0)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Limits:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="sampleRateLabel">
+         <property name="text">
+          <string>1 sps</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="5">
+        <widget class="QLabel" name="rmsLabel">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="6">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>I/Q:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="6">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Selection start:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="lengthLabel">
+         <property name="text">
+          <string>0 samples</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>RMS:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Selection length:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>Mean:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="7">
+        <widget class="QLabel" name="positionLabel">
+         <property name="text">
+          <string>0 ms</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="7">
+        <widget class="QLabel" name="iqLabel">
+         <property name="text">
+          <string>0 + 0i</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="7">
+        <widget class="QLabel" name="magPhaseLabel">
+         <property name="text">
+          <string>0 (0º)</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="Waveform" name="realWaveform"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="Waveform" name="imagWaveform"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonIconOnly</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionSave"/>
+   <addaction name="actionSave_selection"/>
+   <addaction name="actionFit_to_gain"/>
+   <addaction name="actionHorizontal_selection"/>
+   <addaction name="actionVertical_selection"/>
+   <addaction name="actionZoom_selection"/>
+   <addaction name="actionResetZoom"/>
+  </widget>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save captured data</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionResetZoom">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/zoom-original.png</normaloff>:/icons/zoom-original.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reset zoom</string>
+   </property>
+  </action>
+  <action name="actionSave_selection">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionFit_to_gain">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/view-restore.png</normaloff>:/icons/view-restore.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fit to gain</string>
+   </property>
+  </action>
+  <action name="actionHorizontal_selection">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/object-flip-horizontal.png</normaloff>:/icons/object-flip-horizontal.png</iconset>
+   </property>
+   <property name="text">
+    <string>Horizontal selection</string>
+   </property>
+  </action>
+  <action name="actionVertical_selection">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/object-flip-vertical.png</normaloff>:/icons/object-flip-vertical.png</iconset>
+   </property>
+   <property name="text">
+    <string>Vertical selection</string>
+   </property>
+  </action>
+  <action name="actionZoom_selection">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/zoom-fit.png</normaloff>:/icons/zoom-fit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom selection</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Waveform</class>
+   <extends>QFrame</extends>
+   <header>Waveform.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../icons/Icons.qrc"/>
+  <include location="../icons/Icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

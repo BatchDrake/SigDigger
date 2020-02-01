@@ -26,6 +26,12 @@
         <file>devices.png</file>
         <file>devices-unavail.png</file>
         <file>panspect.png</file>
+        <file>zoom-original.png</file>
+        <file>zoom-fit.png</file>
+        <file>view-restore.png</file>
+        <file>object-flip-vertical.png</file>
+        <file>object-flip-horizontal.png</file>
+        <file>document-save.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

@@ -80,6 +80,13 @@ InspectorPanel::connectAll(void)
         SIGNAL(stateChanged(int)),
         this,
         SLOT(onPreciseChanged(void)));
+
+  connect(
+        this->ui->captureButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onPressHold(void)));
+
 }
 
 void
@@ -179,6 +186,7 @@ InspectorPanel::InspectorPanel(QWidget *parent) :
   ui(new Ui::InspectorPanel)
 {
   ui->setupUi(this);
+  this->timeWindow = new TimeWindow(this);
 
   this->assertConfig();
 
@@ -209,4 +217,16 @@ void
 InspectorPanel::onPreciseChanged(void)
 {
   this->panelConfig->precise = this->ui->preciseCheck->isChecked();
+}
+
+void
+InspectorPanel::onPressHold(void)
+{
+  this->timeWindow->show();
+}
+
+void
+InspectorPanel::onReleaseHold(void)
+{
+
 }

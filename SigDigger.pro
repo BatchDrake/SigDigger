@@ -70,6 +70,7 @@ SOURCES += \
     Components/PersistentWidget.cpp \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
+    Components/TimeWindow.cpp \
     Inspector/Inspector.cpp \
     Inspector/InspectorUI.cpp \
     InspectorCtl/AfcControl.cpp \
@@ -176,6 +177,7 @@ HEADERS += \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
     include/SourcePanel.h \
+    include/TimeWindow.h \
     include/ToneControl.h \
     include/UIMediator.h \
     include/EstimatorControl.h \
@@ -208,6 +210,7 @@ FORMS += \
     ui/MainWindow.ui \
     ui/MfControl.ui \
     ui/SourcePanel.ui \
+    ui/TimeWindow.ui \
     ui/ToneControl.ui \
     ui/SaveProfileDialog.ui \
     ui/EstimatorControl.ui \
