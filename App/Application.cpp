@@ -401,6 +401,18 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
+        SIGNAL(requestOpenRawInspector(void)),
+        this,
+        SLOT(onOpenRawInspector(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(requestCloseRawInspector(void)),
+        this,
+        SLOT(onCloseRawInspector(void)));
+
+  connect(
+        this->mediator,
         SIGNAL(toggleDCRemove(void)),
         this,
         SLOT(onToggleDCRemove(void)));
@@ -758,6 +770,7 @@ Application::onAnalyzerHalted(void)
   this->mediator->setState(UIMediator::HALTED);
   this->mediator->detachAllInspectors();
   this->closeAudio();
+  this->rawInspectorOpened = false;
 
   if (restart)
     this->startCapture();
@@ -796,14 +809,22 @@ Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
 {
   Inspector *insp;
 
-  if (msg.getInspectorId() == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
-    if (this->playBack != nullptr)
-      this->playBack->write(msg.getSamples(), msg.getCount());
-    if (this->audioFileSaver != nullptr)
-      this->audioFileSaver->write(msg.getSamples(), msg.getCount());
-  } else if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
-             != nullptr) {
-    insp->feed(msg.getSamples(), msg.getCount());
+  switch (msg.getInspectorId()) {
+    case SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID:
+      if (this->playBack != nullptr)
+        this->playBack->write(msg.getSamples(), msg.getCount());
+      if (this->audioFileSaver != nullptr)
+        this->audioFileSaver->write(msg.getSamples(), msg.getCount());
+      break;
+
+    case SIGDIGGER_RAW_INSPECTOR_MAGIC_ID:
+      this->mediator->feedRawInspector(msg.getSamples(), msg.getCount());
+      break;
+
+    default:
+      if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
+                   != nullptr)
+          insp->feed(msg.getSamples(), msg.getCount());
   }
 }
 
@@ -820,36 +841,53 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
   switch (msg.getKind()) {
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_OPEN:
       // Audio path: set inspector Id
-      if (msg.getRequestId() == SIGDIGGER_AUDIO_INSPECTOR_REQID) {
-        this->audioInspHandle = msg.getHandle();
-        this->audioInspectorOpened = true;
-        this->analyzer->setInspectorId(
-              msg.getHandle(),
-              SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID,
-              0);
-        this->analyzer->setInspectorWatermark(
-              msg.getHandle(),
-              SIGDIGGER_AUDIO_BUFFER_SIZE / 2,
-              0);
-        this->analyzer->setInspectorBandwidth(
-              msg.getHandle(),
-              this->getAudioInspectorBandwidth(),
-              0);
-        if (this->audioCfgTemplate == nullptr)
-          SU_ATTEMPT(this->audioCfgTemplate = suscan_config_dup(msg.getCConfig()));
+      switch (msg.getRequestId()) {
+        case SIGDIGGER_AUDIO_INSPECTOR_REQID:
+          this->audioInspHandle = msg.getHandle();
+          this->audioInspectorOpened = true;
+          this->analyzer->setInspectorId(
+                msg.getHandle(),
+                SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID,
+                0);
+          this->analyzer->setInspectorWatermark(
+                msg.getHandle(),
+                SIGDIGGER_AUDIO_BUFFER_SIZE / 2,
+                0);
+          this->analyzer->setInspectorBandwidth(
+                msg.getHandle(),
+                this->getAudioInspectorBandwidth(),
+                0);
+          if (this->audioCfgTemplate == nullptr)
+            SU_ATTEMPT(this->audioCfgTemplate = suscan_config_dup(msg.getCConfig()));
 
-        this->audioConfigured = true;
+          this->audioConfigured = true;
 
-        /* Set params for good */
-        this->setAudioInspectorParams(
-              this->audioSampleRate,
-              this->delayedCutOff,
-              this->delayedVolume,
-              this->delayedDemod);
-      } else {
-        insp = this->mediator->addInspectorTab(msg, oId);
-        insp->setAnalyzer(this->analyzer.get());
-        this->analyzer->setInspectorId(msg.getHandle(), oId, 0);
+          /* Set params for good */
+          this->setAudioInspectorParams(
+                this->audioSampleRate,
+                this->delayedCutOff,
+                this->delayedVolume,
+                this->delayedDemod);
+          break;
+
+        case SIGDIGGER_RAW_INSPECTOR_REQID:
+          this->rawInspHandle = msg.getHandle();
+          this->rawInspectorOpened = true;
+
+          this->analyzer->setInspectorId(
+                msg.getHandle(),
+                SIGDIGGER_RAW_INSPECTOR_MAGIC_ID,
+                0);
+
+          this->mediator->resetRawInspector(
+                static_cast<qreal>(msg.getEquivSampleRate()));
+
+          break;
+
+        default:
+          insp = this->mediator->addInspectorTab(msg, oId);
+          insp->setAnalyzer(this->analyzer.get());
+          this->analyzer->setInspectorId(msg.getHandle(), oId, 0);
       }
       break;
 
@@ -882,7 +920,9 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
 
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_CLOSE:
       if (this->audioConfigured && this->audioInspHandle == msg.getHandle()) {
-        // Do nothing
+        // Do nothing (yet).
+      } else if (this->rawInspectorOpened && this->rawInspHandle == msg.getHandle()) {
+        // Do nothing either (yet).
       } else if ((insp = this->mediator->lookupInspector(msg.getInspectorId())) != nullptr) {
         insp->setAnalyzer(nullptr);
         this->mediator->closeInspectorTab(insp);
@@ -1037,6 +1077,34 @@ Application::onOpenInspector(void)
           this->ui.inspectorPanel->getInspectorClass(),
           ch,
           0);
+  }
+}
+
+void
+Application::onOpenRawInspector(void)
+{
+  if (this->mediator->getState() == UIMediator::RUNNING
+      && !this->rawInspectorOpened) {
+    Suscan::Channel ch;
+
+    ch.bw    = this->ui.inspectorPanel->getBandwidth();
+    ch.ft    = 0;
+    ch.fc    = this->ui.spectrum->getLoFreq();
+    ch.fLow  = - .5 * ch.bw;
+    ch.fHigh = + .5 * ch.bw;
+
+    this->analyzer->openPrecise("raw", ch, SIGDIGGER_RAW_INSPECTOR_REQID);
+  }
+}
+
+void
+Application::onCloseRawInspector(void)
+{
+  if (this->mediator->getState() == UIMediator::RUNNING) {
+    if (this->rawInspectorOpened) {
+      this->analyzer->closeInspector(this->rawInspHandle, 0);
+      this->rawInspectorOpened = false;
+    }
   }
 }
 

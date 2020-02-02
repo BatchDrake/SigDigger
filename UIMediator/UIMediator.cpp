@@ -358,6 +358,19 @@ UIMediator::setPanSpectrumRunning(bool running)
 }
 
 void
+UIMediator::resetRawInspector(qreal fs)
+{
+  this->ui->inspectorPanel->resetRawInspector(fs);
+}
+
+void
+UIMediator::feedRawInspector(const SUCOMPLEX *data, size_t size)
+{
+  this->ui->inspectorPanel->feedRawInspector(data, size);
+}
+
+
+void
 UIMediator::setMinPanSpectrumBw(quint64 bw)
 {
   this->ui->panoramicDialog->setMinBwForZoom(bw);

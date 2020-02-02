@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1074</width>
+    <height>686</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Time preview</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -30,7 +30,50 @@
     <property name="spacing">
      <number>3</number>
     </property>
-    <item row="0" column="0">
+    <item row="0" column="5">
+     <widget class="Constellation" name="constellation">
+      <property name="minimumSize">
+       <size>
+        <width>68</width>
+        <height>68</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>68</width>
+        <height>68</height>
+       </size>
+      </property>
+      <property name="backgroundColor">
+       <color>
+        <red>29</red>
+        <green>29</green>
+        <blue>31</blue>
+       </color>
+      </property>
+      <property name="foregroundColor">
+       <color>
+        <red>255</red>
+        <green>255</green>
+        <blue>0</blue>
+       </color>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QVerticalLabel" name="verticalLabel_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Quadrature</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="4">
      <widget class="QFrame" name="frame">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -60,169 +103,318 @@
        <property name="spacing">
         <number>3</number>
        </property>
-       <item row="1" column="5">
+       <item row="1" column="6">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>Mean</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2" rowspan="3">
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="7">
         <widget class="QLabel" name="meanLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>0</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="3">
-        <widget class="QLabel" name="selStartLabel">
+       <item row="2" column="1">
+        <widget class="QLabel" name="lengthLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>0 ms (0)</string>
+          <string>0 samples</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="QLabel" name="label_8">
+       <item row="2" column="7">
+        <widget class="QLabel" name="rmsLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>Selection end:</string>
+          <string>0</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="durationLabel">
-         <property name="text">
-          <string>0 ms</string>
+       <item row="0" column="1">
+        <widget class="QLabel" name="sampleRateLabel">
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>0</height>
+          </size>
          </property>
-        </widget>
-       </item>
-       <item row="2" column="6">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Mag/phase:</string>
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
          </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QLabel" name="selEndLabel">
          <property name="text">
-          <string>0 ms (0)</string>
+          <string>1 sps</string>
          </property>
         </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Length:</string>
+          <string>Length</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="6">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>RMS</string>
          </property>
         </widget>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
-          <string>Sample rate:</string>
+          <string>Sample rate</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
-        <widget class="QLabel" name="limitsLabel">
+       <item row="1" column="3">
+        <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>0 - 0</string>
+          <string>Selection end</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="durationLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>0 ms</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Selection start</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QLabel" name="selStartLabel">
+         <property name="minimumSize">
+          <size>
+           <width>133</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>0 ms (0)</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Duration:</string>
+          <string>Duration</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="7">
+        <widget class="QLabel" name="limitsLabel">
+         <property name="minimumSize">
+          <size>
+           <width>198</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>0 - 0</string>
          </property>
         </widget>
        </item>
        <item row="2" column="3">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Selection length</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="6">
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Limits</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
         <widget class="QLabel" name="selLengthLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>0 ms (0)</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="4">
-        <widget class="QLabel" name="label_13">
+       <item row="1" column="4">
+        <widget class="QLabel" name="selEndLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>Limits:</string>
+          <string>0 ms (0)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5" rowspan="3">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="4">
+     <widget class="QFrame" name="frame_3">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>6</number>
+       </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
+        <number>6</number>
+       </property>
+       <property name="spacing">
+        <number>3</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Position</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLabel" name="sampleRateLabel">
-         <property name="text">
-          <string>1 sps</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="5">
-        <widget class="QLabel" name="rmsLabel">
-         <property name="text">
-          <string>0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="6">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>I/Q:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="6">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Position:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>Selection start:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="lengthLabel">
-         <property name="text">
-          <string>0 samples</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="4">
-        <widget class="QLabel" name="label_15">
-         <property name="text">
-          <string>RMS:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>Selection length:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="4">
-        <widget class="QLabel" name="label_14">
-         <property name="text">
-          <string>Mean:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="7">
         <widget class="QLabel" name="positionLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>0 ms</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="7">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>I/Q</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
         <widget class="QLabel" name="iqLabel">
+         <property name="minimumSize">
+          <size>
+           <width>194</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>0 + 0i</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="7">
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Mag/phase</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
         <widget class="QLabel" name="magPhaseLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>0 (0º)</string>
          </property>
@@ -231,10 +423,154 @@
       </layout>
      </widget>
     </item>
-    <item row="1" column="0">
+    <item row="2" column="0">
+     <widget class="QVerticalLabel" name="verticalLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>In-Phase</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="6">
+     <widget class="QFrame" name="frame_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <property name="leftMargin">
+        <number>3</number>
+       </property>
+       <property name="topMargin">
+        <number>3</number>
+       </property>
+       <property name="rightMargin">
+        <number>3</number>
+       </property>
+       <property name="bottomMargin">
+        <number>3</number>
+       </property>
+       <property name="horizontalSpacing">
+        <number>17</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>3</number>
+       </property>
+       <item row="0" column="3">
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>ΔT:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QSpinBox" name="periodicDivisionsSpin">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="suffix">
+          <string> syms</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>2000000000</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QLabel" name="periodLabel">
+         <property name="minimumSize">
+          <size>
+           <width>68</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>N/A</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="periodicSelectionCheck">
+         <property name="text">
+          <string>Enable periodic selection</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="7">
+        <widget class="QLabel" name="baudLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>N/A</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="6">
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>Baud:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="8">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="2" column="1" colspan="5">
      <widget class="Waveform" name="realWaveform"/>
     </item>
-    <item row="2" column="0">
+    <item row="3" column="1" colspan="5">
      <widget class="Waveform" name="imagWaveform"/>
     </item>
    </layout>
@@ -341,12 +677,23 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>Constellation</class>
+   <extends>QFrame</extends>
+   <header>Constellation.h</header>
+  </customwidget>
+  <customwidget>
    <class>Waveform</class>
    <extends>QFrame</extends>
    <header>Waveform.h</header>
   </customwidget>
+  <customwidget>
+   <class>QVerticalLabel</class>
+   <extends>QLabel</extends>
+   <header>QVerticalLabel.h</header>
+  </customwidget>
  </customwidgets>
  <resources>
+  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>

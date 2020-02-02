@@ -154,8 +154,8 @@ SourcePanel::connectAll(void)
         SLOT(onBandwidthChanged(void)));
 }
 
-static QString
-formatSampleRate(unsigned int rate)
+QString
+SourcePanel::formatSampleRate(unsigned int rate)
 {
   if (rate < 1000)
     return QString::number(rate) + " sps";

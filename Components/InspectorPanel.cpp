@@ -19,6 +19,11 @@
 #include "InspectorPanel.h"
 #include "ui_InspectorPanel.h"
 
+// FIXME!! THESE INCLUDES ARE AWFUL. CREATE SIGDIGGER UTILITY CLASS
+#include "DataSaverUI.h"
+#include <Waveform.h>
+#include "SourcePanel.h"
+
 using namespace SigDigger;
 
 ///////////////////////////// Inspector panel cnfig ////////////////////////////
@@ -83,9 +88,15 @@ InspectorPanel::connectAll(void)
 
   connect(
         this->ui->captureButton,
-        SIGNAL(clicked(bool)),
+        SIGNAL(pressed(void)),
         this,
         SLOT(onPressHold(void)));
+
+  connect(
+        this->ui->captureButton,
+        SIGNAL(released(void)),
+        this,
+        SLOT(onReleaseHold(void)));
 
 }
 
@@ -181,6 +192,29 @@ InspectorPanel::getBandwidth(void) const
   return static_cast<unsigned int>(this->ui->bandwidthSpin->value());
 }
 
+void
+InspectorPanel::resetRawInspector(qreal fs)
+{
+  this->timeWindowFs = fs;
+  this->data.resize(0);
+  this->ui->sampleRateLabel->setText(
+        SourcePanel::formatSampleRate(static_cast<unsigned>(fs)));
+  this->ui->durationLabel->setText(Waveform::formatLabel(0, "s"));
+  this->ui->memoryLabel->setText(DataSaverUI::formatCaptureSize(0));
+}
+
+void
+InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
+{
+  if (this->ui->captureButton->isDown()) {
+    this->data.insert(this->data.end(), data, data + size);
+    this->ui->durationLabel->setText(
+          Waveform::formatLabel(this->data.size() / this->timeWindowFs, "s"));
+    this->ui->memoryLabel->setText(
+          DataSaverUI::formatCaptureSize(this->data.size() * sizeof(SUCOMPLEX)));
+  }
+}
+
 InspectorPanel::InspectorPanel(QWidget *parent) :
   PersistentWidget(parent),
   ui(new Ui::InspectorPanel)
@@ -222,11 +256,21 @@ InspectorPanel::onPreciseChanged(void)
 void
 InspectorPanel::onPressHold(void)
 {
-  this->timeWindow->show();
+  emit startRawCapture();
 }
 
 void
 InspectorPanel::onReleaseHold(void)
 {
+  emit stopRawCapture();
 
+  if (this->data.size() > 0) {
+    this->timeWindow->setData(this->data, this->timeWindowFs);
+    this->timeWindow->show();
+
+    this->ui->sampleRateLabel->setText(
+          SourcePanel::formatSampleRate(static_cast<unsigned>(0)));
+    this->ui->durationLabel->setText(Waveform::formatLabel(0, "s"));
+    this->ui->memoryLabel->setText(DataSaverUI::formatCaptureSize(0));
+  }
 }

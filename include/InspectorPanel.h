@@ -54,6 +54,7 @@ namespace SigDigger {
 
     // TODO: Allow multiple TimeWindows
     TimeWindow *timeWindow = nullptr;
+    qreal timeWindowFs = 1;
 
     // UI State
     State state = DETACHED;
@@ -62,6 +63,8 @@ namespace SigDigger {
     void connectAll(void);
     void refreshUi(void);
     void setInspectorClass(std::string const &cls);
+
+    std::vector<SUCOMPLEX> data;
 
   public:
     explicit InspectorPanel(QWidget *parent = nullptr);
@@ -72,6 +75,9 @@ namespace SigDigger {
     void setBandwidth(unsigned int freq);
     void setPrecise(bool precise);
     void setState(enum State state);
+
+    void resetRawInspector(qreal sampleRate);
+    void feedRawInspector(const SUCOMPLEX *data, size_t size);
 
     unsigned int getBandwidth(void) const;
     std::string getInspectorClass(void) const;
@@ -92,7 +98,8 @@ namespace SigDigger {
   signals:
     void bandwidthChanged(int);
     void requestOpenInspector(QString);
-
+    void startRawCapture(void);
+    void stopRawCapture(void);
   };
 }
 

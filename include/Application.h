@@ -76,6 +76,10 @@ namespace SigDigger {
     SUFREQ maxAudioBw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
     SUFREQ lastAudioLo = 0;
 
+    // Raw inspector for time view
+    Suscan::Handle rawInspHandle = 0;
+    bool rawInspectorOpened = false;
+
     // Panoramic spectrum
     Scanner *scanner = nullptr;
     SUFREQ scanMinFreq;
@@ -148,6 +152,8 @@ namespace SigDigger {
     void onGainChanged(QString name, float val);
     void onFrequencyChanged(qint64, qint64);
     void onOpenInspector(void);
+    void onOpenRawInspector(void);
+    void onCloseRawInspector(void);
     void onThrottleConfigChanged(void);
     void onToggleRecord(void);
     void onToggleDCRemove(void);
