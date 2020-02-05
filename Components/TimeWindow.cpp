@@ -139,6 +139,12 @@ TimeWindow::connectAll(void)
         SLOT(onZoomReset(void)));
 
   connect(
+        this->ui->showEnvelopeCheck,
+        SIGNAL(stateChanged(int)),
+        this,
+        SLOT(onShowEnvelope(void)));
+
+  connect(
         this->ui->periodicSelectionCheck,
         SIGNAL(stateChanged(int)),
         this,
@@ -691,3 +697,9 @@ TimeWindow::onZoomReset(void)
   this->ui->imagWaveform->invalidate();
 }
 
+void
+TimeWindow::onShowEnvelope(void)
+{
+  this->ui->realWaveform->setShowEnvelope(this->ui->showEnvelopeCheck->isChecked());
+  this->ui->imagWaveform->setShowEnvelope(this->ui->showEnvelopeCheck->isChecked());
+}

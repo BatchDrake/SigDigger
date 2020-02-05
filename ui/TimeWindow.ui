@@ -469,7 +469,27 @@
        <property name="verticalSpacing">
         <number>3</number>
        </property>
-       <item row="0" column="3">
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="periodicSelectionCheck">
+         <property name="text">
+          <string>Enable periodic selection</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="8">
+        <widget class="QLabel" name="baudLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>N/A</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
         <widget class="QLabel" name="label_11">
          <property name="text">
           <string>ΔT:</string>
@@ -479,14 +499,20 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
-        <widget class="Line" name="line_3">
+       <item row="0" column="9">
+        <spacer name="horizontalSpacer">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
-       <item row="0" column="2">
+       <item row="0" column="3">
         <widget class="QSpinBox" name="periodicDivisionsSpin">
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -502,7 +528,7 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="4">
+       <item row="0" column="5">
         <widget class="QLabel" name="periodLabel">
          <property name="minimumSize">
           <size>
@@ -521,27 +547,7 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="periodicSelectionCheck">
-         <property name="text">
-          <string>Enable periodic selection</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="7">
-        <widget class="QLabel" name="baudLabel">
-         <property name="font">
-          <font>
-           <family>Monospace</family>
-           <pointsize>9</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>N/A</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="6">
         <widget class="QLabel" name="label_12">
          <property name="text">
           <string>Baud:</string>
@@ -551,18 +557,19 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="8">
-        <spacer name="horizontalSpacer">
+       <item row="0" column="6">
+        <widget class="Line" name="line_3">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="showEnvelopeCheck">
+         <property name="text">
+          <string>Show envelope</string>
          </property>
-        </spacer>
+        </widget>
        </item>
       </layout>
      </widget>

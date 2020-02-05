@@ -90,6 +90,7 @@ public slots:
   void onToggleVerticalSelection(void);
   void onZoomToSelection(void);
   void onZoomReset(void);
+  void onShowEnvelope(void);
 
 private:
   Ui::TimeWindow *ui;
