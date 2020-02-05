@@ -361,7 +361,6 @@ TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs)
 
   this->refreshUi();
   this->refreshMeasures();
-  this->onFit();
 }
 
 TimeWindow::TimeWindow(QWidget *parent) :

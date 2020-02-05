@@ -267,6 +267,8 @@ InspectorPanel::onReleaseHold(void)
   if (this->data.size() > 0) {
     this->timeWindow->setData(this->data, this->timeWindowFs);
     this->timeWindow->show();
+    this->timeWindow->setFocus();
+    this->timeWindow->onFit();
 
     this->ui->sampleRateLabel->setText(
           SourcePanel::formatSampleRate(static_cast<unsigned>(0)));
