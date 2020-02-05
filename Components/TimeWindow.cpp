@@ -139,10 +139,22 @@ TimeWindow::connectAll(void)
         SLOT(onZoomReset(void)));
 
   connect(
-        this->ui->showEnvelopeCheck,
-        SIGNAL(stateChanged(int)),
+        this->ui->actionShowWaveform,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onShowWaveform(void)));
+
+  connect(
+        this->ui->actionShowEnvelope,
+        SIGNAL(triggered(bool)),
         this,
         SLOT(onShowEnvelope(void)));
+
+  connect(
+        this->ui->actionShowPhase,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onShowPhase(void)));
 
   connect(
         this->ui->periodicSelectionCheck,
@@ -192,7 +204,7 @@ TimeWindow::kahanMeanAndRms(
     rmsSum  = rmsT;
   }
 
-  *mean = meanSum / SU_ASFLOAT(length);
+  *mean = meanSum / length;
   *rms  = SU_SQRT(rmsSum / length);
 }
 
@@ -327,9 +339,13 @@ TimeWindow::refreshMeasures(void)
 
   this->ui->lengthLabel->setText(QString::number(length) + " samples");
   this->ui->durationLabel->setText(Waveform::formatLabel(length * deltaT, "s"));
-  this->ui->limitsLabel->setText(formatComplex(min) + " / " + formatComplex(max));
-  this->ui->meanLabel->setText(formatComplex(mean));
-  this->ui->rmsLabel->setText(formatScientific(rms));
+  this->ui->minILabel->setText(formatScientific(SU_C_REAL(min)));
+  this->ui->maxILabel->setText(formatScientific(SU_C_REAL(min)));
+  this->ui->meanILabel->setText(formatScientific(SU_C_REAL(mean)));
+  this->ui->minQLabel->setText(formatScientific(SU_C_IMAG(min)));
+  this->ui->maxQLabel->setText(formatScientific(SU_C_IMAG(min)));
+  this->ui->meanQLabel->setText(formatScientific(SU_C_IMAG(mean)));
+  this->ui->rmsLabel->setText(formatReal(rms));
 }
 
 void
@@ -524,7 +540,8 @@ TimeWindow::onHoverTime(qreal time)
 
   this->ui->positionLabel->setText(
         Waveform::formatLabel(time, "s") + " (" + formatReal(samp) + ")");
-  this->ui->iqLabel->setText(formatComplex(val));
+  this->ui->iLabel->setText(formatScientific(SU_C_REAL(val)));
+  this->ui->qLabel->setText(formatScientific(SU_C_IMAG(val)));
   this->ui->magPhaseLabel->setText(
         formatReal(SU_C_ABS(val))
         + "("
@@ -698,8 +715,24 @@ TimeWindow::onZoomReset(void)
 }
 
 void
+TimeWindow::onShowWaveform(void)
+{
+  this->ui->realWaveform->setShowWaveform(this->ui->actionShowWaveform->isChecked());
+  this->ui->imagWaveform->setShowWaveform(this->ui->actionShowWaveform->isChecked());
+}
+
+void
 TimeWindow::onShowEnvelope(void)
 {
-  this->ui->realWaveform->setShowEnvelope(this->ui->showEnvelopeCheck->isChecked());
-  this->ui->imagWaveform->setShowEnvelope(this->ui->showEnvelopeCheck->isChecked());
+  this->ui->realWaveform->setShowEnvelope(this->ui->actionShowEnvelope->isChecked());
+  this->ui->imagWaveform->setShowEnvelope(this->ui->actionShowEnvelope->isChecked());
+
+  this->ui->actionShowPhase->setEnabled(this->ui->actionShowEnvelope->isChecked());
+}
+
+void
+TimeWindow::onShowPhase(void)
+{
+  this->ui->realWaveform->setShowPhase(this->ui->actionShowPhase->isChecked());
+  this->ui->imagWaveform->setShowPhase(this->ui->actionShowPhase->isChecked());
 }
