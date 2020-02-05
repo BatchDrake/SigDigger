@@ -192,7 +192,7 @@ TimeWindow::kahanMeanAndRms(
     rmsSum  = rmsT;
   }
 
-  *mean = meanSum / length;
+  *mean = meanSum / SU_ASFLOAT(length);
   *rms  = SU_SQRT(rmsSum / length);
 }
 
