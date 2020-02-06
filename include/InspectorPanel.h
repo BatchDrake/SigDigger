@@ -68,6 +68,7 @@ namespace SigDigger {
 
   public:
     explicit InspectorPanel(QWidget *parent = nullptr);
+    void postLoadInit(void);
     ~InspectorPanel() override;
 
     void setDemodFrequency(qint64);

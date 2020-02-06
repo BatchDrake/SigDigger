@@ -117,6 +117,12 @@ InspectorPanel::refreshUi(void)
 }
 
 void
+InspectorPanel::postLoadInit(void)
+{
+  this->timeWindow = new TimeWindow(this);
+}
+
+void
 InspectorPanel::setDemodFrequency(qint64 freq)
 {
   this->ui->inspectorChannelLabel->setText(QString::number(freq) + " Hz");
@@ -220,7 +226,6 @@ InspectorPanel::InspectorPanel(QWidget *parent) :
   ui(new Ui::InspectorPanel)
 {
   ui->setupUi(this);
-  this->timeWindow = new TimeWindow(this);
 
   this->assertConfig();
 

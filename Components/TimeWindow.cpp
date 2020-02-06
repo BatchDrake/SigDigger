@@ -16,13 +16,17 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+
 #include <TimeWindow.h>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <Suscan/Library.h>
 #include <fstream>
 #include <iomanip>
 #include "ui_TimeWindow.h"
 #include <climits>
+
+using namespace SigDigger;
 
 bool
 TimeWindow::exportToFile(QString const &path, int start, int end)
@@ -157,6 +161,12 @@ TimeWindow::connectAll(void)
         SLOT(onShowPhase(void)));
 
   connect(
+        this->ui->actionPhaseDerivative,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onPhaseDerivative(void)));
+
+  connect(
         this->ui->periodicSelectionCheck,
         SIGNAL(stateChanged(int)),
         this,
@@ -167,6 +177,12 @@ TimeWindow::connectAll(void)
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onPeriodicDivisionsChanged(void)));
+
+  connect(
+        this->ui->paletteCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onPaletteChanged(int)));
 }
 
 int
@@ -349,6 +365,31 @@ TimeWindow::refreshMeasures(void)
 }
 
 void
+TimeWindow::deserializePalettes(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  int ndx = 0;
+
+  // Fill palette vector
+  for (auto i = sus->getFirstPalette();
+       i != sus->getLastPalette();
+       i++)
+    this->palettes.push_back(Palette(*i));
+
+  this->ui->paletteCombo->clear();
+
+  // Populate combo
+  for (auto p : this->palettes) {
+    this->ui->paletteCombo->insertItem(
+          ndx,
+          QIcon(QPixmap::fromImage(p.getThumbnail())),
+          QString::fromStdString(p.getName()),
+          QVariant::fromValue(ndx));
+    ++ndx;
+  }
+}
+
+void
 TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs)
 {
   this->ui->realWaveform->setData(&data);
@@ -376,7 +417,7 @@ TimeWindow::TimeWindow(QWidget *parent) :
 
   this->refreshUi();
   this->refreshMeasures();
-
+  this->deserializePalettes();
   this->connectAll();
 }
 
@@ -727,6 +768,7 @@ TimeWindow::onShowEnvelope(void)
   this->ui->imagWaveform->setShowEnvelope(this->ui->actionShowEnvelope->isChecked());
 
   this->ui->actionShowPhase->setEnabled(this->ui->actionShowEnvelope->isChecked());
+  this->ui->actionPhaseDerivative->setEnabled(this->ui->actionShowEnvelope->isChecked());
 }
 
 void
@@ -734,4 +776,20 @@ TimeWindow::onShowPhase(void)
 {
   this->ui->realWaveform->setShowPhase(this->ui->actionShowPhase->isChecked());
   this->ui->imagWaveform->setShowPhase(this->ui->actionShowPhase->isChecked());
+}
+
+void
+TimeWindow::onPhaseDerivative(void)
+{
+  this->ui->realWaveform->setShowPhaseDiff(this->ui->actionPhaseDerivative->isChecked());
+  this->ui->imagWaveform->setShowPhaseDiff(this->ui->actionPhaseDerivative->isChecked());
+}
+
+void
+TimeWindow::onPaletteChanged(int index)
+{
+  this->ui->realWaveform->setPalette(
+        this->palettes[static_cast<unsigned>(index)].getGradient());
+  this->ui->imagWaveform->setPalette(
+        this->palettes[static_cast<unsigned>(index)].getGradient());
 }

@@ -87,12 +87,13 @@
    <addaction name="actionShowWaveform"/>
    <addaction name="actionShowEnvelope"/>
    <addaction name="actionShowPhase"/>
+   <addaction name="actionPhaseDerivative"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="minimumSize">
     <size>
      <width>300</width>
-     <height>499</height>
+     <height>554</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -128,14 +129,14 @@
        </property>
       </widget>
      </item>
-     <item row="18" column="0">
+     <item row="19" column="0">
       <widget class="QLabel" name="label_20">
        <property name="text">
         <string>Max Q</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="0">
+     <item row="9" column="0">
       <widget class="QLabel" name="label_11">
        <property name="minimumSize">
         <size>
@@ -148,7 +149,7 @@
        </property>
       </widget>
      </item>
-     <item row="17" column="0">
+     <item row="18" column="0">
       <widget class="QLabel" name="label_19">
        <property name="text">
         <string>Mean Q</string>
@@ -189,7 +190,7 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
+     <item row="9" column="1">
       <widget class="QLabel" name="selEndLabel">
        <property name="minimumSize">
         <size>
@@ -210,7 +211,7 @@
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
+     <item row="12" column="1">
       <widget class="QLabel" name="baudLabel">
        <property name="minimumSize">
         <size>
@@ -231,7 +232,7 @@
        </property>
       </widget>
      </item>
-     <item row="13" column="0">
+     <item row="14" column="0">
       <widget class="QLabel" name="label_13">
        <property name="minimumSize">
         <size>
@@ -244,7 +245,7 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
+     <item row="10" column="0">
       <widget class="QLabel" name="label_12">
        <property name="minimumSize">
         <size>
@@ -257,7 +258,7 @@
        </property>
       </widget>
      </item>
-     <item row="13" column="1">
+     <item row="14" column="1">
       <widget class="QLabel" name="minILabel">
        <property name="minimumSize">
         <size>
@@ -278,7 +279,7 @@
        </property>
       </widget>
      </item>
-     <item row="21" column="1">
+     <item row="22" column="1">
       <widget class="QLabel" name="rmsLabel">
        <property name="minimumSize">
         <size>
@@ -320,7 +321,7 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="1">
+     <item row="10" column="1">
       <widget class="QLabel" name="selLengthLabel">
        <property name="minimumSize">
         <size>
@@ -341,21 +342,63 @@
        </property>
       </widget>
      </item>
-     <item row="16" column="0">
+     <item row="15" column="1">
+      <widget class="QLabel" name="meanILabel">
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="17" column="0">
       <widget class="QLabel" name="label_18">
        <property name="text">
         <string>Min Q</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="0" colspan="2">
+     <item row="13" column="0" colspan="2">
       <widget class="Line" name="line_3">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="15" column="0">
+     <item row="17" column="1">
+      <widget class="QLabel" name="minQLabel">
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="18" column="1">
+      <widget class="QLabel" name="meanQLabel">
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="16" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Max I</string>
@@ -506,6 +549,8 @@
           <property name="font">
            <font>
             <family>Monospace</family>
+            <weight>50</weight>
+            <bold>false</bold>
            </font>
           </property>
           <property name="text">
@@ -514,6 +559,41 @@
          </widget>
         </item>
        </layout>
+      </widget>
+     </item>
+     <item row="19" column="1">
+      <widget class="QLabel" name="maxQLabel">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <pointsize>9</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="16" column="1">
+      <widget class="QLabel" name="maxILabel">
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
       </widget>
      </item>
      <item row="6" column="1">
@@ -544,7 +624,7 @@
        </property>
       </widget>
      </item>
-     <item row="22" column="0">
+     <item row="23" column="0">
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -570,7 +650,7 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="label_10">
        <property name="minimumSize">
         <size>
@@ -583,7 +663,7 @@
        </property>
       </widget>
      </item>
-     <item row="21" column="0">
+     <item row="22" column="0">
       <widget class="QLabel" name="label_15">
        <property name="minimumSize">
         <size>
@@ -624,7 +704,7 @@
        </property>
       </widget>
      </item>
-     <item row="14" column="0">
+     <item row="15" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Mean I</string>
@@ -638,7 +718,7 @@
        </property>
       </widget>
      </item>
-     <item row="11" column="0">
+     <item row="12" column="0">
       <widget class="QLabel" name="label_16">
        <property name="minimumSize">
         <size>
@@ -654,7 +734,7 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
+     <item row="11" column="0">
       <widget class="QLabel" name="label_17">
        <property name="minimumSize">
         <size>
@@ -670,7 +750,7 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
+     <item row="11" column="1">
       <widget class="QLabel" name="periodLabel">
        <property name="minimumSize">
         <size>
@@ -704,7 +784,7 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
+     <item row="8" column="1">
       <widget class="QLabel" name="selStartLabel">
        <property name="minimumSize">
         <size>
@@ -725,72 +805,20 @@
        </property>
       </widget>
      </item>
-     <item row="16" column="1">
-      <widget class="QLabel" name="minQLabel">
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-        </font>
-       </property>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>0</string>
+        <string>Palette</string>
        </property>
       </widget>
      </item>
-     <item row="18" column="1">
-      <widget class="QLabel" name="maxQLabel">
-       <property name="minimumSize">
+     <item row="7" column="1">
+      <widget class="QComboBox" name="paletteCombo">
+       <property name="maximumSize">
         <size>
-         <width>0</width>
-         <height>0</height>
+         <width>16777215</width>
+         <height>10000</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-         <pointsize>9</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="14" column="1">
-      <widget class="QLabel" name="meanILabel">
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-        </font>
-       </property>
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="15" column="1">
-      <widget class="QLabel" name="maxILabel">
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-        </font>
-       </property>
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="17" column="1">
-      <widget class="QLabel" name="meanQLabel">
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-        </font>
-       </property>
-       <property name="text">
-        <string>0</string>
        </property>
       </widget>
      </item>
@@ -898,8 +926,22 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Show phase</string>
+   </property>
+  </action>
+  <action name="actionPhaseDerivative">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Phase derivative</string>
    </property>
   </action>
  </widget>
