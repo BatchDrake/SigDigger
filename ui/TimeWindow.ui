@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1037</width>
-    <height>728</height>
+    <height>729</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -93,7 +93,7 @@
    <property name="minimumSize">
     <size>
      <width>300</width>
-     <height>554</height>
+     <height>689</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -122,37 +122,63 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="6" column="0">
-      <widget class="QCheckBox" name="periodicSelectionCheck">
-       <property name="text">
-        <string>Periodic selection</string>
+     <item row="6" column="1">
+      <widget class="QDoubleSpinBox" name="refFreqSpin">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="suffix">
+        <string> Hz</string>
+       </property>
+       <property name="maximum">
+        <double>18000000000.000000000000000</double>
        </property>
       </widget>
      </item>
-     <item row="19" column="0">
-      <widget class="QLabel" name="label_20">
+     <item row="25" column="1">
+      <widget class="QLabel" name="meanQLabel">
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
        <property name="text">
-        <string>Max Q</string>
+        <string>0</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
-      <widget class="QLabel" name="label_11">
+     <item row="10" column="0" colspan="2">
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="18" column="1">
+      <widget class="QLabel" name="periodLabel">
        <property name="minimumSize">
         <size>
          <width>0</width>
          <height>0</height>
         </size>
        </property>
-       <property name="text">
-        <string>Selection end</string>
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <pointsize>9</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
        </property>
-      </widget>
-     </item>
-     <item row="18" column="0">
-      <widget class="QLabel" name="label_19">
        <property name="text">
-        <string>Mean Q</string>
+        <string>N/A</string>
        </property>
       </widget>
      </item>
@@ -169,49 +195,21 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="QLabel" name="lengthLabel">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-         <pointsize>9</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
+     <item row="11" column="0">
+      <widget class="QCheckBox" name="periodicSelectionCheck">
        <property name="text">
-        <string>0 samples</string>
+        <string>Periodic selection</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="1">
-      <widget class="QLabel" name="selEndLabel">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-         <pointsize>9</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>0 ms (0)</string>
+     <item row="20" column="0" colspan="2">
+      <widget class="Line" name="line_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
+     <item row="19" column="1">
       <widget class="QLabel" name="baudLabel">
        <property name="minimumSize">
         <size>
@@ -232,34 +230,15 @@
        </property>
       </widget>
      </item>
-     <item row="14" column="0">
-      <widget class="QLabel" name="label_13">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_14">
        <property name="text">
-        <string>Min I</string>
+        <string>Center frequency</string>
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
-      <widget class="QLabel" name="label_12">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Selection length</string>
-       </property>
-      </widget>
-     </item>
-     <item row="14" column="1">
-      <widget class="QLabel" name="minILabel">
+     <item row="15" column="1">
+      <widget class="QLabel" name="selStartLabel">
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -275,28 +254,7 @@
         </font>
        </property>
        <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="22" column="1">
-      <widget class="QLabel" name="rmsLabel">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-         <pointsize>9</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>0</string>
+        <string>0 ms (0)</string>
        </property>
       </widget>
      </item>
@@ -321,7 +279,38 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
+     <item row="16" column="1">
+      <widget class="QLabel" name="selEndLabel">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <pointsize>9</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>0 ms (0)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QComboBox" name="paletteCombo">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>10000</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="17" column="1">
       <widget class="QLabel" name="selLengthLabel">
        <property name="minimumSize">
         <size>
@@ -342,8 +331,8 @@
        </property>
       </widget>
      </item>
-     <item row="15" column="1">
-      <widget class="QLabel" name="meanILabel">
+     <item row="23" column="1">
+      <widget class="QLabel" name="maxILabel">
        <property name="font">
         <font>
          <family>Monospace</family>
@@ -356,52 +345,17 @@
        </property>
       </widget>
      </item>
-     <item row="17" column="0">
-      <widget class="QLabel" name="label_18">
-       <property name="text">
-        <string>Min Q</string>
-       </property>
-      </widget>
-     </item>
-     <item row="13" column="0" colspan="2">
-      <widget class="Line" name="line_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="17" column="1">
-      <widget class="QLabel" name="minQLabel">
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="18" column="1">
-      <widget class="QLabel" name="meanQLabel">
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="16" column="0">
+     <item row="23" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Max I</string>
+       </property>
+      </widget>
+     </item>
+     <item row="22" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Mean I</string>
        </property>
       </widget>
      </item>
@@ -435,48 +389,6 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <item row="2" column="2">
-         <widget class="QLabel" name="iLabel">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <family>Monospace</family>
-            <pointsize>9</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLabel" name="label_9">
-          <property name="text">
-           <string>Position</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QLabel" name="label_7">
-          <property name="text">
-           <string>Quadrature</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>In-Phase</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="0" rowspan="3">
          <widget class="Constellation" name="constellation">
           <property name="minimumSize">
@@ -507,25 +419,15 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="2">
-         <widget class="QLabel" name="positionLabel">
+        <item row="5" column="2">
+         <widget class="QLabel" name="freqShiftLabel">
           <property name="font">
            <font>
             <family>Monospace</family>
-            <pointsize>9</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
            </font>
           </property>
           <property name="text">
-           <string>0 ms</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0" colspan="2">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Mag (phase)</string>
+           <string>0 Hz</string>
           </property>
          </widget>
         </item>
@@ -544,6 +446,77 @@
           </property>
          </widget>
         </item>
+        <item row="4" column="0" colspan="2">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Mag (phase)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>In-Phase</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Quadrature</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="positionLabel">
+          <property name="font">
+           <font>
+            <family>Monospace</family>
+            <pointsize>9</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>0 ms</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QLabel" name="iLabel">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Monospace</family>
+            <pointsize>9</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="2">
+         <widget class="QLabel" name="label_23">
+          <property name="text">
+           <string>Frequency shift</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>Position</string>
+          </property>
+         </widget>
+        </item>
         <item row="3" column="2">
          <widget class="QLabel" name="qLabel">
           <property name="font">
@@ -558,11 +531,56 @@
           </property>
          </widget>
         </item>
+        <item row="6" column="2">
+         <widget class="QLabel" name="dopplerShiftLabel">
+          <property name="font">
+           <font>
+            <family>Monospace</family>
+           </font>
+          </property>
+          <property name="text">
+           <string>0 m/s</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="2">
+         <widget class="QLabel" name="label_25">
+          <property name="text">
+           <string>Doppler shift</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
-     <item row="19" column="1">
-      <widget class="QLabel" name="maxQLabel">
+     <item row="15" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Selection start</string>
+       </property>
+      </widget>
+     </item>
+     <item row="17" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Selection length</string>
+       </property>
+      </widget>
+     </item>
+     <item row="29" column="1">
+      <widget class="QLabel" name="rmsLabel">
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -582,8 +600,8 @@
        </property>
       </widget>
      </item>
-     <item row="16" column="1">
-      <widget class="QLabel" name="maxILabel">
+     <item row="22" column="1">
+      <widget class="QLabel" name="meanILabel">
        <property name="font">
         <font>
          <family>Monospace</family>
@@ -596,7 +614,35 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="24" column="0">
+      <widget class="QLabel" name="label_18">
+       <property name="text">
+        <string>Min Q</string>
+       </property>
+      </widget>
+     </item>
+     <item row="21" column="1">
+      <widget class="QLabel" name="minILabel">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <pointsize>9</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1">
       <widget class="QSpinBox" name="periodicDivisionsSpin">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -624,18 +670,44 @@
        </property>
       </widget>
      </item>
-     <item row="23" column="0">
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+     <item row="5" column="1">
+      <widget class="QLabel" name="centerFreqLabel">
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+        </font>
        </property>
-       <property name="sizeHint" stdset="0">
+       <property name="text">
+        <string>0 Hz</string>
+       </property>
+      </widget>
+     </item>
+     <item row="16" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="minimumSize">
         <size>
-         <width>20</width>
-         <height>288</height>
+         <width>0</width>
+         <height>0</height>
         </size>
        </property>
-      </spacer>
+       <property name="text">
+        <string>Selection end</string>
+       </property>
+      </widget>
+     </item>
+     <item row="24" column="1">
+      <widget class="QLabel" name="minQLabel">
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
      </item>
      <item row="4" column="0">
       <widget class="QLabel" name="label_3">
@@ -650,20 +722,7 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Selection start</string>
-       </property>
-      </widget>
-     </item>
-     <item row="22" column="0">
+     <item row="29" column="0">
       <widget class="QLabel" name="label_15">
        <property name="minimumSize">
         <size>
@@ -676,10 +735,30 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0" colspan="2">
-      <widget class="Line" name="line2">
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_22">
+       <property name="text">
+        <string>Reference frequency</string>
+       </property>
+      </widget>
+     </item>
+     <item row="30" column="0">
+      <spacer name="verticalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>288</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="26" column="0">
+      <widget class="QLabel" name="label_20">
+       <property name="text">
+        <string>Max Q</string>
        </property>
       </widget>
      </item>
@@ -704,21 +783,7 @@
        </property>
       </widget>
      </item>
-     <item row="15" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Mean I</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0" colspan="2">
-      <widget class="Line" name="line">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="12" column="0">
+     <item row="19" column="0">
       <widget class="QLabel" name="label_16">
        <property name="minimumSize">
         <size>
@@ -727,15 +792,22 @@
         </size>
        </property>
        <property name="text">
-        <string>Freq</string>
+        <string>Selection freq</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
-     <item row="11" column="0">
-      <widget class="QLabel" name="label_17">
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Palette</string>
+       </property>
+      </widget>
+     </item>
+     <item row="21" column="0">
+      <widget class="QLabel" name="label_13">
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -743,15 +815,12 @@
         </size>
        </property>
        <property name="text">
-        <string>ΔT</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        <string>Min I</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
-      <widget class="QLabel" name="periodLabel">
+     <item row="26" column="1">
+      <widget class="QLabel" name="maxQLabel">
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -767,7 +836,14 @@
         </font>
        </property>
        <property name="text">
-        <string>N/A</string>
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="25" column="0">
+      <widget class="QLabel" name="label_19">
+       <property name="text">
+        <string>Mean Q</string>
        </property>
       </widget>
      </item>
@@ -784,8 +860,8 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
-      <widget class="QLabel" name="selStartLabel">
+     <item row="4" column="1">
+      <widget class="QLabel" name="lengthLabel">
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -801,24 +877,53 @@
         </font>
        </property>
        <property name="text">
-        <string>0 ms (0)</string>
+        <string>0 samples</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Palette</string>
+     <item row="1" column="0" colspan="2">
+      <widget class="Line" name="line2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
-      <widget class="QComboBox" name="paletteCombo">
-       <property name="maximumSize">
+     <item row="18" column="0">
+      <widget class="QLabel" name="label_17">
+       <property name="minimumSize">
         <size>
-         <width>16777215</width>
-         <height>10000</height>
+         <width>0</width>
+         <height>0</height>
         </size>
+       </property>
+       <property name="text">
+        <string>Selection ΔT</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Palette origin</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QSlider" name="offsetSlider">
+       <property name="maximum">
+        <number>255</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="invertedControls">
+        <bool>false</bool>
+       </property>
+       <property name="tickPosition">
+        <enum>QSlider::TicksBelow</enum>
        </property>
       </widget>
      </item>

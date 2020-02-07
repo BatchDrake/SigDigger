@@ -39,6 +39,8 @@ namespace SigDigger {
     SUCOMPLEX min;
     SUCOMPLEX max;
     SUCOMPLEX mean;
+    qreal     fs;
+    SUFREQ    centerFreq;
     SUFLOAT   rms;
 
     std::vector<Palette> palettes;
@@ -61,6 +63,7 @@ namespace SigDigger {
     static QString formatComplex(SUCOMPLEX const &z);
     static QString formatScientific(qreal real);
     static QString formatReal(qreal real);
+    static QString formatIntegerPart(qreal real);
 
     bool exportToFile(QString const &path, int start, int end);
     void recalcLimits(void);
@@ -72,6 +75,7 @@ namespace SigDigger {
     explicit TimeWindow(QWidget *parent = nullptr);
     ~TimeWindow();
 
+    void setCenterFreq(SUFREQ center);
     void setData(std::vector<SUCOMPLEX> const &data, qreal fs);
 
   public slots:
@@ -99,6 +103,7 @@ namespace SigDigger {
     void onShowPhase(void);
     void onPhaseDerivative(void);
     void onPaletteChanged(int);
+    void onChangePaletteOffset(int);
 
   private:
     Ui::TimeWindow *ui;

@@ -126,6 +126,7 @@ void
 InspectorPanel::setDemodFrequency(qint64 freq)
 {
   this->ui->inspectorChannelLabel->setText(QString::number(freq) + " Hz");
+  this->demodFreq = freq;
 }
 
 void
@@ -271,6 +272,7 @@ InspectorPanel::onReleaseHold(void)
 
   if (this->data.size() > 0) {
     this->timeWindow->setData(this->data, this->timeWindowFs);
+    this->timeWindow->setCenterFreq(this->demodFreq);
     this->timeWindow->show();
     this->timeWindow->setFocus();
     this->timeWindow->onFit();

@@ -21,6 +21,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <Suscan/Library.h>
+#include <sigutils/sampling.h>
 #include <fstream>
 #include <iomanip>
 #include "ui_TimeWindow.h"
@@ -183,6 +184,12 @@ TimeWindow::connectAll(void)
         SIGNAL(activated(int)),
         this,
         SLOT(onPaletteChanged(int)));
+
+  connect(
+        this->ui->offsetSlider,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onChangePaletteOffset(int)));
 }
 
 int
@@ -390,8 +397,17 @@ TimeWindow::deserializePalettes(void)
 }
 
 void
+TimeWindow::setCenterFreq(SUFREQ center)
+{
+  this->centerFreq = center;
+  this->ui->centerFreqLabel->setText(formatIntegerPart(center) + " Hz");
+  this->ui->refFreqSpin->setValue(center);
+}
+
+void
 TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs)
 {
+  this->fs = fs;
   this->ui->realWaveform->setData(&data);
   this->ui->realWaveform->setSampleRate(fs);
 
@@ -516,6 +532,16 @@ TimeWindow::formatReal(qreal real)
   return QString(string);
 }
 
+QString
+TimeWindow::formatIntegerPart(qreal real)
+{
+  char string[32];
+
+  snprintf(string, 32, "%lli", static_cast<qint64>(std::floor(real)));
+
+  return QString(string);
+}
+
 void
 TimeWindow::onHoverTime(qreal time)
 {
@@ -587,6 +613,19 @@ TimeWindow::onHoverTime(qreal time)
         + "("
         + formatReal(SU_C_ARG(val) / M_PI * 180)
         + "º)");
+
+  // Frequency calculations
+  if (iSamp >= 1 && iSamp < length) {
+    SUFLOAT normFreq = SU_ANG2NORM_FREQ(SU_C_ARG(data[iSamp] * SU_C_CONJ(data[iSamp - 1])));
+    SUFREQ freq = SU_NORM2ABS_FREQ(this->fs, normFreq);
+    SUFREQ ifFreq = this->ui->refFreqSpin->value() - this->centerFreq;
+    SUFREQ doppler = -3e8 / this->centerFreq * (freq - ifFreq);
+    this->ui->freqShiftLabel->setText(formatIntegerPart(freq) + " Hz");
+    this->ui->dopplerShiftLabel->setText(Waveform::formatLabel(doppler, "m/s"));
+  } else {
+    this->ui->freqShiftLabel->setText("N/A");
+    this->ui->dopplerShiftLabel->setText("N/A");
+  }
 }
 
 void
@@ -776,6 +815,7 @@ TimeWindow::onShowPhase(void)
 {
   this->ui->realWaveform->setShowPhase(this->ui->actionShowPhase->isChecked());
   this->ui->imagWaveform->setShowPhase(this->ui->actionShowPhase->isChecked());
+  this->ui->actionPhaseDerivative->setEnabled(this->ui->actionShowPhase->isChecked());
 }
 
 void
@@ -793,3 +833,11 @@ TimeWindow::onPaletteChanged(int index)
   this->ui->imagWaveform->setPalette(
         this->palettes[static_cast<unsigned>(index)].getGradient());
 }
+
+void
+TimeWindow::onChangePaletteOffset(int val)
+{
+  this->ui->realWaveform->setPhaseDiffOrigin(static_cast<unsigned>(val));
+  this->ui->imagWaveform->setPhaseDiffOrigin(static_cast<unsigned>(val));
+}
+

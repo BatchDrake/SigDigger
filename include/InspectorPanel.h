@@ -55,6 +55,7 @@ namespace SigDigger {
     // TODO: Allow multiple TimeWindows
     TimeWindow *timeWindow = nullptr;
     qreal timeWindowFs = 1;
+    qint64 demodFreq = 0;
 
     // UI State
     State state = DETACHED;

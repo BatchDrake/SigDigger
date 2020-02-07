@@ -325,6 +325,9 @@ Application::getAudioInspectorBandwidth(void) const
 {
   SUFREQ bw = this->ui.spectrum->getBandwidth();
 
+  if (this->ui.audioPanel->getDemod() > 1)
+    bw *= .5;
+
   if (bw > this->maxAudioBw)
     bw = this->maxAudioBw;
   else if (bw < 1)
@@ -338,13 +341,14 @@ Application::getAudioInspectorLo(void) const
 {
   SUFREQ lo = this->ui.spectrum->getLoFreq();
   SUFREQ bw = this->getAudioInspectorBandwidth();
+  SUFREQ delta = 0;
 
   if (this->ui.audioPanel->getDemod() == AudioDemod::USB)
-    lo += .5 * bw;
+    delta += .5 * bw;
   else if (this->ui.audioPanel->getDemod() == AudioDemod::LSB)
-    lo -= .5 * bw;
+    delta -= .5 * bw;
 
-  return lo;
+  return lo + delta;
 }
 
 
@@ -699,6 +703,7 @@ Application::startCapture(void)
 
       // Ensure we run this analyzer in channel mode.
       params.mode = Suscan::AnalyzerParams::Mode::CHANNEL;
+
       analyzer = std::make_unique<Suscan::Analyzer>(
             params,
             *this->mediator->getProfile());
@@ -1364,8 +1369,10 @@ Application::onDetectFinished(void)
 void
 Application::onBandwidthChanged(void)
 {
-  if (this->mediator->getState() == UIMediator::RUNNING)
+  if (this->mediator->getState() == UIMediator::RUNNING) {
     this->analyzer->setBandwidth(this->mediator->getProfile()->getBandwidth());
+    this->assertAudioInspectorLo();
+  }
 }
 
 void

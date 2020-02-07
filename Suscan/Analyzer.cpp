@@ -327,25 +327,23 @@ Analyzer::setInspectorId(Handle handle, InspectorId id, RequestId req_id)
 }
 
 void
-Analyzer::setInspectorFreq(Handle handle, SUFREQ freq, RequestId req_id)
+Analyzer::setInspectorFreq(Handle handle, SUFREQ freq, RequestId)
 {
   SU_ATTEMPT(
-        suscan_analyzer_set_inspector_freq_async(
+        suscan_analyzer_set_inspector_freq_overridable(
           this->instance,
           handle,
-          freq,
-          req_id));
+          freq));
 }
 
 void
-Analyzer::setInspectorBandwidth(Handle handle, SUFREQ bw, RequestId req_id)
+Analyzer::setInspectorBandwidth(Handle handle, SUFREQ bw, RequestId)
 {
   SU_ATTEMPT(
-        suscan_analyzer_set_inspector_bandwidth_async(
+        suscan_analyzer_set_inspector_bandwidth_overridable(
           this->instance,
           handle,
-          bw,
-          req_id));
+          bw));
 }
 
 void

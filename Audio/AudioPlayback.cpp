@@ -41,14 +41,15 @@ void
 PlaybackWorker::play(void)
 {
   float *buffer;
-
   while (!this->halting && (buffer = this->instance->next()) != nullptr) {
     long err;
     err = snd_pcm_writei(this->pcm, buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
 
     if (err == -EPIPE) {
+      usleep(100000);
       snd_pcm_prepare(this->pcm);
       err = snd_pcm_writei(this->pcm, buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
+
     }
 
     // Done with this buffer, mark as free.
