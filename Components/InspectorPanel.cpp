@@ -36,6 +36,8 @@ InspectorPanelConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(inspectorClass);
   LOAD(precise);
+  LOAD(palette);
+  LOAD(paletteOffset);
 }
 
 Suscan::Object &&
@@ -47,6 +49,8 @@ InspectorPanelConfig::serialize(void)
 
   STORE(inspectorClass);
   STORE(precise);
+  STORE(palette);
+  STORE(paletteOffset);
 
   return this->persist(obj);
 }
@@ -63,6 +67,15 @@ InspectorPanel::applyConfig(void)
 {
   this->setInspectorClass(this->panelConfig->inspectorClass);
   this->setPrecise(this->panelConfig->precise);
+  this->timeWindow->setPalette(this->panelConfig->palette);
+  this->timeWindow->setPaletteOffset(this->panelConfig->paletteOffset);
+
+  // Track changes now
+  connect(
+        this->timeWindow,
+        SIGNAL(configChanged(void)),
+        this,
+        SLOT(onTimeWindowConfigChanged(void)));
 }
 
 void
@@ -144,6 +157,12 @@ InspectorPanel::setDemodFrequency(qint64 freq)
 {
   this->ui->inspectorChannelLabel->setText(QString::number(freq) + " Hz");
   this->demodFreq = freq;
+}
+
+void
+InspectorPanel::setColorConfig(ColorConfig const &config)
+{
+  this->timeWindow->setColorConfig(config);
 }
 
 void
@@ -492,4 +511,11 @@ InspectorPanel::onReleaseHold(void)
 
   if (this->data.size() > 0)
     this->openTimeWindow();
+}
+
+void
+InspectorPanel::onTimeWindowConfigChanged(void)
+{
+  this->panelConfig->palette = this->timeWindow->getPalette();
+  this->panelConfig->paletteOffset = this->timeWindow->getPaletteOffset();
 }

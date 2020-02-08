@@ -21,6 +21,7 @@
 
 #include <PersistentWidget.h>
 #include <TimeWindow.h>
+#include <ColorConfig.h>
 
 #define SIGDIGGER_DEFAULT_SQUELCH_THRESHOLD  10
 #define SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS 100.
@@ -33,6 +34,8 @@ namespace SigDigger {
   class InspectorPanelConfig : public Suscan::Serializable {
   public:
     std::string inspectorClass = "psk";
+    std::string palette = "Suscan";
+    unsigned int paletteOffset;
     bool precise = false;
 
     // Overriden methods
@@ -94,6 +97,7 @@ namespace SigDigger {
     void postLoadInit(void);
     ~InspectorPanel() override;
 
+    void setColorConfig(ColorConfig const &);
     void setDemodFrequency(qint64);
     void setBandwidthLimits(unsigned int min, unsigned int max);
     void setBandwidth(unsigned int freq);
@@ -122,6 +126,8 @@ namespace SigDigger {
     void onPressAutoSquelch(void);
     void onReleaseAutoSquelch(void);
     void onToggleAutoSquelch(void);
+
+    void onTimeWindowConfigChanged(void);
 
   signals:
     void bandwidthChanged(int);

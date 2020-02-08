@@ -21,6 +21,7 @@
 
 #include <QMainWindow>
 #include <sigutils/types.h>
+#include "ColorConfig.h"
 #include "Palette.h"
 
 #define TIME_WINDOW_MAX_SELECTION 4096
@@ -77,6 +78,15 @@ namespace SigDigger {
 
     void setCenterFreq(SUFREQ center);
     void setData(std::vector<SUCOMPLEX> const &data, qreal fs);
+    void setPalette(std::string const &);
+    void setPaletteOffset(unsigned int);
+    void setColorConfig(ColorConfig const &);
+
+    std::string getPalette(void) const;
+    unsigned int getPaletteOffset(void) const;
+
+  signals:
+    void configChanged();
 
   public slots:
     void onHZoom(qint64 min, qint64 max);

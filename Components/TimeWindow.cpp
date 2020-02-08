@@ -260,6 +260,61 @@ TimeWindow::calcLimits(
 }
 
 void
+TimeWindow::setPalette(std::string const &name)
+{
+  int ndx = 0;
+
+  for (auto p : this->palettes) {
+    if (p.getName() == name) {
+      this->ui->paletteCombo->setCurrentIndex(ndx);
+      this->onPaletteChanged(ndx);
+      break;
+    }
+    ++ndx;
+  }
+}
+
+void
+TimeWindow::setPaletteOffset(unsigned int offset)
+{
+  if (offset > 255)
+    offset = 255;
+  this->ui->offsetSlider->setValue(static_cast<int>(offset));
+  this->onChangePaletteOffset(static_cast<int>(offset));
+}
+
+void
+TimeWindow::setColorConfig(ColorConfig const &cfg)
+{
+  this->ui->realWaveform->setBackgroundColor(cfg.spectrumBackground);
+  this->ui->realWaveform->setForegroundColor(cfg.spectrumForeground);
+  this->ui->realWaveform->setAxesColor(cfg.spectrumAxes);
+  this->ui->realWaveform->setTextColor(cfg.spectrumText);
+
+  this->ui->imagWaveform->setBackgroundColor(cfg.spectrumBackground);
+  this->ui->imagWaveform->setForegroundColor(cfg.spectrumForeground);
+  this->ui->imagWaveform->setAxesColor(cfg.spectrumAxes);
+  this->ui->imagWaveform->setTextColor(cfg.spectrumText);
+}
+
+std::string
+TimeWindow::getPalette(void) const
+{
+  if (this->ui->paletteCombo->currentIndex() < 0
+      || this->ui->paletteCombo->currentIndex() >= this->palettes.size())
+    return "Suscan";
+
+  return this->palettes[this->ui->paletteCombo->currentIndex()].getName();
+}
+
+unsigned int
+TimeWindow::getPaletteOffset(void) const
+{
+  return this->ui->offsetSlider->value();
+}
+
+
+void
 TimeWindow::recalcLimits(void)
 {
   const SUCOMPLEX *data = this->ui->realWaveform->getData();
@@ -394,6 +449,8 @@ TimeWindow::deserializePalettes(void)
           QVariant::fromValue(ndx));
     ++ndx;
   }
+
+  this->onPaletteChanged(0);
 }
 
 void
@@ -832,6 +889,8 @@ TimeWindow::onPaletteChanged(int index)
         this->palettes[static_cast<unsigned>(index)].getGradient());
   this->ui->imagWaveform->setPalette(
         this->palettes[static_cast<unsigned>(index)].getGradient());
+
+  emit configChanged();
 }
 
 void
@@ -839,5 +898,7 @@ TimeWindow::onChangePaletteOffset(int val)
 {
   this->ui->realWaveform->setPhaseDiffOrigin(static_cast<unsigned>(val));
   this->ui->imagWaveform->setPhaseDiffOrigin(static_cast<unsigned>(val));
+
+  emit configChanged();
 }
 
