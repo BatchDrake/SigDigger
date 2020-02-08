@@ -217,6 +217,8 @@ Singleton::init_fats(void)
   ConfigContext ctx("frequency_allocations");
   Object list = ctx.listObject();
 
+  ctx.setSave(false);
+
   count = list.length();
 
   for (i = 0; i < count; ++i) {
