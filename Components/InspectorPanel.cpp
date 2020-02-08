@@ -98,6 +98,23 @@ InspectorPanel::connectAll(void)
         this,
         SLOT(onReleaseHold(void)));
 
+  connect(
+        this->ui->autoSquelchButton,
+        SIGNAL(pressed(void)),
+        this,
+        SLOT(onPressAutoSquelch(void)));
+
+  connect(
+        this->ui->autoSquelchButton,
+        SIGNAL(released(void)),
+        this,
+        SLOT(onReleaseAutoSquelch(void)));
+
+  connect(
+        this->ui->autoSquelchButton,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onToggleAutoSquelch(void)));
 }
 
 void
@@ -203,6 +220,10 @@ void
 InspectorPanel::resetRawInspector(qreal fs)
 {
   this->timeWindowFs = fs;
+  this->uiRefreshSamples =
+      SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS * 1e-3 / this->timeWindowFs;
+  this->maxSamples = this->ui->maxMemSpin->value() * (1 << 20) / sizeof(SUCOMPLEX);
+  this->ui->hangTimeSpin->setMinimum(std::ceil(1e3 / fs));
   this->data.resize(0);
   this->ui->sampleRateLabel->setText(
         SourcePanel::formatSampleRate(static_cast<unsigned>(fs)));
@@ -211,15 +232,177 @@ InspectorPanel::resetRawInspector(qreal fs)
 }
 
 void
+InspectorPanel::refreshCaptureInfo(void)
+{
+  this->ui->durationLabel->setText(
+        Waveform::formatLabel(this->data.size() / this->timeWindowFs, "s"));
+  this->ui->memoryLabel->setText(
+        DataSaverUI::formatCaptureSize(this->data.size() * sizeof(SUCOMPLEX)));
+}
+
+SUFLOAT
+InspectorPanel::getHistoryPower(void) const
+{
+  SUFLOAT accum = 0;
+
+  for (auto p : this->powerHistory)
+    accum += p;
+
+  return SU_POWER_DB(
+        this->timeWindowFs * accum
+        / (this->powerHistory.size()));
+}
+
+void
+InspectorPanel::transferHistory(void)
+{
+  // Insert older samples
+  this->data.insert(
+        this->data.end(),
+        this->powerHistory.begin() + this->powerHistoryPtr,
+        this->powerHistory.end());
+
+  // Insert newer samples
+  this->data.insert(
+        this->data.end(),
+        this->powerHistory.begin(),
+        this->powerHistory.begin() + this->powerHistoryPtr);
+}
+
+void
 InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
 {
+  this->totalSamples += size;
+  bool refreshUi =
+      this->totalSamples >= this->uiRefreshSamples;
+
+  if (refreshUi)
+    this->totalSamples -= this->uiRefreshSamples;
+
   if (this->ui->captureButton->isDown()) {
+    // Manual capture
     this->data.insert(this->data.end(), data, data + size);
-    this->ui->durationLabel->setText(
-          Waveform::formatLabel(this->data.size() / this->timeWindowFs, "s"));
-    this->ui->memoryLabel->setText(
-          DataSaverUI::formatCaptureSize(this->data.size() * sizeof(SUCOMPLEX)));
+    if (refreshUi)
+      this->refreshCaptureInfo();
+  } else if (this->autoSquelch) {
+    SUFLOAT level;
+
+    // Power measure.
+    if (this->ui->autoSquelchButton->isDown()) {
+      SUFLOAT sum = this->powerAccum;
+      SUFLOAT y = 0;
+      SUFLOAT t;
+      SUFLOAT err = this->powerError;
+
+
+      for (size_t i = 0; i < size; ++i) {
+        y = SU_C_REAL(data[i] * SU_C_CONJ(data[i])) - err;
+        t = sum + y;
+        err = (t - sum) - y;
+        sum = t;
+      }
+
+      this->powerAccum = sum;
+      this->powerError = err;
+      this->powerSamples += size;
+
+      level = SU_POWER_DB(this->timeWindowFs * this->powerAccum / (this->powerSamples));
+    } else {
+      for (size_t i = 0; i < size; ++i) {
+        this->powerHistory[this->powerHistoryPtr++]
+            = SU_C_REAL(data[i] * SU_C_CONJ(data[i]));
+        if (this->powerHistoryPtr == this->powerHistory.size())
+          this->powerHistoryPtr = 0;
+      }
+
+      level = this->getHistoryPower();
+    }
+
+    // NOT TRIGGERED: Sensing the channel
+    if (!this->autoSquelchTriggered) {
+      if (refreshUi)
+        this->ui->powerLabel->setText(
+            QString::number(.1 * std::floor(10 * level)) + " dB");
+      if (this->ui->autoSquelchButton->isDown()) {
+        // SQUELCH BUTTON DOWN: Measure noise
+        this->squelch = level + SIGDIGGER_DEFAULT_SQUELCH_THRESHOLD;
+        this->hangLevel = level + .5 * SIGDIGGER_DEFAULT_SQUELCH_THRESHOLD;
+        if (refreshUi)
+          this->ui->squelchLevelLabel->setText(
+              QString::number(.1 * std::floor(10 * this->squelch)) + " dB");
+      } else {
+        // SQUELCH BUTTON UP: Wait for signal
+        if (level >= this->squelch) {
+          this->transferHistory();
+          this->autoSquelchTriggered = true;
+          this->ui->autoSquelchButton->setText("Triggered!");
+        }
+      }
+    }
+
+    // TRIGGERED: Recording the channel
+    if (this->autoSquelchTriggered) {
+      this->data.insert(this->data.end(), data, data + size);
+      this->refreshCaptureInfo();
+      if (this->data.size() > this->measureSamples) {
+        if (level < this->hangLevel || this->data.size() > this->maxSamples) { // Hang!
+          this->cancelAutoSquelch();
+          this->openTimeWindow();
+        }
+      }
+    }
   }
+}
+
+void
+InspectorPanel::openTimeWindow(void)
+{
+  this->timeWindow->setData(this->data, this->timeWindowFs);
+  this->timeWindow->setCenterFreq(this->demodFreq);
+  this->timeWindow->show();
+  this->timeWindow->raise();
+  this->timeWindow->activateWindow();
+  this->timeWindow->setWindowState(Qt::WindowState::WindowActive);
+  this->timeWindow->onFit();
+
+  this->ui->sampleRateLabel->setText(
+        SourcePanel::formatSampleRate(static_cast<unsigned>(0)));
+  this->ui->durationLabel->setText(Waveform::formatLabel(0, "s"));
+  this->ui->memoryLabel->setText(DataSaverUI::formatCaptureSize(0));
+}
+
+void
+InspectorPanel::enableAutoSquelch(void)
+{
+  // Enable autoSquelch
+  this->autoSquelch = true;
+  this->powerAccum = this->powerError = this->powerSamples = 0;
+  this->powerHistoryPtr = 0;
+  this->ui->squelchLevelLabel->setEnabled(true);
+  this->ui->powerLabel->setEnabled(true);
+  this->ui->captureButton->setEnabled(false);
+  this->ui->autoSquelchButton->setChecked(this->autoSquelch);
+  this->ui->hangTimeSpin->setEnabled(false);
+  this->ui->maxMemSpin->setEnabled(false);
+  emit startRawCapture();
+}
+
+void
+InspectorPanel::cancelAutoSquelch(void)
+{
+  // Cancel autoSquelch
+  this->autoSquelch = false;
+  this->autoSquelchTriggered = false;
+  this->ui->squelchLevelLabel->setText("N/A");
+  this->ui->powerLabel->setText("N/A");
+  this->ui->squelchLevelLabel->setEnabled(false);
+  this->ui->powerLabel->setEnabled(false);
+  this->ui->captureButton->setEnabled(true);
+  this->ui->autoSquelchButton->setChecked(this->autoSquelch);
+  this->ui->hangTimeSpin->setEnabled(true);
+  this->ui->maxMemSpin->setEnabled(true);
+  this->ui->autoSquelchButton->setText("Autosquelch");
+  emit stopRawCapture();
 }
 
 InspectorPanel::InspectorPanel(QWidget *parent) :
@@ -260,6 +443,43 @@ InspectorPanel::onPreciseChanged(void)
 }
 
 void
+InspectorPanel::onPressAutoSquelch(void)
+{
+  if (!this->autoSquelch) {
+    this->enableAutoSquelch();
+    this->ui->autoSquelchButton->setText("Measuring...");
+  } else {
+    this->cancelAutoSquelch();
+    if (this->data.size() > 0)
+      this->openTimeWindow();
+  }
+}
+
+void
+InspectorPanel::onReleaseAutoSquelch(void)
+{
+  if (this->autoSquelch) {
+    if (this->powerSamples == 0) {
+      cancelAutoSquelch();
+    } else {
+      this->measureSamples =
+          1e-3 * this->ui->hangTimeSpin->value() * this->timeWindowFs;
+      this->powerHistory.resize(this->measureSamples);
+      std::fill(this->powerHistory.begin(), this->powerHistory.end(), 0);
+      this->powerAccum /= this->powerSamples;
+      this->powerSamples = 1;
+      this->ui->autoSquelchButton->setText("Waiting...");
+    }
+  }
+}
+
+void
+InspectorPanel::onToggleAutoSquelch(void)
+{
+  this->ui->autoSquelchButton->setChecked(this->autoSquelch);
+}
+
+void
 InspectorPanel::onPressHold(void)
 {
   emit startRawCapture();
@@ -270,16 +490,6 @@ InspectorPanel::onReleaseHold(void)
 {
   emit stopRawCapture();
 
-  if (this->data.size() > 0) {
-    this->timeWindow->setData(this->data, this->timeWindowFs);
-    this->timeWindow->setCenterFreq(this->demodFreq);
-    this->timeWindow->show();
-    this->timeWindow->setFocus();
-    this->timeWindow->onFit();
-
-    this->ui->sampleRateLabel->setText(
-          SourcePanel::formatSampleRate(static_cast<unsigned>(0)));
-    this->ui->durationLabel->setText(Waveform::formatLabel(0, "s"));
-    this->ui->memoryLabel->setText(DataSaverUI::formatCaptureSize(0));
-  }
+  if (this->data.size() > 0)
+    this->openTimeWindow();
 }

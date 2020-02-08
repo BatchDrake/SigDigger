@@ -22,6 +22,9 @@
 #include <PersistentWidget.h>
 #include <TimeWindow.h>
 
+#define SIGDIGGER_DEFAULT_SQUELCH_THRESHOLD  10
+#define SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS 100.
+
 namespace Ui {
   class InspectorPanel;
 }
@@ -56,16 +59,35 @@ namespace SigDigger {
     TimeWindow *timeWindow = nullptr;
     qreal timeWindowFs = 1;
     qint64 demodFreq = 0;
+    SUFLOAT squelch = 0;
+    SUFLOAT hangLevel = 0;
+    bool autoSquelch = false;
+    bool autoSquelchTriggered = false;
 
     // UI State
     State state = DETACHED;
 
+    std::vector<SUCOMPLEX> data;
+    std::vector<SUFLOAT> powerHistory;
+    unsigned int powerHistoryPtr = 0;
+    SUFLOAT  powerAccum = 0;
+    SUFLOAT  powerError = 0;
+    SUSCOUNT maxSamples = 0;
+    SUSCOUNT measureSamples = 0;
+    SUSCOUNT powerSamples = 0;
+    SUSCOUNT totalSamples = 0;
+    SUSCOUNT uiRefreshSamples = 0;
+
     // Private methods
     void connectAll(void);
     void refreshUi(void);
+    void enableAutoSquelch(void);
+    void cancelAutoSquelch(void);
     void setInspectorClass(std::string const &cls);
-
-    std::vector<SUCOMPLEX> data;
+    void refreshCaptureInfo(void);
+    void openTimeWindow(void);
+    SUFLOAT getHistoryPower(void) const;
+    void transferHistory(void);
 
   public:
     explicit InspectorPanel(QWidget *parent = nullptr);
@@ -96,6 +118,10 @@ namespace SigDigger {
     void onPreciseChanged(void);
     void onPressHold(void);
     void onReleaseHold(void);
+
+    void onPressAutoSquelch(void);
+    void onReleaseAutoSquelch(void);
+    void onToggleAutoSquelch(void);
 
   signals:
     void bandwidthChanged(int);
