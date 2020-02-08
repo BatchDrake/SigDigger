@@ -35,6 +35,18 @@ UIMediator::connectInspectorPanel(void)
         SIGNAL(requestOpenInspector(QString)),
         this,
         SLOT(onOpenInspector()));
+
+  connect(
+        this->ui->inspectorPanel,
+        SIGNAL(startRawCapture()),
+        this,
+        SLOT(onOpenRawInspector()));
+
+  connect(
+        this->ui->inspectorPanel,
+        SIGNAL(stopRawCapture()),
+        this,
+        SLOT(onCloseRawInspector()));
 }
 
 void
@@ -51,4 +63,17 @@ void
 UIMediator::onOpenInspector(void)
 {
   emit requestOpenInspector();
+}
+
+
+void
+UIMediator::onOpenRawInspector(void)
+{
+  emit requestOpenRawInspector();
+}
+
+void
+UIMediator::onCloseRawInspector(void)
+{
+  emit requestCloseRawInspector();
 }

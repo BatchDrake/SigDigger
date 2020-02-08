@@ -81,8 +81,8 @@ DataSaverUI::setSaveEnabled(bool enabled)
   this->ui->saveButton->setEnabled(enabled);
 }
 
-static QString
-formatCaptureSize(quint64 size)
+QString
+DataSaverUI::formatCaptureSize(quint64 size)
 {
   if (size < (1ull << 10))
     return QString::number(size) + " bytes";

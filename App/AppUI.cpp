@@ -44,6 +44,7 @@ AppUI::postLoadInit(QMainWindow *owner)
   this->fftPanel->deserializePalettes();  
   this->sourcePanel->deserializeAutoGains();
   this->spectrum->deserializeFATs();
+  this->inspectorPanel->postLoadInit();
 }
 
 AppUI::~AppUI(void)

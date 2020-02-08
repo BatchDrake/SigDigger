@@ -91,6 +91,8 @@ namespace SigDigger {
       void refreshUi(void);
 
     public:
+      static QString formatSampleRate(unsigned int rate);
+
       // Inlined methods
       enum State
       getState(void) const

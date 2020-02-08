@@ -138,6 +138,9 @@ namespace SigDigger {
     void setProfile(Suscan::Source::Config const &config);
     void setPanSpectrumRunning(bool state);
 
+    void resetRawInspector(qreal fs);
+    void feedRawInspector(const SUCOMPLEX *, size_t size);
+
     // Overriden methods
     Suscan::Serializable *allocConfig() override;
     void applyConfig(void) override;
@@ -166,7 +169,10 @@ namespace SigDigger {
 
     void saveStateChanged(void);
     void requestOpenInspector(void);
+    void requestOpenRawInspector(void);
     void inspectorClosed(Suscan::Handle handle);
+    void requestCloseRawInspector(void);
+
     void analyzerParamsChanged(void);
     void refreshDevices(void);
     void uiQuit(void);
@@ -238,6 +244,8 @@ namespace SigDigger {
     // Inspector
     void onInspBandwidthChanged(void);
     void onOpenInspector(void);
+    void onOpenRawInspector(void);
+    void onCloseRawInspector(void);
 
     // Device dialog
     void onRefreshDevices(void);

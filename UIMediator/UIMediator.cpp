@@ -358,6 +358,19 @@ UIMediator::setPanSpectrumRunning(bool running)
 }
 
 void
+UIMediator::resetRawInspector(qreal fs)
+{
+  this->ui->inspectorPanel->resetRawInspector(fs);
+}
+
+void
+UIMediator::feedRawInspector(const SUCOMPLEX *data, size_t size)
+{
+  this->ui->inspectorPanel->feedRawInspector(data, size);
+}
+
+
+void
 UIMediator::setMinPanSpectrumBw(quint64 bw)
 {
   this->ui->panoramicDialog->setMinBwForZoom(bw);
@@ -617,6 +630,7 @@ UIMediator::applyConfig(void)
   this->ui->configDialog->setColors(this->appConfig->colors);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
+  this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
   this->ui->fftPanel->setWindowFunction(this->appConfig->analyzerParams.windowFunction);
   this->ui->fftPanel->setFftSize(this->appConfig->analyzerParams.windowSize);  
   this->ui->fftPanel->setRefreshRate(
@@ -674,6 +688,7 @@ UIMediator::onTriggerSetup(bool)
     this->ui->fftPanel->setFftSize(this->getFftSize());
     this->appConfig->colors = this->ui->configDialog->getColors();
     this->ui->spectrum->setColorConfig(this->appConfig->colors);
+    this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
     this->setProfile(this->ui->configDialog->getProfile());
   }
 }

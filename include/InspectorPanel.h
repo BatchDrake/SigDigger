@@ -20,6 +20,11 @@
 #define INSPECTORPANEL_H
 
 #include <PersistentWidget.h>
+#include <TimeWindow.h>
+#include <ColorConfig.h>
+
+#define SIGDIGGER_DEFAULT_SQUELCH_THRESHOLD  10
+#define SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS 100.
 
 namespace Ui {
   class InspectorPanel;
@@ -29,6 +34,8 @@ namespace SigDigger {
   class InspectorPanelConfig : public Suscan::Serializable {
   public:
     std::string inspectorClass = "psk";
+    std::string palette = "Suscan";
+    unsigned int paletteOffset;
     bool precise = false;
 
     // Overriden methods
@@ -51,23 +58,54 @@ namespace SigDigger {
     // UI objects
     Ui::InspectorPanel *ui = nullptr;
 
+    // TODO: Allow multiple TimeWindows
+    TimeWindow *timeWindow = nullptr;
+    qreal timeWindowFs = 1;
+    qint64 demodFreq = 0;
+    SUFLOAT squelch = 0;
+    SUFLOAT hangLevel = 0;
+    bool autoSquelch = false;
+    bool autoSquelchTriggered = false;
+
     // UI State
     State state = DETACHED;
+
+    std::vector<SUCOMPLEX> data;
+    std::vector<SUFLOAT> powerHistory;
+    unsigned int powerHistoryPtr = 0;
+    SUFLOAT  powerAccum = 0;
+    SUFLOAT  powerError = 0;
+    SUSCOUNT maxSamples = 0;
+    SUSCOUNT measureSamples = 0;
+    SUSCOUNT powerSamples = 0;
+    SUSCOUNT totalSamples = 0;
+    SUSCOUNT uiRefreshSamples = 0;
 
     // Private methods
     void connectAll(void);
     void refreshUi(void);
+    void enableAutoSquelch(void);
+    void cancelAutoSquelch(void);
     void setInspectorClass(std::string const &cls);
+    void refreshCaptureInfo(void);
+    void openTimeWindow(void);
+    SUFLOAT getHistoryPower(void) const;
+    void transferHistory(void);
 
   public:
     explicit InspectorPanel(QWidget *parent = nullptr);
+    void postLoadInit(void);
     ~InspectorPanel() override;
 
+    void setColorConfig(ColorConfig const &);
     void setDemodFrequency(qint64);
     void setBandwidthLimits(unsigned int min, unsigned int max);
     void setBandwidth(unsigned int freq);
     void setPrecise(bool precise);
     void setState(enum State state);
+
+    void resetRawInspector(qreal sampleRate);
+    void feedRawInspector(const SUCOMPLEX *data, size_t size);
 
     unsigned int getBandwidth(void) const;
     std::string getInspectorClass(void) const;
@@ -82,11 +120,20 @@ namespace SigDigger {
     void onOpenInspector(void);
     void onBandwidthChanged(int);
     void onPreciseChanged(void);
+    void onPressHold(void);
+    void onReleaseHold(void);
+
+    void onPressAutoSquelch(void);
+    void onReleaseAutoSquelch(void);
+    void onToggleAutoSquelch(void);
+
+    void onTimeWindowConfigChanged(void);
 
   signals:
     void bandwidthChanged(int);
     void requestOpenInspector(QString);
-
+    void startRawCapture(void);
+    void stopRawCapture(void);
   };
 }
 
