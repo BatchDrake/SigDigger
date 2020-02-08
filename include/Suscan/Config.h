@@ -159,6 +159,7 @@ namespace Suscan {
   public:
       ConfigContext(suscan_config_context_t *instance);
       ConfigContext(std::string const &name);
+      void setSave(bool);
       void save(void) const;
       Object listObject(void) const;
 

@@ -179,6 +179,8 @@ Singleton::init_palettes(void)
   ConfigContext ctx("palettes");
   Object list = ctx.listObject();
 
+  ctx.setSave(false);
+
   count = list.length();
 
   for (i = 0; i < count; ++i) {
@@ -195,6 +197,8 @@ Singleton::init_autogains(void)
   unsigned int i, count;
   ConfigContext ctx("autogains");
   Object list = ctx.listObject();
+
+  ctx.setSave(false);
 
   count = list.length();
 
