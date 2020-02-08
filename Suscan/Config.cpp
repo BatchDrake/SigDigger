@@ -89,6 +89,12 @@ ConfigContext::ConfigContext(std::string const &name)
   this->ctx = ctx;
 }
 
+void
+ConfigContext::setSave(bool save)
+{
+  suscan_config_context_set_save(this->ctx, save ? SU_TRUE : SU_FALSE);
+}
+
 Object
 ConfigContext::listObject(void) const
 {
