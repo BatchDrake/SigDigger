@@ -21,6 +21,7 @@ SigDigger depends on three different projects: **Sigutils**, **Suscan** and **Su
 * Sigutils build instructions can be found [here](https://github.com/BatchDrake/sigutils/blob/master/README.md).
 * Suscan build instructions can be found [here](https://github.com/BatchDrake/suscan/blob/master/README.md).
 
+Before even attempting to run `cmake`, you may want to decide which branch you want to build. If you build from `master` (this is the default for SigDigger and all its dependencies), you will get a fresh executable of the latest stable release of SigDigger. If you build from `develop` (by running `git fetch origin develop` and `git checkout develop` in all four projects, right after `git clone`), you will get SigDigger with the latest experimental features. Plese note that the `develop` branch is still under validation, so if you want to build from it, expect bugs, inconsistent behaviors and crashes. Any feedback is welcome though.
 
 After successfully building Sigutils and Suscan, you can now proceed to build **SuWidgets**. SuWidgets is Qt 5.11 graphical library containing all SigDigger's custom widgets. In order to build it, ensure you have the latest version of the Qt 5.11 development framework installed in your system and then run:
 
