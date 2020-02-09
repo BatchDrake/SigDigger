@@ -218,6 +218,11 @@ font-weight: bold;</string>
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+         </font>
+        </property>
         <property name="text">
          <string>N/A</string>
         </property>
@@ -383,6 +388,11 @@ font-weight: bold;</string>
        <widget class="QLabel" name="squelchLevelLabel">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+         </font>
         </property>
         <property name="text">
          <string>N/A</string>

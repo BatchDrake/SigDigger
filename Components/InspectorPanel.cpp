@@ -240,7 +240,8 @@ InspectorPanel::resetRawInspector(qreal fs)
 {
   this->timeWindowFs = fs;
   this->uiRefreshSamples =
-      SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS * 1e-3 / this->timeWindowFs;
+      std::ceil(
+        SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS * 1e-3 * this->timeWindowFs);
   this->maxSamples = this->ui->maxMemSpin->value() * (1 << 20) / sizeof(SUCOMPLEX);
   this->ui->hangTimeSpin->setMinimum(std::ceil(1e3 / fs));
   this->data.resize(0);
@@ -296,7 +297,7 @@ InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
       this->totalSamples >= this->uiRefreshSamples;
 
   if (refreshUi)
-    this->totalSamples -= this->uiRefreshSamples;
+    this->totalSamples %= this->uiRefreshSamples;
 
   if (this->ui->captureButton->isDown()) {
     // Manual capture

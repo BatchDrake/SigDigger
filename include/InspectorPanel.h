@@ -24,7 +24,7 @@
 #include <ColorConfig.h>
 
 #define SIGDIGGER_DEFAULT_SQUELCH_THRESHOLD  10
-#define SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS 100.
+#define SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS 250.
 
 namespace Ui {
   class InspectorPanel;
