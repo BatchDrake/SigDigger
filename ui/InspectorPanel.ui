@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>216</width>
-    <height>497</height>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
     <number>0</number>
    </property>
    <property name="spacing">
-    <number>3</number>
+    <number>1</number>
    </property>
    <item row="1" column="0">
     <widget class="QLabel" name="label_21">
@@ -71,7 +71,7 @@
        <number>6</number>
       </property>
       <property name="spacing">
-       <number>4</number>
+       <number>1</number>
       </property>
       <item row="0" column="0" colspan="2">
        <widget class="QRadioButton" name="pskRadio">
@@ -181,8 +181,11 @@ font-weight: bold;</string>
       <property name="bottomMargin">
        <number>6</number>
       </property>
-      <property name="spacing">
-       <number>3</number>
+      <property name="horizontalSpacing">
+       <number>1</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>2</number>
       </property>
       <item row="4" column="0">
        <widget class="QLabel" name="label_4">
@@ -277,7 +280,7 @@ font-weight: bold;</string>
           <number>0</number>
          </property>
          <property name="spacing">
-          <number>3</number>
+          <number>1</number>
          </property>
          <item row="0" column="0">
           <widget class="QPushButton" name="captureButton">

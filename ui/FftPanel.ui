@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>328</width>
-    <height>581</height>
+    <width>320</width>
+    <height>364</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,82 +27,45 @@
     <number>0</number>
    </property>
    <property name="spacing">
-    <number>3</number>
+    <number>1</number>
    </property>
-   <item row="11" column="1">
-    <widget class="QComboBox" name="paletteCombo">
-     <property name="iconSize">
-      <size>
-       <width>64</width>
-       <height>20</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="14" column="1">
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>9</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="label_10">
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Pand. dB</string>
+      <string>Rate</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="11" column="0">
-    <widget class="QLabel" name="label_17">
-     <property name="text">
-      <string>Palette</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="timeSpanCombo">
+     <property name="enabled">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="6" column="2">
-    <widget class="QLabel" name="label_15">
-     <property name="text">
-      <string>Waterfall</string>
+   <item row="10" column="1">
+    <widget class="ctkRangeSlider" name="wfRange">
+     <property name="minimum">
+      <number>-160</number>
      </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_7">
-     <property name="text">
-      <string>Averaging</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="QSlider" name="fftAspectSlider">
      <property name="maximum">
-      <number>100</number>
-     </property>
-     <property name="value">
-      <number>30</number>
+      <number>0</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
+     <property name="minimumValue">
+      <number>-70</number>
+     </property>
+     <property name="maximumPosition">
+      <number>-10</number>
+     </property>
     </widget>
    </item>
-   <item row="7" column="1">
+   <item row="8" column="1">
     <widget class="QFrame" name="frame_4">
      <property name="maximumSize">
       <size>
@@ -161,14 +124,40 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="2">
-    <widget class="QLabel" name="rbwLabel">
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>RBW: N/A</string>
+      <string>FFT size</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
+   <item row="10" column="0">
+    <widget class="QLabel" name="label_11">
+     <property name="text">
+      <string>Wf. dB</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="1">
+    <widget class="QSlider" name="freqZoomSlider">
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>50</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
     <widget class="QLabel" name="label_6">
      <property name="text">
       <string>Window</string>
@@ -179,9 +168,39 @@
     </widget>
    </item>
    <item row="7" column="0">
-    <widget class="QLabel" name="label_9">
+    <widget class="QLabel" name="label_8">
      <property name="text">
-      <string>Peak</string>
+      <string>Spect/Wf</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="label_12">
+     <property name="text">
+      <string>Freq zoom</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Time span</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>Averaging</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -189,9 +208,66 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QComboBox" name="timeSpanCombo">
+    <widget class="QComboBox" name="rateCombo">
      <property name="enabled">
       <bool>true</bool>
+     </property>
+     <item>
+      <property name="text">
+       <string>1 fps</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>5 fps</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>10 fps</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>15 fps</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>20 fps</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>30 fps</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>50 fps</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>60 fps</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="rbwLabel">
+     <property name="text">
+      <string>RBW: N/A</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_10">
+     <property name="text">
+      <string>Pand. dB</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -244,6 +320,87 @@
      </item>
     </widget>
    </item>
+   <item row="9" column="1">
+    <widget class="ctkRangeSlider" name="pandRange">
+     <property name="minimum">
+      <number>-160</number>
+     </property>
+     <property name="maximum">
+      <number>0</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="minimumValue">
+      <number>-70</number>
+     </property>
+     <property name="minimumPosition">
+      <number>-70</number>
+     </property>
+     <property name="maximumPosition">
+      <number>-10</number>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="1">
+    <widget class="QComboBox" name="paletteCombo">
+     <property name="iconSize">
+      <size>
+       <width>64</width>
+       <height>20</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="2">
+    <widget class="QLabel" name="freqZoomLabel">
+     <property name="text">
+      <string>1x</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QComboBox" name="windowCombo">
+     <item>
+      <property name="text">
+       <string>Rectangular</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Hamming</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Hann</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Flat-top</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Blackmann-Harris</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="16" column="1">
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>9</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
    <item row="0" column="0" colspan="3">
     <widget class="QFrame" name="frame_3">
      <property name="maximumSize">
@@ -272,7 +429,7 @@
        <number>0</number>
       </property>
       <property name="spacing">
-       <number>4</number>
+       <number>1</number>
       </property>
       <item row="0" column="0">
        <widget class="QPushButton" name="pushButton">
@@ -325,155 +482,27 @@
      </layout>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QComboBox" name="windowCombo">
-     <item>
-      <property name="text">
-       <string>Rectangular</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Hamming</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Hann</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Flat-top</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Blackmann-Harris</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QComboBox" name="rateCombo">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <item>
-      <property name="text">
-       <string>1 fps</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>5 fps</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>10 fps</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>15 fps</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>20 fps</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>30 fps</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>50 fps</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>60 fps</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_3">
+   <item row="8" column="0">
+    <widget class="QLabel" name="label_9">
      <property name="text">
-      <string>FFT size</string>
+      <string>Peak</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="10" column="0">
-    <widget class="QLabel" name="label_12">
+   <item row="13" column="0">
+    <widget class="QLabel" name="label_17">
      <property name="text">
-      <string>Freq zoom</string>
+      <string>Palette</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>Time span</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="1">
-    <widget class="QSlider" name="freqZoomSlider">
-     <property name="minimum">
-      <number>1</number>
-     </property>
-     <property name="maximum">
-      <number>50</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="1">
-    <widget class="ctkRangeSlider" name="wfRange">
-     <property name="minimum">
-      <number>-160</number>
-     </property>
-     <property name="maximum">
-      <number>0</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="minimumValue">
-      <number>-70</number>
-     </property>
-     <property name="maximumPosition">
-      <number>-10</number>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Rate</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
+   <item row="6" column="1">
     <widget class="QSlider" name="fftAvgSlider">
      <property name="maximum">
       <number>1000</number>
@@ -489,56 +518,20 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="label_11">
-     <property name="text">
-      <string>Wf. dB</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="2">
-    <widget class="QLabel" name="freqZoomLabel">
-     <property name="text">
-      <string>1x</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_8">
-     <property name="text">
-      <string>Pandapter</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
-    <widget class="ctkRangeSlider" name="pandRange">
-     <property name="minimum">
-      <number>-160</number>
-     </property>
+   <item row="7" column="1">
+    <widget class="QSlider" name="fftAspectSlider">
      <property name="maximum">
-      <number>0</number>
+      <number>100</number>
+     </property>
+     <property name="value">
+      <number>30</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <property name="minimumValue">
-      <number>-70</number>
-     </property>
-     <property name="minimumPosition">
-      <number>-70</number>
-     </property>
-     <property name="maximumPosition">
-      <number>-10</number>
-     </property>
     </widget>
    </item>
-   <item row="8" column="2">
+   <item row="11" column="1">
     <widget class="QPushButton" name="lockButton">
      <property name="enabled">
       <bool>true</bool>

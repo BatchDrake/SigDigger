@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>272</width>
-    <height>384</height>
+    <height>256</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
     <number>0</number>
    </property>
    <property name="spacing">
-    <number>3</number>
+    <number>1</number>
    </property>
    <item row="1" column="0">
     <widget class="QLabel" name="label_4">
@@ -207,7 +207,7 @@
        <number>6</number>
       </property>
       <property name="spacing">
-       <number>3</number>
+       <number>1</number>
       </property>
       <item row="1" column="0">
        <widget class="QComboBox" name="autoGainCombo">
@@ -364,6 +364,7 @@
   </layout>
  </widget>
  <resources>
+  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>
