@@ -310,8 +310,17 @@ MainSpectrum::setSampleRate(unsigned int rate)
 {
   if (this->cachedRate != rate) {
     int freq = static_cast<int>(rate);
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
 
-    this->ui->mainSpectrum->setDemodRanges(-freq / 2, 1, 1, freq / 2, true);
+    this->ui->mainSpectrum->setDemodRanges(
+          lowerSideBand ? -freq / 2 : 1,
+          1,
+          1,
+          upperSideBand ? +freq / 2 : 1,
+          this->filterSkewness == SYMMETRIC);
 
     this->ui->mainSpectrum->setSampleRate(rate);
 
