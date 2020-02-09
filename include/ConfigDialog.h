@@ -56,6 +56,8 @@ namespace SigDigger {
     void saveAnalyzerParams(void);
     void saveColors(void);
     void guessParamsFromFileName(void);
+    static void setSpinValue(QDoubleSpinBox *sb, qreal value, QString const &units);
+    static qreal getSpinValue(QDoubleSpinBox *sb, QString const &units);
 
     static QString getBaseName(const QString &string);
 
@@ -103,7 +105,7 @@ namespace SigDigger {
     void onDeviceChanged(int);
     void onFormatChanged(int);
     void onCheckButtonsToggled(bool);
-    void onLineEditsChanged(const QString &);
+    void onSpinsChanged(void);
     void onBandwidthChanged(double);
     void onBrowseCaptureFile(void);
     void onAccepted(void);

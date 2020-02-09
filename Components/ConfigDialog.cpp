@@ -197,6 +197,54 @@ ConfigDialog::updateBwStep(void)
 }
 
 void
+ConfigDialog::setSpinValue(
+    QDoubleSpinBox *sb,
+    qreal value,
+    QString const &units)
+{
+  QString suffix = units;
+  qreal multiplier = 1;
+  int decimals = 0;
+
+  if (value > 1e9) {
+    multiplier = 1e-9;
+    suffix = "G" + suffix;
+    decimals = 9;
+  } else if (value > 1e6) {
+    multiplier =  1e-6;
+    suffix = "M" + suffix;
+    decimals = 6;
+  } else if (value > 1e3) {
+    multiplier =  1e-3;
+    suffix = "k" + suffix;
+    decimals = 3;
+  }
+
+  sb->setValue(value * multiplier);
+  sb->setSuffix(" " + suffix);
+  sb->setDecimals(decimals);
+  sb->setMaximum(18e9 * multiplier);
+}
+
+qreal
+ConfigDialog::getSpinValue(QDoubleSpinBox *sb, QString const &units)
+{
+  QString suffix = sb->suffix();
+  qreal value = sb->value();
+
+  if (suffix == " G" + units)
+    value *= 1e9;
+  else if (suffix == " M" + units)
+    value *= 1e6;
+  else if (suffix == " k" + units)
+    value *= 1e3;
+  else if (suffix != " " + units)
+    value = 0;
+
+  return value;
+}
+
+void
 ConfigDialog::refreshProfileUi(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
@@ -208,17 +256,20 @@ ConfigDialog::refreshProfileUi(void)
       break;
     }
 
-  this->ui->frequencyLine->setText(
-        QString::number(
-          static_cast<uint64_t>(this->profile.getFreq())));
+  setSpinValue(
+        this->ui->frequencySpin,
+        this->profile.getFreq(),
+        "Hz");
 
-  this->ui->lnbFrequencyLine->setText(
-        QString::number(
-          static_cast<uint64_t>(this->profile.getLnbFreq())));
+  setSpinValue(
+        this->ui->lnbSpin,
+        this->profile.getLnbFreq(),
+        "Hz");
 
-  this->ui->sampleRateLine->setText(
-        QString::number(
-          static_cast<uint64_t>(this->profile.getSampleRate())));
+  setSpinValue(
+        this->ui->sampleRateSpin,
+        this->profile.getSampleRate(),
+        "sps");
 
   switch (this->profile.getType()) {
     case SUSCAN_SOURCE_TYPE_SDR:
@@ -310,22 +361,22 @@ ConfigDialog::connectAll(void)
         SLOT(onToggleSourceType(bool)));
 
   connect(
-        this->ui->frequencyLine,
-        SIGNAL(textEdited(const QString &)),
+        this->ui->frequencySpin,
+        SIGNAL(valueChanged(double)),
         this,
-        SLOT(onLineEditsChanged(const QString &)));
+        SLOT(onSpinsChanged(void)));
 
   connect(
-        this->ui->lnbFrequencyLine,
-        SIGNAL(textEdited(const QString &)),
+        this->ui->lnbSpin,
+        SIGNAL(valueChanged(double)),
         this,
-        SLOT(onLineEditsChanged(const QString &)));
+        SLOT(onSpinsChanged(void)));
 
   connect(
-        this->ui->sampleRateLine,
-        SIGNAL(textEdited(const QString &)),
+        this->ui->sampleRateSpin,
+        SIGNAL(valueChanged(double)),
         this,
-        SLOT(onLineEditsChanged(const QString &)));
+        SLOT(onSpinsChanged(void)));
 
   connect(
         this->ui->removeDCCheck,
@@ -448,9 +499,6 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
   this->ui->setupUi(this);
 
   // Setup integer validators
-  this->ui->frequencyLine->setValidator(new QDoubleValidator(0.0, 15e6, 0, this));
-  this->ui->lnbFrequencyLine->setValidator(new QDoubleValidator(0.0, 15e6, 0, this));
-  this->ui->sampleRateLine->setValidator(new QIntValidator(1, 64000000, this));
   this->ui->fftSizeEdit->setValidator(new QIntValidator(1, 1 << 20, this));
   this->ui->spectrumRefreshEdit->setValidator(new QIntValidator(1, 1 << 20, this));
   this->ui->channelRefreshEdit->setValidator(new QIntValidator(1, 1 << 20, this));
@@ -555,47 +603,27 @@ ConfigDialog::onCheckButtonsToggled(bool)
 }
 
 void
-ConfigDialog::onLineEditsChanged(const QString &)
+ConfigDialog::onSpinsChanged(void)
 {
-  SUFREQ freq;
-  unsigned int sampRate;
-
   if (!this->refreshing) {
-    if (sscanf(
-          this->ui->frequencyLine->text().toStdString().c_str(),
-          "%lg",
-          &freq) < 1) {
-      this->ui->frequencyLine->setStyleSheet("color: red");
-    } else {
-      this->ui->frequencyLine->setStyleSheet("");
-      this->profile.setFreq(freq);
-    }
+    SUFREQ freq;
+    SUFREQ lnbFreq;
+    unsigned int sampRate;
 
-    if (sscanf(
-          this->ui->lnbFrequencyLine->text().toStdString().c_str(),
-          "%lg",
-          &freq) < 1) {
-      this->ui->lnbFrequencyLine->setStyleSheet("color: red");
-    } else {
-      this->ui->lnbFrequencyLine->setStyleSheet("");
-      this->profile.setLnbFreq(freq);
-    }
+    freq = getSpinValue(this->ui->frequencySpin, "Hz");
+    lnbFreq = getSpinValue(this->ui->lnbSpin, "Hz");
+    sampRate = static_cast<unsigned>(getSpinValue(this->ui->sampleRateSpin, "sps"));
 
-    if (sscanf(
-          this->ui->sampleRateLine->text().toStdString().c_str(),
-          "%u",
-          &sampRate) < 1) {
-      this->ui->sampleRateLine->setStyleSheet("color: red");
-    } else {
-      this->ui->sampleRateLine->setStyleSheet("");
-      this->profile.setSampleRate(sampRate);
-      this->ui->bwSpin->setMaximum(sampRate);
 
-      if (sampRate < this->ui->bwSpin->value())
-        this->ui->bwSpin->setValue(sampRate);
+    this->profile.setFreq(freq);
+    this->profile.setLnbFreq(lnbFreq);
+    this->profile.setSampleRate(sampRate);
+    this->ui->bwSpin->setMaximum(sampRate);
 
-      this->updateBwStep();
-    }
+    if (sampRate < this->ui->bwSpin->value())
+      this->ui->bwSpin->setValue(sampRate);
+
+    this->updateBwStep();
   }
 }
 
