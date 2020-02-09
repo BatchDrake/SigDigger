@@ -258,10 +258,40 @@ MainSpectrum::setFilterBandwidth(unsigned int bw)
 {
   if (this->bandwidth != bw) {
     int freq = static_cast<int>(bw);
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
+
     this->ui->mainSpectrum->setHiLowCutFrequencies(
-          -freq / 2,
-          freq/2);
+          lowerSideBand ? -freq / 2 : 0,
+          upperSideBand ? +freq / 2 : 0);
     this->bandwidth = bw;
+  }
+}
+
+void
+MainSpectrum::setFilterSkewness(Skewness skw)
+{
+  if (skw != this->filterSkewness) {
+    this->filterSkewness = skw;
+    unsigned int bw = this->bandwidth;
+    int freq = static_cast<int>(this->cachedRate);
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
+
+    this->ui->mainSpectrum->setDemodRanges(
+          lowerSideBand ? -freq / 2 : 1,
+          1,
+          1,
+          upperSideBand ? +freq / 2 : 1,
+          skw == SYMMETRIC);
+
+    this->bandwidth = 0;
+    this->setFilterBandwidth(bw);
+    emit bandwidthChanged();
   }
 }
 
@@ -411,7 +441,9 @@ MainSpectrum::getBandwidth(void) const
 void
 MainSpectrum::onWfBandwidthChanged(int min, int max)
 {
-  this->setFilterBandwidth(static_cast<unsigned int>(max - min));
+  this->setFilterBandwidth(
+        (this->filterSkewness == SYMMETRIC ? 1 : 2)
+        * static_cast<unsigned int>(max - min));
   emit bandwidthChanged();
 }
 

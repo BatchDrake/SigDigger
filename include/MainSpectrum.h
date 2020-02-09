@@ -41,6 +41,12 @@ namespace SigDigger {
       REPLAY
     };
 
+    enum Skewness {
+      SYMMETRIC,
+      UPPER,
+      LOWER
+    };
+
   private:
     // UI Objects
     Ui::MainSpectrum *ui = nullptr;
@@ -48,6 +54,7 @@ namespace SigDigger {
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
+    Skewness filterSkewness = SYMMETRIC;
     bool throttling = false;
 
     // Cached members (for UI update, etc)
@@ -92,6 +99,8 @@ namespace SigDigger {
     void setShowFATs(bool);
     void pushFAT(FrequencyAllocationTable *);
     void removeFAT(QString const &name);
+
+    void setFilterSkewness(enum Skewness); // TODO: Return *actual* bw
 
     // Getters
     bool getThrottling(void) const;
