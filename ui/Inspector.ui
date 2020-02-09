@@ -667,11 +667,11 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>678</height>
+        <height>698</height>
        </rect>
       </property>
       <attribute name="label">
-       <string>🠟 Channel properties</string>
+       <string> ▾  Channel properties</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_9">
        <property name="leftMargin">
@@ -803,11 +803,11 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>678</height>
+        <height>698</height>
        </rect>
       </property>
       <attribute name="label">
-       <string>🠟Parameter estimation</string>
+       <string> ▾  Parameter estimation</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_10">
        <property name="leftMargin">
@@ -842,7 +842,7 @@ QToolBox::tab:hover {
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>678</height>
+            <height>698</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="estimatorsGrid">
@@ -876,11 +876,11 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>678</height>
+        <height>698</height>
        </rect>
       </property>
       <attribute name="label">
-       <string>🠟Demodulator controls</string>
+       <string> ▾  Demodulator controls</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_8">
        <property name="leftMargin">
@@ -927,7 +927,7 @@ QToolBox::tab:hover {
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>678</height>
+            <height>698</height>
            </rect>
           </property>
           <property name="maximumSize">
@@ -974,7 +974,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>678</height>
+        <height>698</height>
        </rect>
       </property>
       <property name="sizePolicy">
