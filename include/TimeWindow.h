@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    TimeWindow.h: Time Window for time view operations
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -104,8 +104,6 @@ namespace SigDigger {
     void onSaveSelection(void);
     void onFit(void);
     void onToggleAutoFit(void);
-    void onToggleHorizontalSelection(void);
-    void onToggleVerticalSelection(void);
     void onZoomToSelection(void);
     void onZoomReset(void);
     void onShowWaveform(void);

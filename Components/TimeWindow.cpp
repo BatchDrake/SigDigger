@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    TimeWindow.cpp: Time Window for time view operations
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -119,6 +119,7 @@ TimeWindow::connectAll(void)
         this,
         SLOT(onFit(void)));
 
+#if 0
   connect(
         this->ui->actionHorizontal_selection,
         SIGNAL(triggered(bool)),
@@ -130,6 +131,7 @@ TimeWindow::connectAll(void)
         SIGNAL(triggered(bool)),
         this,
         SLOT(onToggleVerticalSelection(void)));
+#endif
 
   connect(
         this->ui->actionZoom_selection,
@@ -286,6 +288,10 @@ TimeWindow::setPaletteOffset(unsigned int offset)
 void
 TimeWindow::setColorConfig(ColorConfig const &cfg)
 {
+  this->ui->constellation->setBackgroundColor(cfg.spectrumBackground);
+  this->ui->constellation->setForegroundColor(cfg.spectrumForeground);
+  this->ui->constellation->setAxesColor(cfg.spectrumAxes);
+
   this->ui->realWaveform->setBackgroundColor(cfg.spectrumBackground);
   this->ui->realWaveform->setForegroundColor(cfg.spectrumForeground);
   this->ui->realWaveform->setAxesColor(cfg.spectrumAxes);
@@ -798,6 +804,7 @@ TimeWindow::onToggleAutoFit(void)
 
 }
 
+#if 0
 void
 TimeWindow::onToggleHorizontalSelection(void)
 {
@@ -819,7 +826,7 @@ TimeWindow::onToggleVerticalSelection(void)
     this->adjusting = false;
   }
 }
-
+#endif
 void
 TimeWindow::onZoomToSelection(void)
 {
