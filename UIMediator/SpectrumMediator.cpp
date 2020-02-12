@@ -104,13 +104,13 @@ void
 UIMediator::onRangeChanged(float min, float max)
 {
   this->ui->spectrum->setPandapterRange(min, max);
-  this->ui->fftPanel->setPandRangeMin(static_cast<int>(min));
-  this->ui->fftPanel->setPandRangeMax(static_cast<int>(max));
+  this->ui->fftPanel->setPandRangeMin(static_cast<int>(std::floor(min)));
+  this->ui->fftPanel->setPandRangeMax(static_cast<int>(std::floor(max)));
 
   if (this->ui->fftPanel->getRangeLock()) {
     this->ui->spectrum->setWfRange(min, max);
-    this->ui->fftPanel->setWfRangeMin(static_cast<int>(min));
-    this->ui->fftPanel->setWfRangeMax(static_cast<int>(max));
+    this->ui->fftPanel->setWfRangeMin(static_cast<int>(std::floor(min)));
+    this->ui->fftPanel->setWfRangeMax(static_cast<int>(std::floor(max)));
   }
 }
 
