@@ -497,6 +497,8 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
 {
   this->ui = new Ui_Config();
   this->ui->setupUi(this);
+  this->setWindowFlag(Qt::WindowMaximizeButtonHint, false);
+  this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 
   // Setup integer validators
   this->ui->fftSizeEdit->setValidator(new QIntValidator(1, 1 << 20, this));

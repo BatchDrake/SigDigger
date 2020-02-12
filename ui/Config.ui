@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>588</width>
+    <width>597</width>
     <height>416</height>
    </rect>
   </property>
@@ -24,6 +24,9 @@
   </property>
   <property name="windowTitle">
    <string>Settings</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="3" column="0">
@@ -1014,7 +1017,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="sourceTypeGroup"/>
   <buttongroup name="windowButtonGroup"/>
+  <buttongroup name="sourceTypeGroup"/>
  </buttongroups>
 </ui>
