@@ -363,7 +363,7 @@
        <item row="6" column="1" colspan="2">
         <widget class="QCheckBox" name="removeDCCheck">
          <property name="text">
-          <string>Remove DC</string>
+          <string>DC remove</string>
          </property>
         </widget>
        </item>
