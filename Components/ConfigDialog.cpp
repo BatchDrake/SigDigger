@@ -206,15 +206,15 @@ ConfigDialog::setSpinValue(
   qreal multiplier = 1;
   int decimals = 0;
 
-  if (value > 1e9) {
+  if (value >= 1e9) {
     multiplier = 1e-9;
     suffix = "G" + suffix;
     decimals = 9;
-  } else if (value > 1e6) {
+  } else if (value >= 1e6) {
     multiplier =  1e-6;
     suffix = "M" + suffix;
     decimals = 6;
-  } else if (value > 1e3) {
+  } else if (value >= 1e3) {
     multiplier =  1e-3;
     suffix = "k" + suffix;
     decimals = 3;
