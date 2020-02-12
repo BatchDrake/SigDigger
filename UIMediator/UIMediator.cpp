@@ -218,6 +218,12 @@ UIMediator::connectMainWindow(void)
         SLOT(onToggleCapture(bool)));
 
   connect(
+        this->ui->main->action_Full_screen,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onToggleFullScreen(bool)));
+
+  connect(
         this->ui->main->actionAbout,
         SIGNAL(triggered(bool)),
         this,
@@ -701,6 +707,12 @@ UIMediator::onToggleCapture(bool state)
   } else {
     emit captureEnd();
   }
+}
+
+void
+UIMediator::onToggleFullScreen(bool)
+{
+  this->owner->setWindowState(this->owner->windowState() ^ Qt::WindowFullScreen);
 }
 
 void

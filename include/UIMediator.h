@@ -197,6 +197,7 @@ namespace SigDigger {
     // Main Window slots
     void onTriggerSetup(bool);
     void onToggleCapture(bool);
+    void onToggleFullScreen(bool);
     void onToggleAbout(bool);
     void onCloseInspectorTab(int index);
     void onTriggerStart(bool);
