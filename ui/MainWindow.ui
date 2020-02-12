@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>1251</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -96,6 +96,7 @@
      <addaction name="separator"/>
      <addaction name="separator"/>
     </widget>
+    <addaction name="action_Full_screen"/>
     <addaction name="menuBand_plans"/>
     <addaction name="separator"/>
     <addaction name="actionDevices"/>
@@ -261,6 +262,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="action_Full_screen">
+   <property name="text">
+    <string>&amp;Full screen</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
    </property>
   </action>
  </widget>
