@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>320</width>
-    <height>364</height>
+    <height>375</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,10 +49,10 @@
    <item row="10" column="1">
     <widget class="ctkRangeSlider" name="wfRange">
      <property name="minimum">
-      <number>-160</number>
+      <number>-120</number>
      </property>
      <property name="maximum">
-      <number>0</number>
+      <number>40</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -323,10 +323,10 @@
    <item row="9" column="1">
     <widget class="ctkRangeSlider" name="pandRange">
      <property name="minimum">
-      <number>-160</number>
+      <number>-120</number>
      </property>
      <property name="maximum">
-      <number>0</number>
+      <number>40</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
