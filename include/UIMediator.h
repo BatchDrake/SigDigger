@@ -57,6 +57,7 @@ namespace SigDigger {
 
     // UI State
     State state = HALTED;
+    bool settingRanges = false;
 
     // Private methods
     void connectMainWindow(void);
