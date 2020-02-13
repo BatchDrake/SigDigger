@@ -612,6 +612,7 @@ TimeWindow::onHoverTime(qreal time)
   int length = static_cast<int>(this->ui->realWaveform->getDataLength());
   qreal samp = this->ui->realWaveform->t2samp(time);
   qint64 iSamp = static_cast<qint64>(std::floor(samp));
+  qint64 selStart, selEnd, selLen;
   qreal max = std::max<qreal>(
         std::max<qreal>(
           std::fabs(this->ui->realWaveform->getMax()),
@@ -635,9 +636,9 @@ TimeWindow::onHoverTime(qreal time)
   this->ui->constellation->setGain(ampl);
 
   if (this->ui->realWaveform->getHorizontalSelectionPresent()) {
-    qint64 selStart = static_cast<qint64>(
+     selStart = static_cast<qint64>(
           this->ui->realWaveform->getHorizontalSelectionStart());
-    qint64 selEnd = static_cast<qint64>(
+    selEnd = static_cast<qint64>(
           this->ui->realWaveform->getHorizontalSelectionEnd());
 
     if (selStart < 0)
@@ -648,12 +649,14 @@ TimeWindow::onHoverTime(qreal time)
     if (selEnd - selStart > TIME_WINDOW_MAX_SELECTION)
       selStart = selEnd - TIME_WINDOW_MAX_SELECTION;
 
-    if (selEnd - selStart > 0) {
+    selLen = selEnd - selStart;
+
+    if (selLen > 0) {
       this->ui->constellation->setHistorySize(
-            static_cast<unsigned int>(selEnd - selStart));
+            static_cast<unsigned int>(selLen));
       this->ui->constellation->feed(
             data + selStart,
-            static_cast<unsigned int>(selEnd - selStart));
+            static_cast<unsigned int>(selLen));
     }
   } else {
     if (iSamp == length - 1) {
@@ -678,8 +681,32 @@ TimeWindow::onHoverTime(qreal time)
         + "º)");
 
   // Frequency calculations
-  if (iSamp >= 1 && iSamp < length) {
-    SUFLOAT normFreq = SU_ANG2NORM_FREQ(SU_C_ARG(data[iSamp] * SU_C_CONJ(data[iSamp - 1])));
+  qint64 dopplerLen = this->ui->realWaveform->getHorizontalSelectionPresent()
+      ? selLen
+      : static_cast<qint64>(
+          std::ceil(this->ui->realWaveform->getSamplesPerPixel()));
+  qint64 dopplerStart = this->ui->realWaveform->getHorizontalSelectionPresent()
+      ? selStart
+      : iSamp;
+  qint64 delta = 1;
+  qreal omegaAccum = 0;
+  unsigned int count = 0;
+
+  if (dopplerLen > TIME_WINDOW_MAX_DOPPLER_ITERS) {
+    delta = dopplerLen / TIME_WINDOW_MAX_DOPPLER_ITERS;
+    dopplerLen = TIME_WINDOW_MAX_DOPPLER_ITERS;
+  }
+
+  for (auto i = dopplerStart; i < dopplerLen + dopplerStart; i += delta) {
+    if (i >= 1 && i < length) {
+      omegaAccum += SU_C_ARG(data[i] * SU_C_CONJ(data[i - 1]));
+      ++count;
+    }
+  }
+
+  if (count > 0) {
+    SUFLOAT normFreq;
+    normFreq = SU_ANG2NORM_FREQ(omegaAccum / count);
     SUFREQ freq = SU_NORM2ABS_FREQ(this->fs, normFreq);
     SUFREQ ifFreq = this->ui->refFreqSpin->value() - this->centerFreq;
     SUFREQ doppler = -3e8 / this->centerFreq * (freq - ifFreq);
