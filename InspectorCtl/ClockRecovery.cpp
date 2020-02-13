@@ -19,7 +19,7 @@
 
 #include "ClockRecovery.h"
 #include "ui_ClockRecovery.h"
-#include <suscan/analyzer/inspector/params.h>
+#include <analyzer/inspector/params.h>
 
 using namespace SigDigger;
 
