@@ -165,6 +165,12 @@ MainSpectrum::getFrequencyUnits(qint64 freq)
 }
 
 void
+MainSpectrum::notifyHalt(void)
+{
+  this->ui->mainSpectrum->setRunningState(false);
+}
+
+void
 MainSpectrum::setCenterFreq(qint64 freq)
 {
   this->ui->fcLcd->setValue(freq);

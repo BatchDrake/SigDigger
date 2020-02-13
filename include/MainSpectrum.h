@@ -99,7 +99,7 @@ namespace SigDigger {
     void setShowFATs(bool);
     void pushFAT(FrequencyAllocationTable *);
     void removeFAT(QString const &name);
-
+    void notifyHalt(void);
     void setFilterSkewness(enum Skewness); // TODO: Return *actual* bw
 
     // Getters

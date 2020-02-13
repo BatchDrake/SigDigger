@@ -112,7 +112,7 @@ UIMediator::refreshUI(void)
       this->ui->main->actionStart_capture->setEnabled(true);
       this->ui->main->actionStop_capture->setEnabled(false);
       this->ui->panoramicDialog->setBannedDevice("");
-
+      this->ui->spectrum->notifyHalt();
       break;
 
     case HALTING:
