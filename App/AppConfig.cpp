@@ -43,6 +43,7 @@ AppConfig::serialize(void)
   obj.set("height", this->height);
   obj.set("x", this->x);
   obj.set("y", this->y);
+  obj.set("fullScreen", this->fullScreen);
   obj.set("loFreq", this->loFreq);
   obj.set("bandwidth", this->bandwidth);
 
@@ -102,12 +103,13 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->inspectorConfig->deserialize(conf.getField("inspectorPanel")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
 
-    TRYSILENT(this->width  = conf.get("width", this->width));
-    TRYSILENT(this->height = conf.get("height", this->height));
-    TRYSILENT(this->x      = conf.get("x", this->x));
-    TRYSILENT(this->y      = conf.get("y", this->y));
-    TRYSILENT(this->loFreq = conf.get("loFreq", this->loFreq));
-    TRYSILENT(this->bandwidth = conf.get("bandwidth", this->bandwidth));
+    TRYSILENT(this->width      = conf.get("width", this->width));
+    TRYSILENT(this->height     = conf.get("height", this->height));
+    TRYSILENT(this->x          = conf.get("x", this->x));
+    TRYSILENT(this->y          = conf.get("y", this->y));
+    TRYSILENT(this->fullScreen = conf.get("fullScreen", this->fullScreen));
+    TRYSILENT(this->loFreq     = conf.get("loFreq", this->loFreq));
+    TRYSILENT(this->bandwidth  = conf.get("bandwidth", this->bandwidth));
 
     try {
       Suscan::Object set = conf.getField("bandPlans");

@@ -631,6 +631,10 @@ UIMediator::applyConfig(void)
         this->appConfig->width,
         this->appConfig->height);
 
+  if (this->appConfig->fullScreen)
+    this->owner->setWindowState(
+        this->owner->windowState() | Qt::WindowFullScreen);
+
   // The following controls reflect elements of the configuration that are
   // not owned by them. We need to set them manually.
   this->ui->configDialog->setColors(this->appConfig->colors);
@@ -713,6 +717,8 @@ void
 UIMediator::onToggleFullScreen(bool)
 {
   this->owner->setWindowState(this->owner->windowState() ^ Qt::WindowFullScreen);
+  this->appConfig->fullScreen =
+      (this->owner->windowState() & Qt::WindowFullScreen) != 0;
 }
 
 void
