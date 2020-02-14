@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>597</width>
+    <width>654</width>
     <height>416</height>
    </rect>
   </property>
@@ -353,7 +353,7 @@
        <item row="5" column="3">
         <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>Average</string>
+          <string>Decimation</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -445,9 +445,9 @@
         </widget>
        </item>
        <item row="5" column="5" colspan="2">
-        <widget class="QSpinBox" name="averageSpin">
+        <widget class="QSpinBox" name="decimationSpin">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="font">
           <font>
@@ -459,6 +459,12 @@
          </property>
          <property name="suffix">
           <string> samples</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
          </property>
         </widget>
        </item>

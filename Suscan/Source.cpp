@@ -229,6 +229,15 @@ Source::Config::getSampleRate(void) const
   return suscan_source_config_get_samp_rate(this->instance);
 }
 
+unsigned int
+Source::Config::getDecimation(void) const
+{
+  if (this->instance == nullptr)
+    return 0;
+
+  return suscan_source_config_get_average(this->instance);
+}
+
 bool
 Source::Config::getLoop(void) const
 {
@@ -306,6 +315,15 @@ Source::Config::setSampleRate(unsigned int rate)
     return;
 
   suscan_source_config_set_samp_rate(this->instance, rate);
+}
+
+void
+Source::Config::setDecimation(unsigned int rate)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_set_average(this->instance, rate);
 }
 
 void

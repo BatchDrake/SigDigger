@@ -271,6 +271,9 @@ ConfigDialog::refreshProfileUi(void)
         this->profile.getSampleRate(),
         "sps");
 
+  this->ui->decimationSpin->setValue(
+        static_cast<int>(this->profile.getDecimation()));
+
   switch (this->profile.getType()) {
     case SUSCAN_SOURCE_TYPE_SDR:
       this->ui->sdrRadio->setChecked(true);
@@ -375,6 +378,12 @@ ConfigDialog::connectAll(void)
   connect(
         this->ui->sampleRateSpin,
         SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onSpinsChanged(void)));
+
+  connect(
+        this->ui->decimationSpin,
+        SIGNAL(valueChanged(int)),
         this,
         SLOT(onSpinsChanged(void)));
 
@@ -620,6 +629,8 @@ ConfigDialog::onSpinsChanged(void)
     this->profile.setFreq(freq);
     this->profile.setLnbFreq(lnbFreq);
     this->profile.setSampleRate(sampRate);
+    this->profile.setDecimation(
+          static_cast<unsigned>(this->ui->decimationSpin->value()));
     this->ui->bwSpin->setMaximum(sampRate);
 
     if (sampRate < this->ui->bwSpin->value())

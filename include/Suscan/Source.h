@@ -230,7 +230,8 @@ namespace Suscan {
     std::string label(void) const;
     SUFREQ getFreq(void) const;
     SUFREQ getLnbFreq(void) const;
-    unsigned int getSampleRate() const;
+    unsigned int getSampleRate(void) const;
+    unsigned int getDecimation(void) const;
     enum suscan_source_type getType(void) const;
     bool getLoop(void) const;
     std::string getPath(void) const;
@@ -254,6 +255,7 @@ namespace Suscan {
     void setLabel(const std::string &);
     void setPath(const std::string &);
     void setSampleRate(unsigned int value);
+    void setDecimation(unsigned int);
     void setDevice(const Source::Device &dev);
     void setGain(const std::string &, SUFLOAT);
     void setAntenna(const std::string &);
