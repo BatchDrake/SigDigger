@@ -198,9 +198,12 @@ Application::setAudioInspectorParams(
     unsigned int demod)
 {
   if (this->audioConfigured) {
+    SUFLOAT correctedVolume = 2 * (exp(volume / 100) - 1);
+
+
     Suscan::Config cfg(this->audioCfgTemplate);
     cfg.set("audio.cutoff", cutOff);
-    cfg.set("audio.volume", volume / 20);
+    cfg.set("audio.volume", correctedVolume);
     cfg.set("audio.sample-rate", static_cast<uint64_t>(rate));
     cfg.set("audio.demodulator", static_cast<uint64_t>(demod));
     this->analyzer->setInspectorConfig(this->audioInspHandle, cfg, 0);
