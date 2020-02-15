@@ -274,6 +274,10 @@ Application::openAudio(unsigned int rate)
         ch.fLow  = -.5 * bw;
         ch.fHigh = .5 * bw;
 
+        if (ch.fc > this->analyzer->getSampleRate() / 2
+            || ch.fc < -this->analyzer->getSampleRate() / 2)
+          ch.fc = 0;
+
         this->maxAudioBw = bw;
 
         this->analyzer->openPrecise(
