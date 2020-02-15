@@ -42,8 +42,9 @@ ConfigDialog::populateCombos(void)
             QVariant::fromValue(i->second));
 
   for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i)
-    this->ui->deviceCombo->addItem(
-        QString::fromStdString(i->getDesc()));
+    if (i->isAvailable())
+      this->ui->deviceCombo->addItem(
+          QString::fromStdString(i->getDesc()));
 }
 
 void

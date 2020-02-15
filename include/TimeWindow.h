@@ -66,12 +66,15 @@ namespace SigDigger {
     static QString formatScientific(qreal real);
     static QString formatReal(qreal real);
     static QString formatIntegerPart(qreal real);
+    static QString ensureRightExtension(QString const &path, QString const &ext);
 
-    bool exportToFile(QString const &path, int start, int end);
+    bool exportToMatlab(QString const &path, int start, int end);
+    bool exportToWav(QString const &path, int start, int end);
     void recalcLimits(void);
     void refreshMeasures(void);
     void refreshUi(void);
     void deserializePalettes(void);
+    void saveSamples(int start, int end);
 
   public:
     explicit TimeWindow(QWidget *parent = nullptr);

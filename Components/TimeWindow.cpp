@@ -30,7 +30,7 @@
 using namespace SigDigger;
 
 bool
-TimeWindow::exportToFile(QString const &path, int start, int end)
+TimeWindow::exportToMatlab(QString const &path, int start, int end)
 {
   std::ofstream of(path.toStdString().c_str(), std::ofstream::binary);
   const SUCOMPLEX *data = this->ui->realWaveform->getData();
@@ -60,6 +60,41 @@ TimeWindow::exportToFile(QString const &path, int start, int end)
   of << "];\n";
 
   return true;
+}
+
+bool
+TimeWindow::exportToWav(QString const &path, int start, int end)
+{
+  SF_INFO sfinfo;
+  SNDFILE *sfp = nullptr;
+  const SUCOMPLEX *data = this->ui->realWaveform->getData();
+  int length = static_cast<int>(this->ui->realWaveform->getDataLength());
+  bool ok = false;
+
+  sfinfo.channels = 2;
+  sfinfo.samplerate = static_cast<int>(this->ui->realWaveform->getSampleRate());
+  sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+
+  if ((sfp = sf_open(path.toStdString().c_str(), SFM_WRITE, &sfinfo)) == nullptr)
+    goto done;
+
+  if (start < 0)
+    start = 0;
+  if (end > length)
+    end = length;
+
+  length = end - start;
+
+  ok = sf_write_float(
+        sfp,
+        reinterpret_cast<const SUFLOAT *>(data + start),
+        length << 1) == (length << 1);
+
+done:
+  if (sfp != nullptr)
+    sf_close(sfp);
+
+  return ok;
 }
 
 void
@@ -746,74 +781,77 @@ TimeWindow::onPeriodicDivisionsChanged(void)
   this->refreshMeasures();
 }
 
+QString
+TimeWindow::ensureRightExtension(QString const &path, QString const &ext)
+{
+  if (path.right(ext.length()) != ext)
+    return path + ext;
+
+  return path;
+}
+
 void
-TimeWindow::onSaveAll(void)
+TimeWindow::saveSamples(int start, int end)
 {
   bool done = false;
 
   do {
     QFileDialog dialog(this);
+    QStringList filters;
 
     dialog.setFileMode(QFileDialog::FileMode::AnyFile);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setWindowTitle(QString("Save capture"));
-    dialog.setNameFilter(QString("MATLAB/Octave file (*.m)"));
+
+    filters << "MATLAB/Octave file (*.m)"
+            << "Audio file (*.wav)";
+
+    dialog.setNameFilters(filters);
 
     if (dialog.exec()) {
       QString path = dialog.selectedFiles().first();
+      QString filter = dialog.selectedNameFilter();
+      bool result;
 
-        if (!this->exportToFile(
-              path,
-              0,
-              static_cast<int>(this->ui->realWaveform->getDataLength()))) {
-          QMessageBox::warning(
-                this,
-                "Cannot open file",
-                "Cannote save file in the specified location. Please choose "
-                "a different location and try again.",
-                QMessageBox::Ok);
-        } else {
-          done = true;
-        }
+      if (strstr(filter.toStdString().c_str(), ".m") != nullptr)  {
+        path = ensureRightExtension(path, ".m");
+        result = this->exportToMatlab(path, start, end);
+      } else {
+        path = ensureRightExtension(path, ".wav");
+        result = this->exportToWav(path, start, end);
+      }
+
+      if (!result) {
+        QMessageBox::warning(
+              this,
+              "Cannot open file",
+              "Cannote save file in the specified location. Please choose "
+              "a different location and try again.",
+              QMessageBox::Ok);
+      } else {
+        done = true;
+      }
     } else {
       done = true;
     }
   } while (!done);
 }
 
+
+void
+TimeWindow::onSaveAll(void)
+{
+  this->saveSamples(
+        0,
+        static_cast<int>(this->ui->realWaveform->getDataLength()));
+}
+
 void
 TimeWindow::onSaveSelection(void)
 {
-  bool done = false;
-
-  do {
-    QFileDialog dialog(this);
-
-    dialog.setFileMode(QFileDialog::FileMode::AnyFile);
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.setWindowTitle(QString("Save capture"));
-    dialog.setNameFilter(QString("MATLAB/Octave file (*.m)"));
-
-    if (dialog.exec()) {
-      QString path = dialog.selectedFiles().first();
-
-        if (!this->exportToFile(
-              path,
-              this->ui->realWaveform->getHorizontalSelectionStart(),
-              this->ui->realWaveform->getHorizontalSelectionEnd())) {
-          QMessageBox::warning(
-                this,
-                "Cannot open file",
-                "Cannote save file in the specified location. Please choose "
-                "a different location and try again.",
-                QMessageBox::Ok);
-        } else {
-          done = true;
-        }
-    } else {
-      done = true;
-    }
-  } while (!done);
+  this->saveSamples(
+        static_cast<int>(this->ui->realWaveform->getHorizontalSelectionStart()),
+        static_cast<int>(this->ui->realWaveform->getHorizontalSelectionEnd()));
 }
 
 void

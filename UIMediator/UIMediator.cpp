@@ -315,7 +315,7 @@ UIMediator::setSampleRate(unsigned int rate)
       audioBw = rate / 2;
 
     this->ui->fftPanel->setSampleRate(rate);
-    this->ui->inspectorPanel->setBandwidthLimits(0, rate / 2);
+    this->ui->inspectorPanel->setBandwidthLimits(0, rate);
     this->ui->spectrum->setSampleRate(rate);
     this->ui->sourcePanel->setSampleRate(rate);
     this->ui->inspectorPanel->setBandwidth(bw);
