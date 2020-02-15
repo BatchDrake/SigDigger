@@ -667,7 +667,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>698</height>
+        <height>690</height>
        </rect>
       </property>
       <attribute name="label">
@@ -803,7 +803,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>698</height>
+        <height>690</height>
        </rect>
       </property>
       <attribute name="label">
@@ -842,7 +842,7 @@ QToolBox::tab:hover {
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>698</height>
+            <height>690</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="estimatorsGrid">
@@ -876,7 +876,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>698</height>
+        <height>690</height>
        </rect>
       </property>
       <attribute name="label">
@@ -927,7 +927,7 @@ QToolBox::tab:hover {
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>698</height>
+            <height>690</height>
            </rect>
           </property>
           <property name="maximumSize">
@@ -974,7 +974,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>698</height>
+        <height>690</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -984,7 +984,7 @@ QToolBox::tab:hover {
        </sizepolicy>
       </property>
       <attribute name="label">
-       <string>🠟Data forwarding</string>
+       <string> ▾  Data forwarding</string>
       </attribute>
       <layout class="QGridLayout" name="forwarderGrid">
        <property name="leftMargin">

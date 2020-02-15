@@ -1139,7 +1139,9 @@ Application::openCaptureFile(void)
         baseName,
         64,
         "sigdigger_%d_%.0lf_float32_iq.raw",
-        this->mediator->getProfile()->getSampleRate(),
+        static_cast<int>(
+          this->mediator->getProfile()->getSampleRate()
+          / this->mediator->getProfile()->getDecimation()),
         this->mediator->getProfile()->getFreq());
 
   std::string fullPath =
