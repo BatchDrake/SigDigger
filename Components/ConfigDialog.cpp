@@ -187,14 +187,95 @@ ConfigDialog::refreshColorUi(void)
 }
 
 void
-ConfigDialog::updateBwStep(void)
+ConfigDialog::refreshFromSpinData(void)
 {
   float step = SU_POW(10., SU_FLOOR(SU_LOG(this->profile.getSampleRate())));
-
+  QString rateText;
+  qreal trueRate = getSpinValue(this->ui->sampleRateSpin)
+      / this->ui->decimationSpin->value();
   if (step >= 10.f)
     step /= 10.f;
 
   this->ui->bwSpin->setSingleStep(static_cast<int>(step));
+
+  if (trueRate < 1e3)
+    rateText = QString::number(trueRate) + " sps";
+  else if (trueRate < 1e6)
+    rateText = QString::number(trueRate * 1e-3) + " ksps";
+  else if (trueRate < 1e9)
+    rateText = QString::number(trueRate * 1e-6) + " Msps";
+
+  this->ui->trueRateLabel->setText(rateText);
+}
+
+void
+ConfigDialog::adjustSpinUnits(QDoubleSpinBox *sb, QString const &units)
+{
+  int decimals = sb->decimals();
+
+  switch (decimals) {
+    case 0:
+      sb->setSuffix("  " + units);
+      sb->setMaximum(18e9);
+      break;
+
+    case 3:
+      sb->setSuffix(" k" + units);
+      sb->setMaximum(18e6);
+      break;
+
+    case 6:
+      sb->setSuffix(" M" + units);
+      sb->setMaximum(18e3);
+      break;
+
+    case 9:
+      sb->setSuffix(" G" + units);
+      sb->setMaximum(18);
+      break;
+  }
+}
+
+void
+ConfigDialog::incSpinUnits(QDoubleSpinBox *sb, QString const &units)
+{
+  int decimals = sb->decimals() + 3;
+
+  if (decimals >= 0 && decimals <= 9) {
+    qreal value = sb->value() * 1e-3;
+
+    sb->setValue(value);
+    sb->setDecimals(decimals);
+
+    adjustSpinUnits(sb, units);
+  }
+}
+
+void
+ConfigDialog::decSpinUnits(QDoubleSpinBox *sb, QString const &units)
+{
+  int decimals = sb->decimals() - 3;
+
+  if (decimals >= 0 && decimals <= 9) {
+    qreal value = sb->value() * 1e3;
+
+    sb->setValue(value);
+    sb->setDecimals(decimals);
+
+    adjustSpinUnits(sb, units);
+  }
+}
+
+bool
+ConfigDialog::spinCanIncrease(const QDoubleSpinBox *sb)
+{
+  return sb->decimals() < 9;
+}
+
+bool
+ConfigDialog::spinCanDecrease(const QDoubleSpinBox *sb)
+{
+  return sb->decimals() > 0;
 }
 
 void
@@ -203,44 +284,43 @@ ConfigDialog::setSpinValue(
     qreal value,
     QString const &units)
 {
-  QString suffix = units;
   qreal multiplier = 1;
   int decimals = 0;
 
   if (value >= 1e9) {
     multiplier = 1e-9;
-    suffix = "G" + suffix;
     decimals = 9;
   } else if (value >= 1e6) {
     multiplier =  1e-6;
-    suffix = "M" + suffix;
     decimals = 6;
   } else if (value >= 1e3) {
     multiplier =  1e-3;
-    suffix = "k" + suffix;
     decimals = 3;
   }
 
   sb->setValue(value * multiplier);
-  sb->setSuffix(" " + suffix);
   sb->setDecimals(decimals);
-  sb->setMaximum(18e9 * multiplier);
+  adjustSpinUnits(sb, units);
 }
 
 qreal
-ConfigDialog::getSpinValue(QDoubleSpinBox *sb, QString const &units)
+ConfigDialog::getSpinValue(QDoubleSpinBox *sb)
 {
-  QString suffix = sb->suffix();
   qreal value = sb->value();
 
-  if (suffix == " G" + units)
-    value *= 1e9;
-  else if (suffix == " M" + units)
-    value *= 1e6;
-  else if (suffix == " k" + units)
-    value *= 1e3;
-  else if (suffix != " " + units)
-    value = 0;
+  switch (sb->decimals()) {
+    case 9:
+      value *= 1e9;
+      break;
+
+    case 6:
+      value *= 1e6;
+      break;
+
+    case 3:
+      value *= 1e3;
+      break;
+  }
 
   return value;
 }
@@ -323,7 +403,26 @@ ConfigDialog::refreshProfileUi(void)
 
   this->refreshUiState();
   this->refreshAntennas();
-  this->updateBwStep();
+  this->refreshFromSpinData();
+}
+
+void
+ConfigDialog::refreshUnitButtons(void)
+{
+  this->ui->incFreqUnitsButton->setEnabled(
+        spinCanIncrease(this->ui->frequencySpin));
+  this->ui->decFreqUnitsButton->setEnabled(
+        spinCanDecrease(this->ui->frequencySpin));
+
+  this->ui->incLNBUnitsButton->setEnabled(
+        spinCanIncrease(this->ui->lnbSpin));
+  this->ui->decLNBUnitsButton->setEnabled(
+        spinCanDecrease(this->ui->lnbSpin));
+
+  this->ui->incSampRateUnitsButton->setEnabled(
+        spinCanIncrease(this->ui->sampleRateSpin));
+  this->ui->decSampRateUnitsButton->setEnabled(
+        spinCanDecrease(this->ui->sampleRateSpin));
 }
 
 void
@@ -333,6 +432,7 @@ ConfigDialog::refreshUi(void)
 
   this->refreshColorUi();
   this->refreshProfileUi();
+  this->refreshUnitButtons();
 
   this->refreshing = false;
 }
@@ -435,6 +535,42 @@ ConfigDialog::connectAll(void)
         SIGNAL(clicked(void)),
         this,
         SLOT(onSaveProfile(void)));
+
+  connect(
+        this->ui->incFreqUnitsButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onIncFreqUnits(void)));
+
+  connect(
+        this->ui->decFreqUnitsButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onDecFreqUnits(void)));
+
+  connect(
+        this->ui->incLNBUnitsButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onIncLNBUnits(void)));
+
+  connect(
+        this->ui->decLNBUnitsButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onDecLNBUnits(void)));
+
+  connect(
+        this->ui->incSampRateUnitsButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onIncSampRateUnits(void)));
+
+  connect(
+        this->ui->decSampRateUnitsButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onDecSampRateUnits(void)));
 }
 
 void
@@ -622,10 +758,9 @@ ConfigDialog::onSpinsChanged(void)
     SUFREQ lnbFreq;
     unsigned int sampRate;
 
-    freq = getSpinValue(this->ui->frequencySpin, "Hz");
-    lnbFreq = getSpinValue(this->ui->lnbSpin, "Hz");
-    sampRate = static_cast<unsigned>(getSpinValue(this->ui->sampleRateSpin, "sps"));
-
+    freq = getSpinValue(this->ui->frequencySpin);
+    lnbFreq = getSpinValue(this->ui->lnbSpin);
+    sampRate = static_cast<unsigned>(getSpinValue(this->ui->sampleRateSpin));
 
     this->profile.setFreq(freq);
     this->profile.setLnbFreq(lnbFreq);
@@ -637,7 +772,7 @@ ConfigDialog::onSpinsChanged(void)
     if (sampRate < this->ui->bwSpin->value())
       this->ui->bwSpin->setValue(sampRate);
 
-    this->updateBwStep();
+    this->refreshFromSpinData();
   }
 }
 
@@ -781,3 +916,48 @@ ConfigDialog::onSaveProfile(void)
     this->populateCombos();
   }
 }
+
+void
+ConfigDialog::onIncFreqUnits(void)
+{
+  incSpinUnits(this->ui->frequencySpin, "Hz");
+  this->refreshUnitButtons();
+}
+
+void
+ConfigDialog::onDecFreqUnits(void)
+{
+  decSpinUnits(this->ui->frequencySpin, "Hz");
+  this->refreshUnitButtons();
+}
+
+
+void
+ConfigDialog::onIncLNBUnits(void)
+{
+  incSpinUnits(this->ui->lnbSpin, "Hz");
+  this->refreshUnitButtons();
+}
+
+void
+ConfigDialog::onDecLNBUnits(void)
+{
+  decSpinUnits(this->ui->lnbSpin, "Hz");
+  this->refreshUnitButtons();
+}
+
+
+void
+ConfigDialog::onIncSampRateUnits(void)
+{
+  incSpinUnits(this->ui->sampleRateSpin, "sps");
+  this->refreshUnitButtons();
+}
+
+void
+ConfigDialog::onDecSampRateUnits(void)
+{
+  decSpinUnits(this->ui->sampleRateSpin, "sps");
+  this->refreshUnitButtons();
+}
+
