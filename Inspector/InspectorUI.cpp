@@ -122,6 +122,18 @@ InspectorUI::InspectorUI(
         SLOT(onSymViewControlsChanged()));
 
   connect(
+        this->ui->reverseButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
+        this->ui->recordButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
         this->ui->autoScrollButton,
         SIGNAL(clicked(bool)),
         this,
@@ -557,6 +569,26 @@ formatUnits(unsigned long rate, QString const &units)
 }
 
 void
+InspectorUI::refreshSizes(void)
+{
+  this->ui->sizeLabel->setText(
+        "Capture size: " +
+        formatUnits(this->ui->symView->getLength(), "sym"));
+
+  this->ui->dataSizeLabel->setText(
+        "Data size: " +
+        formatUnits(
+          this->ui->symView->getLength() * this->decider.getBps(),
+          "bits")
+        + " (" +
+        format2nUnits(
+          this->ui->symView->getLength() * this->decider.getBps() >> 3,
+          "B") + ")");
+
+  this->ui->saveButton->setEnabled(this->ui->symView->getLength() > 0);
+}
+
+void
 InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
 {  
   this->ui->constellation->feed(data, size);
@@ -585,20 +617,7 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
       this->ui->symView->feed(this->decider.get());
       this->ui->transition->feed(this->decider.get());
 
-
-      this->ui->sizeLabel->setText(
-            "Capture size: " +
-            formatUnits(this->ui->symView->getLength(), "sym"));
-
-      this->ui->dataSizeLabel->setText(
-            "Data size: " +
-            formatUnits(
-              this->ui->symView->getLength() * this->decider.getBps(),
-              "bits")
-            + " (" +
-            format2nUnits(
-              this->ui->symView->getLength() * this->decider.getBps() >> 3,
-              "B") + ")");
+      this->refreshSizes();
     }
   }
 
@@ -919,6 +938,8 @@ InspectorUI::onSymViewControlsChanged(void)
   if (!autoScroll)
     this->ui->symView->setOffset(
         static_cast<unsigned int>(this->ui->offsetSpin->value()));
+
+  this->ui->symView->setReverse(this->ui->reverseButton->isChecked());
 }
 
 void
@@ -980,7 +1001,11 @@ InspectorUI::onSaveSymView(void)
 
   filters << "Text file (*.txt)"
           << "Binary file (*.bin)"
-          << "C source file (*.c)";
+          << "C source file (*.c)"
+          << "Microsoft Windows Bitmap (*.bmp)"
+          << "PNG Image (*.png)"
+          << "JPEG Image (*.jpeg)"
+          << "Portable Pixel Map (*.ppm)";
 
   dialog.setFileMode(QFileDialog::AnyFile);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -995,6 +1020,14 @@ InspectorUI::onSaveSymView(void)
       fmt = SymView::FILE_FORMAT_RAW;
     else if (strstr(filter.toStdString().c_str(), ".c") != nullptr)
       fmt = SymView::FILE_FORMAT_C_ARRAY;
+    else if (strstr(filter.toStdString().c_str(), ".bmp") != nullptr)
+      fmt = SymView::FILE_FORMAT_BMP;
+    else if (strstr(filter.toStdString().c_str(), ".png") != nullptr)
+      fmt = SymView::FILE_FORMAT_PNG;
+    else if (strstr(filter.toStdString().c_str(), ".jpg") != nullptr)
+      fmt = SymView::FILE_FORMAT_JPEG;
+    else if (strstr(filter.toStdString().c_str(), ".ppm") != nullptr)
+      fmt = SymView::FILE_FORMAT_PPM;
 
     try {
       this->ui->symView->save(dialog.selectedFiles().first(), fmt);
@@ -1012,6 +1045,7 @@ void
 InspectorUI::onClearSymView(void)
 {
   this->ui->symView->clear();
+  this->refreshSizes();
 }
 
 void

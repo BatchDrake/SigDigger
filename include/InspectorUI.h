@@ -104,7 +104,7 @@ namespace SigDigger {
     void populate(void);
     void connectDataSaver(void);
     void connectNetForwarder(void);
-
+    void refreshSizes(void);
     std::string captureFileName(void) const;
     int fd = -1;
 

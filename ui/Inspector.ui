@@ -212,7 +212,7 @@ font-family: Monospace;</string>
    <item row="1" column="1" colspan="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -259,19 +259,19 @@ font-family: Monospace;</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
           <property name="leftMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="topMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="rightMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="bottomMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="spacing">
-           <number>3</number>
+           <number>1</number>
           </property>
           <item row="0" column="1">
            <widget class="QComboBox" name="spectrumSourceCombo">
@@ -482,19 +482,19 @@ font-family: Monospace;</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
           <property name="leftMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="topMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="rightMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="bottomMargin">
-           <number>6</number>
+           <number>3</number>
           </property>
           <property name="spacing">
-           <number>3</number>
+           <number>1</number>
           </property>
           <item row="1" column="5">
            <widget class="QLabel" name="label_5">
@@ -592,13 +592,6 @@ font-family: Monospace;</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="2">
-           <widget class="QPushButton" name="saveButton">
-            <property name="text">
-             <string>Save</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="1" rowspan="2">
            <widget class="QPushButton" name="recordButton">
             <property name="sizePolicy">
@@ -606,6 +599,15 @@ font-family: Monospace;</string>
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: #960000;</string>
             </property>
             <property name="text">
              <string>Record</string>
@@ -619,6 +621,23 @@ font-family: Monospace;</string>
            <widget class="QLabel" name="dataSizeLabel">
             <property name="text">
              <string>Data size: 0 bits</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QPushButton" name="reverseButton">
+            <property name="text">
+             <string>Reverse</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2" colspan="2">
+           <widget class="QPushButton" name="saveButton">
+            <property name="text">
+             <string>Save</string>
             </property>
            </widget>
           </item>
