@@ -664,27 +664,30 @@ Application::startCapture(void)
     if (this->mediator->getState() == UIMediator::HALTED) {
       Suscan::AnalyzerParams params = *this->mediator->getAnalyzerParams();
       std::unique_ptr<Suscan::Analyzer> analyzer;
-      //int maxIfFreq;
+      Suscan::Source::Config profile = *this->mediator->getProfile();
 
-      if (this->mediator->getProfile()->getType() == SUSCAN_SOURCE_TYPE_SDR) {
-        if (this->mediator->getProfile()->getSampleRate() > SIGDIGGER_MAX_SAMPLE_RATE) {
-          QMessageBox::StandardButton reply;
-          reply = QMessageBox::question(
-                this,
-                "Sample rate too high",
-                "The sample rate of profile \""
-                + QString::fromStdString(this->mediator->getProfile()->label())
-                + "\" is unusually big ("
-                + QString::number(this->mediator->getProfile()->getSampleRate())
-                + "). Temporarily reduce it to "
-                + QString::number(SIGDIGGER_MAX_SAMPLE_RATE)
-                + "?",
-                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+      if (profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+        if (profile.getDecimatedSampleRate() > SIGDIGGER_MAX_SAMPLE_RATE) {
+          unsigned decimate =
+              static_cast<unsigned>(
+                std::ceil(
+                  profile.getSampleRate()
+                  / static_cast<qreal>(SIGDIGGER_MAX_SAMPLE_RATE)));
+          unsigned proposed =
+              profile.getSampleRate() / decimate;
+          QMessageBox::StandardButton reply
+              = this->mediator->shouldReduceRate(
+                  QString::fromStdString(profile.label()),
+                  profile.getDecimatedSampleRate(),
+                  proposed);
 
+          // TODO: Maybe ask for decimation?
           if (reply == QMessageBox::Yes)
-            this->mediator->getProfile()->setSampleRate(SIGDIGGER_MAX_SAMPLE_RATE);
-          else if (reply == QMessageBox::Cancel)
+            profile.setDecimation(decimate);
+          else if (reply == QMessageBox::Cancel) {
+            this->mediator->setState(UIMediator::HALTED);
             return;
+          }
         }
       }
 
@@ -692,7 +695,7 @@ Application::startCapture(void)
       Suscan::Logger::getInstance()->flush();
 
       // Allocate objects
-      if (this->mediator->getProfile()->instance == nullptr) {
+      if (profile.instance == nullptr) {
         QMessageBox::warning(
                   this,
                   "SigDigger error",
@@ -704,9 +707,7 @@ Application::startCapture(void)
       // Ensure we run this analyzer in channel mode.
       params.mode = Suscan::AnalyzerParams::Mode::CHANNEL;
 
-      analyzer = std::make_unique<Suscan::Analyzer>(
-            params,
-            *this->mediator->getProfile());
+      analyzer = std::make_unique<Suscan::Analyzer>(params, profile);
 
       // Enable throttling, if requested
       if (this->ui.sourcePanel->isThrottleEnabled())
@@ -1139,9 +1140,7 @@ Application::openCaptureFile(void)
         baseName,
         64,
         "sigdigger_%d_%.0lf_float32_iq.raw",
-        static_cast<int>(
-          this->mediator->getProfile()->getSampleRate()
-          / this->mediator->getProfile()->getDecimation()),
+        this->mediator->getProfile()->getDecimatedSampleRate(),
         this->mediator->getProfile()->getFreq());
 
   std::string fullPath =

@@ -23,6 +23,7 @@
 #include <Suscan/Messages/PSDMessage.h>
 #include <map>
 #include <AppConfig.h>
+#include <QMessageBox>
 
 namespace SigDigger {
 
@@ -103,6 +104,11 @@ namespace SigDigger {
         size_t size);
     void setCaptureSize(quint64 size);
     void refreshDevicesDone(void);
+
+    QMessageBox::StandardButton shouldReduceRate(
+        QString const &label,
+        unsigned int,
+        unsigned int);
 
     // Inspector handling
     Inspector *lookupInspector(Suscan::InspectorId id) const;

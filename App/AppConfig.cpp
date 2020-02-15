@@ -44,6 +44,7 @@ AppConfig::serialize(void)
   obj.set("x", this->x);
   obj.set("y", this->y);
   obj.set("fullScreen", this->fullScreen);
+  obj.set("disableHighRateWarning", this->disableHighRateWarning);
   obj.set("loFreq", this->loFreq);
   obj.set("bandwidth", this->bandwidth);
 
@@ -108,6 +109,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->x          = conf.get("x", this->x));
     TRYSILENT(this->y          = conf.get("y", this->y));
     TRYSILENT(this->fullScreen = conf.get("fullScreen", this->fullScreen));
+    TRYSILENT(this->disableHighRateWarning = conf.get("disableHighRateWarning", this->disableHighRateWarning));
     TRYSILENT(this->loFreq     = conf.get("loFreq", this->loFreq));
     TRYSILENT(this->bandwidth  = conf.get("bandwidth", this->bandwidth));
 

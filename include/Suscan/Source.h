@@ -231,6 +231,7 @@ namespace Suscan {
     SUFREQ getFreq(void) const;
     SUFREQ getLnbFreq(void) const;
     unsigned int getSampleRate(void) const;
+    unsigned int getDecimatedSampleRate(void) const;
     unsigned int getDecimation(void) const;
     enum suscan_source_type getType(void) const;
     bool getLoop(void) const;

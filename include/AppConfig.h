@@ -59,6 +59,8 @@ namespace SigDigger {
       int x = -1;
       int y = -1;
 
+      bool disableHighRateWarning = false;
+
       int loFreq = 0;
       unsigned int bandwidth = 0;
 

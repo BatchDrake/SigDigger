@@ -399,6 +399,48 @@ UIMediator::refreshDevicesDone(void)
   this->ui->configDialog->notifySingletonChanges();
 }
 
+QMessageBox::StandardButton
+UIMediator::shouldReduceRate(
+    QString const &label,
+    unsigned int requested,
+    unsigned int proposed)
+{
+  QMessageBox::StandardButton reply = QMessageBox::No;
+
+  if (!this->appConfig->disableHighRateWarning) {
+      QCheckBox *cb = new QCheckBox("Don't ask again");
+      QMessageBox msgbox;
+      msgbox.setText(
+            "The sample rate of profile \""
+            + label
+            + "\" is unusually big ("
+            + QString::number(requested)
+            + "). Decimate it down to "
+            + QString::number(proposed)
+            + "?");
+      msgbox.setWindowTitle("Sample rate too high");
+      msgbox.setIcon(QMessageBox::Icon::Question);
+      msgbox.addButton(QMessageBox::Yes);
+      msgbox.addButton(QMessageBox::No);
+      msgbox.addButton(QMessageBox::Cancel);
+      msgbox.setDefaultButton(QMessageBox::Cancel);
+      msgbox.setCheckBox(cb);
+
+      QObject::connect(
+            cb,
+            &QCheckBox::stateChanged,
+            [this](int state) {
+        if (static_cast<Qt::CheckState>(state) == Qt::CheckState::Checked) {
+              this->appConfig->disableHighRateWarning = true;
+          }
+      });
+
+      reply = static_cast<QMessageBox::StandardButton>(msgbox.exec());
+  }
+
+  return reply;
+}
+
 void
 UIMediator::feedPSD(const Suscan::PSDMessage &msg)
 {

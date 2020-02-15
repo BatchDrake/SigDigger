@@ -221,6 +221,16 @@ Source::Config::getLnbFreq(void) const
 }
 
 unsigned int
+Source::Config::getDecimatedSampleRate(void) const
+{
+  if (this->instance == nullptr)
+    return 0;
+
+  return suscan_source_config_get_samp_rate(this->instance)
+      / suscan_source_config_get_average(this->instance);
+}
+
+unsigned int
 Source::Config::getSampleRate(void) const
 {
   if (this->instance == nullptr)
