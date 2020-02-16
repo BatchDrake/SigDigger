@@ -18,6 +18,7 @@
 //
 #include <Suscan/Library.h>
 #include "DefaultGradient.h"
+#include "MainSpectrum.h"
 #include "FftPanel.h"
 #include "ui_FftPanel.h"
 
@@ -212,6 +213,7 @@ FftPanel::FftPanel(QWidget *parent) :
   ui->setupUi(this);
 
   this->palettes.push_back(Palette("Suscan", wf_gradient));
+  this->palettes.push_back(*MainSpectrum::getGqrxPalette());
 
   this->assertConfig();
 

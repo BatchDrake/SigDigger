@@ -21,6 +21,7 @@
 #include <Suscan/Library.h>
 #include "ui_PanoramicDialog.h"
 #include "DefaultGradient.h"
+#include "MainSpectrum.h"
 #include <fstream>
 #include <iomanip>
 #include <limits>
@@ -310,6 +311,7 @@ PanoramicDialog::deserializePalettes(void)
     Suscan::Singleton *sus = Suscan::Singleton::get_instance();
     int ndx = 0;
     this->palettes.push_back(Palette("Suscan", wf_gradient));
+    this->palettes.push_back(*MainSpectrum::getGqrxPalette());
 
     for (auto i = sus->getFirstPalette();
          i != sus->getLastPalette();

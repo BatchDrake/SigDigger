@@ -23,6 +23,43 @@
 
 using namespace SigDigger;
 
+Palette *MainSpectrum::gqrxPalette = nullptr;
+static qreal color[256][3];
+Palette *
+MainSpectrum::getGqrxPalette(void)
+{
+  if (gqrxPalette == nullptr) {
+    for (int i = 0; i < 256; i++) {
+      if (i < 20) { // level 0: black background
+        color[i][0] = color[i][1] = color[i][2] = 0;
+      } else if ((i >= 20) && (i < 70)) { // level 1: black -> blue
+        color[i][0] = color[i][1] = 0;
+        color[i][2] = (140*(i-20)/50) / 255.;
+      } else if ((i >= 70) && (i < 100)) { // level 2: blue -> light-blue / greenish
+        color[i][0] = (60*(i-70)/30) / 255.;
+        color[i][1] = (125*(i-70)/30) / 255.;
+        color[i][2] = (115*(i-70)/30 + 140) / 255.;
+      } else if ((i >= 100) && (i < 150)) { // level 3: light blue -> yellow
+        color[i][0] = (195*(i-100)/50 + 60) / 255.;
+        color[i][1] = (130*(i-100)/50 + 125) / 255.;
+        color[i][2] = (255-(255*(i-100)/50)) / 255.;
+      } else if ((i >= 150) && (i < 250)) { // level 4: yellow -> red
+        color[i][0] = 1;
+        color[i][1] = (255-255*(i-150)/100) / 255.;
+        color[i][2] = 0;
+      } else if (i >= 250) { // level 5: red -> white
+        color[i][0] = 1;
+        color[i][1] = (255*(i-250)/5) / 255.;
+        color[i][2] = (255*(i-250)/5) / 255.;
+      }
+    }
+
+    gqrxPalette = new Palette("Gqrx", color);
+  }
+
+  return gqrxPalette;
+}
+
 MainSpectrum::MainSpectrum(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::MainSpectrum)

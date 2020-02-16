@@ -61,6 +61,8 @@ InspectorUI::InspectorUI(
 
   // TODO: put shared UI objects in a singleton
   this->palettes.push_back(Palette("Suscan", wf_gradient));
+  this->palettes.push_back(*MainSpectrum::getGqrxPalette());
+
   for (auto i = sus->getFirstPalette();
        i != sus->getLastPalette();
        i++) {
