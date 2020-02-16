@@ -212,7 +212,7 @@ font-family: Monospace;</string>
    <item row="1" column="1" colspan="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -686,7 +686,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>690</height>
+        <height>698</height>
        </rect>
       </property>
       <attribute name="label">
@@ -822,7 +822,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>690</height>
+        <height>698</height>
        </rect>
       </property>
       <attribute name="label">
@@ -861,7 +861,7 @@ QToolBox::tab:hover {
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>690</height>
+            <height>698</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="estimatorsGrid">
@@ -895,7 +895,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>690</height>
+        <height>698</height>
        </rect>
       </property>
       <attribute name="label">
@@ -946,7 +946,7 @@ QToolBox::tab:hover {
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>690</height>
+            <height>698</height>
            </rect>
           </property>
           <property name="maximumSize">
@@ -993,7 +993,7 @@ QToolBox::tab:hover {
         <x>0</x>
         <y>0</y>
         <width>300</width>
-        <height>690</height>
+        <height>698</height>
        </rect>
       </property>
       <property name="sizePolicy">

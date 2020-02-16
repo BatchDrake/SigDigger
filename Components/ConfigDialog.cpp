@@ -44,7 +44,13 @@ ConfigDialog::populateCombos(void)
   for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i)
     if (i->isAvailable())
       this->ui->deviceCombo->addItem(
-          QString::fromStdString(i->getDesc()));
+          QString::fromStdString(i->getDesc()),
+          QVariant::fromValue<long>(i - sus->getFirstDevice()));
+
+  if (this->ui->deviceCombo->currentIndex() == -1)
+    this->ui->deviceCombo->setCurrentIndex(0);
+
+  this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
 }
 
 void
@@ -195,8 +201,6 @@ ConfigDialog::refreshFromSpinData(void)
       / this->ui->decimationSpin->value();
   if (step >= 10.f)
     step /= 10.f;
-
-  this->ui->bwSpin->setSingleStep(static_cast<int>(step));
 
   if (trueRate < 1e3)
     rateText = QString::number(trueRate) + " sps";
@@ -368,8 +372,10 @@ ConfigDialog::refreshProfileUi(void)
   this->ui->iqBalanceCheck->setChecked(this->profile.getIQBalance());
   this->ui->removeDCCheck->setChecked(this->profile.getDCRemove());
   this->ui->loopCheck->setChecked(this->profile.getLoop());
-  this->ui->bwSpin->setValue(
-        static_cast<double>(this->profile.getBandwidth()));
+  setSpinValue(
+        this->ui->bwSpin,
+        static_cast<qreal>(this->profile.getBandwidth()),
+        "Hz");
 
   switch (this->profile.getFormat()) {
     case SUSCAN_SOURCE_FORMAT_AUTO:
@@ -387,17 +393,18 @@ ConfigDialog::refreshProfileUi(void)
 
   this->ui->pathEdit->setText(QString::fromStdString(this->profile.getPath()));
 
-  // Selecting the source is a bit trickier:
-  // We traverse all devices and get their index.
-  // Then, we use that information to set the current
-  // element in the combobox
-
   this->ui->deviceCombo->setCurrentIndex(-1);
 
   for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
     if (i->equals(this->profile.getDevice())) {
-      this->ui->deviceCombo->setCurrentIndex(
-            static_cast<int>(i - sus->getFirstDevice()));
+      int index = this->ui->deviceCombo->findData(
+            QVariant::fromValue(
+              static_cast<long>(i - sus->getFirstDevice())));
+
+      if (index != -1)
+        this->ui->deviceCombo->setCurrentIndex(index);
+
+      break;
     }
   }
 
@@ -711,8 +718,10 @@ ConfigDialog::onDeviceChanged(int index)
 
     const Suscan::Source::Device *device;
 
-    SU_ATTEMPT(device = sus->getDeviceAt(
-          static_cast<unsigned int>(index)));
+    SU_ATTEMPT(
+          device = sus->getDeviceAt(
+            static_cast<unsigned int>(
+            this->ui->deviceCombo->itemData(index).value<long>())));
 
     this->profile.setDevice(*device);
 
@@ -767,10 +776,9 @@ ConfigDialog::onSpinsChanged(void)
     this->profile.setSampleRate(sampRate);
     this->profile.setDecimation(
           static_cast<unsigned>(this->ui->decimationSpin->value()));
-    this->ui->bwSpin->setMaximum(sampRate);
 
-    if (sampRate < this->ui->bwSpin->value())
-      this->ui->bwSpin->setValue(sampRate);
+    if (sampRate < getSpinValue(this->ui->bwSpin))
+      setSpinValue(this->ui->bwSpin, sampRate, "Hz");
 
     this->refreshFromSpinData();
   }
@@ -787,10 +795,11 @@ ConfigDialog::run(void)
 }
 
 void
-ConfigDialog::onBandwidthChanged(double value)
+ConfigDialog::onBandwidthChanged(double)
 {
   if (!this->refreshing)
-    this->profile.setBandwidth(static_cast<SUFLOAT>(value));
+    this->profile.setBandwidth(
+        static_cast<SUFLOAT>(getSpinValue(this->ui->bwSpin)));
 }
 
 void
