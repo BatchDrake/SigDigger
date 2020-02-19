@@ -45,6 +45,8 @@ namespace SigDigger {
     // Static part of UI
     QMainWindow *owner = nullptr;
     AppUI *ui = nullptr;
+    QLabel *freqLabel = nullptr;
+
     QDockWidget *sourcePanelDock = nullptr;
     QDockWidget *inspectorPanelDock = nullptr;
     QDockWidget *fftPanelDock = nullptr;
@@ -144,7 +146,7 @@ namespace SigDigger {
     void saveUIConfig(void);
     void setProfile(Suscan::Source::Config const &config);
     void setPanSpectrumRunning(bool state);
-
+    void setStatusDemodFrequency(qint64 freq);
     void resetRawInspector(qreal fs);
     void feedRawInspector(const SUCOMPLEX *, size_t size);
 

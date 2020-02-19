@@ -220,6 +220,8 @@ FftPanel::FftPanel(QWidget *parent) :
   for (i = 9; i < 17; ++i)
     this->addFftSize(1 << i);
 
+  this->addFftSize(1 << 20);
+
   // Add refresh rates
   this->addRefreshRate(1);
   this->addRefreshRate(2);

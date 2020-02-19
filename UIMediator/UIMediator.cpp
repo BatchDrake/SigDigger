@@ -280,6 +280,11 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->ui->spectrum->setPaletteGradient(
         this->ui->fftPanel->getPaletteGradient());
 
+  // Configure status bar
+  this->freqLabel = new QLabel("No frequency selected");
+  this->freqLabel->setFont(QFont("Monospace"));
+  this->ui->main->statusBar->addPermanentWidget(this->freqLabel);
+
   this->connectMainWindow();
   this->connectSpectrum();
   this->connectSourcePanel();
@@ -288,6 +293,12 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->connectInspectorPanel();
   this->connectDeviceDialog();
   this->connectPanoramicDialog();
+}
+
+void
+UIMediator::setStatusDemodFrequency(qint64 freq)
+{
+  this->freqLabel->setText("Demod: " + QString::number(freq) + " Hz");
 }
 
 void

@@ -18,6 +18,7 @@
 //
 
 #include "UIMediator.h"
+#include "MainWindow.h"
 
 using namespace SigDigger;
 
@@ -95,7 +96,7 @@ UIMediator::onLoChanged(qint64)
   qint64 freq = this->ui->spectrum->getCenterFreq()
       + this->ui->spectrum->getLoFreq();
   this->ui->inspectorPanel->setDemodFrequency(freq);
-
+  this->setStatusDemodFrequency(freq);
   this->appConfig->loFreq = static_cast<int>(this->ui->spectrum->getLoFreq());
   emit loChanged(this->ui->spectrum->getLoFreq());
 }
