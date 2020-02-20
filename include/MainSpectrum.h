@@ -94,6 +94,7 @@ namespace SigDigger {
     void setColorConfig(ColorConfig const &cfg);
     void setPeakHold(bool);
     void setPeakDetect(bool);
+    void setExpectedRate(int);
 
     void setZoom(unsigned int zoom);
     void setSampleRate(unsigned int rate);

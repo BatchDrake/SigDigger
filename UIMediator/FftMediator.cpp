@@ -113,6 +113,8 @@ void
 UIMediator::onRefreshRateChanged(void)
 {
   this->appConfig->analyzerParams.psdUpdateInterval = 1.f / this->ui->fftPanel->getRefreshRate();
+  this->ui->spectrum->setExpectedRate(
+        static_cast<int>(this->ui->fftPanel->getRefreshRate()));
   emit analyzerParamsChanged();
 }
 

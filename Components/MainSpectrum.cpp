@@ -272,6 +272,11 @@ MainSpectrum::setPeakDetect(bool det)
   this->ui->mainSpectrum->setPeakDetection(det, 5);
 }
 
+void
+MainSpectrum::setExpectedRate(int rate)
+{
+  this->ui->mainSpectrum->setExpectedRate(rate);
+}
 
 void
 MainSpectrum::setColorConfig(ColorConfig const &cfg)
