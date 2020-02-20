@@ -182,7 +182,7 @@ font-family: Monospace;
 font-weight: bold;</string>
      </property>
      <property name="text">
-      <string> LOCAL </string>
+      <string> DEMOD </string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

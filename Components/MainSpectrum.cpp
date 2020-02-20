@@ -210,17 +210,22 @@ MainSpectrum::notifyHalt(void)
 void
 MainSpectrum::setCenterFreq(qint64 freq)
 {
+  qint64 loFreq = this->getLoFreq();
+  qint64 rate = this->cachedRate;
   this->ui->fcLcd->setValue(freq);
   this->ui->mainSpectrum->setCenterFreq(static_cast<quint64>(freq));
   this->ui->mainSpectrum->setFreqUnits(
         getFrequencyUnits(
           static_cast<qint64>(freq)));
+  this->ui->loLcd->setMin(-rate / 2 + this->getCenterFreq());
+  this->ui->loLcd->setMax(rate / 2 + this->getCenterFreq());
+  this->setLoFreq(loFreq);
 }
 
 void
 MainSpectrum::setLoFreq(qint64 loFreq)
 {
-  this->ui->loLcd->setValue(loFreq);
+  this->ui->loLcd->setValue(loFreq + this->getCenterFreq());
   this->ui->mainSpectrum->setFilterOffset(loFreq);
 }
 
@@ -368,8 +373,8 @@ MainSpectrum::setSampleRate(unsigned int rate)
     this->ui->mainSpectrum->setSampleRate(rate);
 
     this->ui->mainSpectrum->setSpanFreq(rate / this->zoom);
-    this->ui->loLcd->setMin(-freq / 2);
-    this->ui->loLcd->setMax(freq / 2);
+    this->ui->loLcd->setMin(-freq / 2 + this->getCenterFreq());
+    this->ui->loLcd->setMax(freq / 2 + this->getCenterFreq());
 
     this->cachedRate = rate;
   }
@@ -474,7 +479,7 @@ MainSpectrum::getCenterFreq(void) const
 qint64
 MainSpectrum::getLoFreq(void) const
 {
-  return this->ui->loLcd->getValue();
+  return this->ui->loLcd->getValue() - this->getCenterFreq();
 }
 
 qint64
@@ -525,14 +530,14 @@ MainSpectrum::onLnbFrequencyChanged(void)
 void
 MainSpectrum::onWfLoChanged(void)
 {
-  this->ui->loLcd->setValue(this->ui->mainSpectrum->getFilterOffset());
+  this->ui->loLcd->setValue(this->ui->mainSpectrum->getFilterOffset() + this->getCenterFreq());
   emit loChanged(this->getLoFreq());
 }
 
 void
 MainSpectrum::onLoChanged(void)
 {
-  this->ui->mainSpectrum->setFilterOffset(this->ui->loLcd->getValue());
+  this->ui->mainSpectrum->setFilterOffset(this->getLoFreq());
   emit loChanged(this->getLoFreq());
 }
 
