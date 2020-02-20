@@ -1006,7 +1006,7 @@ InspectorUI::onSaveSymView(void)
           << "C source file (*.c)"
           << "Microsoft Windows Bitmap (*.bmp)"
           << "PNG Image (*.png)"
-          << "JPEG Image (*.jpeg)"
+          << "JPEG Image (*.jpg)"
           << "Portable Pixel Map (*.ppm)";
 
   dialog.setFileMode(QFileDialog::AnyFile);
