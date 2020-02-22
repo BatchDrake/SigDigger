@@ -217,12 +217,14 @@ UIMediator::connectMainWindow(void)
         this,
         SLOT(onToggleCapture(bool)));
 
+#ifndef __APPLE__
   connect(
         this->ui->main->action_Full_screen,
         SIGNAL(triggered(bool)),
         this,
         SLOT(onToggleFullScreen(bool)));
-
+#endif // __APLE__
+  
   connect(
         this->ui->main->actionAbout,
         SIGNAL(triggered(bool)),
