@@ -106,6 +106,8 @@ namespace SigDigger {
     void connectNetForwarder(void);
     void refreshSizes(void);
     std::string captureFileName(void) const;
+    unsigned int getVScrollPageSize(void) const;
+    void refreshVScrollBar(void) const;
     int fd = -1;
 
     public:
@@ -142,6 +144,7 @@ namespace SigDigger {
       void onInspectorControlChanged();
       void onOffsetChanged(unsigned int);
       void onStrideChanged(unsigned int);
+      void onZoomChanged(void);
       void onScrollBarChanged(int val);
       void onCPUBurnClicked(void);
       void onFPSReset(void);
@@ -160,6 +163,7 @@ namespace SigDigger {
       void onChangeBandwidth(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
       void onApplyEstimation(QString, float);
+      void onZoomReset(void);
 
       // DataSaver slots
       void onSaveError(void);

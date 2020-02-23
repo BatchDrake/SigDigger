@@ -160,6 +160,18 @@ InspectorUI::InspectorUI(
         SLOT(onSymViewControlsChanged()));
 
   connect(
+        this->ui->zoomSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onZoomChanged()));
+
+  connect(
+        this->ui->resetZoomButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onZoomReset()));
+
+  connect(
         this->ui->saveButton,
         SIGNAL(clicked(bool)),
         this,
@@ -570,6 +582,44 @@ formatUnits(unsigned long rate, QString const &units)
   return QString::number(rate / 1e9, 'f', 3) + " G" + units;
 }
 
+unsigned int
+InspectorUI::getVScrollPageSize(void) const
+{
+  return
+      (this->ui->symView->getStride()
+       * static_cast<unsigned>(this->ui->symView->height()))
+      / this->ui->symView->getZoom();
+}
+
+void
+InspectorUI::refreshVScrollBar(void) const
+{
+  unsigned int pageSize = this->getVScrollPageSize();
+  unsigned long lines =
+      (this->ui->symView->getLength() + this->ui->symView->getStride() - 1) /
+      this->ui->symView->getStride();
+  unsigned long max = lines * this->ui->symView->getStride();
+
+  if (max > pageSize) {
+    this->ui->symViewScrollBar->setPageStep(static_cast<int>(pageSize));
+    this->ui->symViewScrollBar->setMaximum(static_cast<int>(max - pageSize));
+    this->ui->symViewScrollBar->setVisible(true);
+  } else {
+    this->ui->symViewScrollBar->setPageStep(0);
+    this->ui->symViewScrollBar->setMaximum(0);
+    this->ui->symViewScrollBar->setVisible(false);
+  }
+
+  this->ui->symViewScrollBar->setSingleStep(
+        static_cast<int>(this->ui->symView->getStride()));
+
+  if (!this->ui->autoScrollButton->isChecked())
+    this->ui->symViewScrollBar->setEnabled(
+          this->ui->symView->getLength() >= pageSize);
+  else
+    this->ui->symViewScrollBar->setEnabled(false);
+}
+
 void
 InspectorUI::refreshSizes(void)
 {
@@ -588,6 +638,8 @@ InspectorUI::refreshSizes(void)
           "B") + ")");
 
   this->ui->saveButton->setEnabled(this->ui->symView->getLength() > 0);
+
+  this->refreshVScrollBar();
 }
 
 void
@@ -880,27 +932,23 @@ InspectorUI::onInspectorControlChanged(void)
 void
 InspectorUI::onScrollBarChanged(int offset)
 {
+  int relStart = this->ui->symView->getOffset() % this->ui->symView->getStride();
+  int alignedOffset = this->ui->symView->getStride() * (
+        offset / this->ui->symView->getStride());
+
   this->scrolling = true;
+
   this->ui->symView->setOffset(
-        static_cast<unsigned int>(this->ui->symView->getStride() * offset));
+        static_cast<unsigned int>(alignedOffset + relStart));
+
   this->scrolling = false;
 }
 
 void
 InspectorUI::onOffsetChanged(unsigned int offset)
 {
-  int max = this->ui->symView->getLines() - this->ui->symView->height();
-
-  if (max <= 0) {
-    this->ui->symViewScrollBar->setPageStep(0);
-    this->ui->symViewScrollBar->setMaximum(1);
-  } else {
-    this->ui->symViewScrollBar->setPageStep(this->ui->symView->height());
-    this->ui->symViewScrollBar->setMaximum(max);
-
-    if (!this->scrolling)
-      this->ui->symViewScrollBar->setValue(static_cast<int>(offset));
-  }
+  if (!this->scrolling)
+    this->ui->symViewScrollBar->setValue(static_cast<int>(offset));
 
   this->ui->offsetSpin->setValue(static_cast<int>(offset));
 }
@@ -932,6 +980,8 @@ InspectorUI::onSymViewControlsChanged(void)
   this->ui->symView->setAutoScroll(autoScroll);
   this->ui->widthSpin->setEnabled(!autoStride);
   this->ui->offsetSpin->setEnabled(!autoScroll);
+
+  this->refreshVScrollBar();
 
   if (!autoStride)
     this->ui->symView->setStride(
@@ -1047,6 +1097,8 @@ void
 InspectorUI::onClearSymView(void)
 {
   this->ui->symView->clear();
+  this->onOffsetChanged(0);
+  this->refreshVScrollBar();
   this->refreshSizes();
 }
 
@@ -1238,5 +1290,21 @@ void
 InspectorUI::onApplyEstimation(QString name, float value)
 {
   emit applyEstimation(name, value);
+}
+
+void
+InspectorUI::onZoomChanged(void)
+{
+  this->ui->symView->setZoom(
+        static_cast<unsigned int>(this->ui->zoomSpin->value()));
+  this->refreshVScrollBar();
+}
+
+void
+InspectorUI::onZoomReset(void)
+{
+  this->ui->zoomSpin->setValue(1);
+  this->ui->symView->setZoom(1);
+  this->refreshVScrollBar();
 }
 
