@@ -83,9 +83,21 @@ InspectorUI::InspectorUI(
 
   connect(
         this->ui->symView,
+        SIGNAL(zoomChanged(unsigned int)),
+        this,
+        SLOT(onSymViewZoomChanged(unsigned int)));
+
+  connect(
+        this->ui->symView,
         SIGNAL(offsetChanged(unsigned int)),
         this,
         SLOT(onOffsetChanged(unsigned int)));
+
+  connect(
+        this->ui->symView,
+        SIGNAL(hOffsetChanged(int)),
+        this,
+        SLOT(onHOffsetChanged(int)));
 
   connect(
         this->ui->symView,
@@ -98,6 +110,12 @@ InspectorUI::InspectorUI(
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onScrollBarChanged(int)));
+
+  connect(
+        this->ui->symViewHScrollBar,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onHScrollBarChanged(int)));
 
   connect(
         this->ui->fpsSpin,
@@ -591,6 +609,37 @@ InspectorUI::getVScrollPageSize(void) const
       / this->ui->symView->getZoom();
 }
 
+unsigned int
+InspectorUI::getHScrollOffset(void) const
+{
+  return static_cast<unsigned>(this->ui->symViewHScrollBar->value());
+}
+
+void
+InspectorUI::refreshHScrollBar(void) const
+{
+  unsigned int visible =
+      static_cast<unsigned>(this->ui->symView->width()) /
+      this->ui->symView->getZoom();
+
+  if (visible < this->ui->symView->getStride()) {
+    unsigned int max = this->ui->symView->getStride() - visible;
+    this->ui->symViewHScrollBar->setPageStep(static_cast<int>(visible));
+    this->ui->symViewHScrollBar->setMaximum(static_cast<int>(max));
+    this->ui->symViewHScrollBar->setVisible(true);
+  } else {
+    this->ui->symViewHScrollBar->setPageStep(static_cast<int>(0));
+    this->ui->symViewHScrollBar->setMaximum(static_cast<int>(0));
+    this->ui->symViewHScrollBar->setVisible(false);
+  }
+
+  if (!this->ui->autoFitButton->isChecked())
+    this->ui->symViewHScrollBar->setEnabled(
+          this->ui->symView->getLength() >= visible);
+  else
+    this->ui->symViewHScrollBar->setEnabled(false);
+}
+
 void
 InspectorUI::refreshVScrollBar(void) const
 {
@@ -945,6 +994,15 @@ InspectorUI::onScrollBarChanged(int offset)
 }
 
 void
+InspectorUI::onHScrollBarChanged(int offset)
+{
+  this->scrolling = true;
+
+  this->ui->symView->setHOffset(offset);
+  this->scrolling = false;
+}
+
+void
 InspectorUI::onOffsetChanged(unsigned int offset)
 {
   if (!this->scrolling)
@@ -954,9 +1012,17 @@ InspectorUI::onOffsetChanged(unsigned int offset)
 }
 
 void
+InspectorUI::onHOffsetChanged(int offset)
+{
+  if (!this->scrolling)
+    this->ui->symViewHScrollBar->setValue(offset);
+}
+
+void
 InspectorUI::onStrideChanged(unsigned int stride)
 {
   this->ui->widthSpin->setValue(static_cast<int>(stride));
+  this->refreshHScrollBar();
 }
 
 void
@@ -982,6 +1048,7 @@ InspectorUI::onSymViewControlsChanged(void)
   this->ui->offsetSpin->setEnabled(!autoScroll);
 
   this->refreshVScrollBar();
+  this->refreshHScrollBar();
 
   if (!autoStride)
     this->ui->symView->setStride(
@@ -1298,6 +1365,7 @@ InspectorUI::onZoomChanged(void)
   this->ui->symView->setZoom(
         static_cast<unsigned int>(this->ui->zoomSpin->value()));
   this->refreshVScrollBar();
+  this->refreshHScrollBar();
 }
 
 void
@@ -1306,5 +1374,13 @@ InspectorUI::onZoomReset(void)
   this->ui->zoomSpin->setValue(1);
   this->ui->symView->setZoom(1);
   this->refreshVScrollBar();
+  this->refreshHScrollBar();
 }
 
+void
+InspectorUI::onSymViewZoomChanged(unsigned int zoom)
+{
+  this->ui->zoomSpin->setValue(static_cast<int>(zoom));
+  this->refreshVScrollBar();
+  this->refreshHScrollBar();
+}

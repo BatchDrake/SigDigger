@@ -107,7 +107,9 @@ namespace SigDigger {
     void refreshSizes(void);
     std::string captureFileName(void) const;
     unsigned int getVScrollPageSize(void) const;
+    unsigned int getHScrollOffset(void) const;
     void refreshVScrollBar(void) const;
+    void refreshHScrollBar(void) const;
     int fd = -1;
 
     public:
@@ -143,9 +145,12 @@ namespace SigDigger {
     public slots:
       void onInspectorControlChanged();
       void onOffsetChanged(unsigned int);
+      void onHOffsetChanged(int);
       void onStrideChanged(unsigned int);
       void onZoomChanged(void);
+      void onSymViewZoomChanged(unsigned int);
       void onScrollBarChanged(int val);
+      void onHScrollBarChanged(int offset);
       void onCPUBurnClicked(void);
       void onFPSReset(void);
       void onFPSChanged(void);

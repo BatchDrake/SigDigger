@@ -796,11 +796,8 @@ QToolBox::tab:hover {
           <property name="bottomMargin">
            <number>0</number>
           </property>
-          <property name="horizontalSpacing">
+          <property name="spacing">
            <number>0</number>
-          </property>
-          <property name="verticalSpacing">
-           <number>3</number>
           </property>
           <item row="0" column="0">
            <widget class="SymView" name="symView">
@@ -831,6 +828,13 @@ QToolBox::tab:hover {
             </property>
             <property name="invertedControls">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QScrollBar" name="symViewHScrollBar">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
