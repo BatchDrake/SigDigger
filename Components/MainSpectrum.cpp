@@ -515,13 +515,13 @@ MainSpectrum::onFrequencyChanged(void)
   qint64 freq = this->ui->fcLcd->getValue();
   this->setCenterFreq(freq);
   emit frequencyChanged(freq);
+  this->onLoChanged();
 }
 
 void
 MainSpectrum::onNewCenterFreq(qint64 freq)
 {
-  this->setCenterFreq(freq);
-  emit frequencyChanged(freq);
+  this->ui->fcLcd->setValue(freq);
 }
 
 void

@@ -88,6 +88,8 @@ UIMediator::onFrequencyChanged(qint64)
   emit frequencyChanged(
         this->ui->spectrum->getCenterFreq(),
         this->ui->spectrum->getLnbFreq());
+
+  emit loChanged(this->ui->spectrum->getLoFreq());
 }
 
 void
