@@ -59,16 +59,38 @@ ConfigDialog::refreshUiState(void)
   if (this->ui->sdrRadio->isChecked()) {
     this->ui->sdrFrame->setEnabled(true);
     this->ui->fileFrame->setEnabled(false);
+    this->ui->sampRateStack->setCurrentIndex(0);
   } else {
     this->ui->sdrFrame->setEnabled(false);
     this->ui->fileFrame->setEnabled(true);
+    this->ui->sampRateStack->setCurrentIndex(1);
   }
+
+  this->setSelectedSampleRate(this->profile.getSampleRate());
+  this->refreshTrueSampleRate();
 }
 
 void
 ConfigDialog::refreshAntennas(void)
 {
   populateAntennaCombo(this->profile, this->ui->antennaCombo);
+}
+
+void
+ConfigDialog::refreshSampRates(void)
+{
+  Suscan::Source::Device device = this->profile.getDevice();
+
+  this->ui->sampleRateCombo->clear();
+
+  for (
+       auto p = device.getFirstSampRate();
+       p != device.getLastSampRate();
+       ++p) {
+    this->ui->sampleRateCombo->addItem(
+          getSampRateString(*p),
+          QVariant::fromValue<double>(*p));
+  }
 }
 
 #define APSTOREF(widget, field) \
@@ -192,15 +214,10 @@ ConfigDialog::refreshColorUi(void)
   CCREFRESH(histogramModelColor, histogramModel);
 }
 
-void
-ConfigDialog::refreshFromSpinData(void)
+QString
+ConfigDialog::getSampRateString(qreal trueRate)
 {
-  float step = SU_POW(10., SU_FLOOR(SU_LOG(this->profile.getSampleRate())));
   QString rateText;
-  qreal trueRate = getSpinValue(this->ui->sampleRateSpin)
-      / this->ui->decimationSpin->value();
-  if (step >= 10.f)
-    step /= 10.f;
 
   if (trueRate < 1e3)
     rateText = QString::number(trueRate) + " sps";
@@ -209,7 +226,20 @@ ConfigDialog::refreshFromSpinData(void)
   else if (trueRate < 1e9)
     rateText = QString::number(trueRate * 1e-6) + " Msps";
 
-  this->ui->trueRateLabel->setText(rateText);
+  return rateText;
+}
+
+void
+ConfigDialog::refreshTrueSampleRate(void)
+{
+  float step = SU_POW(10., SU_FLOOR(SU_LOG(this->profile.getSampleRate())));
+  QString rateText;
+  qreal trueRate = static_cast<qreal>(this->getSelectedSampleRate())
+      / this->ui->decimationSpin->value();
+  if (step >= 10.f)
+    step /= 10.f;
+
+  this->ui->trueRateLabel->setText(getSampRateString(trueRate));
 }
 
 void
@@ -341,6 +371,8 @@ ConfigDialog::refreshProfileUi(void)
       break;
     }
 
+  this->refreshSampRates();
+
   setSpinValue(
         this->ui->frequencySpin,
         this->profile.getFreq(),
@@ -351,23 +383,22 @@ ConfigDialog::refreshProfileUi(void)
         this->profile.getLnbFreq(),
         "Hz");
 
-  setSpinValue(
-        this->ui->sampleRateSpin,
-        this->profile.getSampleRate(),
-        "sps");
-
   this->ui->decimationSpin->setValue(
         static_cast<int>(this->profile.getDecimation()));
 
   switch (this->profile.getType()) {
     case SUSCAN_SOURCE_TYPE_SDR:
       this->ui->sdrRadio->setChecked(true);
+      this->ui->sampRateStack->setCurrentIndex(0);
       break;
 
     case SUSCAN_SOURCE_TYPE_FILE:
       this->ui->fileRadio->setChecked(true);
+      this->ui->sampRateStack->setCurrentIndex(1);
       break;
   }
+
+  this->setSelectedSampleRate(this->profile.getSampleRate());
 
   this->ui->iqBalanceCheck->setChecked(this->profile.getIQBalance());
   this->ui->removeDCCheck->setChecked(this->profile.getDCRemove());
@@ -410,7 +441,8 @@ ConfigDialog::refreshProfileUi(void)
 
   this->refreshUiState();
   this->refreshAntennas();
-  this->refreshFromSpinData();
+
+  this->refreshTrueSampleRate();
 }
 
 void
@@ -492,6 +524,12 @@ ConfigDialog::connectAll(void)
   connect(
         this->ui->decimationSpin,
         SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onSpinsChanged(void)));
+
+  connect(
+        this->ui->sampleRateCombo,
+        SIGNAL(activated(int)),
         this,
         SLOT(onSpinsChanged(void)));
 
@@ -759,6 +797,49 @@ ConfigDialog::onCheckButtonsToggled(bool)
   }
 }
 
+unsigned int
+ConfigDialog::getSelectedSampleRate(void) const
+{
+  unsigned int sampRate = 0;
+
+  if (this->ui->sampRateStack->currentIndex() == 0) {
+    // Index 0: Sample Rate Combo
+    if (this->ui->sampleRateCombo->currentIndex() != -1) {
+      qreal selectedValue =
+          this->ui->sampleRateCombo->currentData().value<qreal>();
+      sampRate = static_cast<unsigned>(selectedValue);
+    }
+  } else {
+    // Index 1: Sample Rate Spin
+    sampRate = static_cast<unsigned>(getSpinValue(this->ui->sampleRateSpin));
+  }
+
+  return sampRate;
+}
+
+void
+ConfigDialog::setSelectedSampleRate(unsigned int rate)
+{
+  if (this->ui->sampRateStack->currentIndex() == 0) {
+    // Index 0: Sample Rate Combo
+    qreal dist = std::numeric_limits<qreal>::infinity();
+    int bestIndex = -1;
+    for (auto i = 0; i < this->ui->sampleRateCombo->count(); ++i) {
+      qreal value = this->ui->sampleRateCombo->itemData(i).value<qreal>();
+      if (fabs(value - rate) < dist) {
+        bestIndex = i;
+        dist = fabs(value - rate);
+      }
+    }
+
+    if (bestIndex != -1)
+      this->ui->sampleRateCombo->setCurrentIndex(bestIndex);
+  } else {
+    // Index 1: Sample Rate Spin
+    setSpinValue(this->ui->sampleRateSpin, rate, "sps");
+  }
+}
+
 void
 ConfigDialog::onSpinsChanged(void)
 {
@@ -769,7 +850,7 @@ ConfigDialog::onSpinsChanged(void)
 
     freq = getSpinValue(this->ui->frequencySpin);
     lnbFreq = getSpinValue(this->ui->lnbSpin);
-    sampRate = static_cast<unsigned>(getSpinValue(this->ui->sampleRateSpin));
+    sampRate = this->getSelectedSampleRate();
 
     this->profile.setFreq(freq);
     this->profile.setLnbFreq(lnbFreq);
@@ -780,7 +861,7 @@ ConfigDialog::onSpinsChanged(void)
     if (sampRate < getSpinValue(this->ui->bwSpin))
       setSpinValue(this->ui->bwSpin, sampRate, "Hz");
 
-    this->refreshFromSpinData();
+    this->refreshTrueSampleRate();
   }
 }
 

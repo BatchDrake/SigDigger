@@ -88,6 +88,7 @@ namespace Suscan {
     const suscan_source_device_t *instance; // Always borrowed
     std::vector<std::string> antennas;
     std::vector<Source::GainDescription> gains;
+    std::vector<double> rates;
     SUFREQ freqMin = 0;
     SUFREQ freqMax = 0;
 
@@ -116,6 +117,7 @@ namespace Suscan {
       if (this != &dev) {
         std::swap(this->instance, dev.instance);
         std::swap(this->antennas, dev.antennas);
+        std::swap(this->rates,    dev.rates);
         std::swap(this->gains,    dev.gains);
       }
       return *this;
@@ -201,6 +203,18 @@ namespace Suscan {
     getLastGain(void) const
     {
       return this->gains.end();
+    }
+
+    std::vector<double>::const_iterator
+    getFirstSampRate(void) const
+    {
+      return this->rates.begin();
+    }
+
+    std::vector<double>::const_iterator
+    getLastSampRate(void) const
+    {
+      return this->rates.end();
     }
 
     SUFREQ

@@ -46,17 +46,20 @@ namespace SigDigger {
     void connectAll(void);
     void populateCombos(void);
     void refreshAntennas(void);
+    void refreshSampRates(void);
     void refreshColorUi(void);
     void refreshAnalyzerParamsUi(void);
     void refreshProfileUi(void);
     void refreshUi(void);
     void refreshUiState(void);
-    void refreshFromSpinData(void);
+    void refreshTrueSampleRate(void);
     void loadProfile(Suscan::Source::Config &config);
     void saveAnalyzerParams(void);
     void saveColors(void);
     void guessParamsFromFileName(void);
     void refreshUnitButtons(void);
+    unsigned int getSelectedSampleRate(void) const;
+    void setSelectedSampleRate(unsigned int);
 
     static void adjustSpinUnits(QDoubleSpinBox *sb, QString const &units);
     static void incSpinUnits(QDoubleSpinBox *sb, QString const &units);
@@ -66,6 +69,7 @@ namespace SigDigger {
     static void setSpinValue(QDoubleSpinBox *sb, qreal value, QString const &units);
     static qreal getSpinValue(QDoubleSpinBox *sb);
 
+    static QString getSampRateString(qreal rate);
     static QString getBaseName(const QString &string);
 
   public:
