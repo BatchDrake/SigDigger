@@ -615,7 +615,7 @@ UIMediator::refreshProfile(void)
   this->ui->spectrum->setLnbFreq(
         static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
 
-  this->setSampleRate(this->appConfig->profile.getSampleRate());
+  this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
 }
 
 Suscan::Source::Config *

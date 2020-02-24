@@ -181,7 +181,8 @@ Application::installDataSaver(int fd)
 {
   if (this->dataSaver.get() == nullptr && this->analyzer.get() != nullptr) {
     this->dataSaver = std::make_unique<FileDataSaver>(fd, this);
-    this->dataSaver->setSampleRate(this->mediator->getProfile()->getSampleRate());
+    this->dataSaver->setSampleRate(
+          this->mediator->getProfile()->getDecimatedSampleRate());
     if (!this->filterInstalled) {
       this->analyzer->registerBaseBandFilter(onBaseBandData, this);
       this->filterInstalled = true;

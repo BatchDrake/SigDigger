@@ -270,12 +270,12 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
         this->ui->antennaCombo);
 
   this->selectAntenna(config->getAntenna());
-  this->setSampleRate(config->getSampleRate());
+  this->setSampleRate(config->getDecimatedSampleRate());
   this->setDCRemove(config->getDCRemove());
 
   bw = this->profile->getBandwidth();
   if (SU_ABS(bw) < 1e-6f)
-    bw = config->getSampleRate();
+    bw = config->getDecimatedSampleRate();
 
   this->setBandwidth(bw);
 
