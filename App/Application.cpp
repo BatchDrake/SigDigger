@@ -1282,7 +1282,6 @@ Application::assertAudioInspectorLo(void)
   if (fabs(lo - this->lastAudioLo) > 1e-8) {
     this->analyzer->setInspectorFreq(this->audioInspHandle, lo, 0);
     this->lastAudioLo = lo;
-    printf("Set inspector LO: %g\n", lo);
   }
 }
 
