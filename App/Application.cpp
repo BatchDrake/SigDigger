@@ -257,6 +257,7 @@ Application::openAudio(unsigned int rate)
     if (this->playBack == nullptr) {
       try {
         Suscan::Channel ch;
+        SUFREQ maxFc = this->analyzer->getSampleRate() / 2;
         SUFREQ bw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
 
         if (rate > bw)
@@ -275,8 +276,7 @@ Application::openAudio(unsigned int rate)
         ch.fLow  = -.5 * bw;
         ch.fHigh = .5 * bw;
 
-        if (ch.fc > this->analyzer->getSampleRate() / 2
-            || ch.fc < -this->analyzer->getSampleRate() / 2)
+        if (ch.fc > maxFc || ch.fc < -maxFc)
           ch.fc = 0;
 
         this->maxAudioBw = bw;
@@ -1282,6 +1282,7 @@ Application::assertAudioInspectorLo(void)
   if (fabs(lo - this->lastAudioLo) > 1e-8) {
     this->analyzer->setInspectorFreq(this->audioInspHandle, lo, 0);
     this->lastAudioLo = lo;
+    printf("Set inspector LO: %g\n", lo);
   }
 }
 
