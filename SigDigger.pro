@@ -235,7 +235,7 @@ packagesExist(alsa) {
   DEFINES += SIGDIGGER_HAVE_ALSA
 }
 
-unix: LIBS += -L$$SUWIDGETS_INSTALL_LIBS -lsuwidgets
+unix: LIBS += -L$$SUWIDGETS_INSTALL_LIBS -lsuwidgets -lportaudio
 
 DISTFILES += \
     icons/icon-alpha.png \

@@ -26,10 +26,7 @@
 #include <string>
 #include <Suscan/Library.h>
 #include <unistd.h>
-
-#ifdef SIGDIGGER_HAVE_ALSA
-#  include <alsa/asoundlib.h>
-#endif // SIGDIGGER_HAVE_ALSA
+#include <portaudio.h>
 
 #define SIGDIGGER_AUDIO_BUFFER_ALLOC static_cast<size_t>(4 * getpagesize())
 #define SIGDIGGER_AUDIO_BUFFER_SIZE (SIGDIGGER_AUDIO_BUFFER_ALLOC / sizeof (float))
@@ -40,20 +37,18 @@
 
 namespace SigDigger {
 
-#ifdef SIGDIGGER_HAVE_ALSA
   class AudioBufferList;
 
   class PlaybackWorker : public QObject {
       Q_OBJECT
 
       bool halting = false;
-      snd_pcm_t *pcm = nullptr;  // Weak
-      AudioBufferList *instance; // Weak
+      PaStream  *pcm = nullptr;
+      AudioBufferList *instance = nullptr; // Weak
 
     public:
       PlaybackWorker(
-          AudioBufferList *instance = nullptr,
-          snd_pcm_t *pcm = nullptr);
+          AudioBufferList *instance = nullptr);
 
     public slots:
       void play(void);
@@ -127,12 +122,9 @@ namespace SigDigger {
     void release(void);
   };
 
-#endif // SIGDIGGER_HAVE_ALSA
-
   class AudioPlayback : public QObject {
     Q_OBJECT
 
-#ifdef SIGDIGGER_HAVE_ALSA
     // Audio buffer list
     AudioBufferList bufferList;
     QThread *workerThread  = nullptr;
@@ -141,14 +133,12 @@ namespace SigDigger {
     bool buffering = true;
     bool failed = false;
     float *current_buffer = nullptr;
-    snd_pcm_t *pcm = nullptr;
 
     unsigned int completed = 0;
     unsigned int ptr = 0;
     unsigned int sampRate;
 
     void startWorker(void);
-#endif // SIGDIGGER_HAVE_ALSA
 
     public:
       AudioPlayback(
@@ -169,4 +159,4 @@ namespace SigDigger {
   };
 }
 
-#endif // AUDIOPLAYBACK_H
+#endif

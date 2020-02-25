@@ -28,12 +28,51 @@ using namespace SigDigger;
   if ((err = expr) < 0)  \
     throw std::runtime_error("Failed to " + std::string(what) + ": " + std::string(snd_strerror(err)))
 
-#ifdef SIGDIGGER_HAVE_ALSA
 
 ///////////////////////////// Playback worker /////////////////////////////////
-PlaybackWorker::PlaybackWorker(AudioBufferList *instance, snd_pcm_t *pcm)
+PlaybackWorker::PlaybackWorker(AudioBufferList *instance)
 {
-  this->pcm      = pcm;
+  PaStream *stream;
+  PaError pErr = Pa_Initialize();
+  
+   if( pErr != paNoError )
+  {
+      std::cerr << "Error number: " << pErr << std::endl ;
+      std::cerr << "Error message: " << Pa_GetErrorText( pErr ) << std::endl ;
+  }
+  PaStreamParameters outputParameters;
+
+  outputParameters.device = Pa_GetDefaultOutputDevice(); /* default output device */
+  outputParameters.channelCount = 1;
+  outputParameters.sampleFormat = paFloat32;
+  outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultHighOutputLatency;
+  outputParameters.hostApiSpecificStreamInfo = NULL;
+
+  pErr = Pa_OpenStream(
+     &stream,
+     NULL,
+     &outputParameters,
+     SIGDIGGER_AUDIO_SAMPLE_RATE,
+     SIGDIGGER_AUDIO_BUFFER_SIZE,
+     paClipOff,
+     NULL,
+     NULL );
+
+  if( pErr != paNoError )
+  {
+      std::cerr << "Pa_OpenStream Error number: " << pErr << std::endl ;
+      std::cerr << "Error message: " << Pa_GetErrorText( pErr ) << std::endl ;
+  }
+
+  pErr = Pa_StartStream( stream );
+
+  if( pErr != paNoError )
+  {
+      std::cerr << "Pa_StartStream Error number: " << pErr << std::endl ;
+      std::cerr << "Error message: " << Pa_GetErrorText( pErr ) << std::endl ;
+  }
+
+  this->pcm      = stream;
   this->instance = instance;
 }
 
@@ -41,22 +80,26 @@ void
 PlaybackWorker::play(void)
 {
   float *buffer;
+  PaError err;  
+
   while (!this->halting && (buffer = this->instance->next()) != nullptr) {
-    long err;
-    err = snd_pcm_writei(this->pcm, buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
+    
+    err = Pa_WriteStream(this->pcm, buffer, SIGDIGGER_AUDIO_BUFFER_SIZE );
 
-    if (err == -EPIPE) {
-      usleep(100000);
-      snd_pcm_prepare(this->pcm);
-      err = snd_pcm_writei(this->pcm, buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
-
+    if(err == paOutputUnderflowed)
+        printf("warning: paOutputUnderflowed\n");
+    else if(err != paNoError) {
+        printf("Pa_WriteStream error %i (%s)\n", err, Pa_GetErrorText(err));
+        for(int i = 0; i < 10; ++i) {
+            usleep(10 * 1000);
+        }
     }
 
     // Done with this buffer, mark as free.
     this->instance->release();
 
-    if (err < 0)
-      emit error();
+   // if (err < 0)
+     // emit error();
   }
 
   if (this->halting)
@@ -69,6 +112,12 @@ void
 PlaybackWorker::halt(void)
 {
   this->halting = true;
+  if (this->pcm != nullptr) {
+    std::cerr << "Inside halt !!"  << std::endl;
+    Pa_StopStream( pcm );
+    Pa_CloseStream( pcm );
+    Pa_Terminate();
+  }
 }
 
 ////////////////////////////////// Audio buffer ///////////////////////////////
@@ -242,7 +291,6 @@ AudioPlayback::AudioPlayback(std::string const &dev, unsigned int rate)
   : bufferList(SIGDIGGER_AUDIO_BUFFER_NUM)
 {
   int err;
-  snd_pcm_hw_params_t *params = nullptr;
   float *buf;
 
   // Ladies and gentlemen, behold the COBOL
@@ -259,53 +307,15 @@ AudioPlayback::AudioPlayback(std::string const &dev, unsigned int rate)
           + " of buffer bytes for soundcard.");
   }
 
-  ATTEMPT(
-        snd_pcm_open(&this->pcm, dev.c_str(), SND_PCM_STREAM_PLAYBACK, 0),
-        "open audio device " + dev);
-
-  snd_pcm_hw_params_alloca(&params);
-  snd_pcm_hw_params_any(pcm, params);
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_access(
-          this->pcm,
-          params,
-          SND_PCM_ACCESS_RW_INTERLEAVED),
-        "set interleaved access for audio device");
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_format(
-          this->pcm,
-          params,
-          SND_PCM_FORMAT_FLOAT_LE),
-        "set sample format");
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_buffer_size(
-          this->pcm,
-          params,
-          SIGDIGGER_AUDIO_BUFFER_SIZE),
-        "set buffer size");
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_channels(this->pcm, params, 1),
-        "set output to mono");
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_rate_near(this->pcm, params, &rate, nullptr),
-        "set sample rate");
-
-  ATTEMPT(snd_pcm_hw_params(this->pcm, params), "set device params");
-
+  
   this->sampRate = rate;
-
   this->startWorker();
 }
 
 void
 AudioPlayback::startWorker()
 {
-  this->worker = new PlaybackWorker(&this->bufferList, this->pcm);
+  this->worker = new PlaybackWorker(&this->bufferList);
   this->workerThread = new QThread();
 
   this->worker->moveToThread(this->workerThread);
@@ -371,7 +381,7 @@ AudioPlayback::onStarving(void)
   if (this->bufferList.getPlayListLen() < SIGDIGGER_AUDIO_BUFFERING_WATERMARK) {
     this->completed = 0;
     this->buffering = true;
-    std::cout << "AudioPlayback: reached watermark, buffering again..." << std::endl;
+    std::cerr << "AudioPlayback: reached watermark, buffering again..." << std::endl;
   } else {
     emit restart();
   }
@@ -389,11 +399,6 @@ AudioPlayback::~AudioPlayback()
 
   if (this->worker != nullptr)
     delete this->worker;
-
-  if (this->pcm != nullptr) {
-    snd_pcm_drain(this->pcm);
-    snd_pcm_close(this->pcm);
-  }
 }
 
 unsigned int
@@ -448,22 +453,3 @@ AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
   }
 }
 
-#else
-AudioPlayback::AudioPlayback(std::string const &, unsigned int)
-{
-
-    throw std::runtime_error(
-        "Cannot create audio playback object: ALSA support disabled at compile time");
-}
-
-void AudioPlayback::onError(void) { }
-
-void AudioPlayback::onStarving(void) { }
-
-AudioPlayback::~AudioPlayback() { }
-
-unsigned int AudioPlayback::getSampleRate(void) const { return 0; }
-
-void AudioPlayback::write(const SUCOMPLEX *, SUSCOUNT) { }
-
-#endif // SIGDIGGER_HAVE_ALSA
