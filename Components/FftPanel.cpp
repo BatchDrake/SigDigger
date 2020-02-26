@@ -278,6 +278,9 @@ void
 FftPanel::updateRefreshRates(void)
 {
   int index = 0;
+  int selectedIndex = 0;
+  unsigned int diff;
+  unsigned int bestMatch = 1 << 20; /* Just a big number */
   this->ui->rateCombo->clear();
 
   for (auto p = this->refreshRates.begin(); p != this->refreshRates.end(); ++p) {
@@ -290,11 +293,17 @@ FftPanel::updateRefreshRates(void)
       this->ui->rateCombo->addItem(QString::number(*p) + " fps");
     }
 
-    if (*p == this->refreshRate)
-      this->ui->rateCombo->setCurrentIndex(index);
+    diff = static_cast<unsigned>(
+          std::abs(static_cast<int>(*p) - static_cast<int>(this->refreshRate)));
+    if (diff < bestMatch) {
+      selectedIndex = index;
+      bestMatch = diff;
+    }
 
     ++index;
   }
+
+  this->ui->rateCombo->setCurrentIndex(selectedIndex);
 }
 
 static QString
