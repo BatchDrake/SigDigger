@@ -608,6 +608,8 @@ UIMediator::setIORate(qreal rate)
 void
 UIMediator::refreshProfile(void)
 {
+  qint64 min = 0, max = 0;
+
   this->ui->sourcePanel->setProfile(&this->appConfig->profile);
   this->ui->configDialog->setProfile(this->appConfig->profile);
   this->ui->spectrum->setCenterFreq(
@@ -615,6 +617,19 @@ UIMediator::refreshProfile(void)
   this->ui->spectrum->setLnbFreq(
         static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
 
+  if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+    min = static_cast<qint64>(
+          this->appConfig->profile.getDevice().getMinFreq());
+    max = static_cast<qint64>(
+          this->appConfig->profile.getDevice().getMaxFreq());
+  }
+
+  if (max - min < 1000) {
+    min = SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ;
+    max = SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ;
+  }
+
+  this->ui->spectrum->setFrequencyLimits(min, max);
   this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
 }
 

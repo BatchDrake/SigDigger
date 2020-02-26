@@ -820,24 +820,21 @@ ConfigDialog::getSelectedSampleRate(void) const
 void
 ConfigDialog::setSelectedSampleRate(unsigned int rate)
 {
-  if (this->ui->sampRateStack->currentIndex() == 0) {
-    // Index 0: Sample Rate Combo
-    qreal dist = std::numeric_limits<qreal>::infinity();
-    int bestIndex = -1;
-    for (auto i = 0; i < this->ui->sampleRateCombo->count(); ++i) {
-      qreal value = this->ui->sampleRateCombo->itemData(i).value<qreal>();
-      if (fabs(value - rate) < dist) {
-        bestIndex = i;
-        dist = fabs(value - rate);
-      }
+  // Set sample rate in both places
+  qreal dist = std::numeric_limits<qreal>::infinity();
+  int bestIndex = -1;
+  for (auto i = 0; i < this->ui->sampleRateCombo->count(); ++i) {
+    qreal value = this->ui->sampleRateCombo->itemData(i).value<qreal>();
+    if (fabs(value - rate) < dist) {
+      bestIndex = i;
+      dist = fabs(value - rate);
     }
-
-    if (bestIndex != -1)
-      this->ui->sampleRateCombo->setCurrentIndex(bestIndex);
-  } else {
-    // Index 1: Sample Rate Spin
-    setSpinValue(this->ui->sampleRateSpin, rate, "sps");
   }
+
+  if (bestIndex != -1)
+    this->ui->sampleRateCombo->setCurrentIndex(bestIndex);
+
+  setSpinValue(this->ui->sampleRateSpin, rate, "sps");
 }
 
 void

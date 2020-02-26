@@ -25,6 +25,9 @@
 #include <AppConfig.h>
 #include <QMessageBox>
 
+#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ 0
+#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ 6000000000
+
 namespace SigDigger {
 
   class UIMediator : public PersistentWidget {

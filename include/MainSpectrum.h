@@ -57,6 +57,8 @@ namespace SigDigger {
     CaptureMode mode = UNAVAILABLE;
     Skewness filterSkewness = SYMMETRIC;
     bool throttling = false;
+    qint64 minFreq = 0;
+    qint64 maxFreq = 6000000000;
 
     // Cached members (for UI update, etc)
     unsigned int cachedRate = 0;
@@ -66,6 +68,7 @@ namespace SigDigger {
     // Private methods
     void connectAll(void);
     void refreshUi(void);
+    void updateLimits(void);
 
     // Static members
     static Palette *gqrxPalette;
@@ -81,6 +84,7 @@ namespace SigDigger {
 
     // Setters
     void setThrottling(bool);
+    void setFrequencyLimits(qint64 min, qint64 max);
     void setCaptureMode(CaptureMode mode);
     void setCenterFreq(qint64 freq);
     void setLoFreq(qint64 loFreq);
