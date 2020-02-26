@@ -80,8 +80,7 @@ UIMediator::onSpectrumBandwidthChanged(void)
 void
 UIMediator::onFrequencyChanged(qint64)
 {
-  qint64 freq = this->ui->spectrum->getCenterFreq()
-      + this->ui->spectrum->getLoFreq();
+  qint64 freq = this->ui->spectrum->getCenterFreq();
   this->ui->inspectorPanel->setDemodFrequency(freq);
   this->appConfig->profile.setFreq(freq);
 

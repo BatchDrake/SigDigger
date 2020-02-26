@@ -663,6 +663,7 @@ UIMediator::applyConfig(void)
   // Apply window config
   QRect rec = QGuiApplication::primaryScreen()->geometry();
   unsigned int savedBw = this->appConfig->bandwidth;
+  int savedLoFreq = this->appConfig->loFreq;
 
   if (this->appConfig->x == -1)
     this->appConfig->x = (rec.width() - this->appConfig->width) / 2;
@@ -715,7 +716,7 @@ UIMediator::applyConfig(void)
   this->refreshProfile();
 
   // Apply loFreq and bandwidth config AFTER profile has been set.
-  this->ui->spectrum->setLoFreq(this->appConfig->loFreq);
+  this->ui->spectrum->setLoFreq(savedLoFreq);
   if (savedBw > 0)
     this->setBandwidth(savedBw);
 
