@@ -56,6 +56,7 @@ SOURCES += \
     App/Loader.cpp \
     Audio/AudioFileSaver.cpp \
     Audio/AudioPlayback.cpp \
+    Audio/GenericAudioPlayer.cpp \
     Components/AboutDialog.cpp \
     Components/AudioPanel.cpp \
     Components/ConfigDialog.cpp \
@@ -122,8 +123,11 @@ SOURCES += \
 
 
 HEADERS += \
+    include/AlsaPlayer.h \
     include/AudioFileSaver.h \
+    include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
+    include/PortAudioPlayer.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \
     include/Suscan/Messages/InspectorMessage.h \
@@ -230,9 +234,20 @@ packagesExist(volk) {
   PKGCONFIG += volk
 }
   
+# Sound API detection. We first check for system-specific audio libraries,
+# which tend to be the faster ones. If they are not available, fallback
+# to PortAudio.
+
 packagesExist(alsa) {
   PKGCONFIG += alsa
+  SOURCES += Audio/AlsaPlayer.cpp
   DEFINES += SIGDIGGER_HAVE_ALSA
+} else {
+  packagesExist(portaudio-2.0) {
+    PKGCONFIG += portaudio-2.0
+    SOURCES += Audio/PortAudioPlayer.cpp
+    DEFINES += SIGDIGGER_HAVE_PORTAUDIO
+  }
 }
 
 unix: LIBS += -L$$SUWIDGETS_INSTALL_LIBS -lsuwidgets
