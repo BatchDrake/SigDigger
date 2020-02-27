@@ -64,6 +64,7 @@ namespace SigDigger {
     bool demodulating = true;
     bool recording = false;
     bool forwarding = false;
+    bool adjusting = false;
 
     unsigned int recordingRate = 0;
     // Inspector config
@@ -98,6 +99,7 @@ namespace SigDigger {
 
     void pushControl(InspectorCtl *ctl);
     void setBps(unsigned int bps);
+    void connectAll(void);
     unsigned int getBps(void) const;
     unsigned int getBaudRate(void) const;
     std::string getClassName(void) const;
@@ -147,6 +149,8 @@ namespace SigDigger {
       void onOffsetChanged(unsigned int);
       void onHOffsetChanged(int);
       void onStrideChanged(unsigned int);
+      void onAspectSliderChanged(int);
+      void onPandapterRangeChanged(float, float);
       void onZoomChanged(void);
       void onSymViewZoomChanged(unsigned int);
       void onScrollBarChanged(int val);

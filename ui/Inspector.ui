@@ -679,22 +679,22 @@ QToolBox::tab:hover {
           <item row="1" column="4">
            <widget class="ctkRangeSlider" name="rangeSlider">
             <property name="minimum">
-             <number>-150</number>
+             <number>-120</number>
             </property>
             <property name="maximum">
-             <number>0</number>
+             <number>30</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
             <property name="minimumValue">
-             <number>-50</number>
+             <number>-60</number>
             </property>
             <property name="maximumValue">
              <number>-10</number>
             </property>
             <property name="minimumPosition">
-             <number>-50</number>
+             <number>-60</number>
             </property>
            </widget>
           </item>
@@ -730,6 +730,12 @@ QToolBox::tab:hover {
           </item>
           <item row="0" column="4">
            <widget class="QSlider" name="aspectSlider">
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>30</number>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -932,7 +938,8 @@ QToolBox::tab:hover {
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color: #960000;</string>
+             <string notr="true">background-color: #960000;
+color: white;</string>
             </property>
             <property name="text">
              <string>Record</string>

@@ -81,6 +81,150 @@ InspectorUI::InspectorUI(
 
   this->setPalette("Suscan");
 
+  this->connectAll();
+
+  this->populate();
+
+  // Configure throttleable widgets
+  this->throttle.setCpuBurn(false);
+  this->ui->constellation->setThrottleControl(&this->throttle);
+  this->ui->symView->setThrottleControl(&this->throttle);
+  this->ui->transition->setThrottleControl(&this->throttle);
+  this->ui->histogram->setThrottleControl(&this->throttle);
+  this->ui->histogram->setDecider(&this->decider);
+  this->ui->wfSpectrum->setCenterFreq(0);
+  this->ui->wfSpectrum->resetHorizontalZoom();
+  this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
+
+  // Refresh Bps
+  this->setBps(1);
+
+  // Refresh UI
+  this->refreshUi();
+
+  // Force refresh of waterfall
+  this->onRangeChanged();
+  this->onAspectSliderChanged(this->ui->aspectSlider->value());
+}
+
+InspectorUI::~InspectorUI()
+{
+  delete this->ui;
+
+  if (this->dataSaver != nullptr)
+    delete this->dataSaver;
+
+  if (this->socketForwarder != nullptr)
+    delete this->socketForwarder;
+
+}
+
+void
+InspectorUI::setBasebandRate(unsigned int rate)
+{
+  this->basebandSampleRate = rate;
+  this->ui->loLcd->setMin(-static_cast<int>(rate) / 2);
+  this->ui->loLcd->setMax(static_cast<int>(rate) / 2);
+}
+
+void
+InspectorUI::setSampleRate(float rate)
+{
+  this->sampleRate = rate;
+  this->ui->sampleRateLabel->setText(
+        "Sample rate: "
+        + QString::number(static_cast<qreal>(rate))
+        + " sps");
+  this->ui->bwLcd->setMin(0);
+  this->ui->bwLcd->setMax(static_cast<qint64>(rate));
+}
+
+void
+InspectorUI::setBandwidth(unsigned int bandwidth)
+{
+  // More COBOL
+  this->ui->bwLcd->setValue(static_cast<int>(bandwidth));
+}
+
+void
+InspectorUI::setLo(int lo)
+{
+  this->ui->loLcd->setValue(lo);
+}
+
+void
+InspectorUI::refreshInspectorCtls(void)
+{
+  for (auto p = this->controls.begin(); p != this->controls.end(); ++p)
+    (*p)->refreshUi();
+}
+
+unsigned int
+InspectorUI::getBandwidth(void) const
+{
+  return static_cast<unsigned int>(this->ui->bwLcd->getValue());
+}
+
+int
+InspectorUI::getLo(void) const
+{
+  return static_cast<int>(this->ui->loLcd->getValue());
+}
+
+bool
+InspectorUI::setPalette(std::string const &str)
+{
+  unsigned int i;
+
+  for (i = 0; i < this->palettes.size(); ++i) {
+    if (this->palettes[i].getName().compare(str) == 0) {
+      this->ui->wfSpectrum->setPalette(this->palettes[i].getGradient());
+      this->ui->paletteCombo->setCurrentIndex(static_cast<int>(i));
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void
+InspectorUI::addSpectrumSource(Suscan::SpectrumSource const &src)
+{
+  this->spectsrcs.push_back(src);
+  this->ui->spectrumSourceCombo->addItem(QString::fromStdString(src.desc));
+}
+
+void
+InspectorUI::addEstimator(Suscan::Estimator const &estimator)
+{
+  int position = static_cast<int>(this->estimators.size());
+  EstimatorControl *ctl;
+  this->ui->estimatorsGrid->setAlignment(Qt::AlignTop);
+
+  this->estimators.push_back(estimator);
+
+  ctl = new EstimatorControl(this->owner, estimator);
+  this->estimatorCtls[estimator.id] = ctl;
+
+  this->ui->estimatorsGrid->addWidget(ctl, position, 0, Qt::AlignTop);
+
+  connect(
+        ctl,
+        SIGNAL(estimatorChanged(Suscan::EstimatorId, bool)),
+        this,
+        SLOT(onToggleEstimator(Suscan::EstimatorId, bool)));
+
+  connect(
+        ctl,
+        SIGNAL(apply(QString, float)),
+        this,
+        SLOT(onApplyEstimation(QString, float)));
+}
+
+void
+InspectorUI::connectAll()
+{
+
   connect(
         this->ui->symView,
         SIGNAL(zoomChanged(unsigned int)),
@@ -255,138 +399,17 @@ InspectorUI::InspectorUI(
         this,
         SLOT(onChangeBandwidth(void)));
 
-  this->populate();
-
-  // Configure throttleable widgets
-  this->throttle.setCpuBurn(false);
-  this->ui->constellation->setThrottleControl(&this->throttle);
-  this->ui->symView->setThrottleControl(&this->throttle);
-  this->ui->transition->setThrottleControl(&this->throttle);
-  this->ui->histogram->setThrottleControl(&this->throttle);
-  this->ui->histogram->setDecider(&this->decider);
-  this->ui->wfSpectrum->setCenterFreq(0);
-  this->ui->wfSpectrum->resetHorizontalZoom();
-  this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
-
-  // Refresh Bps
-  this->setBps(1);
-
-  // Refresh UI
-  this->refreshUi();
-}
-
-InspectorUI::~InspectorUI()
-{
-  delete this->ui;
-
-  if (this->dataSaver != nullptr)
-    delete this->dataSaver;
-
-  if (this->socketForwarder != nullptr)
-    delete this->socketForwarder;
-
-}
-
-void
-InspectorUI::setBasebandRate(unsigned int rate)
-{
-  this->basebandSampleRate = rate;
-  this->ui->loLcd->setMin(-static_cast<int>(rate) / 2);
-  this->ui->loLcd->setMax(static_cast<int>(rate) / 2);
-}
-
-void
-InspectorUI::setSampleRate(float rate)
-{
-  this->sampleRate = rate;
-  this->ui->sampleRateLabel->setText(
-        "Sample rate: "
-        + QString::number(static_cast<qreal>(rate))
-        + " sps");
-  this->ui->bwLcd->setMin(0);
-  this->ui->bwLcd->setMax(static_cast<qint64>(rate));
-}
-
-void
-InspectorUI::setBandwidth(unsigned int bandwidth)
-{
-  // More COBOL
-  this->ui->bwLcd->setValue(static_cast<int>(bandwidth));
-}
-
-void
-InspectorUI::setLo(int lo)
-{
-  this->ui->loLcd->setValue(lo);
-}
-
-void
-InspectorUI::refreshInspectorCtls(void)
-{
-  for (auto p = this->controls.begin(); p != this->controls.end(); ++p)
-    (*p)->refreshUi();
-}
-
-unsigned int
-InspectorUI::getBandwidth(void) const
-{
-  return static_cast<unsigned int>(this->ui->bwLcd->getValue());
-}
-
-int
-InspectorUI::getLo(void) const
-{
-  return static_cast<int>(this->ui->loLcd->getValue());
-}
-
-bool
-InspectorUI::setPalette(std::string const &str)
-{
-  unsigned int i;
-
-  for (i = 0; i < this->palettes.size(); ++i) {
-    if (this->palettes[i].getName().compare(str) == 0) {
-      this->ui->wfSpectrum->setPalette(this->palettes[i].getGradient());
-      this->ui->paletteCombo->setCurrentIndex(static_cast<int>(i));
-      return true;
-    }
-  }
-
-  return false;
-}
-
-void
-InspectorUI::addSpectrumSource(Suscan::SpectrumSource const &src)
-{
-  this->spectsrcs.push_back(src);
-  this->ui->spectrumSourceCombo->addItem(QString::fromStdString(src.desc));
-}
-
-void
-InspectorUI::addEstimator(Suscan::Estimator const &estimator)
-{
-  int position = static_cast<int>(this->estimators.size());
-  EstimatorControl *ctl;
-  this->ui->estimatorsGrid->setAlignment(Qt::AlignTop);
-
-  this->estimators.push_back(estimator);
-
-  ctl = new EstimatorControl(this->owner, estimator);
-  this->estimatorCtls[estimator.id] = ctl;
-
-  this->ui->estimatorsGrid->addWidget(ctl, position, 0, Qt::AlignTop);
+  connect(
+        this->ui->aspectSlider,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onAspectSliderChanged(int)));
 
   connect(
-        ctl,
-        SIGNAL(estimatorChanged(Suscan::EstimatorId, bool)),
+        this->ui->wfSpectrum,
+        SIGNAL(pandapterRangeChanged(float, float)),
         this,
-        SLOT(onToggleEstimator(Suscan::EstimatorId, bool)));
-
-  connect(
-        ctl,
-        SIGNAL(apply(QString, float)),
-        this,
-        SLOT(onApplyEstimation(QString, float)));
+        SLOT(onPandapterRangeChanged(float, float)));
 }
 
 void
@@ -1191,13 +1214,15 @@ InspectorUI::onSpectrumSourceChanged(void)
 void
 InspectorUI::onRangeChanged(void)
 {
-  this->ui->wfSpectrum->setPandapterRange(
-        this->ui->rangeSlider->minimumValue(),
-        this->ui->rangeSlider->maximumValue());
+  if (!this->adjusting) {
+    this->ui->wfSpectrum->setPandapterRange(
+          this->ui->rangeSlider->minimumValue(),
+          this->ui->rangeSlider->maximumValue());
 
-  this->ui->wfSpectrum->setWaterfallRange(
-        this->ui->rangeSlider->minimumValue(),
-        this->ui->rangeSlider->maximumValue());
+    this->ui->wfSpectrum->setWaterfallRange(
+          this->ui->rangeSlider->minimumValue(),
+          this->ui->rangeSlider->maximumValue());
+  }
 }
 
 // Datasaver
@@ -1384,3 +1409,24 @@ InspectorUI::onSymViewZoomChanged(unsigned int zoom)
   this->refreshVScrollBar();
   this->refreshHScrollBar();
 }
+
+void
+InspectorUI::onAspectSliderChanged(int ratio)
+{
+  this->ui->wfSpectrum->setPercent2DScreen(ratio);
+}
+
+void
+InspectorUI::onPandapterRangeChanged(float min, float max)
+{
+  bool adjusting = this->adjusting;
+  this->adjusting = true;
+
+  this->ui->rangeSlider->setMinimumPosition(static_cast<int>(min));
+  this->ui->rangeSlider->setMaximumPosition(static_cast<int>(max));
+
+  this->ui->wfSpectrum->setWaterfallRange(min, max);
+
+  this->adjusting = adjusting;
+}
+
