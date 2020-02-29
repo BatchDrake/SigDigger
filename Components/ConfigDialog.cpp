@@ -688,7 +688,8 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
 {
   this->ui = new Ui_Config();
   this->ui->setupUi(this);
-  this->setWindowFlag(Qt::WindowMaximizeButtonHint, false);
+  this->setWindowFlags(
+    this->windowFlags() & ~Qt::WindowMaximizeButtonHint);
   this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 
   // Setup sample rate size
