@@ -143,7 +143,7 @@ fi
 
 try "Creating appdir..."    mkdir -p "$APPIMAGEROOT"/usr/share/applications
 try "Creating metainfo..."  mkdir -p "$APPIMAGEROOT"/usr/share/metainfo
-try "Copying metainfo..."   cp "$SCRIPTDIR/SigDigger.appdata.xml" "$APPIMAGEROOT"/usr/share/metainfo
+try "Copying metainfo..."   cp "$SCRIPTDIR/SigDigger.appdata.xml" "$APPIMAGEROOT"/usr/share/metainfo/org.actinid.SigDigger.xml
 try "Creating icondir..."   mkdir -p "$APPIMAGEROOT"/usr/share/icons/hicolor/256x256/apps
 
 try "Copying icons..." cp "$BUILDROOT"/SigDigger/icons/icon-256x256.png "$APPIMAGEROOT"/usr/share/icons/hicolor/256x256/apps/SigDigger.png

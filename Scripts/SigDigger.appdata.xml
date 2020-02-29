@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
 	<id>SigDigger</id>
-	<metadata_license>GPL-3.0</metadata_license>
+	<metadata_license>MIT</metadata_license>
 	<project_license>GPL-3.0</project_license>
 	<name>SigDigger</name>
-	<summary>Analyze unknown digital signals</summary>
+	<summary>Extract data from undocumented digital signals</summary>
 	<description>
 		<p>SigDigger is a Qt application based on Suscan and Sigutils that allows you to perform multiple signal reverse engineering tasks on digital data channels whose modulation parameters are unknown. It is compatible with most SDR receivers supported by SoapySDR, WAV files and raw I/Q captures produced by other applications like Gqrx.</p>
 	</description>
@@ -19,3 +19,4 @@
 		<id>SigDigger.desktop</id>
 	</provides>
 </component>
+
