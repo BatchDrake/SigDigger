@@ -54,6 +54,8 @@ Source::Device::setDevice(const suscan_source_device_t *dev, unsigned int channe
     for (i = 0; i < info.gain_desc_count; ++i)
       this->gains.push_back(Source::GainDescription(info.gain_desc_list[i]));
 
+    for (i = 0; i < info.samp_rate_count; ++i)
+      this->rates.push_back(info.samp_rate_list[i]);
     suscan_source_device_info_finalize(&info);
   }
 }
@@ -221,12 +223,31 @@ Source::Config::getLnbFreq(void) const
 }
 
 unsigned int
+Source::Config::getDecimatedSampleRate(void) const
+{
+  if (this->instance == nullptr)
+    return 0;
+
+  return suscan_source_config_get_samp_rate(this->instance)
+      / suscan_source_config_get_average(this->instance);
+}
+
+unsigned int
 Source::Config::getSampleRate(void) const
 {
   if (this->instance == nullptr)
     return 0;
 
   return suscan_source_config_get_samp_rate(this->instance);
+}
+
+unsigned int
+Source::Config::getDecimation(void) const
+{
+  if (this->instance == nullptr)
+    return 0;
+
+  return suscan_source_config_get_average(this->instance);
 }
 
 bool
@@ -306,6 +327,15 @@ Source::Config::setSampleRate(unsigned int rate)
     return;
 
   suscan_source_config_set_samp_rate(this->instance, rate);
+}
+
+void
+Source::Config::setDecimation(unsigned int rate)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_set_average(this->instance, rate);
 }
 
 void

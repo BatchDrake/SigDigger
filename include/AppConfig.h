@@ -55,8 +55,11 @@ namespace SigDigger {
 
       int width = 1280;
       int height = 1024;
+      bool fullScreen = false;
       int x = -1;
       int y = -1;
+
+      bool disableHighRateWarning = false;
 
       int loFreq = 0;
       unsigned int bandwidth = 0;

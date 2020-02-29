@@ -35,6 +35,7 @@
 #include <Suscan/Library.h>
 #include <DefaultGradient.h>
 #include <QMessageBox>
+#include <SuWidgetsHelpers.h>
 
 #include <iomanip>
 #include <fcntl.h>
@@ -61,6 +62,8 @@ InspectorUI::InspectorUI(
 
   // TODO: put shared UI objects in a singleton
   this->palettes.push_back(Palette("Suscan", wf_gradient));
+  this->palettes.push_back(*MainSpectrum::getGqrxPalette());
+
   for (auto i = sus->getFirstPalette();
        i != sus->getLastPalette();
        i++) {
@@ -79,137 +82,7 @@ InspectorUI::InspectorUI(
 
   this->setPalette("Suscan");
 
-  connect(
-        this->ui->symView,
-        SIGNAL(offsetChanged(unsigned int)),
-        this,
-        SLOT(onOffsetChanged(unsigned int)));
-
-  connect(
-        this->ui->symView,
-        SIGNAL(strideChanged(unsigned int)),
-        this,
-        SLOT(onStrideChanged(unsigned int)));
-
-  connect(
-        this->ui->symViewScrollBar,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onScrollBarChanged(int)));
-
-  connect(
-        this->ui->fpsSpin,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onFPSChanged(void)));
-
-  connect(
-        this->ui->burnCPUButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onCPUBurnClicked()));
-
-  connect(
-        this->ui->resetFpsButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onFPSReset()));
-
-  connect(
-        this->ui->recordButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->autoScrollButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->autoFitButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->widthSpin,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->offsetSpin,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->saveButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSaveSymView()));
-
-  connect(
-        this->ui->clearButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onClearSymView()));
-
-  connect(
-        this->ui->paletteCombo,
-        SIGNAL(activated(int)),
-        this,
-        SLOT(onSpectrumConfigChanged()));
-
-  connect(
-        this->ui->spectrumSourceCombo,
-        SIGNAL(activated(int)),
-        this,
-        SLOT(onSpectrumSourceChanged()));
-
-  connect(
-        this->ui->rangeSlider,
-        SIGNAL(valuesChanged(int, int)),
-        this,
-        SLOT(onRangeChanged(void)));
-
-  connect(
-        this->ui->peakDetectionButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSpectrumConfigChanged()));
-
-  connect(
-        this->ui->peakHoldButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSpectrumConfigChanged()));
-
-  connect(
-        this->ui->snrButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onToggleSNR()));
-
-  connect(
-        this->ui->snrResetButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onResetSNR()));
-
-  connect(
-        this->ui->loLcd,
-        SIGNAL(valueChanged(void)),
-        this,
-        SLOT(onChangeLo(void)));
-
-  connect(
-        this->ui->bwLcd,
-        SIGNAL(valueChanged(void)),
-        this,
-        SLOT(onChangeBandwidth(void)));
+  this->connectAll();
 
   this->populate();
 
@@ -229,6 +102,10 @@ InspectorUI::InspectorUI(
 
   // Refresh UI
   this->refreshUi();
+
+  // Force refresh of waterfall
+  this->onRangeChanged();
+  this->onAspectSliderChanged(this->ui->aspectSlider->value());
 }
 
 InspectorUI::~InspectorUI()
@@ -343,6 +220,197 @@ InspectorUI::addEstimator(Suscan::Estimator const &estimator)
         SIGNAL(apply(QString, float)),
         this,
         SLOT(onApplyEstimation(QString, float)));
+}
+
+void
+InspectorUI::connectAll()
+{
+
+  connect(
+        this->ui->symView,
+        SIGNAL(zoomChanged(unsigned int)),
+        this,
+        SLOT(onSymViewZoomChanged(unsigned int)));
+
+  connect(
+        this->ui->symView,
+        SIGNAL(offsetChanged(unsigned int)),
+        this,
+        SLOT(onOffsetChanged(unsigned int)));
+
+  connect(
+        this->ui->symView,
+        SIGNAL(hOffsetChanged(int)),
+        this,
+        SLOT(onHOffsetChanged(int)));
+
+  connect(
+        this->ui->symView,
+        SIGNAL(strideChanged(unsigned int)),
+        this,
+        SLOT(onStrideChanged(unsigned int)));
+
+  connect(
+        this->ui->symViewScrollBar,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onScrollBarChanged(int)));
+
+  connect(
+        this->ui->symViewHScrollBar,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onHScrollBarChanged(int)));
+
+  connect(
+        this->ui->fpsSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onFPSChanged(void)));
+
+  connect(
+        this->ui->burnCPUButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onCPUBurnClicked()));
+
+  connect(
+        this->ui->resetFpsButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onFPSReset()));
+
+  connect(
+        this->ui->recordButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
+        this->ui->reverseButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
+        this->ui->recordButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
+        this->ui->autoScrollButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
+        this->ui->autoFitButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
+        this->ui->widthSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
+        this->ui->offsetSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onSymViewControlsChanged()));
+
+  connect(
+        this->ui->zoomSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onZoomChanged()));
+
+  connect(
+        this->ui->resetZoomButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onZoomReset()));
+
+  connect(
+        this->ui->saveButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSaveSymView()));
+
+  connect(
+        this->ui->clearButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onClearSymView()));
+
+  connect(
+        this->ui->paletteCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onSpectrumConfigChanged()));
+
+  connect(
+        this->ui->spectrumSourceCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onSpectrumSourceChanged()));
+
+  connect(
+        this->ui->rangeSlider,
+        SIGNAL(valuesChanged(int, int)),
+        this,
+        SLOT(onRangeChanged(void)));
+
+  connect(
+        this->ui->peakDetectionButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSpectrumConfigChanged()));
+
+  connect(
+        this->ui->peakHoldButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSpectrumConfigChanged()));
+
+  connect(
+        this->ui->snrButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onToggleSNR()));
+
+  connect(
+        this->ui->snrResetButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onResetSNR()));
+
+  connect(
+        this->ui->loLcd,
+        SIGNAL(valueChanged(void)),
+        this,
+        SLOT(onChangeLo(void)));
+
+  connect(
+        this->ui->bwLcd,
+        SIGNAL(valueChanged(void)),
+        this,
+        SLOT(onChangeBandwidth(void)));
+
+  connect(
+        this->ui->aspectSlider,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onAspectSliderChanged(int)));
+
+  connect(
+        this->ui->wfSpectrum,
+        SIGNAL(pandapterRangeChanged(float, float)),
+        this,
+        SLOT(onPandapterRangeChanged(float, float)));
 }
 
 void
@@ -530,30 +598,97 @@ InspectorUI::onResetSNR(void)
 
 }
 
-static QString
-format2nUnits(unsigned long rate, QString const &units)
+unsigned int
+InspectorUI::getVScrollPageSize(void) const
 {
-  if (rate < (1 << 10))
-    return QString::number(rate) + " " + units;
-  else if (rate < (1 << 20))
-    return QString::number(static_cast<qreal>(rate) / (1 << 10), 'f', 3) + " Ki" + units;
-  else if (rate < (1 << 30))
-    return QString::number(static_cast<qreal>(rate) / (1 << 20), 'f', 3) + " Mi" + units;
-
-  return QString::number(static_cast<qreal>(rate) / (1 << 30), 'f', 3) + " Gi" + units;
+  return
+      (this->ui->symView->getStride()
+       * static_cast<unsigned>(this->ui->symView->height()))
+      / this->ui->symView->getZoom();
 }
 
-static QString
-formatUnits(unsigned long rate, QString const &units)
+unsigned int
+InspectorUI::getHScrollOffset(void) const
 {
-  if (rate < 1000)
-    return QString::number(rate) + " " + units;
-  else if (rate < 1000000)
-    return QString::number(rate / 1e3, 'f', 3) + " k" + units;
-  else if (rate < 1000000000)
-    return QString::number(rate / 1e6, 'f', 3) + " M" + units;
+  return static_cast<unsigned>(this->ui->symViewHScrollBar->value());
+}
 
-  return QString::number(rate / 1e9, 'f', 3) + " G" + units;
+void
+InspectorUI::refreshHScrollBar(void) const
+{
+  unsigned int visible =
+      static_cast<unsigned>(this->ui->symView->width()) /
+      this->ui->symView->getZoom();
+
+  if (visible < this->ui->symView->getStride()) {
+    unsigned int max = this->ui->symView->getStride() - visible;
+    this->ui->symViewHScrollBar->setPageStep(static_cast<int>(visible));
+    this->ui->symViewHScrollBar->setMaximum(static_cast<int>(max));
+    this->ui->symViewHScrollBar->setVisible(true);
+  } else {
+    this->ui->symViewHScrollBar->setPageStep(static_cast<int>(0));
+    this->ui->symViewHScrollBar->setMaximum(static_cast<int>(0));
+    this->ui->symViewHScrollBar->setVisible(false);
+  }
+
+  if (!this->ui->autoFitButton->isChecked())
+    this->ui->symViewHScrollBar->setEnabled(
+          this->ui->symView->getLength() >= visible);
+  else
+    this->ui->symViewHScrollBar->setEnabled(false);
+}
+
+void
+InspectorUI::refreshVScrollBar(void) const
+{
+  unsigned int pageSize = this->getVScrollPageSize();
+  unsigned long lines =
+      (this->ui->symView->getLength() + this->ui->symView->getStride() - 1) /
+      this->ui->symView->getStride();
+  unsigned long max = lines * this->ui->symView->getStride();
+
+  if (max > pageSize) {
+    this->ui->symViewScrollBar->setPageStep(static_cast<int>(pageSize));
+    this->ui->symViewScrollBar->setMaximum(static_cast<int>(max - pageSize));
+    this->ui->symViewScrollBar->setVisible(true);
+  } else {
+    this->ui->symViewScrollBar->setPageStep(0);
+    this->ui->symViewScrollBar->setMaximum(0);
+    this->ui->symViewScrollBar->setVisible(false);
+  }
+
+  this->ui->symViewScrollBar->setSingleStep(
+        static_cast<int>(this->ui->symView->getStride()));
+
+  if (!this->ui->autoScrollButton->isChecked())
+    this->ui->symViewScrollBar->setEnabled(
+          this->ui->symView->getLength() >= pageSize);
+  else
+    this->ui->symViewScrollBar->setEnabled(false);
+}
+
+void
+InspectorUI::refreshSizes(void)
+{
+  this->ui->sizeLabel->setText(
+        "Capture size: " +
+        SuWidgetsHelpers::formatQuantity(
+          this->ui->symView->getLength(),
+          "sym"));
+
+  this->ui->dataSizeLabel->setText(
+        "Data size: " +
+        SuWidgetsHelpers::formatQuantity(
+          this->ui->symView->getLength() * this->decider.getBps(),
+          "bits")
+        + " (" +
+        SuWidgetsHelpers::formatBinaryQuantity(
+          this->ui->symView->getLength() * this->decider.getBps() >> 3,
+          "B") + ")");
+
+  this->ui->saveButton->setEnabled(this->ui->symView->getLength() > 0);
+
+  this->refreshVScrollBar();
 }
 
 void
@@ -585,20 +720,7 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
       this->ui->symView->feed(this->decider.get());
       this->ui->transition->feed(this->decider.get());
 
-
-      this->ui->sizeLabel->setText(
-            "Capture size: " +
-            formatUnits(this->ui->symView->getLength(), "sym"));
-
-      this->ui->dataSizeLabel->setText(
-            "Data size: " +
-            formatUnits(
-              this->ui->symView->getLength() * this->decider.getBps(),
-              "bits")
-            + " (" +
-            format2nUnits(
-              this->ui->symView->getLength() * this->decider.getBps() >> 3,
-              "B") + ")");
+      this->refreshSizes();
     }
   }
 
@@ -859,35 +981,48 @@ InspectorUI::onInspectorControlChanged(void)
 void
 InspectorUI::onScrollBarChanged(int offset)
 {
+  int relStart = this->ui->symView->getOffset() % this->ui->symView->getStride();
+  int alignedOffset = this->ui->symView->getStride() * (
+        offset / this->ui->symView->getStride());
+
   this->scrolling = true;
+
   this->ui->symView->setOffset(
-        static_cast<unsigned int>(this->ui->symView->getStride() * offset));
+        static_cast<unsigned int>(alignedOffset + relStart));
+
+  this->scrolling = false;
+}
+
+void
+InspectorUI::onHScrollBarChanged(int offset)
+{
+  this->scrolling = true;
+
+  this->ui->symView->setHOffset(offset);
   this->scrolling = false;
 }
 
 void
 InspectorUI::onOffsetChanged(unsigned int offset)
 {
-  int max = this->ui->symView->getLines() - this->ui->symView->height();
-
-  if (max <= 0) {
-    this->ui->symViewScrollBar->setPageStep(0);
-    this->ui->symViewScrollBar->setMaximum(1);
-  } else {
-    this->ui->symViewScrollBar->setPageStep(this->ui->symView->height());
-    this->ui->symViewScrollBar->setMaximum(max);
-
-    if (!this->scrolling)
-      this->ui->symViewScrollBar->setValue(static_cast<int>(offset));
-  }
+  if (!this->scrolling)
+    this->ui->symViewScrollBar->setValue(static_cast<int>(offset));
 
   this->ui->offsetSpin->setValue(static_cast<int>(offset));
+}
+
+void
+InspectorUI::onHOffsetChanged(int offset)
+{
+  if (!this->scrolling)
+    this->ui->symViewHScrollBar->setValue(offset);
 }
 
 void
 InspectorUI::onStrideChanged(unsigned int stride)
 {
   this->ui->widthSpin->setValue(static_cast<int>(stride));
+  this->refreshHScrollBar();
 }
 
 void
@@ -912,6 +1047,9 @@ InspectorUI::onSymViewControlsChanged(void)
   this->ui->widthSpin->setEnabled(!autoStride);
   this->ui->offsetSpin->setEnabled(!autoScroll);
 
+  this->refreshVScrollBar();
+  this->refreshHScrollBar();
+
   if (!autoStride)
     this->ui->symView->setStride(
         static_cast<unsigned int>(this->ui->widthSpin->value()));
@@ -919,6 +1057,8 @@ InspectorUI::onSymViewControlsChanged(void)
   if (!autoScroll)
     this->ui->symView->setOffset(
         static_cast<unsigned int>(this->ui->offsetSpin->value()));
+
+  this->ui->symView->setReverse(this->ui->reverseButton->isChecked());
 }
 
 void
@@ -980,7 +1120,11 @@ InspectorUI::onSaveSymView(void)
 
   filters << "Text file (*.txt)"
           << "Binary file (*.bin)"
-          << "C source file (*.c)";
+          << "C source file (*.c)"
+          << "Microsoft Windows Bitmap (*.bmp)"
+          << "PNG Image (*.png)"
+          << "JPEG Image (*.jpg)"
+          << "Portable Pixel Map (*.ppm)";
 
   dialog.setFileMode(QFileDialog::AnyFile);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -995,6 +1139,14 @@ InspectorUI::onSaveSymView(void)
       fmt = SymView::FILE_FORMAT_RAW;
     else if (strstr(filter.toStdString().c_str(), ".c") != nullptr)
       fmt = SymView::FILE_FORMAT_C_ARRAY;
+    else if (strstr(filter.toStdString().c_str(), ".bmp") != nullptr)
+      fmt = SymView::FILE_FORMAT_BMP;
+    else if (strstr(filter.toStdString().c_str(), ".png") != nullptr)
+      fmt = SymView::FILE_FORMAT_PNG;
+    else if (strstr(filter.toStdString().c_str(), ".jpg") != nullptr)
+      fmt = SymView::FILE_FORMAT_JPEG;
+    else if (strstr(filter.toStdString().c_str(), ".ppm") != nullptr)
+      fmt = SymView::FILE_FORMAT_PPM;
 
     try {
       this->ui->symView->save(dialog.selectedFiles().first(), fmt);
@@ -1012,6 +1164,9 @@ void
 InspectorUI::onClearSymView(void)
 {
   this->ui->symView->clear();
+  this->onOffsetChanged(0);
+  this->refreshVScrollBar();
+  this->refreshSizes();
 }
 
 void
@@ -1036,13 +1191,15 @@ InspectorUI::onSpectrumSourceChanged(void)
 void
 InspectorUI::onRangeChanged(void)
 {
-  this->ui->wfSpectrum->setPandapterRange(
-        this->ui->rangeSlider->minimumValue(),
-        this->ui->rangeSlider->maximumValue());
+  if (!this->adjusting) {
+    this->ui->wfSpectrum->setPandapterRange(
+          this->ui->rangeSlider->minimumValue(),
+          this->ui->rangeSlider->maximumValue());
 
-  this->ui->wfSpectrum->setWaterfallRange(
-        this->ui->rangeSlider->minimumValue(),
-        this->ui->rangeSlider->maximumValue());
+    this->ui->wfSpectrum->setWaterfallRange(
+          this->ui->rangeSlider->minimumValue(),
+          this->ui->rangeSlider->maximumValue());
+  }
 }
 
 // Datasaver
@@ -1202,5 +1359,51 @@ void
 InspectorUI::onApplyEstimation(QString name, float value)
 {
   emit applyEstimation(name, value);
+}
+
+void
+InspectorUI::onZoomChanged(void)
+{
+  this->ui->symView->setZoom(
+        static_cast<unsigned int>(this->ui->zoomSpin->value()));
+  this->refreshVScrollBar();
+  this->refreshHScrollBar();
+}
+
+void
+InspectorUI::onZoomReset(void)
+{
+  this->ui->zoomSpin->setValue(1);
+  this->ui->symView->setZoom(1);
+  this->refreshVScrollBar();
+  this->refreshHScrollBar();
+}
+
+void
+InspectorUI::onSymViewZoomChanged(unsigned int zoom)
+{
+  this->ui->zoomSpin->setValue(static_cast<int>(zoom));
+  this->refreshVScrollBar();
+  this->refreshHScrollBar();
+}
+
+void
+InspectorUI::onAspectSliderChanged(int ratio)
+{
+  this->ui->wfSpectrum->setPercent2DScreen(ratio);
+}
+
+void
+InspectorUI::onPandapterRangeChanged(float min, float max)
+{
+  bool adjusting = this->adjusting;
+  this->adjusting = true;
+
+  this->ui->rangeSlider->setMinimumPosition(static_cast<int>(min));
+  this->ui->rangeSlider->setMaximumPosition(static_cast<int>(max));
+
+  this->ui->wfSpectrum->setWaterfallRange(min, max);
+
+  this->adjusting = adjusting;
 }
 

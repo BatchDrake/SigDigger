@@ -18,9 +18,9 @@
 //
 
 #include <QFileDialog>
+#include <SuWidgetsHelpers.h>
 #include "DataSaverUI.h"
 #include "ui_DataSaverUI.h"
-#include <cmath>
 
 using namespace SigDigger;
 
@@ -81,24 +81,12 @@ DataSaverUI::setSaveEnabled(bool enabled)
   this->ui->saveButton->setEnabled(enabled);
 }
 
-QString
-DataSaverUI::formatCaptureSize(quint64 size)
-{
-  if (size < (1ull << 10))
-    return QString::number(size) + " bytes";
-  else if (size < (1ull << 20))
-    return QString::number(size >> 10) + " KiB";
-  else if (size < (1ull << 30))
-    return QString::number(size >> 20) + " MiB";
-
-  return QString::number(size >> 30) + " GiB";
-}
-
 void
 DataSaverUI::setCaptureSize(quint64 size)
 {
   this->ui->captureSizeLabel->setText(
-        formatCaptureSize(size * sizeof(float _Complex)));
+        SuWidgetsHelpers::formatBinaryQuantity(
+          static_cast<qint64>(size * sizeof(SUFLOAT))));
 }
 
 void

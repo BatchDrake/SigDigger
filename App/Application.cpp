@@ -181,7 +181,8 @@ Application::installDataSaver(int fd)
 {
   if (this->dataSaver.get() == nullptr && this->analyzer.get() != nullptr) {
     this->dataSaver = std::make_unique<FileDataSaver>(fd, this);
-    this->dataSaver->setSampleRate(this->mediator->getProfile()->getSampleRate());
+    this->dataSaver->setSampleRate(
+          this->mediator->getProfile()->getDecimatedSampleRate());
     if (!this->filterInstalled) {
       this->analyzer->registerBaseBandFilter(onBaseBandData, this);
       this->filterInstalled = true;
@@ -198,9 +199,12 @@ Application::setAudioInspectorParams(
     unsigned int demod)
 {
   if (this->audioConfigured) {
+    SUFLOAT correctedVolume = 2 * (exp(volume / 100) - 1);
+
+
     Suscan::Config cfg(this->audioCfgTemplate);
     cfg.set("audio.cutoff", cutOff);
-    cfg.set("audio.volume", volume / 20);
+    cfg.set("audio.volume", correctedVolume);
     cfg.set("audio.sample-rate", static_cast<uint64_t>(rate));
     cfg.set("audio.demodulator", static_cast<uint64_t>(demod));
     this->analyzer->setInspectorConfig(this->audioInspHandle, cfg, 0);
@@ -253,6 +257,7 @@ Application::openAudio(unsigned int rate)
     if (this->playBack == nullptr) {
       try {
         Suscan::Channel ch;
+        SUFREQ maxFc = this->analyzer->getSampleRate() / 2;
         SUFREQ bw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
 
         if (rate > bw)
@@ -270,6 +275,9 @@ Application::openAudio(unsigned int rate)
         ch.fc    = this->getAudioInspectorLo();
         ch.fLow  = -.5 * bw;
         ch.fHigh = .5 * bw;
+
+        if (ch.fc > maxFc || ch.fc < -maxFc)
+          ch.fc = 0;
 
         this->maxAudioBw = bw;
 
@@ -664,27 +672,30 @@ Application::startCapture(void)
     if (this->mediator->getState() == UIMediator::HALTED) {
       Suscan::AnalyzerParams params = *this->mediator->getAnalyzerParams();
       std::unique_ptr<Suscan::Analyzer> analyzer;
-      //int maxIfFreq;
+      Suscan::Source::Config profile = *this->mediator->getProfile();
 
-      if (this->mediator->getProfile()->getType() == SUSCAN_SOURCE_TYPE_SDR) {
-        if (this->mediator->getProfile()->getSampleRate() > SIGDIGGER_MAX_SAMPLE_RATE) {
-          QMessageBox::StandardButton reply;
-          reply = QMessageBox::question(
-                this,
-                "Sample rate too high",
-                "The sample rate of profile \""
-                + QString::fromStdString(this->mediator->getProfile()->label())
-                + "\" is unusually big ("
-                + QString::number(this->mediator->getProfile()->getSampleRate())
-                + "). Temporarily reduce it to "
-                + QString::number(SIGDIGGER_MAX_SAMPLE_RATE)
-                + "?",
-                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+      if (profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+        if (profile.getDecimatedSampleRate() > SIGDIGGER_MAX_SAMPLE_RATE) {
+          unsigned decimate =
+              static_cast<unsigned>(
+                std::ceil(
+                  profile.getSampleRate()
+                  / static_cast<qreal>(SIGDIGGER_MAX_SAMPLE_RATE)));
+          unsigned proposed =
+              profile.getSampleRate() / decimate;
+          QMessageBox::StandardButton reply
+              = this->mediator->shouldReduceRate(
+                  QString::fromStdString(profile.label()),
+                  profile.getDecimatedSampleRate(),
+                  proposed);
 
+          // TODO: Maybe ask for decimation?
           if (reply == QMessageBox::Yes)
-            this->mediator->getProfile()->setSampleRate(SIGDIGGER_MAX_SAMPLE_RATE);
-          else if (reply == QMessageBox::Cancel)
+            profile.setDecimation(decimate);
+          else if (reply == QMessageBox::Cancel) {
+            this->mediator->setState(UIMediator::HALTED);
             return;
+          }
         }
       }
 
@@ -692,7 +703,7 @@ Application::startCapture(void)
       Suscan::Logger::getInstance()->flush();
 
       // Allocate objects
-      if (this->mediator->getProfile()->instance == nullptr) {
+      if (profile.instance == nullptr) {
         QMessageBox::warning(
                   this,
                   "SigDigger error",
@@ -704,9 +715,7 @@ Application::startCapture(void)
       // Ensure we run this analyzer in channel mode.
       params.mode = Suscan::AnalyzerParams::Mode::CHANNEL;
 
-      analyzer = std::make_unique<Suscan::Analyzer>(
-            params,
-            *this->mediator->getProfile());
+      analyzer = std::make_unique<Suscan::Analyzer>(params, profile);
 
       // Enable throttling, if requested
       if (this->ui.sourcePanel->isThrottleEnabled())
@@ -1139,7 +1148,7 @@ Application::openCaptureFile(void)
         baseName,
         64,
         "sigdigger_%d_%.0lf_float32_iq.raw",
-        this->mediator->getProfile()->getSampleRate(),
+        this->mediator->getProfile()->getDecimatedSampleRate(),
         this->mediator->getProfile()->getFreq());
 
   std::string fullPath =

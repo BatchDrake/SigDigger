@@ -23,6 +23,43 @@
 
 using namespace SigDigger;
 
+Palette *MainSpectrum::gqrxPalette = nullptr;
+static qreal color[256][3];
+Palette *
+MainSpectrum::getGqrxPalette(void)
+{
+  if (gqrxPalette == nullptr) {
+    for (int i = 0; i < 256; i++) {
+      if (i < 20) { // level 0: black background
+        color[i][0] = color[i][1] = color[i][2] = 0;
+      } else if ((i >= 20) && (i < 70)) { // level 1: black -> blue
+        color[i][0] = color[i][1] = 0;
+        color[i][2] = (140*(i-20)/50) / 255.;
+      } else if ((i >= 70) && (i < 100)) { // level 2: blue -> light-blue / greenish
+        color[i][0] = (60*(i-70)/30) / 255.;
+        color[i][1] = (125*(i-70)/30) / 255.;
+        color[i][2] = (115*(i-70)/30 + 140) / 255.;
+      } else if ((i >= 100) && (i < 150)) { // level 3: light blue -> yellow
+        color[i][0] = (195*(i-100)/50 + 60) / 255.;
+        color[i][1] = (130*(i-100)/50 + 125) / 255.;
+        color[i][2] = (255-(255*(i-100)/50)) / 255.;
+      } else if ((i >= 150) && (i < 250)) { // level 4: yellow -> red
+        color[i][0] = 1;
+        color[i][1] = (255-255*(i-150)/100) / 255.;
+        color[i][2] = 0;
+      } else if (i >= 250) { // level 5: red -> white
+        color[i][0] = 1;
+        color[i][1] = (255*(i-250)/5) / 255.;
+        color[i][2] = (255*(i-250)/5) / 255.;
+      }
+    }
+
+    gqrxPalette = new Palette("Gqrx", color);
+  }
+
+  return gqrxPalette;
+}
+
 MainSpectrum::MainSpectrum(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::MainSpectrum)
@@ -99,6 +136,34 @@ MainSpectrum::feed(float *data, int size)
   this->ui->mainSpectrum->setNewFftData(data, size);
 }
 
+
+void
+MainSpectrum::updateLimits(void)
+{
+  qint64 minLcd = this->minFreq - this->getLnbFreq();
+  qint64 maxLcd = this->maxFreq - this->getLnbFreq();
+
+  // Center frequency LCD limits
+  this->ui->fcLcd->setMin(minLcd);
+  this->ui->fcLcd->setMax(maxLcd);
+
+  // Demod frequency LCD limits
+  minLcd = this->ui->fcLcd->getValue() - this->cachedRate / 2;
+  maxLcd = this->ui->fcLcd->getValue() + this->cachedRate / 2;
+
+  this->ui->loLcd->setMin(minLcd);
+  this->ui->loLcd->setMax(maxLcd);
+}
+
+void
+MainSpectrum::setFrequencyLimits(qint64 min, qint64 max)
+{
+  this->minFreq = min;
+  this->maxFreq = max;
+
+  this->updateLimits();
+}
+
 void
 MainSpectrum::refreshUi(void)
 {
@@ -165,27 +230,39 @@ MainSpectrum::getFrequencyUnits(qint64 freq)
 }
 
 void
+MainSpectrum::notifyHalt(void)
+{
+  this->ui->mainSpectrum->setRunningState(false);
+}
+
+void
 MainSpectrum::setCenterFreq(qint64 freq)
 {
+  qint64 loFreq = this->getLoFreq();
   this->ui->fcLcd->setValue(freq);
   this->ui->mainSpectrum->setCenterFreq(static_cast<quint64>(freq));
   this->ui->mainSpectrum->setFreqUnits(
         getFrequencyUnits(
           static_cast<qint64>(freq)));
+  this->updateLimits();
+  this->setLoFreq(loFreq);
 }
 
 void
 MainSpectrum::setLoFreq(qint64 loFreq)
 {
-  this->ui->loLcd->setValue(loFreq);
-  this->ui->mainSpectrum->setFilterOffset(loFreq);
+  if (loFreq != this->getLoFreq()) {
+    this->ui->loLcd->setValue(loFreq + this->getCenterFreq());
+    this->ui->mainSpectrum->setFilterOffset(loFreq);
+    emit loChanged(loFreq);
+  }
 }
 
 void
 MainSpectrum::setLnbFreq(qint64 lnbFreq)
 {
   this->ui->lnbLcd->setValue(lnbFreq);
-  this->ui->fcLcd->setMin(-lnbFreq);
+  this->updateLimits();
 }
 
 void
@@ -224,6 +301,11 @@ MainSpectrum::setPeakDetect(bool det)
   this->ui->mainSpectrum->setPeakDetection(det, 5);
 }
 
+void
+MainSpectrum::setExpectedRate(int rate)
+{
+  this->ui->mainSpectrum->setExpectedRate(rate);
+}
 
 void
 MainSpectrum::setColorConfig(ColorConfig const &cfg)
@@ -258,10 +340,40 @@ MainSpectrum::setFilterBandwidth(unsigned int bw)
 {
   if (this->bandwidth != bw) {
     int freq = static_cast<int>(bw);
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
+
     this->ui->mainSpectrum->setHiLowCutFrequencies(
-          -freq / 2,
-          freq/2);
+          lowerSideBand ? -freq / 2 : 0,
+          upperSideBand ? +freq / 2 : 0);
     this->bandwidth = bw;
+  }
+}
+
+void
+MainSpectrum::setFilterSkewness(Skewness skw)
+{
+  if (skw != this->filterSkewness) {
+    this->filterSkewness = skw;
+    unsigned int bw = this->bandwidth;
+    int freq = static_cast<int>(this->cachedRate);
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
+
+    this->ui->mainSpectrum->setDemodRanges(
+          lowerSideBand ? -freq / 2 : 1,
+          1,
+          1,
+          upperSideBand ? +freq / 2 : 1,
+          skw == SYMMETRIC);
+
+    this->bandwidth = 0;
+    this->setFilterBandwidth(bw);
+    emit bandwidthChanged();
   }
 }
 
@@ -280,14 +392,23 @@ MainSpectrum::setSampleRate(unsigned int rate)
 {
   if (this->cachedRate != rate) {
     int freq = static_cast<int>(rate);
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
 
-    this->ui->mainSpectrum->setDemodRanges(-freq / 2, 1, 1, freq / 2, true);
+    this->ui->mainSpectrum->setDemodRanges(
+          lowerSideBand ? -freq / 2 : 1,
+          1,
+          1,
+          upperSideBand ? +freq / 2 : 1,
+          this->filterSkewness == SYMMETRIC);
 
     this->ui->mainSpectrum->setSampleRate(rate);
 
     this->ui->mainSpectrum->setSpanFreq(rate / this->zoom);
-    this->ui->loLcd->setMin(-freq / 2);
-    this->ui->loLcd->setMax(freq / 2);
+    this->ui->loLcd->setMin(-freq / 2 + this->getCenterFreq());
+    this->ui->loLcd->setMax(freq / 2 + this->getCenterFreq());
 
     this->cachedRate = rate;
   }
@@ -392,7 +513,7 @@ MainSpectrum::getCenterFreq(void) const
 qint64
 MainSpectrum::getLoFreq(void) const
 {
-  return this->ui->loLcd->getValue();
+  return this->ui->loLcd->getValue() - this->getCenterFreq();
 }
 
 qint64
@@ -411,7 +532,9 @@ MainSpectrum::getBandwidth(void) const
 void
 MainSpectrum::onWfBandwidthChanged(int min, int max)
 {
-  this->setFilterBandwidth(static_cast<unsigned int>(max - min));
+  this->setFilterBandwidth(
+        (this->filterSkewness == SYMMETRIC ? 1 : 2)
+        * static_cast<unsigned int>(max - min));
   emit bandwidthChanged();
 }
 
@@ -421,13 +544,14 @@ MainSpectrum::onFrequencyChanged(void)
   qint64 freq = this->ui->fcLcd->getValue();
   this->setCenterFreq(freq);
   emit frequencyChanged(freq);
+  this->onLoChanged();
 }
 
 void
 MainSpectrum::onNewCenterFreq(qint64 freq)
 {
-  this->setCenterFreq(freq);
-  emit frequencyChanged(freq);
+  this->ui->fcLcd->setValue(freq);
+  this->updateLimits();
 }
 
 void
@@ -441,14 +565,14 @@ MainSpectrum::onLnbFrequencyChanged(void)
 void
 MainSpectrum::onWfLoChanged(void)
 {
-  this->ui->loLcd->setValue(this->ui->mainSpectrum->getFilterOffset());
+  this->ui->loLcd->setValue(this->ui->mainSpectrum->getFilterOffset() + this->getCenterFreq());
   emit loChanged(this->getLoFreq());
 }
 
 void
 MainSpectrum::onLoChanged(void)
 {
-  this->ui->mainSpectrum->setFilterOffset(this->ui->loLcd->getValue());
+  this->ui->mainSpectrum->setFilterOffset(this->getLoFreq());
   emit loChanged(this->getLoFreq());
 }
 

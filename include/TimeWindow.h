@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    TimeWindow.h: Time Window for time view operations
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -25,6 +25,7 @@
 #include "Palette.h"
 
 #define TIME_WINDOW_MAX_SELECTION 4096
+#define TIME_WINDOW_MAX_DOPPLER_ITERS 200
 
 namespace Ui {
   class TimeWindow;
@@ -65,12 +66,15 @@ namespace SigDigger {
     static QString formatScientific(qreal real);
     static QString formatReal(qreal real);
     static QString formatIntegerPart(qreal real);
+    static QString ensureRightExtension(QString const &path, QString const &ext);
 
-    bool exportToFile(QString const &path, int start, int end);
+    bool exportToMatlab(QString const &path, int start, int end);
+    bool exportToWav(QString const &path, int start, int end);
     void recalcLimits(void);
     void refreshMeasures(void);
     void refreshUi(void);
     void deserializePalettes(void);
+    void saveSamples(int start, int end);
 
   public:
     explicit TimeWindow(QWidget *parent = nullptr);
@@ -104,8 +108,6 @@ namespace SigDigger {
     void onSaveSelection(void);
     void onFit(void);
     void onToggleAutoFit(void);
-    void onToggleHorizontalSelection(void);
-    void onToggleVerticalSelection(void);
     void onZoomToSelection(void);
     void onZoomReset(void);
     void onShowWaveform(void);

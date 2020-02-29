@@ -18,6 +18,7 @@
 //
 #include <Suscan/Library.h>
 #include "DefaultGradient.h"
+#include "MainSpectrum.h"
 #include "FftPanel.h"
 #include "ui_FftPanel.h"
 
@@ -212,11 +213,14 @@ FftPanel::FftPanel(QWidget *parent) :
   ui->setupUi(this);
 
   this->palettes.push_back(Palette("Suscan", wf_gradient));
+  this->palettes.push_back(*MainSpectrum::getGqrxPalette());
 
   this->assertConfig();
 
   for (i = 9; i < 17; ++i)
     this->addFftSize(1 << i);
+
+  this->addFftSize(1 << 20);
 
   // Add refresh rates
   this->addRefreshRate(1);
@@ -274,6 +278,9 @@ void
 FftPanel::updateRefreshRates(void)
 {
   int index = 0;
+  int selectedIndex = 0;
+  unsigned int diff;
+  unsigned int bestMatch = 1 << 20; /* Just a big number */
   this->ui->rateCombo->clear();
 
   for (auto p = this->refreshRates.begin(); p != this->refreshRates.end(); ++p) {
@@ -286,11 +293,17 @@ FftPanel::updateRefreshRates(void)
       this->ui->rateCombo->addItem(QString::number(*p) + " fps");
     }
 
-    if (*p == this->refreshRate)
-      this->ui->rateCombo->setCurrentIndex(index);
+    diff = static_cast<unsigned>(
+          std::abs(static_cast<int>(*p) - static_cast<int>(this->refreshRate)));
+    if (diff < bestMatch) {
+      selectedIndex = index;
+      bestMatch = diff;
+    }
 
     ++index;
   }
+
+  this->ui->rateCombo->setCurrentIndex(selectedIndex);
 }
 
 static QString

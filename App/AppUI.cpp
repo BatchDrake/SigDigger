@@ -27,6 +27,13 @@ AppUI::AppUI(QMainWindow *owner)
 
   this->main->setupUi(owner);
 
+  // In MacOS X there is already a system feature to show windows in full
+  // screen, and therefore this option is not needed.
+#ifdef __APPLE__
+  delete this->main->action_Full_screen;
+  this->main->action_Full_screen = nullptr;
+#endif // __APPLE__
+  
   this->spectrum = new MainSpectrum(owner);
   this->sourcePanel = new SourcePanel(owner);
   this->inspectorPanel = new InspectorPanel(owner);

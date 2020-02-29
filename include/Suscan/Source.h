@@ -88,6 +88,7 @@ namespace Suscan {
     const suscan_source_device_t *instance; // Always borrowed
     std::vector<std::string> antennas;
     std::vector<Source::GainDescription> gains;
+    std::vector<double> rates;
     SUFREQ freqMin = 0;
     SUFREQ freqMax = 0;
 
@@ -116,6 +117,7 @@ namespace Suscan {
       if (this != &dev) {
         std::swap(this->instance, dev.instance);
         std::swap(this->antennas, dev.antennas);
+        std::swap(this->rates,    dev.rates);
         std::swap(this->gains,    dev.gains);
       }
       return *this;
@@ -203,6 +205,18 @@ namespace Suscan {
       return this->gains.end();
     }
 
+    std::vector<double>::const_iterator
+    getFirstSampRate(void) const
+    {
+      return this->rates.begin();
+    }
+
+    std::vector<double>::const_iterator
+    getLastSampRate(void) const
+    {
+      return this->rates.end();
+    }
+
     SUFREQ
     getMinFreq(void) const
     {
@@ -230,7 +244,9 @@ namespace Suscan {
     std::string label(void) const;
     SUFREQ getFreq(void) const;
     SUFREQ getLnbFreq(void) const;
-    unsigned int getSampleRate() const;
+    unsigned int getSampleRate(void) const;
+    unsigned int getDecimatedSampleRate(void) const;
+    unsigned int getDecimation(void) const;
     enum suscan_source_type getType(void) const;
     bool getLoop(void) const;
     std::string getPath(void) const;
@@ -254,6 +270,7 @@ namespace Suscan {
     void setLabel(const std::string &);
     void setPath(const std::string &);
     void setSampleRate(unsigned int value);
+    void setDecimation(unsigned int);
     void setDevice(const Source::Device &dev);
     void setGain(const std::string &, SUFLOAT);
     void setAntenna(const std::string &);

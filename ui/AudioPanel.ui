@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>296</width>
-    <height>239</height>
+    <width>244</width>
+    <height>242</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -61,19 +61,19 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">
-       <number>6</number>
+       <number>3</number>
       </property>
       <property name="topMargin">
-       <number>6</number>
+       <number>3</number>
       </property>
       <property name="rightMargin">
-       <number>6</number>
+       <number>3</number>
       </property>
       <property name="bottomMargin">
-       <number>6</number>
+       <number>3</number>
       </property>
       <property name="spacing">
-       <number>3</number>
+       <number>1</number>
       </property>
       <item row="3" column="3">
        <widget class="QLabel" name="volumeLabel">

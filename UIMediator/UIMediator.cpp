@@ -20,6 +20,7 @@
 #include <Suscan/Library.h>
 #include <QFileDialog>
 #include <sys/statvfs.h>
+#include <SuWidgetsHelpers.h>
 
 #include "UIMediator.h"
 
@@ -112,7 +113,7 @@ UIMediator::refreshUI(void)
       this->ui->main->actionStart_capture->setEnabled(true);
       this->ui->main->actionStop_capture->setEnabled(false);
       this->ui->panoramicDialog->setBannedDevice("");
-
+      this->ui->spectrum->notifyHalt();
       break;
 
     case HALTING:
@@ -217,6 +218,14 @@ UIMediator::connectMainWindow(void)
         this,
         SLOT(onToggleCapture(bool)));
 
+#ifndef __APPLE__
+  connect(
+        this->ui->main->action_Full_screen,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onToggleFullScreen(bool)));
+#endif // __APLE__
+  
   connect(
         this->ui->main->actionAbout,
         SIGNAL(triggered(bool)),
@@ -309,7 +318,7 @@ UIMediator::setSampleRate(unsigned int rate)
       audioBw = rate / 2;
 
     this->ui->fftPanel->setSampleRate(rate);
-    this->ui->inspectorPanel->setBandwidthLimits(0, rate / 2);
+    this->ui->inspectorPanel->setBandwidthLimits(0, rate);
     this->ui->spectrum->setSampleRate(rate);
     this->ui->sourcePanel->setSampleRate(rate);
     this->ui->inspectorPanel->setBandwidth(bw);
@@ -391,6 +400,48 @@ UIMediator::refreshDevicesDone(void)
 {
   this->ui->deviceDialog->refreshDone();
   this->ui->configDialog->notifySingletonChanges();
+}
+
+QMessageBox::StandardButton
+UIMediator::shouldReduceRate(
+    QString const &label,
+    unsigned int requested,
+    unsigned int proposed)
+{
+  QMessageBox::StandardButton reply = QMessageBox::No;
+
+  if (!this->appConfig->disableHighRateWarning) {
+      QCheckBox *cb = new QCheckBox("Don't ask again");
+      QMessageBox msgbox;
+      msgbox.setText(
+            "The sample rate of profile \""
+            + label
+            + "\" is unusually big ("
+            + QString::number(requested)
+            + "). Decimate it down to "
+            + QString::number(proposed)
+            + "?");
+      msgbox.setWindowTitle("Sample rate too high");
+      msgbox.setIcon(QMessageBox::Icon::Question);
+      msgbox.addButton(QMessageBox::Yes);
+      msgbox.addButton(QMessageBox::No);
+      msgbox.addButton(QMessageBox::Cancel);
+      msgbox.setDefaultButton(QMessageBox::Cancel);
+      msgbox.setCheckBox(cb);
+
+      QObject::connect(
+            cb,
+            &QCheckBox::stateChanged,
+            [this](int state) {
+        if (static_cast<Qt::CheckState>(state) == Qt::CheckState::Checked) {
+              this->appConfig->disableHighRateWarning = true;
+          }
+      });
+
+      reply = static_cast<QMessageBox::StandardButton>(msgbox.exec());
+  }
+
+  return reply;
 }
 
 void
@@ -496,7 +547,10 @@ UIMediator::getPanSpectrumPartition(void) const
 QString
 UIMediator::getInspectorTabTitle(Suscan::InspectorMessage const &msg)
 {
-  QString result = " in " + QString::number(msg.getChannel().fc) + " Hz";
+  QString result = " in "
+      + SuWidgetsHelpers::formatQuantity(
+        msg.getChannel().fc + msg.getChannel().ft,
+        "Hz");
 
   if (msg.getClass() == "psk")
     return "PSK inspector" + result;
@@ -558,6 +612,8 @@ UIMediator::setIORate(qreal rate)
 void
 UIMediator::refreshProfile(void)
 {
+  qint64 min = 0, max = 0;
+
   this->ui->sourcePanel->setProfile(&this->appConfig->profile);
   this->ui->configDialog->setProfile(this->appConfig->profile);
   this->ui->spectrum->setCenterFreq(
@@ -565,7 +621,20 @@ UIMediator::refreshProfile(void)
   this->ui->spectrum->setLnbFreq(
         static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
 
-  this->setSampleRate(this->appConfig->profile.getSampleRate());
+  if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+    min = static_cast<qint64>(
+          this->appConfig->profile.getDevice().getMinFreq());
+    max = static_cast<qint64>(
+          this->appConfig->profile.getDevice().getMaxFreq());
+  }
+
+  if (max - min < 1000) {
+    min = SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ;
+    max = SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ;
+  }
+
+  this->ui->spectrum->setFrequencyLimits(min, max);
+  this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
 }
 
 Suscan::Source::Config *
@@ -613,6 +682,7 @@ UIMediator::applyConfig(void)
   // Apply window config
   QRect rec = QGuiApplication::primaryScreen()->geometry();
   unsigned int savedBw = this->appConfig->bandwidth;
+  int savedLoFreq = this->appConfig->loFreq;
 
   if (this->appConfig->x == -1)
     this->appConfig->x = (rec.width() - this->appConfig->width) / 2;
@@ -625,11 +695,17 @@ UIMediator::applyConfig(void)
         this->appConfig->width,
         this->appConfig->height);
 
+  if (this->appConfig->fullScreen)
+    this->owner->setWindowState(
+        this->owner->windowState() | Qt::WindowFullScreen);
+
   // The following controls reflect elements of the configuration that are
   // not owned by them. We need to set them manually.
   this->ui->configDialog->setColors(this->appConfig->colors);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
+  this->ui->spectrum->setExpectedRate(
+        static_cast<int>(1.f / this->appConfig->analyzerParams.psdUpdateInterval));
   this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
   this->ui->fftPanel->setWindowFunction(this->appConfig->analyzerParams.windowFunction);
   this->ui->fftPanel->setFftSize(this->appConfig->analyzerParams.windowSize);  
@@ -659,7 +735,7 @@ UIMediator::applyConfig(void)
   this->refreshProfile();
 
   // Apply loFreq and bandwidth config AFTER profile has been set.
-  this->ui->spectrum->setLoFreq(this->appConfig->loFreq);
+  this->ui->spectrum->setLoFreq(savedLoFreq);
   if (savedBw > 0)
     this->setBandwidth(savedBw);
 
@@ -701,6 +777,14 @@ UIMediator::onToggleCapture(bool state)
   } else {
     emit captureEnd();
   }
+}
+
+void
+UIMediator::onToggleFullScreen(bool)
+{
+  this->owner->setWindowState(this->owner->windowState() ^ Qt::WindowFullScreen);
+  this->appConfig->fullScreen =
+      (this->owner->windowState() & Qt::WindowFullScreen) != 0;
 }
 
 void

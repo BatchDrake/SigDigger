@@ -16,13 +16,11 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+
 #include "InspectorPanel.h"
 #include "ui_InspectorPanel.h"
 
-// FIXME!! THESE INCLUDES ARE AWFUL. CREATE SIGDIGGER UTILITY CLASS
-#include "DataSaverUI.h"
-#include <Waveform.h>
-#include "SourcePanel.h"
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -240,23 +238,29 @@ InspectorPanel::resetRawInspector(qreal fs)
 {
   this->timeWindowFs = fs;
   this->uiRefreshSamples =
-      SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS * 1e-3 / this->timeWindowFs;
+      std::ceil(
+        SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS * 1e-3 * this->timeWindowFs);
   this->maxSamples = this->ui->maxMemSpin->value() * (1 << 20) / sizeof(SUCOMPLEX);
   this->ui->hangTimeSpin->setMinimum(std::ceil(1e3 / fs));
   this->data.resize(0);
   this->ui->sampleRateLabel->setText(
-        SourcePanel::formatSampleRate(static_cast<unsigned>(fs)));
-  this->ui->durationLabel->setText(Waveform::formatLabel(0, "s"));
-  this->ui->memoryLabel->setText(DataSaverUI::formatCaptureSize(0));
+        SuWidgetsHelpers::formatQuantity(fs, "sps"));
+  this->ui->durationLabel->setText(
+        SuWidgetsHelpers::formatQuantity(0, "s"));
+  this->ui->memoryLabel->setText(
+        SuWidgetsHelpers::formatBinaryQuantity(0));
 }
 
 void
 InspectorPanel::refreshCaptureInfo(void)
 {
   this->ui->durationLabel->setText(
-        Waveform::formatLabel(this->data.size() / this->timeWindowFs, "s"));
+        SuWidgetsHelpers::formatQuantity(
+          this->data.size() / this->timeWindowFs,
+          "s"));
   this->ui->memoryLabel->setText(
-        DataSaverUI::formatCaptureSize(this->data.size() * sizeof(SUCOMPLEX)));
+        SuWidgetsHelpers::formatBinaryQuantity(
+          static_cast<qint64>(this->data.size() * sizeof(SUCOMPLEX))));
 }
 
 SUFLOAT
@@ -296,7 +300,7 @@ InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
       this->totalSamples >= this->uiRefreshSamples;
 
   if (refreshUi)
-    this->totalSamples -= this->uiRefreshSamples;
+    this->totalSamples %= this->uiRefreshSamples;
 
   if (this->ui->captureButton->isDown()) {
     // Manual capture
@@ -385,9 +389,11 @@ InspectorPanel::openTimeWindow(void)
   this->timeWindow->onFit();
 
   this->ui->sampleRateLabel->setText(
-        SourcePanel::formatSampleRate(static_cast<unsigned>(0)));
-  this->ui->durationLabel->setText(Waveform::formatLabel(0, "s"));
-  this->ui->memoryLabel->setText(DataSaverUI::formatCaptureSize(0));
+        SuWidgetsHelpers::formatQuantity(0, "sps"));
+  this->ui->durationLabel->setText(
+        SuWidgetsHelpers::formatQuantity(0, "s"));
+  this->ui->memoryLabel->setText(
+        SuWidgetsHelpers::formatBinaryQuantity(0));
 }
 
 void

@@ -40,6 +40,21 @@ UIMediator::connectAudioPanel(void)
 void
 UIMediator::onAudioChanged(void)
 {
+  switch (this->ui->audioPanel->getDemod()) {
+    case AM:
+    case FM:
+      this->ui->spectrum->setFilterSkewness(MainSpectrum::SYMMETRIC);
+      break;
+
+    case USB:
+      this->ui->spectrum->setFilterSkewness(MainSpectrum::UPPER);
+      break;
+
+    case LSB:
+      this->ui->spectrum->setFilterSkewness(MainSpectrum::LOWER);
+      break;
+  }
+
   emit audioChanged();
 }
 

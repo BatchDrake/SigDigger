@@ -23,6 +23,7 @@
 #include <Suscan/Messages/PSDMessage.h>
 #include <ColorConfig.h>
 #include <Waterfall.h>
+#include <Palette.h>
 
 namespace Ui {
   class MainSpectrum;
@@ -41,6 +42,12 @@ namespace SigDigger {
       REPLAY
     };
 
+    enum Skewness {
+      SYMMETRIC,
+      UPPER,
+      LOWER
+    };
+
   private:
     // UI Objects
     Ui::MainSpectrum *ui = nullptr;
@@ -48,7 +55,10 @@ namespace SigDigger {
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
+    Skewness filterSkewness = SYMMETRIC;
     bool throttling = false;
+    qint64 minFreq = 0;
+    qint64 maxFreq = 6000000000;
 
     // Cached members (for UI update, etc)
     unsigned int cachedRate = 0;
@@ -58,7 +68,10 @@ namespace SigDigger {
     // Private methods
     void connectAll(void);
     void refreshUi(void);
+    void updateLimits(void);
 
+    // Static members
+    static Palette *gqrxPalette;
     static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
 
   public:
@@ -71,6 +84,7 @@ namespace SigDigger {
 
     // Setters
     void setThrottling(bool);
+    void setFrequencyLimits(qint64 min, qint64 max);
     void setCaptureMode(CaptureMode mode);
     void setCenterFreq(qint64 freq);
     void setLoFreq(qint64 loFreq);
@@ -84,6 +98,7 @@ namespace SigDigger {
     void setColorConfig(ColorConfig const &cfg);
     void setPeakHold(bool);
     void setPeakDetect(bool);
+    void setExpectedRate(int);
 
     void setZoom(unsigned int zoom);
     void setSampleRate(unsigned int rate);
@@ -92,6 +107,8 @@ namespace SigDigger {
     void setShowFATs(bool);
     void pushFAT(FrequencyAllocationTable *);
     void removeFAT(QString const &name);
+    void notifyHalt(void);
+    void setFilterSkewness(enum Skewness); // TODO: Return *actual* bw
 
     // Getters
     bool getThrottling(void) const;
@@ -104,6 +121,7 @@ namespace SigDigger {
     FrequencyAllocationTable *getFAT(QString const &) const;
 
     static int getFrequencyUnits(qint64 frew);
+    static Palette *getGqrxPalette(void);
 
   signals:
     void bandwidthChanged(void);

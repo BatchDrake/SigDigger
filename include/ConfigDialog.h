@@ -46,17 +46,30 @@ namespace SigDigger {
     void connectAll(void);
     void populateCombos(void);
     void refreshAntennas(void);
+    void refreshSampRates(void);
     void refreshColorUi(void);
     void refreshAnalyzerParamsUi(void);
     void refreshProfileUi(void);
     void refreshUi(void);
     void refreshUiState(void);
-    void updateBwStep(void);
+    void refreshTrueSampleRate(void);
     void loadProfile(Suscan::Source::Config &config);
     void saveAnalyzerParams(void);
     void saveColors(void);
     void guessParamsFromFileName(void);
+    void refreshUnitButtons(void);
+    unsigned int getSelectedSampleRate(void) const;
+    void setSelectedSampleRate(unsigned int);
 
+    static void adjustSpinUnits(QDoubleSpinBox *sb, QString const &units);
+    static void incSpinUnits(QDoubleSpinBox *sb, QString const &units);
+    static void decSpinUnits(QDoubleSpinBox *sb, QString const &units);
+    static bool spinCanIncrease(const QDoubleSpinBox *sb);
+    static bool spinCanDecrease(const QDoubleSpinBox *sb);
+    static void setSpinValue(QDoubleSpinBox *sb, qreal value, QString const &units);
+    static qreal getSpinValue(QDoubleSpinBox *sb);
+
+    static QString getSampRateString(qreal rate);
     static QString getBaseName(const QString &string);
 
   public:
@@ -103,11 +116,20 @@ namespace SigDigger {
     void onDeviceChanged(int);
     void onFormatChanged(int);
     void onCheckButtonsToggled(bool);
-    void onLineEditsChanged(const QString &);
+    void onSpinsChanged(void);
     void onBandwidthChanged(double);
     void onBrowseCaptureFile(void);
     void onAccepted(void);
     void onSaveProfile(void);
+
+    void onIncFreqUnits(void);
+    void onDecFreqUnits(void);
+
+    void onIncLNBUnits(void);
+    void onDecLNBUnits(void);
+
+    void onIncSampRateUnits(void);
+    void onDecSampRateUnits(void);
   };
 };
 

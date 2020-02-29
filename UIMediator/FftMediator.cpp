@@ -77,19 +77,23 @@ UIMediator::onPaletteChanged(void)
 void
 UIMediator::onRangesChanged(void)
 {
-  this->ui->spectrum->setPandapterRange(
-        this->ui->fftPanel->getPandRangeMin(),
-        this->ui->fftPanel->getPandRangeMax());
+  if (!this->settingRanges) {
+    this->settingRanges = true;
+    this->ui->spectrum->setPandapterRange(
+          this->ui->fftPanel->getPandRangeMin(),
+          this->ui->fftPanel->getPandRangeMax());
 
-  this->ui->spectrum->setWfRange(
-        this->ui->fftPanel->getWfRangeMin(),
-        this->ui->fftPanel->getWfRangeMax());
+    this->ui->spectrum->setWfRange(
+          this->ui->fftPanel->getWfRangeMin(),
+          this->ui->fftPanel->getWfRangeMax());
 
-  this->ui->spectrum->setPanWfRatio(this->ui->fftPanel->getPanWfRatio());
-  this->ui->spectrum->setZoom(this->ui->fftPanel->getFreqZoom());
+    this->ui->spectrum->setPanWfRatio(this->ui->fftPanel->getPanWfRatio());
+    this->ui->spectrum->setZoom(this->ui->fftPanel->getFreqZoom());
 
-  this->ui->spectrum->setPeakDetect(this->ui->fftPanel->getPeakDetect());
-  this->ui->spectrum->setPeakHold(this->ui->fftPanel->getPeakHold());
+    this->ui->spectrum->setPeakDetect(this->ui->fftPanel->getPeakDetect());
+    this->ui->spectrum->setPeakHold(this->ui->fftPanel->getPeakHold());
+    this->settingRanges = false;
+  }
 }
 
 void
@@ -109,6 +113,8 @@ void
 UIMediator::onRefreshRateChanged(void)
 {
   this->appConfig->analyzerParams.psdUpdateInterval = 1.f / this->ui->fftPanel->getRefreshRate();
+  this->ui->spectrum->setExpectedRate(
+        static_cast<int>(this->ui->fftPanel->getRefreshRate()));
   emit analyzerParamsChanged();
 }
 

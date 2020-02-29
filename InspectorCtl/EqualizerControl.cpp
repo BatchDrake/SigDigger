@@ -20,7 +20,7 @@
 
 #include "EqualizerControl.h"
 #include "ui_EqualizerControl.h"
-#include <suscan/analyzer/inspector/params.h>
+#include <analyzer/inspector/params.h>
 
 using namespace SigDigger;
 

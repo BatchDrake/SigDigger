@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    TimeWindow.cpp: Time Window for time view operations
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -24,13 +24,14 @@
 #include <sigutils/sampling.h>
 #include <fstream>
 #include <iomanip>
+#include <SuWidgetsHelpers.h>
 #include "ui_TimeWindow.h"
 #include <climits>
 
 using namespace SigDigger;
 
 bool
-TimeWindow::exportToFile(QString const &path, int start, int end)
+TimeWindow::exportToMatlab(QString const &path, int start, int end)
 {
   std::ofstream of(path.toStdString().c_str(), std::ofstream::binary);
   const SUCOMPLEX *data = this->ui->realWaveform->getData();
@@ -60,6 +61,41 @@ TimeWindow::exportToFile(QString const &path, int start, int end)
   of << "];\n";
 
   return true;
+}
+
+bool
+TimeWindow::exportToWav(QString const &path, int start, int end)
+{
+  SF_INFO sfinfo;
+  SNDFILE *sfp = nullptr;
+  const SUCOMPLEX *data = this->ui->realWaveform->getData();
+  int length = static_cast<int>(this->ui->realWaveform->getDataLength());
+  bool ok = false;
+
+  sfinfo.channels = 2;
+  sfinfo.samplerate = static_cast<int>(this->ui->realWaveform->getSampleRate());
+  sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+
+  if ((sfp = sf_open(path.toStdString().c_str(), SFM_WRITE, &sfinfo)) == nullptr)
+    goto done;
+
+  if (start < 0)
+    start = 0;
+  if (end > length)
+    end = length;
+
+  length = end - start;
+
+  ok = sf_write_float(
+        sfp,
+        reinterpret_cast<const SUFLOAT *>(data + start),
+        length << 1) == (length << 1);
+
+done:
+  if (sfp != nullptr)
+    sf_close(sfp);
+
+  return ok;
 }
 
 void
@@ -119,6 +155,7 @@ TimeWindow::connectAll(void)
         this,
         SLOT(onFit(void)));
 
+#if 0
   connect(
         this->ui->actionHorizontal_selection,
         SIGNAL(triggered(bool)),
@@ -130,6 +167,7 @@ TimeWindow::connectAll(void)
         SIGNAL(triggered(bool)),
         this,
         SLOT(onToggleVerticalSelection(void)));
+#endif
 
   connect(
         this->ui->actionZoom_selection,
@@ -286,6 +324,10 @@ TimeWindow::setPaletteOffset(unsigned int offset)
 void
 TimeWindow::setColorConfig(ColorConfig const &cfg)
 {
+  this->ui->constellation->setBackgroundColor(cfg.spectrumBackground);
+  this->ui->constellation->setForegroundColor(cfg.spectrumForeground);
+  this->ui->constellation->setAxesColor(cfg.spectrumAxes);
+
   this->ui->realWaveform->setBackgroundColor(cfg.spectrumBackground);
   this->ui->realWaveform->setForegroundColor(cfg.spectrumForeground);
   this->ui->realWaveform->setAxesColor(cfg.spectrumAxes);
@@ -386,20 +428,21 @@ TimeWindow::refreshMeasures(void)
           data + static_cast<qint64>(selStart),
           static_cast<int>(selEnd - selStart));
 
-    this->ui->periodLabel->setText(Waveform::formatLabel(period, "s"));
+    this->ui->periodLabel->setText(
+          SuWidgetsHelpers::formatQuantity(period, "s"));
     this->ui->baudLabel->setText(formatReal(baud));
     this->ui->selStartLabel->setText(
-          Waveform::formatLabel(
+          SuWidgetsHelpers::formatQuantity(
             this->ui->realWaveform->samp2t(selStart),
             "s")
           + " (" + formatReal(selStart) + ")");
     this->ui->selEndLabel->setText(
-          Waveform::formatLabel(
+          SuWidgetsHelpers::formatQuantity(
             this->ui->realWaveform->samp2t(selEnd),
             "s")
           + " (" + formatReal(selEnd) + ")");
     this->ui->selLengthLabel->setText(
-          Waveform::formatLabel(
+          SuWidgetsHelpers::formatQuantity(
             (selEnd - selStart) * deltaT,
             "s")
           + " (" + formatReal(selEnd - selStart) + ")");
@@ -416,7 +459,7 @@ TimeWindow::refreshMeasures(void)
   }
 
   this->ui->lengthLabel->setText(QString::number(length) + " samples");
-  this->ui->durationLabel->setText(Waveform::formatLabel(length * deltaT, "s"));
+  this->ui->durationLabel->setText(SuWidgetsHelpers::formatQuantity(length * deltaT, "s"));
   this->ui->minILabel->setText(formatScientific(SU_C_REAL(min)));
   this->ui->maxILabel->setText(formatScientific(SU_C_REAL(min)));
   this->ui->meanILabel->setText(formatScientific(SU_C_REAL(mean)));
@@ -606,6 +649,7 @@ TimeWindow::onHoverTime(qreal time)
   int length = static_cast<int>(this->ui->realWaveform->getDataLength());
   qreal samp = this->ui->realWaveform->t2samp(time);
   qint64 iSamp = static_cast<qint64>(std::floor(samp));
+  qint64 selStart, selEnd, selLen;
   qreal max = std::max<qreal>(
         std::max<qreal>(
           std::fabs(this->ui->realWaveform->getMax()),
@@ -629,9 +673,9 @@ TimeWindow::onHoverTime(qreal time)
   this->ui->constellation->setGain(ampl);
 
   if (this->ui->realWaveform->getHorizontalSelectionPresent()) {
-    qint64 selStart = static_cast<qint64>(
+     selStart = static_cast<qint64>(
           this->ui->realWaveform->getHorizontalSelectionStart());
-    qint64 selEnd = static_cast<qint64>(
+    selEnd = static_cast<qint64>(
           this->ui->realWaveform->getHorizontalSelectionEnd());
 
     if (selStart < 0)
@@ -642,12 +686,14 @@ TimeWindow::onHoverTime(qreal time)
     if (selEnd - selStart > TIME_WINDOW_MAX_SELECTION)
       selStart = selEnd - TIME_WINDOW_MAX_SELECTION;
 
-    if (selEnd - selStart > 0) {
+    selLen = selEnd - selStart;
+
+    if (selLen > 0) {
       this->ui->constellation->setHistorySize(
-            static_cast<unsigned int>(selEnd - selStart));
+            static_cast<unsigned int>(selLen));
       this->ui->constellation->feed(
             data + selStart,
-            static_cast<unsigned int>(selEnd - selStart));
+            static_cast<unsigned int>(selLen));
     }
   } else {
     if (iSamp == length - 1) {
@@ -662,7 +708,7 @@ TimeWindow::onHoverTime(qreal time)
   }
 
   this->ui->positionLabel->setText(
-        Waveform::formatLabel(time, "s") + " (" + formatReal(samp) + ")");
+        SuWidgetsHelpers::formatQuantity(time, "s") + " (" + formatReal(samp) + ")");
   this->ui->iLabel->setText(formatScientific(SU_C_REAL(val)));
   this->ui->qLabel->setText(formatScientific(SU_C_IMAG(val)));
   this->ui->magPhaseLabel->setText(
@@ -672,13 +718,38 @@ TimeWindow::onHoverTime(qreal time)
         + "º)");
 
   // Frequency calculations
-  if (iSamp >= 1 && iSamp < length) {
-    SUFLOAT normFreq = SU_ANG2NORM_FREQ(SU_C_ARG(data[iSamp] * SU_C_CONJ(data[iSamp - 1])));
+  qint64 dopplerLen = this->ui->realWaveform->getHorizontalSelectionPresent()
+      ? selLen
+      : static_cast<qint64>(
+          std::ceil(this->ui->realWaveform->getSamplesPerPixel()));
+  qint64 dopplerStart = this->ui->realWaveform->getHorizontalSelectionPresent()
+      ? selStart
+      : iSamp;
+  qint64 delta = 1;
+  qreal omegaAccum = 0;
+  unsigned int count = 0;
+
+  if (dopplerLen > TIME_WINDOW_MAX_DOPPLER_ITERS) {
+    delta = dopplerLen / TIME_WINDOW_MAX_DOPPLER_ITERS;
+    dopplerLen = TIME_WINDOW_MAX_DOPPLER_ITERS;
+  }
+
+  for (auto i = dopplerStart; i < dopplerLen + dopplerStart; i += delta) {
+    if (i >= 1 && i < length) {
+      omegaAccum += SU_C_ARG(data[i] * SU_C_CONJ(data[i - 1]));
+      ++count;
+    }
+  }
+
+  if (count > 0) {
+    SUFLOAT normFreq;
+    normFreq = SU_ANG2NORM_FREQ(omegaAccum / count);
     SUFREQ freq = SU_NORM2ABS_FREQ(this->fs, normFreq);
     SUFREQ ifFreq = this->ui->refFreqSpin->value() - this->centerFreq;
     SUFREQ doppler = -3e8 / this->centerFreq * (freq - ifFreq);
     this->ui->freqShiftLabel->setText(formatIntegerPart(freq) + " Hz");
-    this->ui->dopplerShiftLabel->setText(Waveform::formatLabel(doppler, "m/s"));
+    this->ui->dopplerShiftLabel->setText(
+          SuWidgetsHelpers::formatQuantity(doppler, "m/s"));
   } else {
     this->ui->freqShiftLabel->setText("N/A");
     this->ui->dopplerShiftLabel->setText("N/A");
@@ -713,74 +784,77 @@ TimeWindow::onPeriodicDivisionsChanged(void)
   this->refreshMeasures();
 }
 
+QString
+TimeWindow::ensureRightExtension(QString const &path, QString const &ext)
+{
+  if (path.right(ext.length()) != ext)
+    return path + ext;
+
+  return path;
+}
+
 void
-TimeWindow::onSaveAll(void)
+TimeWindow::saveSamples(int start, int end)
 {
   bool done = false;
 
   do {
     QFileDialog dialog(this);
+    QStringList filters;
 
     dialog.setFileMode(QFileDialog::FileMode::AnyFile);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setWindowTitle(QString("Save capture"));
-    dialog.setNameFilter(QString("MATLAB/Octave file (*.m)"));
+
+    filters << "MATLAB/Octave file (*.m)"
+            << "Audio file (*.wav)";
+
+    dialog.setNameFilters(filters);
 
     if (dialog.exec()) {
       QString path = dialog.selectedFiles().first();
+      QString filter = dialog.selectedNameFilter();
+      bool result;
 
-        if (!this->exportToFile(
-              path,
-              0,
-              static_cast<int>(this->ui->realWaveform->getDataLength()))) {
-          QMessageBox::warning(
-                this,
-                "Cannot open file",
-                "Cannote save file in the specified location. Please choose "
-                "a different location and try again.",
-                QMessageBox::Ok);
-        } else {
-          done = true;
-        }
+      if (strstr(filter.toStdString().c_str(), ".m") != nullptr)  {
+        path = ensureRightExtension(path, ".m");
+        result = this->exportToMatlab(path, start, end);
+      } else {
+        path = ensureRightExtension(path, ".wav");
+        result = this->exportToWav(path, start, end);
+      }
+
+      if (!result) {
+        QMessageBox::warning(
+              this,
+              "Cannot open file",
+              "Cannote save file in the specified location. Please choose "
+              "a different location and try again.",
+              QMessageBox::Ok);
+      } else {
+        done = true;
+      }
     } else {
       done = true;
     }
   } while (!done);
 }
 
+
+void
+TimeWindow::onSaveAll(void)
+{
+  this->saveSamples(
+        0,
+        static_cast<int>(this->ui->realWaveform->getDataLength()));
+}
+
 void
 TimeWindow::onSaveSelection(void)
 {
-  bool done = false;
-
-  do {
-    QFileDialog dialog(this);
-
-    dialog.setFileMode(QFileDialog::FileMode::AnyFile);
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.setWindowTitle(QString("Save capture"));
-    dialog.setNameFilter(QString("MATLAB/Octave file (*.m)"));
-
-    if (dialog.exec()) {
-      QString path = dialog.selectedFiles().first();
-
-        if (!this->exportToFile(
-              path,
-              this->ui->realWaveform->getHorizontalSelectionStart(),
-              this->ui->realWaveform->getHorizontalSelectionEnd())) {
-          QMessageBox::warning(
-                this,
-                "Cannot open file",
-                "Cannote save file in the specified location. Please choose "
-                "a different location and try again.",
-                QMessageBox::Ok);
-        } else {
-          done = true;
-        }
-    } else {
-      done = true;
-    }
-  } while (!done);
+  this->saveSamples(
+        static_cast<int>(this->ui->realWaveform->getHorizontalSelectionStart()),
+        static_cast<int>(this->ui->realWaveform->getHorizontalSelectionEnd()));
 }
 
 void
@@ -798,6 +872,7 @@ TimeWindow::onToggleAutoFit(void)
 
 }
 
+#if 0
 void
 TimeWindow::onToggleHorizontalSelection(void)
 {
@@ -819,7 +894,7 @@ TimeWindow::onToggleVerticalSelection(void)
     this->adjusting = false;
   }
 }
-
+#endif
 void
 TimeWindow::onZoomToSelection(void)
 {

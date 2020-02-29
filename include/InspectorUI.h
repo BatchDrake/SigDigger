@@ -61,9 +61,10 @@ namespace SigDigger {
     float sampleRate;
 
     bool scrolling = false;
-    bool demodulating = true;
+    bool demodulating = false;
     bool recording = false;
     bool forwarding = false;
+    bool adjusting = false;
 
     unsigned int recordingRate = 0;
     // Inspector config
@@ -98,14 +99,19 @@ namespace SigDigger {
 
     void pushControl(InspectorCtl *ctl);
     void setBps(unsigned int bps);
+    void connectAll(void);
     unsigned int getBps(void) const;
     unsigned int getBaudRate(void) const;
     std::string getClassName(void) const;
     void populate(void);
     void connectDataSaver(void);
     void connectNetForwarder(void);
-
+    void refreshSizes(void);
     std::string captureFileName(void) const;
+    unsigned int getVScrollPageSize(void) const;
+    unsigned int getHScrollOffset(void) const;
+    void refreshVScrollBar(void) const;
+    void refreshHScrollBar(void) const;
     int fd = -1;
 
     public:
@@ -141,8 +147,14 @@ namespace SigDigger {
     public slots:
       void onInspectorControlChanged();
       void onOffsetChanged(unsigned int);
+      void onHOffsetChanged(int);
       void onStrideChanged(unsigned int);
+      void onAspectSliderChanged(int);
+      void onPandapterRangeChanged(float, float);
+      void onZoomChanged(void);
+      void onSymViewZoomChanged(unsigned int);
       void onScrollBarChanged(int val);
+      void onHScrollBarChanged(int offset);
       void onCPUBurnClicked(void);
       void onFPSReset(void);
       void onFPSChanged(void);
@@ -160,6 +172,7 @@ namespace SigDigger {
       void onChangeBandwidth(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
       void onApplyEstimation(QString, float);
+      void onZoomReset(void);
 
       // DataSaver slots
       void onSaveError(void);

@@ -23,6 +23,10 @@
 #include <Suscan/Messages/PSDMessage.h>
 #include <map>
 #include <AppConfig.h>
+#include <QMessageBox>
+
+#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ 0
+#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ 6000000000
 
 namespace SigDigger {
 
@@ -44,6 +48,7 @@ namespace SigDigger {
     // Static part of UI
     QMainWindow *owner = nullptr;
     AppUI *ui = nullptr;
+
     QDockWidget *sourcePanelDock = nullptr;
     QDockWidget *inspectorPanelDock = nullptr;
     QDockWidget *fftPanelDock = nullptr;
@@ -57,6 +62,7 @@ namespace SigDigger {
 
     // UI State
     State state = HALTED;
+    bool settingRanges = false;
 
     // Private methods
     void connectMainWindow(void);
@@ -103,6 +109,11 @@ namespace SigDigger {
     void setCaptureSize(quint64 size);
     void refreshDevicesDone(void);
 
+    QMessageBox::StandardButton shouldReduceRate(
+        QString const &label,
+        unsigned int,
+        unsigned int);
+
     // Inspector handling
     Inspector *lookupInspector(Suscan::InspectorId id) const;
     Inspector *addInspectorTab(
@@ -137,7 +148,6 @@ namespace SigDigger {
     void saveUIConfig(void);
     void setProfile(Suscan::Source::Config const &config);
     void setPanSpectrumRunning(bool state);
-
     void resetRawInspector(qreal fs);
     void feedRawInspector(const SUCOMPLEX *, size_t size);
 
@@ -197,6 +207,7 @@ namespace SigDigger {
     // Main Window slots
     void onTriggerSetup(bool);
     void onToggleCapture(bool);
+    void onToggleFullScreen(bool);
     void onToggleAbout(bool);
     void onCloseInspectorTab(int index);
     void onTriggerStart(bool);
