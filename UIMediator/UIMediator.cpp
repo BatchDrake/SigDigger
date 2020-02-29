@@ -546,7 +546,9 @@ UIMediator::getPanSpectrumPartition(void) const
 QString
 UIMediator::getInspectorTabTitle(Suscan::InspectorMessage const &msg)
 {
-  QString result = " in " + QString::number(msg.getChannel().fc) + " Hz";
+  QString result = " in "
+      + QString::number(msg.getChannel().fc + msg.getChannel().ft)
+      + " Hz";
 
   if (msg.getClass() == "psk")
     return "PSK inspector" + result;

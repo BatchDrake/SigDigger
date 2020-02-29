@@ -186,7 +186,8 @@ InspectorMessage::getChannel(void) const
 
   if (this->message != nullptr) {
     ch.fc = this->message->channel.fc;
-    ch.fc = this->message->channel.bw;
+    ch.bw = this->message->channel.bw;
+    ch.ft = this->message->channel.ft;
   }
 
   return ch;
