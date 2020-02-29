@@ -24,6 +24,7 @@
 #include <sigutils/sampling.h>
 #include <fstream>
 #include <iomanip>
+#include <SuWidgetsHelpers.h>
 #include "ui_TimeWindow.h"
 #include <climits>
 
@@ -427,20 +428,21 @@ TimeWindow::refreshMeasures(void)
           data + static_cast<qint64>(selStart),
           static_cast<int>(selEnd - selStart));
 
-    this->ui->periodLabel->setText(Waveform::formatLabel(period, "s"));
+    this->ui->periodLabel->setText(
+          SuWidgetsHelpers::formatQuantity(period, "s"));
     this->ui->baudLabel->setText(formatReal(baud));
     this->ui->selStartLabel->setText(
-          Waveform::formatLabel(
+          SuWidgetsHelpers::formatQuantity(
             this->ui->realWaveform->samp2t(selStart),
             "s")
           + " (" + formatReal(selStart) + ")");
     this->ui->selEndLabel->setText(
-          Waveform::formatLabel(
+          SuWidgetsHelpers::formatQuantity(
             this->ui->realWaveform->samp2t(selEnd),
             "s")
           + " (" + formatReal(selEnd) + ")");
     this->ui->selLengthLabel->setText(
-          Waveform::formatLabel(
+          SuWidgetsHelpers::formatQuantity(
             (selEnd - selStart) * deltaT,
             "s")
           + " (" + formatReal(selEnd - selStart) + ")");
@@ -457,7 +459,7 @@ TimeWindow::refreshMeasures(void)
   }
 
   this->ui->lengthLabel->setText(QString::number(length) + " samples");
-  this->ui->durationLabel->setText(Waveform::formatLabel(length * deltaT, "s"));
+  this->ui->durationLabel->setText(SuWidgetsHelpers::formatQuantity(length * deltaT, "s"));
   this->ui->minILabel->setText(formatScientific(SU_C_REAL(min)));
   this->ui->maxILabel->setText(formatScientific(SU_C_REAL(min)));
   this->ui->meanILabel->setText(formatScientific(SU_C_REAL(mean)));
@@ -706,7 +708,7 @@ TimeWindow::onHoverTime(qreal time)
   }
 
   this->ui->positionLabel->setText(
-        Waveform::formatLabel(time, "s") + " (" + formatReal(samp) + ")");
+        SuWidgetsHelpers::formatQuantity(time, "s") + " (" + formatReal(samp) + ")");
   this->ui->iLabel->setText(formatScientific(SU_C_REAL(val)));
   this->ui->qLabel->setText(formatScientific(SU_C_IMAG(val)));
   this->ui->magPhaseLabel->setText(
@@ -746,7 +748,8 @@ TimeWindow::onHoverTime(qreal time)
     SUFREQ ifFreq = this->ui->refFreqSpin->value() - this->centerFreq;
     SUFREQ doppler = -3e8 / this->centerFreq * (freq - ifFreq);
     this->ui->freqShiftLabel->setText(formatIntegerPart(freq) + " Hz");
-    this->ui->dopplerShiftLabel->setText(Waveform::formatLabel(doppler, "m/s"));
+    this->ui->dopplerShiftLabel->setText(
+          SuWidgetsHelpers::formatQuantity(doppler, "m/s"));
   } else {
     this->ui->freqShiftLabel->setText("N/A");
     this->ui->dopplerShiftLabel->setText("N/A");

@@ -46,8 +46,6 @@ namespace SigDigger {
       void setDiskUsage(qreal) override;
 
   public:
-      static QString formatCaptureSize(quint64 size);
-
       // Setters
       void setRecordSavePath(std::string const &) override;
       void setSaveEnabled(bool enabled) override;

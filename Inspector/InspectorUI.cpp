@@ -35,6 +35,7 @@
 #include <Suscan/Library.h>
 #include <DefaultGradient.h>
 #include <QMessageBox>
+#include <SuWidgetsHelpers.h>
 
 #include <iomanip>
 #include <fcntl.h>
@@ -597,32 +598,6 @@ InspectorUI::onResetSNR(void)
 
 }
 
-static QString
-format2nUnits(unsigned long rate, QString const &units)
-{
-  if (rate < (1 << 10))
-    return QString::number(rate) + " " + units;
-  else if (rate < (1 << 20))
-    return QString::number(static_cast<qreal>(rate) / (1 << 10), 'f', 3) + " Ki" + units;
-  else if (rate < (1 << 30))
-    return QString::number(static_cast<qreal>(rate) / (1 << 20), 'f', 3) + " Mi" + units;
-
-  return QString::number(static_cast<qreal>(rate) / (1 << 30), 'f', 3) + " Gi" + units;
-}
-
-static QString
-formatUnits(unsigned long rate, QString const &units)
-{
-  if (rate < 1000)
-    return QString::number(rate) + " " + units;
-  else if (rate < 1000000)
-    return QString::number(rate / 1e3, 'f', 3) + " k" + units;
-  else if (rate < 1000000000)
-    return QString::number(rate / 1e6, 'f', 3) + " M" + units;
-
-  return QString::number(rate / 1e9, 'f', 3) + " G" + units;
-}
-
 unsigned int
 InspectorUI::getVScrollPageSize(void) const
 {
@@ -697,15 +672,17 @@ InspectorUI::refreshSizes(void)
 {
   this->ui->sizeLabel->setText(
         "Capture size: " +
-        formatUnits(this->ui->symView->getLength(), "sym"));
+        SuWidgetsHelpers::formatQuantity(
+          this->ui->symView->getLength(),
+          "sym"));
 
   this->ui->dataSizeLabel->setText(
         "Data size: " +
-        formatUnits(
+        SuWidgetsHelpers::formatQuantity(
           this->ui->symView->getLength() * this->decider.getBps(),
           "bits")
         + " (" +
-        format2nUnits(
+        SuWidgetsHelpers::formatBinaryQuantity(
           this->ui->symView->getLength() * this->decider.getBps() >> 3,
           "B") + ")");
 

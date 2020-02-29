@@ -20,6 +20,7 @@
 #include <Suscan/Library.h>
 #include <QFileDialog>
 #include <sys/statvfs.h>
+#include <SuWidgetsHelpers.h>
 
 #include "UIMediator.h"
 
@@ -547,8 +548,9 @@ QString
 UIMediator::getInspectorTabTitle(Suscan::InspectorMessage const &msg)
 {
   QString result = " in "
-      + QString::number(msg.getChannel().fc + msg.getChannel().ft)
-      + " Hz";
+      + SuWidgetsHelpers::formatQuantity(
+        msg.getChannel().fc + msg.getChannel().ft,
+        "Hz");
 
   if (msg.getClass() == "psk")
     return "PSK inspector" + result;
