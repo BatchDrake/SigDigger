@@ -61,7 +61,7 @@ namespace SigDigger {
     float sampleRate;
 
     bool scrolling = false;
-    bool demodulating = true;
+    bool demodulating = false;
     bool recording = false;
     bool forwarding = false;
     bool adjusting = false;

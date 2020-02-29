@@ -51,7 +51,7 @@ ClockRecovery::applicable(QString const &key)
 void
 ClockRecovery::refreshUi(void)
 {
-  this->ui->baudRate->setText(QString::number(this->getFloat("clock.baud")));
+  this->ui->baudRate->setText(QString::number(this->getFloat("clock.baud"), 'g', 8));
   this->ui->startButton->setChecked(this->getBoolean("clock.running"));
   this->ui->gainSpin->setValue(this->getFloat("clock.gain"));
   this->ui->phaseSlider->setValue(
