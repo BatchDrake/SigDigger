@@ -28,6 +28,7 @@
 #
 
 DISTROOT="$PWD"
+BRANCH=develop
 SCRIPTPATH=`realpath $0`
 SCRIPTDIR=`dirname "$SCRIPTPATH"`
 APPIMAGEROOT="$DISTROOT/appimage-root"
@@ -108,10 +109,10 @@ if [ "$SIGDIGGER_SKIPBUILD" == "" ]; then
     export PKG_CONFIG_PATH="$APPIMAGEROOT/usr/lib/pkgconfig:$PKG_CONFIG"
     export LD_LIBRARY_PATH="$APPIMAGEROOT/usr/lib:$LD_LIBRARY_PATH"
 
-    try "Cloning sigutils..."          git clone https://github.com/BatchDrake/sigutils
-    try "Cloning suscan..."            git clone https://github.com/BatchDrake/suscan
-    try "Cloning SuWidgets..."         git clone https://github.com/BatchDrake/SuWidgets
-    try "Cloning SigDigger..."         git clone https://github.com/BatchDrake/SigDigger
+    try "Cloning sigutils..."          git clone -b "$BRANCH" https://github.com/BatchDrake/sigutils
+    try "Cloning suscan..."            git clone -b "$BRANCH" https://github.com/BatchDrake/suscan
+    try "Cloning SuWidgets..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SuWidgets
+    try "Cloning SigDigger..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SigDigger
     try "Creating builddirs..."        mkdir -p sigutils/build suscan/build
     cd sigutils/build
     try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$APPIMAGEROOT/usr"  -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
