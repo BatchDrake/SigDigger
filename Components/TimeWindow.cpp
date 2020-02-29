@@ -343,7 +343,8 @@ std::string
 TimeWindow::getPalette(void) const
 {
   if (this->ui->paletteCombo->currentIndex() < 0
-      || this->ui->paletteCombo->currentIndex() >= this->palettes.size())
+      || this->ui->paletteCombo->currentIndex() >=
+      static_cast<int>(this->palettes.size()))
     return "Suscan";
 
   return this->palettes[this->ui->paletteCombo->currentIndex()].getName();
@@ -649,7 +650,7 @@ TimeWindow::onHoverTime(qreal time)
   int length = static_cast<int>(this->ui->realWaveform->getDataLength());
   qreal samp = this->ui->realWaveform->t2samp(time);
   qint64 iSamp = static_cast<qint64>(std::floor(samp));
-  qint64 selStart, selEnd, selLen;
+  qint64 selStart = 0, selEnd = 0, selLen = 0;
   qreal max = std::max<qreal>(
         std::max<qreal>(
           std::fabs(this->ui->realWaveform->getMax()),

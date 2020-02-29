@@ -318,7 +318,7 @@ AudioPanel::setDiskUsage(qreal usage)
 }
 
 void
-AudioPanel::setIORate(qreal rate)
+AudioPanel::setIORate(qreal)
 {
   // Do nothing. This is in general slow.
   this->refreshDiskUsage();
