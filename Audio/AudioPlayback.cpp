@@ -186,7 +186,7 @@ AudioBufferList::commit(void)
     buffer->prev = nullptr;
     buffer->next = this->playListHead;
     if (this->playListHead != nullptr)
-      this->playListTail->prev = buffer;
+      this->playListHead->prev = buffer;
 
     this->playListHead = buffer;
 
