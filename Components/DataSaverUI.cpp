@@ -113,6 +113,8 @@ DataSaverUI::setRecordState(bool state)
 {
   this->ui->recordStartStopButton->setChecked(state);
 
+  this->ui->recordStartStopButton->setText(state ? "Stop" : "Record");
+
   if (!state)
     this->ui->ioBwProgress->setValue(0);
 }
@@ -184,5 +186,10 @@ DataSaverUI::onChangeSavePath(void)
 void
 DataSaverUI::onRecordStartStop(void)
 {
+  this->ui->recordStartStopButton->setText(
+        this->ui->recordStartStopButton->isChecked()
+        ? "Stop"
+        : "Record");
+
   emit recordStateChanged(this->ui->recordStartStopButton->isChecked());
 }

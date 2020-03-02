@@ -328,6 +328,7 @@ void
 AudioPanel::setRecordState(bool state)
 {
   this->ui->recordStartStopButton->setChecked(state);
+  this->ui->recordStartStopButton->setText(state ? "Stop" : "Record");
 }
 
 // Getters
@@ -465,5 +466,10 @@ AudioPanel::onChangeSavePath(void)
 void
 AudioPanel::onRecordStartStop(void)
 {
+  this->ui->recordStartStopButton->setText(
+        this->ui->recordStartStopButton->isChecked()
+        ? "Stop"
+        : "Record");
+
   emit recordStateChanged(this->ui->recordStartStopButton->isChecked());
 }

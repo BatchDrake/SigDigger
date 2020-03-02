@@ -94,6 +94,8 @@ NetForwarderUI::setForwardState(bool state)
   this->ui->portSpin->setEnabled(!state);
   this->ui->frameLen->setEnabled(!state);
 
+  this->ui->udpStartStopButton->setText(state ? "Stop" : "Forward");
+
   if (!state) {
     this->ui->ioBwProgress->setValue(0);
     this->setPreparing(false);
@@ -169,5 +171,10 @@ NetForwarderUI::getTcp(void) const
 void
 NetForwarderUI::onForwardStartStop(void)
 {
+  this->ui->udpStartStopButton->setText(
+        this->ui->udpStartStopButton->isChecked()
+        ? "Stop"
+        : "Forward");
+
   emit forwardStateChanged(this->ui->udpStartStopButton->isChecked());
 }
