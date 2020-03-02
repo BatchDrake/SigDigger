@@ -71,12 +71,14 @@ namespace SigDigger {
     State state = DETACHED;
 
     std::vector<SUCOMPLEX> data;
-    std::vector<SUFLOAT> powerHistory;
-    unsigned int powerHistoryPtr = 0;
+    std::vector<SUCOMPLEX> history;
+    unsigned int historyPtr = 0;
+    SUFLOAT  currEnergy = 0;
     SUFLOAT  powerAccum = 0;
     SUFLOAT  powerError = 0;
+    SUSCOUNT hangCounter = 0;
     SUSCOUNT maxSamples = 0;
-    SUSCOUNT measureSamples = 0;
+    SUSCOUNT hangLength = 0;
     SUSCOUNT powerSamples = 0;
     SUSCOUNT totalSamples = 0;
     SUSCOUNT uiRefreshSamples = 0;
@@ -89,7 +91,6 @@ namespace SigDigger {
     void setInspectorClass(std::string const &cls);
     void refreshCaptureInfo(void);
     void openTimeWindow(void);
-    SUFLOAT getHistoryPower(void) const;
     void transferHistory(void);
 
   public:

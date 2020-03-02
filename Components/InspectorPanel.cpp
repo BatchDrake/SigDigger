@@ -263,33 +263,20 @@ InspectorPanel::refreshCaptureInfo(void)
           static_cast<qint64>(this->data.size() * sizeof(SUCOMPLEX))));
 }
 
-SUFLOAT
-InspectorPanel::getHistoryPower(void) const
-{
-  SUFLOAT accum = 0;
-
-  for (auto p : this->powerHistory)
-    accum += p;
-
-  return SU_POWER_DB(
-        this->timeWindowFs * accum
-        / (this->powerHistory.size()));
-}
-
 void
 InspectorPanel::transferHistory(void)
 {
   // Insert older samples
   this->data.insert(
         this->data.end(),
-        this->powerHistory.begin() + this->powerHistoryPtr,
-        this->powerHistory.end());
+        this->history.begin() + this->historyPtr,
+        this->history.end());
 
   // Insert newer samples
   this->data.insert(
         this->data.end(),
-        this->powerHistory.begin(),
-        this->powerHistory.begin() + this->powerHistoryPtr);
+        this->history.begin(),
+        this->history.begin() + this->historyPtr);
 }
 
 void
@@ -309,36 +296,54 @@ InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
       this->refreshCaptureInfo();
   } else if (this->autoSquelch) {
     SUFLOAT level;
+    SUFLOAT immLevel = 0;
+
+    SUFLOAT sum = 0;
+    SUFLOAT y = 0;
+    SUFLOAT t;
+    SUFLOAT err = this->ui->autoSquelchButton->isDown() ? this->powerError : 0;
+
+    // Compute Kahan summation of samples. This is an energy measure.
+    for (size_t i = 0; i < size; ++i) {
+      y = SU_C_REAL(data[i] * SU_C_CONJ(data[i])) - err;
+      t = sum + y;
+      err = (t - sum) - y;
+      sum = t;
+    }
 
     // Power measure.
-    if (this->ui->autoSquelchButton->isDown()) {
-      SUFLOAT sum = this->powerAccum;
-      SUFLOAT y = 0;
-      SUFLOAT t;
-      SUFLOAT err = this->powerError;
-
-
-      for (size_t i = 0; i < size; ++i) {
-        y = SU_C_REAL(data[i] * SU_C_CONJ(data[i])) - err;
-        t = sum + y;
-        err = (t - sum) - y;
-        sum = t;
-      }
-
-      this->powerAccum = sum;
+    if (this->ui->autoSquelchButton->isDown()) { // CASE 1: MANUAL
+      this->powerAccum += sum;
       this->powerError = err;
       this->powerSamples += size;
 
-      level = SU_POWER_DB(this->timeWindowFs * this->powerAccum / (this->powerSamples));
-    } else {
+      this->currEnergy = this->timeWindowFs * this->powerAccum;
+      level = SU_POWER_DB(this->currEnergy / this->powerSamples);
+    } else { // CASE 2: Measure a small fraction
+      SUFLOAT immEnergy = this->timeWindowFs * sum;
+
       for (size_t i = 0; i < size; ++i) {
-        this->powerHistory[this->powerHistoryPtr++]
-            = SU_C_REAL(data[i] * SU_C_CONJ(data[i]));
-        if (this->powerHistoryPtr == this->powerHistory.size())
-          this->powerHistoryPtr = 0;
+        this->history[this->historyPtr++] = data[i];
+        if (this->historyPtr == this->history.size())
+          this->historyPtr = 0;
       }
 
-      level = this->getHistoryPower();
+      // Limited energy accumulation
+      if (size > this->hangLength) {
+        // Rare case. Will never happen.
+        this->currEnergy = (immEnergy * this->hangLength) / size;
+      } else {
+        // We add the measured energy, but remove an alpha percent of
+        // the current energy.
+        SUFLOAT alpha = static_cast<SUFLOAT>(size) / this->hangLength;
+        this->currEnergy += immEnergy - alpha * this->currEnergy;
+      }
+
+      // Level is computed based on the hangLength
+      level = SU_POWER_DB(this->currEnergy / this->hangLength);
+
+      // Immediate level is computed based on the current chunk size
+      immLevel = SU_POWER_DB(immEnergy / size);
     }
 
     // NOT TRIGGERED: Sensing the channel
@@ -358,6 +363,10 @@ InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
         if (level >= this->squelch) {
           this->transferHistory();
           this->autoSquelchTriggered = true;
+
+          // Adjust current energy to measure
+          this->currEnergy =
+              (this->currEnergy * this->hangLength) / this->powerSamples;
           this->ui->autoSquelchButton->setText("Triggered!");
         }
       }
@@ -367,8 +376,13 @@ InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
     if (this->autoSquelchTriggered) {
       this->data.insert(this->data.end(), data, data + size);
       this->refreshCaptureInfo();
-      if (this->data.size() > this->measureSamples) {
-        if (level < this->hangLevel || this->data.size() > this->maxSamples) { // Hang!
+      if (this->data.size() > this->hangLength) {
+        if (immLevel >= this->hangLevel)
+          this->hangCounter = 0;
+        else
+          this->hangCounter += size;
+
+        if (this->hangCounter >= this->hangLength || this->data.size() > this->maxSamples) { // Hang!
           this->cancelAutoSquelch();
           this->openTimeWindow();
         }
@@ -402,7 +416,7 @@ InspectorPanel::enableAutoSquelch(void)
   // Enable autoSquelch
   this->autoSquelch = true;
   this->powerAccum = this->powerError = this->powerSamples = 0;
-  this->powerHistoryPtr = 0;
+  this->historyPtr = 0;
   this->ui->squelchLevelLabel->setEnabled(true);
   this->ui->powerLabel->setEnabled(true);
   this->ui->captureButton->setEnabled(false);
@@ -487,10 +501,10 @@ InspectorPanel::onReleaseAutoSquelch(void)
     if (this->powerSamples == 0) {
       cancelAutoSquelch();
     } else {
-      this->measureSamples =
+      this->hangLength =
           1e-3 * this->ui->hangTimeSpin->value() * this->timeWindowFs;
-      this->powerHistory.resize(this->measureSamples);
-      std::fill(this->powerHistory.begin(), this->powerHistory.end(), 0);
+      this->history.resize(2 * this->hangLength);
+      std::fill(this->history.begin(), this->history.end(), 0);
       this->powerAccum /= this->powerSamples;
       this->powerSamples = 1;
       this->ui->autoSquelchButton->setText("Waiting...");
