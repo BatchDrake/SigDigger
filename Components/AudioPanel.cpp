@@ -29,7 +29,7 @@ static const unsigned int supportedRates[] = {
   32000,
   44100,
   48000,
-  196000};
+  192000};
 
 #define STRINGFY(x) #x
 #define STORE(field) obj.set(STRINGFY(field), this->field)
