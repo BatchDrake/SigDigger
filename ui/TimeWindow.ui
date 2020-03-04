@@ -370,7 +370,6 @@
            <property name="font">
             <font>
              <family>Monospace</family>
-             <pointsize>9</pointsize>
              <weight>50</weight>
              <bold>false</bold>
             </font>
@@ -411,7 +410,6 @@
            <property name="font">
             <font>
              <family>Monospace</family>
-             <pointsize>9</pointsize>
              <weight>50</weight>
              <bold>false</bold>
             </font>
