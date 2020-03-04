@@ -860,7 +860,8 @@ ConfigDialog::onSpinsChanged(void)
     this->profile.setDecimation(
           static_cast<unsigned>(this->ui->decimationSpin->value()));
 
-    if (sampRate < getSpinValue(this->ui->bwSpin))
+    if (sender() == static_cast<QObject *>(this->ui->sampleRateCombo)
+        || sender() == static_cast<QObject *>(this->ui->sampleRateSpin))
       setSpinValue(this->ui->bwSpin, sampRate, "Hz");
 
     this->refreshTrueSampleRate();
