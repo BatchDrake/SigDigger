@@ -55,14 +55,14 @@ Logger::push(const struct sigutils_log_message *message)
   msg.function = std::string(message->function);
   msg.message  = std::string(message->message);
 
-  std::lock_guard<std::mutex>(this->mutex);
+  std::lock_guard<std::mutex> lock(this->mutex);
   this->messages.push_back(std::move(msg));
 }
 
 void
 Logger::flush(void)
 {
-  std::lock_guard<std::mutex>(this->mutex);
+  std::lock_guard<std::mutex> lock(this->mutex);
   this->messages.clear();
 }
 
