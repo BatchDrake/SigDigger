@@ -1174,10 +1174,13 @@ Application::onToggleRecord(void)
       int fd = this->openCaptureFile();
       if (fd != -1)
         this->installDataSaver(fd);
+
+      this->ui.sourcePanel->setRecordState(fd != -1);
     }
   } else {
     this->uninstallDataSaver();
     this->mediator->setCaptureSize(0);
+    this->ui.sourcePanel->setRecordState(false);
   }
 }
 
