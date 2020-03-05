@@ -1237,7 +1237,7 @@ Application::onAudioSaveError(void)
     QMessageBox::warning(
               this,
               "SigDigger error",
-              "Capture audio file write error. Disk full?",
+              "Audio saver stopped unexpectedly. Check disk usage and directory permissions and try again.",
               QMessageBox::Ok);
   }
 }

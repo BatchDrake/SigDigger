@@ -255,11 +255,10 @@ GenericDataSaver::onError(QString error)
   this->lastError = error;
   if (this->writer->canWrite()) {
     QMutexLocker locker(&this->dataMutex);
-
     this->writer->close();
-
-    emit stopped();
   }
+
+  emit stopped();
 }
 
 void
