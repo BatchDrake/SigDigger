@@ -769,6 +769,11 @@ ConfigDialog::onDeviceChanged(int index)
     this->profile.setDevice(*device);
 
     this->refreshUi();
+
+    setSpinValue(
+          this->ui->bwSpin,
+          this->getSelectedSampleRate(),
+          "Hz");
   }
 }
 
