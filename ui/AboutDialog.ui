@@ -20,7 +20,7 @@
    <item row="0" column="1">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:18pt; font-weight:600;&quot;&gt;SigDigger - A free digital signal analyzer for GNU/Linux&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Brought to you with love and kindness by Gonzalo J. Carracedo&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;http://actinid.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://actinid.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:18pt; font-weight:600;&quot;&gt;SigDigger - A free and multiplatform digital signal analyzer&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Brought to you with love and kindness by Gonzalo J. Carracedo&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;http://actinid.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://actinid.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
