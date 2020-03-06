@@ -36,7 +36,7 @@ ColorConfig::loadDefaults(void)
 {
   this->lcdForeground = SIGDIGGER_DEFAULT_FOREGROUND;
   this->lcdBackground = SIGDIGGER_DEFAULT_BACKGROUND;
-  this->spectrumForeground = QColor(255, 255, 255, 255);
+  this->spectrumForeground = SIGDIGGER_DEFAULT_FOREGROUND;
 
   this->spectrumBackground = SIGDIGGER_DEFAULT_BACKGROUND;
   this->constellationForeground = SIGDIGGER_DEFAULT_FOREGROUND;
@@ -57,7 +57,7 @@ ColorConfig::loadDefaults(void)
   this->histogramModel = QColor(255, 255, 0, 255);
 
   this->selection = SIGDIGGER_DEFAULT_SELECTION;
-  this->filterBox = SIGDIGGER_DEFAULT_SELECTION;
+  this->filterBox = SIGDIGGER_DEFAULT_FILTER_BOX;
 }
 
 #define STRINGFY(x) #x
