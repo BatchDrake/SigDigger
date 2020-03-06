@@ -67,25 +67,42 @@ function skip()
     echo -e "[  \033[1;33mSKIP\033[0m  ] $1"
 }
 
-function embed_soapysdr()
+function find_soapysdr()
 {
-    SOAPYSDRVER=`ldd $APPIMAGEROOT/usr/bin/SigDigger | grep Soapy | sed 's/ =>.*$//g' | sed 's/^.*\.so\.//g'`
-    EXCLUDED='libc\.so\.6|libpthread|libdl'
-    try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
-    try "Testing SoapySDR dir..." test -d "/usr/lib/`uname -m`-linux-gnu/SoapySDR/modules$SOAPYSDRVER"
-    if [ ! -L  "$APPIMAGEROOT"/usr/lib/`uname -m`-linux-gnu ]; then
-	try "Creating symlinks..." ln -s . "$APPIMAGEROOT"/usr/lib/`uname -m`-linux-gnu
-    fi
-    try "Creating SoapySDR module dir..." mkdir -p "$APPIMAGEROOT"/usr/lib/SoapySDR
-
-    SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib"
-
+    SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64"
+    
     for i in $SOAPYDIRS; do
 	MODDIR="$i/SoapySDR/modules$SOAPYSDRVER"
 	if [ -d "$MODDIR" ]; then
-	    try "Copying SoapySDR modules ($i)..." cp -Rfv "$MODDIR" "$APPIMAGEROOT"/usr/lib/SoapySDR
+	    echo "$MODDIR"
+	    return 0
 	fi
     done
+
+    return 1
+}
+
+function assert_symlink()
+{
+  rm -f "$2" 2> /dev/null
+  ln -s "$1" "$2"
+  return $?
+}
+
+function embed_soapysdr()
+{
+    SOAPYSDRVER=`ldd $APPIMAGEROOT/usr/bin/SigDigger | grep Soapy | sed 's/ =>.*$//g' | sed 's/^.*\.so\.//g'`
+    EXCLUDED='libc\.so\.6|libpthread|libdl|libusb|libz\.|libm\.'
+    try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
+    try "Testing SoapySDR dir..." find_soapysdr
+
+    MODDIR=`find_soapysdr`
+
+    try "Creating symlinks..."  assert_symlink . "$APPIMAGEROOT"/usr/lib/`uname -m`-linux-gnu
+    try "Creating symlinks..." assert_symlink lib "$APPIMAGEROOT"/usr/lib64
+
+    try "Creating SoapySDR module dir..." mkdir -p "$APPIMAGEROOT"/usr/lib/SoapySDR
+    try "Copying SoapySDR modules ($MODDIR)..." cp -Rfv "$MODDIR" "$APPIMAGEROOT"/usr/lib/SoapySDR
     
     RADIOS=`ldd "$APPIMAGEROOT"/usr/lib/SoapySDR/modules$SOAPYSDRVER/lib* | grep '=>' | sed 's/^.*=> \(.*\) .*$/\1/g' | tr -d '[ \t]' | sort | uniq`
     
@@ -181,12 +198,14 @@ export SOAPY_SDR_ROOT="${HERE}/.."
 if [ "x$SIGDIGGER_SOAPY_SDR_ROOT" != "x" ]; then
   export SOAPY_SDR_ROOT="$SIGDIGGER_SOAPY_SDR_ROOT"
 fi
+export LD_LIBRARY_PATH="${HERE}/../lib:$LD_LIBRARY_PATH"
 exec "${HERE}"/SigDigger.app "$@"' > "$APPIMAGEROOT"/usr/bin/SigDigger
 else
     echo '#!/bin/sh
 SELF=$(readlink -f "$0")
 HERE=${SELF%/*}
 export SUSCAN_CONFIG_PATH="${HERE}/../share/suscan/config"
+export LD_LIBRARY_PATH="${HERE}/../lib:$LD_LIBRARY_PATH"
 exec "${HERE}"/SigDigger.app "$@"' > "$APPIMAGEROOT"/usr/bin/SigDigger
 fi
 try "Setting permissions to wrapper script..." chmod a+x "$APPIMAGEROOT"/usr/bin/SigDigger
