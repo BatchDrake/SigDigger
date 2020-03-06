@@ -1089,6 +1089,7 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   this->ui->wfSpectrum->setFftBgColor(colors.spectrumBackground);
   this->ui->wfSpectrum->setFftAxesColor(colors.spectrumAxes);
   this->ui->wfSpectrum->setFftTextColor(colors.spectrumText);
+  this->ui->wfSpectrum->setFilterBoxColor(colors.filterBox);
 
   // Set palette
   fftConfig.deserialize(cfg.fftConfig->serialize());

@@ -332,11 +332,13 @@ TimeWindow::setColorConfig(ColorConfig const &cfg)
   this->ui->realWaveform->setForegroundColor(cfg.spectrumForeground);
   this->ui->realWaveform->setAxesColor(cfg.spectrumAxes);
   this->ui->realWaveform->setTextColor(cfg.spectrumText);
+  this->ui->realWaveform->setSelectionColor(cfg.selection);
 
   this->ui->imagWaveform->setBackgroundColor(cfg.spectrumBackground);
   this->ui->imagWaveform->setForegroundColor(cfg.spectrumForeground);
   this->ui->imagWaveform->setAxesColor(cfg.spectrumAxes);
   this->ui->imagWaveform->setTextColor(cfg.spectrumText);
+  this->ui->imagWaveform->setSelectionColor(cfg.selection);
 }
 
 std::string

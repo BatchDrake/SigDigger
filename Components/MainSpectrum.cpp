@@ -333,6 +333,7 @@ MainSpectrum::setColorConfig(ColorConfig const &cfg)
   this->ui->mainSpectrum->setFftAxesColor(cfg.spectrumAxes);
   this->ui->mainSpectrum->setFftBgColor(cfg.spectrumBackground);
   this->ui->mainSpectrum->setFftTextColor(cfg.spectrumText);
+  this->ui->mainSpectrum->setFilterBoxColor(cfg.filterBox);
 }
 
 void

@@ -492,6 +492,7 @@ PanoramicDialog::setColors(ColorConfig const &cfg)
   this->ui->waterfall->setFftAxesColor(cfg.spectrumAxes);
   this->ui->waterfall->setFftBgColor(cfg.spectrumBackground);
   this->ui->waterfall->setFftTextColor(cfg.spectrumText);
+  this->ui->waterfall->setFilterBoxColor(cfg.filterBox);
 }
 
 void

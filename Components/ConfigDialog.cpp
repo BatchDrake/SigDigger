@@ -191,6 +191,8 @@ ConfigDialog::saveColors(void)
   CCSAVE(histogramBgColor, histogramBackground);
   CCSAVE(histogramAxesColor, histogramAxes);
   CCSAVE(histogramModelColor, histogramModel);
+  CCSAVE(selectionColor, selection);
+  CCSAVE(filterBoxColor, filterBox);
 }
 
 void
@@ -212,6 +214,8 @@ ConfigDialog::refreshColorUi(void)
   CCREFRESH(histogramBgColor, histogramBackground);
   CCREFRESH(histogramAxesColor, histogramAxes);
   CCREFRESH(histogramModelColor, histogramModel);
+  CCREFRESH(selectionColor, selection);
+  CCREFRESH(filterBoxColor, filterBox);
 }
 
 QString

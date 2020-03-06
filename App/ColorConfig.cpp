@@ -55,6 +55,9 @@ ColorConfig::loadDefaults(void)
 
   this->spectrumText = SIGDIGGER_DEFAULT_TEXT;
   this->histogramModel = QColor(255, 255, 0, 255);
+
+  this->selection = SIGDIGGER_DEFAULT_SELECTION;
+  this->filterBox = SIGDIGGER_DEFAULT_SELECTION;
 }
 
 #define STRINGFY(x) #x
@@ -88,6 +91,8 @@ ColorConfig::serialize(void)
   CCSTORE(histogramBackground);
   CCSTORE(histogramAxes);
   CCSTORE(histogramModel);
+  CCSTORE(selection);
+  CCSTORE(filterBox);
 
   return this->persist(obj);
 }
@@ -111,4 +116,6 @@ ColorConfig::deserialize(Suscan::Object const &conf)
   CCLOAD(histogramBackground);
   CCLOAD(histogramAxes);
   CCLOAD(histogramModel);
+  CCLOAD(selection);
+  CCLOAD(filterBox);
 }

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>654</width>
-    <height>407</height>
+    <height>468</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -48,7 +48,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <property name="tabBarAutoHide">
       <bool>false</bool>
@@ -646,7 +646,7 @@
          <property name="currentIndex">
           <number>0</number>
          </property>
-         <widget class="QWidget" name="sampRateSdrPage" native="true">
+         <widget class="QWidget" name="sampRateSdrPage">
           <layout class="QGridLayout" name="gridLayout_11">
            <property name="leftMargin">
             <number>0</number>
@@ -1273,6 +1273,26 @@
        <item row="4" column="2">
         <widget class="ColorChooserButton" name="spectrumTextColor"/>
        </item>
+       <item row="5" column="0">
+        <widget class="ColorChooserButton" name="filterBoxColor"/>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Filter box color</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="ColorChooserButton" name="selectionColor"/>
+       </item>
+       <item row="5" column="3">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Selection color</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -1322,7 +1342,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="windowButtonGroup"/>
   <buttongroup name="sourceTypeGroup"/>
+  <buttongroup name="windowButtonGroup"/>
  </buttongroups>
 </ui>
