@@ -36,6 +36,7 @@ BUILDROOT="$DISTROOT/appimage-buildroot"
 THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
 SRC_APPIMAGE_NAME=SigDigger-`uname -m`.AppImage
 
+
 function try()
 {
     echo -en "[  ....  ] $1 "
@@ -67,6 +68,29 @@ function skip()
     echo -e "[  \033[1;33mSKIP\033[0m  ] $1"
 }
 
+function update_excludelist()
+{
+    URL="https://raw.githubusercontent.com/AppImage/pkg2appimage/master/excludelist"
+    LIST="$DISTROOT/excludelist"
+    if [ ! -f "$LIST" ]; then
+	try "Downloading exclude list from GitHub..." curl -o "$LIST" "$URL"
+    else
+	try "Upgrading exclude list from GitHub..." curl -o "$LIST" -z "$LIST" "$URL"
+    fi
+
+    echo "libusb-0.1.so.4" >> "$LIST"
+    
+    cat "$LIST" | sed 's/#.*$//g' | grep -v '^$' | sort | uniq > "$LIST".unique
+    NUM=`cat "$LIST".unique | wc -l`
+    try "Got $NUM excluded libraries" true 
+}
+
+function excluded()
+{
+    grep "$1" "$DISTROOT/excludelist.unique" > /dev/null 2> /dev/null
+    return $?
+}
+
 function find_soapysdr()
 {
     SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64"
@@ -92,7 +116,6 @@ function assert_symlink()
 function embed_soapysdr()
 {
     SOAPYSDRVER=`ldd $APPIMAGEROOT/usr/bin/SigDigger | grep Soapy | sed 's/ =>.*$//g' | sed 's/^.*\.so\.//g'`
-    EXCLUDED='libc\.so\.6|libpthread|libdl|libusb|libz\.|libm\.'
     try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
     try "Testing SoapySDR dir..." find_soapysdr
 
@@ -108,7 +131,7 @@ function embed_soapysdr()
     
     for i in $RADIOS; do
 	name=`basename "$i"`
-	if [ ! -f "$APPIMAGEROOT"/usr/lib/"$name" ] && ! echo "$i" | egrep "$EXCLUDED" > /dev/null; then
+	if [ ! -f "$APPIMAGEROOT"/usr/lib/"$name" ] && ! excluded "$name"; then
 	    try "Bringing $name..." cp -L "$i" "$APPIMAGEROOT"/usr/lib
 	else
 	    rm -f "$APPIMAGEROOT"/usr/lib/"$name"
@@ -116,6 +139,8 @@ function embed_soapysdr()
 	fi
     done
 }
+
+update_excludelist
 
 if [ "$SIGDIGGER_SKIPBUILD" == "" ]; then
     try "Cleaning deploy directory..." rm -Rfv "$APPIMAGEROOT"
