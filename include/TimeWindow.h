@@ -62,12 +62,6 @@ namespace SigDigger {
         const SUCOMPLEX *data,
         int length);
 
-    static QString formatComplex(SUCOMPLEX const &z);
-    static QString formatScientific(qreal real);
-    static QString formatReal(qreal real);
-    static QString formatIntegerPart(qreal real);
-    static QString ensureRightExtension(QString const &path, QString const &ext);
-
     bool exportToMatlab(QString const &path, int start, int end);
     bool exportToWav(QString const &path, int start, int end);
     void recalcLimits(void);
