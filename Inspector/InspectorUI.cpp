@@ -1133,24 +1133,33 @@ InspectorUI::onSaveSymView(void)
   dialog.setNameFilters(filters);
 
   if (dialog.exec()) {
+    // This sucks
     QString filter = dialog.selectedNameFilter();
-    if (strstr(filter.toStdString().c_str(), ".txt") != nullptr)
+    QString path = dialog.selectedFiles().first();
+    QFileInfo fi(path);
+    QString ext = fi.size() > 0
+        ? fi.suffix()
+        : SuWidgetsHelpers::extractFilterExtension(filter);
+
+    if (ext == "txt")
       fmt = SymView::FILE_FORMAT_TEXT;
-    else if (strstr(filter.toStdString().c_str(), ".bin") != nullptr)
+    else if (ext == "bin")
       fmt = SymView::FILE_FORMAT_RAW;
-    else if (strstr(filter.toStdString().c_str(), ".c") != nullptr)
+    else if (ext == "c" || ext == "h" || ext == "cpp")
       fmt = SymView::FILE_FORMAT_C_ARRAY;
-    else if (strstr(filter.toStdString().c_str(), ".bmp") != nullptr)
+    else if (ext == "bmp")
       fmt = SymView::FILE_FORMAT_BMP;
-    else if (strstr(filter.toStdString().c_str(), ".png") != nullptr)
+    else if (ext == "png")
       fmt = SymView::FILE_FORMAT_PNG;
-    else if (strstr(filter.toStdString().c_str(), ".jpg") != nullptr)
+    else if (ext == "jpg" || ext == "jpeg")
       fmt = SymView::FILE_FORMAT_JPEG;
-    else if (strstr(filter.toStdString().c_str(), ".ppm") != nullptr)
+    else if (ext == "ppm")
       fmt = SymView::FILE_FORMAT_PPM;
 
     try {
-      this->ui->symView->save(dialog.selectedFiles().first(), fmt);
+      this->ui->symView->save(
+            SuWidgetsHelpers::ensureExtension(path, ext),
+            fmt);
     } catch (std::ios_base::failure const &) {
       (void) QMessageBox::critical(
             this->ui->symView,

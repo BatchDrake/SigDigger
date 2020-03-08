@@ -21,7 +21,6 @@
 #include <iostream>
 
 #include "Loader.h"
-
 using namespace SigDigger;
 
 int

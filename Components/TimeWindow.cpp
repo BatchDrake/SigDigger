@@ -433,22 +433,22 @@ TimeWindow::refreshMeasures(void)
 
     this->ui->periodLabel->setText(
           SuWidgetsHelpers::formatQuantity(period, "s"));
-    this->ui->baudLabel->setText(formatReal(baud));
+    this->ui->baudLabel->setText(SuWidgetsHelpers::formatReal(baud));
     this->ui->selStartLabel->setText(
           SuWidgetsHelpers::formatQuantity(
             this->ui->realWaveform->samp2t(selStart),
             "s")
-          + " (" + formatReal(selStart) + ")");
+          + " (" + SuWidgetsHelpers::formatReal(selStart) + ")");
     this->ui->selEndLabel->setText(
           SuWidgetsHelpers::formatQuantity(
             this->ui->realWaveform->samp2t(selEnd),
             "s")
-          + " (" + formatReal(selEnd) + ")");
+          + " (" + SuWidgetsHelpers::formatReal(selEnd) + ")");
     this->ui->selLengthLabel->setText(
           SuWidgetsHelpers::formatQuantity(
             (selEnd - selStart) * deltaT,
             "s")
-          + " (" + formatReal(selEnd - selStart) + ")");
+          + " (" + SuWidgetsHelpers::formatReal(selEnd - selStart) + ")");
   } else {
     min = this->min;
     max = this->max;
@@ -462,14 +462,30 @@ TimeWindow::refreshMeasures(void)
   }
 
   this->ui->lengthLabel->setText(QString::number(length) + " samples");
-  this->ui->durationLabel->setText(SuWidgetsHelpers::formatQuantity(length * deltaT, "s"));
-  this->ui->minILabel->setText(formatScientific(SU_C_REAL(min)));
-  this->ui->maxILabel->setText(formatScientific(SU_C_REAL(min)));
-  this->ui->meanILabel->setText(formatScientific(SU_C_REAL(mean)));
-  this->ui->minQLabel->setText(formatScientific(SU_C_IMAG(min)));
-  this->ui->maxQLabel->setText(formatScientific(SU_C_IMAG(min)));
-  this->ui->meanQLabel->setText(formatScientific(SU_C_IMAG(mean)));
-  this->ui->rmsLabel->setText(formatReal(rms));
+
+  this->ui->durationLabel->setText(
+        SuWidgetsHelpers::formatQuantity(length * deltaT, "s"));
+
+  this->ui->minILabel->setText(
+        SuWidgetsHelpers::formatScientific(SU_C_REAL(min)));
+
+  this->ui->maxILabel->setText(
+        SuWidgetsHelpers::formatScientific(SU_C_REAL(min)));
+
+  this->ui->meanILabel->setText(
+        SuWidgetsHelpers::formatScientific(SU_C_REAL(mean)));
+
+  this->ui->minQLabel->setText(
+        SuWidgetsHelpers::formatScientific(SU_C_IMAG(min)));
+
+  this->ui->maxQLabel->setText(
+        SuWidgetsHelpers::formatScientific(SU_C_IMAG(min)));
+
+  this->ui->meanQLabel->setText(
+        SuWidgetsHelpers::formatScientific(SU_C_IMAG(mean)));
+
+  this->ui->rmsLabel->setText(
+        SuWidgetsHelpers::formatReal(rms));
 }
 
 void
@@ -503,7 +519,9 @@ void
 TimeWindow::setCenterFreq(SUFREQ center)
 {
   this->centerFreq = center;
-  this->ui->centerFreqLabel->setText(formatIntegerPart(center) + " Hz");
+  this->ui->centerFreqLabel->setText(
+        SuWidgetsHelpers::formatIntegerPart(center) + " Hz");
+
   this->ui->refFreqSpin->setValue(center);
 }
 
@@ -606,45 +624,6 @@ TimeWindow::onVSelection(qreal, qreal)
   // QObject* obj = sender();
 }
 
-QString
-TimeWindow::formatComplex(SUCOMPLEX const &val)
-{
-  return formatReal(SU_C_REAL(val))
-  + (SU_C_IMAG(val) < 0
-     ? " - " + formatReal(-SU_C_IMAG(val))
-     : " + " + formatReal(SU_C_IMAG(val))) + "i";
-}
-
-QString
-TimeWindow::formatScientific(qreal real)
-{
-  char string[32];
-
-  snprintf(string, 32, "%+-30.6e", real);
-
-  return QString(string);
-}
-
-QString
-TimeWindow::formatReal(qreal real)
-{
-  char string[32];
-
-  snprintf(string, 32, "%g", real);
-
-  return QString(string);
-}
-
-QString
-TimeWindow::formatIntegerPart(qreal real)
-{
-  char string[32];
-
-  snprintf(string, 32, "%lli", static_cast<qint64>(std::floor(real)));
-
-  return QString(string);
-}
-
 void
 TimeWindow::onHoverTime(qreal time)
 {
@@ -711,13 +690,14 @@ TimeWindow::onHoverTime(qreal time)
   }
 
   this->ui->positionLabel->setText(
-        SuWidgetsHelpers::formatQuantity(time, "s") + " (" + formatReal(samp) + ")");
-  this->ui->iLabel->setText(formatScientific(SU_C_REAL(val)));
-  this->ui->qLabel->setText(formatScientific(SU_C_IMAG(val)));
+        SuWidgetsHelpers::formatQuantity(time, "s")
+        + " (" + SuWidgetsHelpers::formatReal(samp) + ")");
+  this->ui->iLabel->setText(SuWidgetsHelpers::formatScientific(SU_C_REAL(val)));
+  this->ui->qLabel->setText(SuWidgetsHelpers::formatScientific(SU_C_IMAG(val)));
   this->ui->magPhaseLabel->setText(
-        formatReal(SU_C_ABS(val))
+        SuWidgetsHelpers::formatReal(SU_C_ABS(val))
         + "("
-        + formatReal(SU_C_ARG(val) / M_PI * 180)
+        + SuWidgetsHelpers::formatReal(SU_C_ARG(val) / M_PI * 180)
         + "º)");
 
   // Frequency calculations
@@ -750,7 +730,8 @@ TimeWindow::onHoverTime(qreal time)
     SUFREQ freq = SU_NORM2ABS_FREQ(this->fs, normFreq);
     SUFREQ ifFreq = this->ui->refFreqSpin->value() - this->centerFreq;
     SUFREQ doppler = -3e8 / this->centerFreq * (freq - ifFreq);
-    this->ui->freqShiftLabel->setText(formatIntegerPart(freq) + " Hz");
+    this->ui->freqShiftLabel->setText(
+          SuWidgetsHelpers::formatIntegerPart(freq) + " Hz");
     this->ui->dopplerShiftLabel->setText(
           SuWidgetsHelpers::formatQuantity(doppler, "m/s"));
   } else {
@@ -787,15 +768,6 @@ TimeWindow::onPeriodicDivisionsChanged(void)
   this->refreshMeasures();
 }
 
-QString
-TimeWindow::ensureRightExtension(QString const &path, QString const &ext)
-{
-  if (path.right(ext.length()) != ext)
-    return path + ext;
-
-  return path;
-}
-
 void
 TimeWindow::saveSamples(int start, int end)
 {
@@ -820,10 +792,10 @@ TimeWindow::saveSamples(int start, int end)
       bool result;
 
       if (strstr(filter.toStdString().c_str(), ".m") != nullptr)  {
-        path = ensureRightExtension(path, ".m");
+        path = SuWidgetsHelpers::ensureExtension(path, "m");
         result = this->exportToMatlab(path, start, end);
       } else {
-        path = ensureRightExtension(path, ".wav");
+        path = SuWidgetsHelpers::ensureExtension(path, "wav");
         result = this->exportToWav(path, start, end);
       }
 
@@ -931,18 +903,27 @@ TimeWindow::onZoomReset(void)
 void
 TimeWindow::onShowWaveform(void)
 {
-  this->ui->realWaveform->setShowWaveform(this->ui->actionShowWaveform->isChecked());
-  this->ui->imagWaveform->setShowWaveform(this->ui->actionShowWaveform->isChecked());
+  this->ui->realWaveform->setShowWaveform(
+        this->ui->actionShowWaveform->isChecked());
+
+  this->ui->imagWaveform->setShowWaveform(
+        this->ui->actionShowWaveform->isChecked());
 }
 
 void
 TimeWindow::onShowEnvelope(void)
 {
-  this->ui->realWaveform->setShowEnvelope(this->ui->actionShowEnvelope->isChecked());
-  this->ui->imagWaveform->setShowEnvelope(this->ui->actionShowEnvelope->isChecked());
+  this->ui->realWaveform->setShowEnvelope(
+        this->ui->actionShowEnvelope->isChecked());
 
-  this->ui->actionShowPhase->setEnabled(this->ui->actionShowEnvelope->isChecked());
-  this->ui->actionPhaseDerivative->setEnabled(this->ui->actionShowEnvelope->isChecked());
+  this->ui->imagWaveform->setShowEnvelope(
+        this->ui->actionShowEnvelope->isChecked());
+
+  this->ui->actionShowPhase->setEnabled(
+        this->ui->actionShowEnvelope->isChecked());
+
+  this->ui->actionPhaseDerivative->setEnabled(
+        this->ui->actionShowEnvelope->isChecked());
 }
 
 void
@@ -950,14 +931,19 @@ TimeWindow::onShowPhase(void)
 {
   this->ui->realWaveform->setShowPhase(this->ui->actionShowPhase->isChecked());
   this->ui->imagWaveform->setShowPhase(this->ui->actionShowPhase->isChecked());
-  this->ui->actionPhaseDerivative->setEnabled(this->ui->actionShowPhase->isChecked());
+
+  this->ui->actionPhaseDerivative->setEnabled(
+        this->ui->actionShowPhase->isChecked());
 }
 
 void
 TimeWindow::onPhaseDerivative(void)
 {
-  this->ui->realWaveform->setShowPhaseDiff(this->ui->actionPhaseDerivative->isChecked());
-  this->ui->imagWaveform->setShowPhaseDiff(this->ui->actionPhaseDerivative->isChecked());
+  this->ui->realWaveform->setShowPhaseDiff(
+        this->ui->actionPhaseDerivative->isChecked());
+
+  this->ui->imagWaveform->setShowPhaseDiff(
+        this->ui->actionPhaseDerivative->isChecked());
 }
 
 void
