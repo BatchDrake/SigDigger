@@ -29,14 +29,15 @@ ClockRecovery::ClockRecovery(QWidget *parent, Suscan::Config *config) :
 {
   ui->setupUi(this);
 
-  this->ui->baudRate->setValidator(new QDoubleValidator(0.0, 3e6, 0, this));
   this->refreshUi();
 
-  this->registerWidget(this->ui->baudRate, SIGNAL(editingFinished()));
+  this->registerWidget(this->ui->baudRateSpin, SIGNAL(valueChanged(double)));
   this->registerWidget(this->ui->startButton, SIGNAL(clicked(bool)));
   this->registerWidget(this->ui->typeCombo, SIGNAL(activated(int)));
   this->registerWidget(this->ui->gainSpin, SIGNAL(valueChanged(double)));
   this->registerWidget(this->ui->phaseSlider, SIGNAL(valueChanged(int)));
+
+  this->ui->baudRateSpin->setUnits("baud");
 }
 
 bool
@@ -51,7 +52,7 @@ ClockRecovery::applicable(QString const &key)
 void
 ClockRecovery::refreshUi(void)
 {
-  this->ui->baudRate->setText(QString::number(this->getFloat("clock.baud"), 'g', 8));
+  this->ui->baudRateSpin->setValue(this->getFloat("clock.baud"));
   this->ui->startButton->setChecked(this->getBoolean("clock.running"));
   this->ui->gainSpin->setValue(this->getFloat("clock.gain"));
   this->ui->phaseSlider->setValue(
@@ -81,7 +82,7 @@ ClockRecovery::parseConfig(void)
     SUSCAN_INSPECTOR_BAUDRATE_CONTROL_GARDNER
   };
 
-  this->refreshEntry("clock.baud", this->ui->baudRate->text().toDouble());
+  this->refreshEntry("clock.baud", this->ui->baudRateSpin->value());
   this->refreshEntry("clock.running", this->ui->startButton->isChecked());
   this->refreshEntry("clock.gain", this->ui->gainSpin->value());
   this->refreshEntry("clock.phase", this->ui->phaseSlider->value() / 100.);
