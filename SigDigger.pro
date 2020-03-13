@@ -263,4 +263,6 @@ DISTFILES += \
     icons/select-source.png \
     icons/splash.png \
     icons/start-capture.png \
-    icons/splash.xcf
+    icons/splash.xcf \
+    icons/start.png \
+    icons/stop.png

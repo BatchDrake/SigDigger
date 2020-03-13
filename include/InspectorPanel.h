@@ -119,7 +119,7 @@ namespace SigDigger {
 
   public slots:
     void onOpenInspector(void);
-    void onBandwidthChanged(int);
+    void onBandwidthChanged(double);
     void onPreciseChanged(void);
     void onPressHold(void);
     void onReleaseHold(void);

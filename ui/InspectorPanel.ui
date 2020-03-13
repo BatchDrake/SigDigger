@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>216</width>
+    <width>357</width>
     <height>468</height>
    </rect>
   </property>
@@ -45,7 +45,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>216</width>
+        <width>357</width>
         <height>468</height>
        </rect>
       </property>
@@ -65,16 +65,6 @@
        <property name="spacing">
         <number>1</number>
        </property>
-       <item row="0" column="0" colspan="2">
-        <widget class="QCheckBox" name="checkBox_5">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Enable channel detector</string>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_21">
          <property name="text">
@@ -82,12 +72,20 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="inspectorChannelLabel">
+       <item row="6" column="0" colspan="2">
+        <widget class="QPushButton" name="openInspectorButton">
+         <property name="styleSheet">
+          <string notr="true">background-color: #7fff7f;
+height: 50px;
+font-weight: bold;</string>
+         </property>
          <property name="text">
-          <string>144500000 Hz</string>
+          <string>Open inspector</string>
          </property>
         </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="FrequencySpinBox" name="bandwidthSpin"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_18">
@@ -96,17 +94,101 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QSpinBox" name="bandwidthSpin">
-         <property name="suffix">
-          <string> Hz</string>
+       <item row="5" column="0" colspan="2">
+        <widget class="QFrame" name="frame_2">
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
          </property>
+         <property name="frameShadow">
+          <enum>QFrame::Sunken</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <property name="spacing">
+           <number>1</number>
+          </property>
+          <item row="0" column="0" colspan="2">
+           <widget class="QRadioButton" name="pskRadio">
+            <property name="text">
+             <string>PSK Inspector</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QRadioButton" name="fskRadio">
+            <property name="text">
+             <string>FSK Inspector</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QRadioButton" name="askRadio">
+            <property name="text">
+             <string>ASK Inspector</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QRadioButton" name="customRadio">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Inspect as...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="comboBox_7">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item row="3" column="0" colspan="2">
         <widget class="QCheckBox" name="preciseCheck">
          <property name="text">
           <string>Precise channel centering</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>32</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QCheckBox" name="checkBox_5">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Enable channel detector</string>
          </property>
         </widget>
        </item>
@@ -362,98 +444,8 @@
          </layout>
         </widget>
        </item>
-       <item row="5" column="0" colspan="2">
-        <widget class="QFrame" name="frame_2">
-         <property name="frameShape">
-          <enum>QFrame::Box</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_8">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <property name="spacing">
-           <number>1</number>
-          </property>
-          <item row="0" column="0" colspan="2">
-           <widget class="QRadioButton" name="pskRadio">
-            <property name="text">
-             <string>PSK Inspector</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="QRadioButton" name="fskRadio">
-            <property name="text">
-             <string>FSK Inspector</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QRadioButton" name="askRadio">
-            <property name="text">
-             <string>ASK Inspector</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QRadioButton" name="customRadio">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Inspect as...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="comboBox_7">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="6" column="0" colspan="2">
-        <widget class="QPushButton" name="openInspectorButton">
-         <property name="styleSheet">
-          <string notr="true">background-color: #7fff7f;
-height: 50px;
-font-weight: bold;</string>
-         </property>
-         <property name="text">
-          <string>Open inspector</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>32</height>
-          </size>
-         </property>
-        </spacer>
+       <item row="1" column="1">
+        <widget class="FrequencySpinBox" name="frequencySpinBox"/>
        </item>
       </layout>
      </widget>
@@ -461,6 +453,13 @@ font-weight: bold;</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FrequencySpinBox</class>
+   <extends>QWidget</extends>
+   <header>FrequencySpinBox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -67,6 +67,7 @@ InspectorPanel::applyConfig(void)
   this->setPrecise(this->panelConfig->precise);
   this->timeWindow->setPalette(this->panelConfig->palette);
   this->timeWindow->setPaletteOffset(this->panelConfig->paletteOffset);
+  this->ui->frequencySpinBox->setEditable(false);
 
   // Track changes now
   connect(
@@ -81,9 +82,9 @@ InspectorPanel::connectAll(void)
 {
   connect(
         this->ui->bandwidthSpin,
-        SIGNAL(valueChanged(int)),
+        SIGNAL(valueChanged(double)),
         this,
-        SLOT(onBandwidthChanged(int)));
+        SLOT(onBandwidthChanged(double)));
 
   connect(
         this->ui->openInspectorButton,
@@ -153,7 +154,7 @@ InspectorPanel::postLoadInit(void)
 void
 InspectorPanel::setDemodFrequency(qint64 freq)
 {
-  this->ui->inspectorChannelLabel->setText(QString::number(freq) + " Hz");
+  this->ui->frequencySpinBox->setValue(freq);
   this->demodFreq = freq;
 }
 
@@ -469,10 +470,10 @@ InspectorPanel::onOpenInspector(void)
 }
 
 void
-InspectorPanel::onBandwidthChanged(int bw)
+InspectorPanel::onBandwidthChanged(double bw)
 {
   /* this->mainWindow->mainSpectrum->setHiLowCutFrequencies(-bw / 2, bw / 2); */
-  emit bandwidthChanged(bw);
+  emit bandwidthChanged(static_cast<int>(bw));
 }
 
 void

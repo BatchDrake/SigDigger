@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>1251</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -142,7 +142,7 @@
    </property>
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/start-capture.png</normaloff>:/icons/start-capture.png</iconset>
+     <normaloff>:/icons/start.png</normaloff>:/icons/start.png</iconset>
    </property>
    <property name="text">
     <string>Run</string>
@@ -169,7 +169,7 @@
   <action name="actionStart_capture">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/media-playback-start.png</normaloff>:/icons/media-playback-start.png</iconset>
+     <normaloff>:/icons/start.png</normaloff>:/icons/start.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Start capture</string>
@@ -178,7 +178,7 @@
   <action name="actionStop_capture">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/media-playback-stop.png</normaloff>:/icons/media-playback-stop.png</iconset>
+     <normaloff>:/icons/stop.png</normaloff>:/icons/stop.png</iconset>
    </property>
    <property name="text">
     <string>S&amp;top capture</string>
@@ -275,7 +275,6 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>
