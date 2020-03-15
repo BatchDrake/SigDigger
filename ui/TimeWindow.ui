@@ -1025,7 +1025,7 @@
   <action name="actionSave_selection">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
+     <normaloff>:/icons/save-selection.png</normaloff>:/icons/save-selection.png</iconset>
    </property>
    <property name="text">
     <string>Save selection</string>
@@ -1136,7 +1136,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>

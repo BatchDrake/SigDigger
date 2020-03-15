@@ -36,6 +36,7 @@ InspectorPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(precise);
   LOAD(palette);
   LOAD(paletteOffset);
+  LOAD(autoSquelchTriggerSNR);
 }
 
 Suscan::Object &&
@@ -49,6 +50,7 @@ InspectorPanelConfig::serialize(void)
   STORE(precise);
   STORE(palette);
   STORE(paletteOffset);
+  STORE(autoSquelchTriggerSNR);
 
   return this->persist(obj);
 }
@@ -68,6 +70,8 @@ InspectorPanel::applyConfig(void)
   this->timeWindow->setPalette(this->panelConfig->palette);
   this->timeWindow->setPaletteOffset(this->panelConfig->paletteOffset);
   this->ui->frequencySpinBox->setEditable(false);
+  this->ui->triggerSpin->setValue(
+        static_cast<qreal>(this->panelConfig->autoSquelchTriggerSNR));
 
   // Track changes now
   connect(
@@ -127,6 +131,12 @@ InspectorPanel::connectAll(void)
         SIGNAL(toggled(bool)),
         this,
         SLOT(onToggleAutoSquelch(void)));
+
+  connect(
+        this->ui->triggerSpin,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onTriggerSNRChanged(double)));
 }
 
 void
@@ -351,14 +361,16 @@ InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
     if (!this->autoSquelchTriggered) {
       if (refreshUi)
         this->ui->powerLabel->setText(
-            QString::number(.1 * std::floor(10 * level)) + " dB");
+            QString::number(.1 * SU_FLOOR(10 * level)) + " dB");
       if (this->ui->autoSquelchButton->isDown()) {
         // SQUELCH BUTTON DOWN: Measure noise
-        this->squelch = level + SIGDIGGER_DEFAULT_SQUELCH_THRESHOLD;
-        this->hangLevel = level + .5 * SIGDIGGER_DEFAULT_SQUELCH_THRESHOLD;
+        this->squelch = level
+            + static_cast<SUFLOAT>(this->ui->triggerSpin->value());
+        this->hangLevel = level
+            + .5f * static_cast<SUFLOAT>(this->ui->triggerSpin->value());
         if (refreshUi)
           this->ui->squelchLevelLabel->setText(
-              QString::number(.1 * std::floor(10 * this->squelch)) + " dB");
+              QString::number(.1 * SU_FLOOR(10 * this->squelch)) + " dB");
       } else {
         // SQUELCH BUTTON UP: Wait for signal
         if (level >= this->squelch) {
@@ -424,6 +436,7 @@ InspectorPanel::enableAutoSquelch(void)
   this->ui->autoSquelchButton->setChecked(this->autoSquelch);
   this->ui->hangTimeSpin->setEnabled(false);
   this->ui->maxMemSpin->setEnabled(false);
+  this->ui->triggerSpin->setEnabled(false);
   emit startRawCapture();
 }
 
@@ -441,6 +454,7 @@ InspectorPanel::cancelAutoSquelch(void)
   this->ui->autoSquelchButton->setChecked(this->autoSquelch);
   this->ui->hangTimeSpin->setEnabled(true);
   this->ui->maxMemSpin->setEnabled(true);
+  this->ui->triggerSpin->setEnabled(true);
   this->ui->autoSquelchButton->setText("Autosquelch");
   emit stopRawCapture();
 }
@@ -539,4 +553,10 @@ InspectorPanel::onTimeWindowConfigChanged(void)
 {
   this->panelConfig->palette = this->timeWindow->getPalette();
   this->panelConfig->paletteOffset = this->timeWindow->getPaletteOffset();
+}
+
+void
+InspectorPanel::onTriggerSNRChanged(double val)
+{
+  this->panelConfig->autoSquelchTriggerSNR = static_cast<SUFLOAT>(val);
 }

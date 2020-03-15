@@ -23,7 +23,7 @@
 #include <TimeWindow.h>
 #include <ColorConfig.h>
 
-#define SIGDIGGER_DEFAULT_SQUELCH_THRESHOLD  10
+#define SIGDIGGER_DEFAULT_SQUELCH_TRIGGER  10
 #define SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS 250.
 
 namespace Ui {
@@ -35,6 +35,7 @@ namespace SigDigger {
   public:
     std::string inspectorClass = "psk";
     std::string palette = "Suscan";
+    SUFLOAT autoSquelchTriggerSNR = SIGDIGGER_DEFAULT_SQUELCH_TRIGGER;
     unsigned int paletteOffset;
     bool precise = false;
 
@@ -129,6 +130,7 @@ namespace SigDigger {
     void onToggleAutoSquelch(void);
 
     void onTimeWindowConfigChanged(void);
+    void onTriggerSNRChanged(double val);
 
   signals:
     void bandwidthChanged(int);

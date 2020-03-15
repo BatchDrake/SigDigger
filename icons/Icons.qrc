@@ -34,6 +34,9 @@
         <file>document-save.png</file>
         <file>start.png</file>
         <file>stop.png</file>
+        <file>export.png</file>
+        <file>import.png</file>
+        <file>save-selection.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

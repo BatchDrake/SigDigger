@@ -192,7 +192,7 @@
   <action name="actionImport_profile">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/document-import.png</normaloff>:/icons/document-import.png</iconset>
+     <normaloff>:/icons/import.png</normaloff>:/icons/import.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Import profile</string>
@@ -201,7 +201,7 @@
   <action name="actionExport_profile">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/document-export.png</normaloff>:/icons/document-export.png</iconset>
+     <normaloff>:/icons/export.png</normaloff>:/icons/export.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Export profile</string>
