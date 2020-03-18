@@ -84,6 +84,7 @@ SOURCES += \
     InspectorCtl/ToneControl.cpp \
     Misc/AutoGain.cpp \
     Misc/Averager.cpp \
+    Misc/CancellableTask.cpp \
     Misc/Palette.cpp \
     Misc/SNREstimator.cpp \
     Suscan/Messages/ChannelMessage.cpp \
@@ -102,6 +103,8 @@ SOURCES += \
     Suscan/Object.cpp \
     Suscan/Serializable.cpp \
     Suscan/Source.cpp \
+    Tasks/CarrierDetector.cpp \
+    Tasks/CarrierXlator.cpp \
     UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
@@ -125,6 +128,9 @@ SOURCES += \
 HEADERS += \
     include/AlsaPlayer.h \
     include/AudioFileSaver.h \
+    include/CancellableTask.h \
+    include/CarrierDetector.h \
+    include/CarrierXlator.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
     include/PortAudioPlayer.h \

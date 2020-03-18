@@ -21,6 +21,7 @@
 
 #include <QMainWindow>
 #include <sigutils/types.h>
+#include "CancellableTask.h"
 #include "ColorConfig.h"
 #include "Palette.h"
 
@@ -38,12 +39,20 @@ namespace SigDigger {
 
     bool adjusting = false;
 
+    qreal     fs;
+    std::vector<SUCOMPLEX> const *data;
+    std::vector<SUCOMPLEX> processedData;
+
+    std::vector<SUCOMPLEX> const *displayData = &processedData;
+
     SUCOMPLEX min;
     SUCOMPLEX max;
     SUCOMPLEX mean;
-    qreal     fs;
+
     SUFREQ    centerFreq;
     SUFLOAT   rms;
+
+    CancellableController taskController;
 
     std::vector<Palette> palettes;
     int getPeriodicDivision(void) const;
@@ -69,6 +78,12 @@ namespace SigDigger {
     void refreshUi(void);
     void deserializePalettes(void);
     void saveSamples(int start, int end);
+
+    void setDisplayData(
+        std::vector<SUCOMPLEX> const *displayData,
+        bool keepView = false);
+    const SUCOMPLEX *getDisplayData(void) const;
+    size_t getDisplayDataLength(void) const;
 
   public:
     explicit TimeWindow(QWidget *parent = nullptr);
@@ -110,6 +125,16 @@ namespace SigDigger {
     void onPhaseDerivative(void);
     void onPaletteChanged(int);
     void onChangePaletteOffset(int);
+
+    void onTaskCancelling(void);
+    void onTaskProgress(qreal, QString);
+    void onTaskDone(void);
+    void onTaskCancelled(void);
+    void onTaskError(QString);
+
+    void onGuessCarrier(void);
+    void onSyncCarrier(void);
+    void onResetCarrier(void);
 
   private:
     Ui::TimeWindow *ui;
