@@ -24,13 +24,13 @@ using namespace SigDigger;
 CarrierDetector::CarrierDetector(
     const SUCOMPLEX *data,
     size_t len,
-    unsigned int bins,
+    qreal avgRelBw,
     qreal dcNotchRelBw,
     QObject *parent) : CancellableTask(parent)
 {
   this->data = data;
   this->len = len;
-  this->bins = bins;
+  this->avgRelBw = avgRelBw;
   this->setProgress(0);
   this->dcNotchRelBw = qBound(0., dcNotchRelBw, 1.);
 
@@ -52,34 +52,29 @@ CarrierDetector::work(void)
   // Initializing state
   switch (this->state) {
     case ESTIMATING:
-      if (this->bins > this->len) {
-        emit error("More FFT bins than selected samples.");
+      while (this->allocation < this->len)
+        this->allocation <<= 1;
+
+      if ((this->buffer = static_cast<SU_FFTW(_complex) *>(
+             SU_FFTW(_malloc)(this->allocation * sizeof(SUCOMPLEX)))) == nullptr) {
+        emit error(
+              "Failed to allocate "
+              + QString::number(this->allocation)
+              + " complex samples.");
         return false;
-      } else {
-        while (this->allocation < this->len)
-          this->allocation <<= 1;
-
-        if ((this->buffer = static_cast<SU_FFTW(_complex) *>(
-               SU_FFTW(_malloc)(this->allocation * sizeof(SUCOMPLEX)))) == nullptr) {
-          emit error(
-                "Failed to allocate "
-                + QString::number(this->allocation)
-                + " complex samples.");
-          return false;
-        }
-
-        if ((this->plan = SU_FFTW(_plan_dft_1d)(
-               this->allocation,
-               this->buffer,
-               this->buffer,
-               FFTW_FORWARD,
-               FFTW_ESTIMATE)) == nullptr) {
-          emit error("Failed to initialize FFT plan.");
-          return false;
-        }
-
-        this->transitionTo(COPYING);
       }
+
+      if ((this->plan = SU_FFTW(_plan_dft_1d)(
+             this->allocation,
+             this->buffer,
+             this->buffer,
+             FFTW_FORWARD,
+             FFTW_ESTIMATE)) == nullptr) {
+        emit error("Failed to initialize FFT plan.");
+        return false;
+      }
+
+      this->transitionTo(COPYING);
       break;
 
     case COPYING:
@@ -103,7 +98,8 @@ CarrierDetector::work(void)
     case COMPUTING:
       int i;
       int maxNdx = 0;
-      int delta = (this->bins - 1) / 2;
+      int bins = static_cast<int>(this->allocation * this->avgRelBw) + 1;
+      int delta = (bins - 1) / 2;
       int start;
       int skipLen = static_cast<int>(.5 * this->dcNotchRelBw * this->allocation);
       SUFLOAT maxVal = 0;
@@ -124,7 +120,7 @@ CarrierDetector::work(void)
       // Compute centroid.
       start = maxNdx - delta;
 
-      for (i = 0; i < static_cast<int>(this->bins); ++i) {
+      for (i = 0; i < bins; ++i) {
         int j = i + start;
         if (j < 0)
           j += this->allocation;

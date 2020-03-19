@@ -117,12 +117,22 @@ CancellableController::connectTask(void)
 bool
 CancellableController::process(QString const &name, CancellableTask *task)
 {
-  if (this->task != nullptr)
+  if (this->doneReceived) {
+    // Going to delete it nonetheless
+    if (this->task != nullptr)
+      delete this->task;
+
+    this->task = nullptr;
+  }
+
+  if (this->task != nullptr) {
     return false;
+  }
 
   this->name = name;
   this->task = task;
   this->cancelledState = false;
+  this->doneReceived = false;
 
   emit progress(task->getProgress(), task->getStatus());
 
@@ -150,10 +160,14 @@ CancellableController::cancel(void)
 void
 CancellableController::onDone(void)
 {
+  this->doneReceived = true;
+
   emit done();
 
-  delete this->task;
-  this->task = nullptr;
+  if (this->doneReceived) {
+    delete this->task;
+    this->task = nullptr;
+  }
 }
 
 void

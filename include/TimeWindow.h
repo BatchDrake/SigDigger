@@ -136,6 +136,8 @@ namespace SigDigger {
     void onSyncCarrier(void);
     void onResetCarrier(void);
 
+    void onCarrierSlidersChanged(void);
+
   private:
     Ui::TimeWindow *ui;
   };

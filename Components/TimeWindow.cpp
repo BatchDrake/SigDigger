@@ -280,6 +280,17 @@ TimeWindow::connectAll(void)
         SLOT(onResetCarrier(void)));
 
 
+  connect(
+        this->ui->dcNotchSlider,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onCarrierSlidersChanged(void)));
+
+  connect(
+        this->ui->averagerSlider,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onCarrierSlidersChanged(void)));
 }
 
 int
@@ -617,6 +628,8 @@ TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs)
 
   this->data = &data;
   this->setDisplayData(&data);
+
+  this->onCarrierSlidersChanged();
 }
 
 TimeWindow::TimeWindow(QWidget *parent) :
@@ -1069,9 +1082,22 @@ TimeWindow::onTaskDone(void)
   if (this->taskController.getName() == "guessCarrier") {
     const CarrierDetector *cd =
         static_cast<const CarrierDetector *>(this->taskController.getTask());
+    SUFLOAT relFreq = SU_ANG2NORM_FREQ(cd->getPeak());
 
-    this->ui->syncFreqSpin->setValue(
-          SU_NORM2ABS_FREQ(this->fs, SU_ANG2NORM_FREQ(cd->getPeak())));
+    // Some UI feedback
+    this->ui->syncFreqSpin->setValue(SU_NORM2ABS_FREQ(this->fs, relFreq));
+
+    // Resize and process
+    this->processedData.resize(this->getDisplayDataLength());
+
+    CarrierXlator *cx = new CarrierXlator(
+          this->getDisplayData(),
+          this->processedData.data(),
+          this->getDisplayDataLength(),
+          relFreq);
+
+    // Launch carrier translator
+    this->taskController.process("xlateCarrier", cx);
   } else if (this->taskController.getName() == "xlateCarrier") {
     this->setDisplayData(&this->processedData, true);
   }
@@ -1106,8 +1132,10 @@ TimeWindow::onGuessCarrier(void)
     CarrierDetector *cd = new CarrierDetector(
           data + selStart,
           selEnd - selStart,
-          this->ui->acdResolutionSpin->value(),
-          this->ui->dcNotchSlider->value() / 100.);
+          static_cast<qreal>(this->ui->averagerSlider->value())
+          / static_cast<qreal>(this->ui->averagerSlider->maximum()),
+          static_cast<qreal>(this->ui->dcNotchSlider->value())
+          / static_cast<qreal>(this->ui->dcNotchSlider->maximum()));
 
     this->taskController.process("guessCarrier", cd);
   }
@@ -1135,4 +1163,21 @@ void
 TimeWindow::onResetCarrier(void)
 {
   this->setDisplayData(this->data, true);
+}
+
+void
+TimeWindow::onCarrierSlidersChanged(void)
+{
+  qreal notchRelBw =
+      static_cast<qreal>(this->ui->dcNotchSlider->value())
+      / static_cast<qreal>(this->ui->dcNotchSlider->maximum());
+  qreal avgRelBw =
+      static_cast<qreal>(this->ui->averagerSlider->value())
+      / static_cast<qreal>(this->ui->averagerSlider->maximum());
+
+  this->ui->notchWidthLabel->setText(
+        SuWidgetsHelpers::formatQuantity(this->fs * notchRelBw, "Hz"));
+
+  this->ui->averagerSpanLabel->setText(
+        SuWidgetsHelpers::formatQuantity(this->fs * avgRelBw, "Hz"));
 }

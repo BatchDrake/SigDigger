@@ -38,9 +38,9 @@ namespace SigDigger {
     SU_FFTW(_plan)     plan = nullptr;
     SU_FFTW(_complex) *buffer = nullptr;
     SUFLOAT peak = 0;
-    unsigned int bins;
     size_t len;
     size_t allocation = 1;
+    qreal avgRelBw;
     qreal dcNotchRelBw;
     State
     getState(void) const
@@ -76,7 +76,7 @@ namespace SigDigger {
     CarrierDetector(
         const SUCOMPLEX *data,
         size_t len,
-        unsigned int bins,
+        qreal avgRelBw,
         qreal dcNotchRelBw,
         QObject *parent = nullptr);
     virtual ~CarrierDetector() override;

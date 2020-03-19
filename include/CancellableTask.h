@@ -72,6 +72,7 @@ namespace SigDigger {
     CancellableTask *task = nullptr;
 
     bool cancelledState = false;
+    bool doneReceived = false;
 
     void connectTask(void);
 

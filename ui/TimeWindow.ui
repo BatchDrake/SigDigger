@@ -922,7 +922,7 @@
              </rect>
             </property>
             <attribute name="label">
-             <string>Burst sync</string>
+             <string>Carrier recovery</string>
             </attribute>
             <layout class="QGridLayout" name="gridLayout_6">
              <property name="leftMargin">
@@ -943,7 +943,7 @@
              <item row="2" column="0" colspan="4">
               <widget class="QGroupBox" name="groupBox">
                <property name="title">
-                <string>Tone sync</string>
+                <string>FFT carrier detector</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_7">
                 <property name="leftMargin">
@@ -961,44 +961,28 @@
                 <property name="horizontalSpacing">
                  <number>3</number>
                 </property>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_26">
+                <item row="4" column="2">
+                 <widget class="QLabel" name="averagerSpanLabel">
                   <property name="text">
-                   <string>DC notch width</string>
+                   <string>0 Hz</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="0">
+                <item row="4" column="0">
                  <widget class="QLabel" name="label_24">
                   <property name="text">
                    <string>Averager span</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="2">
+                <item row="5" column="0">
                  <widget class="QPushButton" name="guessCarrierButton">
                   <property name="text">
-                   <string>Estimate carrier</string>
+                   <string>&amp;Sync to carrier</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="1">
-                 <widget class="QSpinBox" name="acdResolutionSpin">
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="suffix">
-                   <string> bins</string>
-                  </property>
-                  <property name="minimum">
-                   <number>1</number>
-                  </property>
-                  <property name="value">
-                   <number>3</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1" colspan="2">
+                <item row="2" column="1">
                  <widget class="QSlider" name="dcNotchSlider">
                   <property name="value">
                    <number>0</number>
@@ -1009,6 +993,42 @@
                   <property name="tickPosition">
                    <enum>QSlider::TicksBelow</enum>
                   </property>
+                  <property name="tickInterval">
+                   <number>5</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_26">
+                  <property name="text">
+                   <string>DC notch width</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QSlider" name="averagerSlider">
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>100</number>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="tickPosition">
+                   <enum>QSlider::TicksBelow</enum>
+                  </property>
+                  <property name="tickInterval">
+                   <number>5</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QLabel" name="notchWidthLabel">
+                  <property name="text">
+                   <string>0 Hz</string>
+                  </property>
                  </widget>
                 </item>
                </layout>
@@ -1017,14 +1037,20 @@
              <item row="1" column="2" colspan="2">
               <widget class="QPushButton" name="resetButton">
                <property name="text">
-                <string>Reset</string>
+                <string>&amp;Reset</string>
                </property>
               </widget>
              </item>
              <item row="1" column="0" colspan="2">
               <widget class="QPushButton" name="syncButton">
                <property name="text">
-                <string>Sync</string>
+                <string>&amp;Center</string>
+               </property>
+               <property name="autoDefault">
+                <bool>false</bool>
+               </property>
+               <property name="default">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
