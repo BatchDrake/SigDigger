@@ -1,5 +1,5 @@
 //
-//    CarrierXlator.h: Translate central frequency
+//    HistogramFeeder.h: Translate central frequency
 //    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,39 +16,36 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef CARRIERXLATOR_H
-#define CARRIERXLATOR_H
+#ifndef HISTOGRAMFEEDER_H
+#define HISTOGRAMFEEDER_H
 
 #include "CancellableTask.h"
-#include <sigutils/types.h>
-#include <sigutils/ncqo.h>
+#include "SamplingProperties.h"
 
-#define SIGDIGGER_CARRIER_XLATOR_BLOCK_LENGTH 4096
+#define SIGDIGGER_HISTOGRAM_FEEDER_BLOCK_LENGTH 4096
 
 namespace SigDigger {
-  class CarrierXlator : public CancellableTask {
+  class HistogramFeeder : public CancellableTask {
     Q_OBJECT
 
-    const SUCOMPLEX *origin = nullptr;
-    SUCOMPLEX       *destination = nullptr;
-
-    size_t length;
+    SamplingProperties properties;
     size_t p = 0;
 
-    su_ncqo_t ncqo;
+    SUFLOAT block[SIGDIGGER_HISTOGRAM_FEEDER_BLOCK_LENGTH];
 
   public:
-    CarrierXlator(
-        const SUCOMPLEX *data,
-        SUCOMPLEX *destination,
-        size_t length,
-        SUFLOAT relFreq,
+    HistogramFeeder(
+        SamplingProperties const &props,
         QObject *parent = nullptr);
-    virtual ~CarrierXlator() override;
+    virtual ~HistogramFeeder() override;
 
     virtual bool work(void) override;
     virtual void cancel(void) override;
+
+
+  signals:
+    void data(const float *data, unsigned int size);
   };
 }
 
-#endif // CARRIERXLATOR_H
+#endif // HISTOGRAMFEEDER_H

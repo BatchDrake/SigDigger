@@ -20,10 +20,11 @@
 #define TIMEWINDOW_H
 
 #include <QMainWindow>
-#include <sigutils/types.h>
+#include "SamplingProperties.h"
 #include "CancellableTask.h"
 #include "ColorConfig.h"
 #include "Palette.h"
+#include "HistogramDialog.h"
 
 #define TIME_WINDOW_MAX_SELECTION     4096
 #define TIME_WINDOW_MAX_DOPPLER_ITERS 200
@@ -37,6 +38,10 @@ namespace SigDigger {
   class TimeWindow : public QMainWindow
   {
     Q_OBJECT
+
+    // Ui members
+    HistogramDialog *histogramDialog = nullptr;
+    Ui::TimeWindow *ui = nullptr;
 
     bool adjusting = false;
 
@@ -87,6 +92,8 @@ namespace SigDigger {
 
     void samplingNotifySelection(bool);
     void samplingSetEnabled(bool);
+
+    void populateSamplingProperties(SamplingProperties &prop);
 
     void setDisplayData(
         std::vector<SUCOMPLEX> const *displayData,
@@ -147,10 +154,10 @@ namespace SigDigger {
     void onSyncCarrier(void);
     void onResetCarrier(void);
 
-    void onCarrierSlidersChanged(void);
+    void onTriggerHistogram(void);
+    void onHistogramSamples(const float *data, unsigned int len);
 
-  private:
-    Ui::TimeWindow *ui;
+    void onCarrierSlidersChanged(void);
   };
 }
 

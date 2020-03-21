@@ -56,21 +56,21 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLabel" name="label_6">
+    <widget class="QLabel" name="rangeLabel">
      <property name="text">
       <string>x to x</string>
      </property>
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="QLabel" name="label_4">
+    <widget class="QLabel" name="spaceLabel">
      <property name="text">
       <string>Amplitude</string>
      </property>
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="spanLabel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>

@@ -107,6 +107,7 @@ SOURCES += \
     Suscan/Source.cpp \
     Tasks/CarrierDetector.cpp \
     Tasks/CarrierXlator.cpp \
+    Tasks/HistogramFeeder.cpp \
     UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
@@ -136,8 +137,10 @@ HEADERS += \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
     include/HistogramDialog.h \
+    include/HistogramFeeder.h \
     include/PortAudioPlayer.h \
     include/SamplerDialog.h \
+    include/SamplingProperties.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \
     include/Suscan/Messages/InspectorMessage.h \

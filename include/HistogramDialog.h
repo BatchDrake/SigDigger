@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    HistogramDialog.h: Histogram dialog
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -20,21 +20,41 @@
 #define HISTOGRAMDIALOG_H
 
 #include <QDialog>
+#include "SamplingProperties.h"
+#include <SuWidgets/Decider.h>
 
 namespace Ui {
   class HistogramDialog;
 }
 
-class HistogramDialog : public QDialog
-{
-  Q_OBJECT
+namespace SigDigger {
+  class HistogramDialog : public QDialog
+  {
+    Q_OBJECT
 
-public:
-  explicit HistogramDialog(QWidget *parent = nullptr);
-  ~HistogramDialog();
+    Decider dummyDecider;
+    SamplingProperties properties;
 
-private:
-  Ui::HistogramDialog *ui;
-};
+    SUFLOAT min = INFINITY;
+    SUFLOAT max = -INFINITY;
+
+    void refreshUi(void);
+
+  public:
+    explicit HistogramDialog(QWidget *parent = nullptr);
+    ~HistogramDialog();
+
+    void reset(void);
+    void setProperties(SamplingProperties const &);
+    void feed(const SUFLOAT *data, unsigned int len);
+
+  public slots:
+    void onClose(void);
+
+  private:
+    Ui::HistogramDialog *ui;
+
+  };
+}
 
 #endif // HISTOGRAMDIALOG_H

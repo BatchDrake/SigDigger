@@ -29,6 +29,7 @@
 #include <climits>
 #include <CarrierDetector.h>
 #include <CarrierXlator.h>
+#include <HistogramFeeder.h>
 
 using namespace SigDigger;
 
@@ -297,6 +298,12 @@ TimeWindow::connectAll(void)
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onCarrierSlidersChanged(void)));
+
+  connect(
+        this->ui->showHistogramButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onTriggerHistogram(void)));
 }
 
 int
@@ -457,17 +464,72 @@ TimeWindow::samplingSetEnabled(bool enabled)
   this->ui->samplingPage->setEnabled(enabled);
 }
 
+
+void
+TimeWindow::populateSamplingProperties(SamplingProperties &prop)
+{
+  bool haveSelection = this->ui->realWaveform->getHorizontalSelectionPresent();
+  bool intSelection =
+      haveSelection && this->ui->intSelectionButton->isChecked();
+
+  prop.fs = this->fs;
+
+  if (this->ui->decAmplitudeButton->isChecked())
+    prop.space = SamplingSpace::AMPLITUDE;
+  else if (this->ui->decPhaseButton->isChecked())
+    prop.space = SamplingSpace::PHASE;
+  else if (this->ui->decFrequencyButton->isChecked())
+    prop.space = SamplingSpace::FREQUENCY;
+
+
+  if (intSelection) {
+    size_t start = static_cast<size_t>(
+          this->ui->realWaveform->getHorizontalSelectionStart());
+    prop.data = this->getDisplayData() + start;
+    prop.length =
+        static_cast<size_t>(
+          this->ui->realWaveform->getHorizontalSelectionEnd()
+          - this->ui->realWaveform->getHorizontalSelectionStart());
+    prop.symbolSync = start;
+  } else {
+    prop.data = this->getDisplayData();
+    prop.length = this->getDisplayDataLength();
+    prop.symbolSync = 0;
+  }
+
+  if (haveSelection && this->ui->clkSelectionButton->isChecked()) {
+    if (intSelection) {
+      // Interval is selection. Select all subdivisions
+      prop.symbolCount = this->ui->periodicDivisionsSpin->value();
+    } else {
+      qreal selLength =
+            this->ui->realWaveform->getHorizontalSelectionEnd()
+            - this->ui->realWaveform->getHorizontalSelectionStart();
+
+      // Compute deltaT based on selection and then the number of symbols
+      // in the defined interval.
+      qreal deltaT = selLength / this->ui->periodicDivisionsSpin->value();
+      prop.symbolCount = prop.length / deltaT;
+    }
+  } else if (this->ui->clkManualButton->isChecked()) {
+    qreal seconds = prop.length * this->fs;
+    prop.symbolCount = seconds * this->ui->baudSpin->value();
+  } else {
+    prop.symbolCount = this->ui->numSymSpin->value();
+  }
+}
+
 void
 TimeWindow::samplingNotifySelection(bool selection)
 {
   this->ui->intSelectionButton->setEnabled(selection);
   this->ui->clkSelectionButton->setEnabled(selection);
 
-  if (selection) {
+  if (!selection) {
     if (this->ui->intSelectionButton->isChecked())
       this->ui->intFullButton->setChecked(true);
 
-    if (this->ui->clkManualButton->isChecked())
+    if (this->ui->clkSelectionButton->isChecked())
       this->ui->clkManualButton->setChecked(true);
   }
 }
@@ -686,6 +748,8 @@ TimeWindow::TimeWindow(QWidget *parent) :
   ui(new Ui::TimeWindow)
 {
   ui->setupUi(this);
+
+  this->histogramDialog = new HistogramDialog(this);
 
   // We can do this because both labels have the same font
   QFontMetrics metrics(this->ui->notchWidthLabel->font());
@@ -1162,6 +1226,9 @@ TimeWindow::onTaskDone(void)
     this->setDisplayData(&this->processedData, true);
 
     this->notifyTaskRunning(false);
+  } else if (this->taskController.getName() == "triggerHistogram") {
+    this->histogramDialog->show();
+    this->notifyTaskRunning(false);
   }
 }
 
@@ -1204,8 +1271,8 @@ TimeWindow::onGuessCarrier(void)
           static_cast<qreal>(this->ui->dcNotchSlider->value())
           / static_cast<qreal>(this->ui->dcNotchSlider->maximum()));
 
-    this->taskController.process("guessCarrier", cd);
     this->notifyTaskRunning(true);
+    this->taskController.process("guessCarrier", cd);
   }
 }
 
@@ -1224,8 +1291,8 @@ TimeWindow::onSyncCarrier(void)
         this->getDisplayDataLength(),
         relFreq);
 
-  this->taskController.process("xlateCarrier", cx);
   this->notifyTaskRunning(true);
+  this->taskController.process("xlateCarrier", cx);
 }
 
 void
@@ -1256,5 +1323,33 @@ TimeWindow::onCarrierSlidersChanged(void)
           this->fs * avgRelBw,
           2,
           "Hz"));
+}
+
+void
+TimeWindow::onHistogramSamples(const float *samples, unsigned int size)
+{
+  this->histogramDialog->feed(samples, size);
+}
+
+void
+TimeWindow::onTriggerHistogram(void)
+{
+  SamplingProperties props;
+
+  this->populateSamplingProperties(props);
+
+  HistogramFeeder *hf = new HistogramFeeder(props);
+
+  connect(
+        hf,
+        SIGNAL(data(const float *, unsigned int)),
+        this,
+        SLOT(onHistogramSamples(const float *, unsigned int)));
+
+  this->histogramDialog->reset();
+  this->histogramDialog->setProperties(props);
+  this->histogramDialog->show();
+  this->notifyTaskRunning(true);
+  this->taskController.process("triggerHistogram", hf);
 }
 
