@@ -85,6 +85,9 @@ namespace SigDigger {
     void carrierSyncNotifySelection(bool);
     void carrierSyncSetEnabled(bool);
 
+    void samplingNotifySelection(bool);
+    void samplingSetEnabled(bool);
+
     void setDisplayData(
         std::vector<SUCOMPLEX> const *displayData,
         bool keepView = false);

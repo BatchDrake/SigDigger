@@ -65,10 +65,12 @@ SOURCES += \
     Components/FftPanel.cpp \
     Components/GainSlider.cpp \
     Components/GenericDataSaverUI.cpp \
+    Components/HistogramDialog.cpp \
     Components/InspectorPanel.cpp \
     Components/MainSpectrum.cpp \
     Components/MainWindow.cpp \
     Components/PersistentWidget.cpp \
+    Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
     Components/TimeWindow.cpp \
@@ -133,7 +135,9 @@ HEADERS += \
     include/CarrierXlator.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
+    include/HistogramDialog.h \
     include/PortAudioPlayer.h \
+    include/SamplerDialog.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \
     include/Suscan/Messages/InspectorMessage.h \
@@ -214,11 +218,13 @@ FORMS += \
     ui/FftPanel.ui \
     ui/GainControl.ui \
     ui/GainSlider.ui \
+    ui/HistogramDialog.ui \
     ui/Inspector.ui \
     ui/InspectorPanel.ui \
     ui/MainSpectrum.ui \
     ui/MainWindow.ui \
     ui/MfControl.ui \
+    ui/SamplerDialog.ui \
     ui/SourcePanel.ui \
     ui/TimeWindow.ui \
     ui/ToneControl.ui \

@@ -452,10 +452,32 @@ TimeWindow::carrierSyncNotifySelection(bool selection)
 }
 
 void
+TimeWindow::samplingSetEnabled(bool enabled)
+{
+  this->ui->samplingPage->setEnabled(enabled);
+}
+
+void
+TimeWindow::samplingNotifySelection(bool selection)
+{
+  this->ui->intSelectionButton->setEnabled(selection);
+  this->ui->clkSelectionButton->setEnabled(selection);
+
+  if (selection) {
+    if (this->ui->intSelectionButton->isChecked())
+      this->ui->intFullButton->setChecked(true);
+
+    if (this->ui->clkManualButton->isChecked())
+      this->ui->clkManualButton->setChecked(true);
+  }
+}
+
+void
 TimeWindow::notifyTaskRunning(bool running)
 {
   this->ui->taskAbortButton->setEnabled(running);
   this->carrierSyncSetEnabled(!running);
+  this->samplingSetEnabled(!running);
 }
 
 void
@@ -485,6 +507,8 @@ TimeWindow::refreshUi(void)
   this->ui->baudLabel->setEnabled(haveSelection);
   this->ui->actionSave_selection->setEnabled(haveSelection);
   this->carrierSyncNotifySelection(haveSelection);
+  this->samplingNotifySelection(haveSelection);
+
   this->ui->sampleRateLabel->setText(
         QString::number(static_cast<int>(
           this->ui->realWaveform->getSampleRate())));
