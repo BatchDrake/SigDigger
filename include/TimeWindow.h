@@ -79,6 +79,11 @@ namespace SigDigger {
     void deserializePalettes(void);
     void saveSamples(int start, int end);
 
+    void notifyTaskRunning(bool);
+
+    void carrierSyncNotifySelection(bool);
+    void carrierSyncSetEnabled(bool);
+
     void setDisplayData(
         std::vector<SUCOMPLEX> const *displayData,
         bool keepView = false);
@@ -125,6 +130,8 @@ namespace SigDigger {
     void onPhaseDerivative(void);
     void onPaletteChanged(int);
     void onChangePaletteOffset(int);
+
+    void onAbort(void);
 
     void onTaskCancelling(void);
     void onTaskProgress(qreal, QString);

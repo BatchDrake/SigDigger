@@ -232,6 +232,12 @@ TimeWindow::connectAll(void)
         SLOT(onChangePaletteOffset(int)));
 
   connect(
+        this->ui->taskAbortButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onAbort(void)));
+
+  connect(
         &this->taskController,
         SIGNAL(cancelling(void)),
         this,
@@ -433,6 +439,24 @@ TimeWindow::getPaletteOffset(void) const
   return this->ui->offsetSlider->value();
 }
 
+void
+TimeWindow::carrierSyncSetEnabled(bool enabled)
+{
+  this->ui->carrierSyncPage->setEnabled(enabled);
+}
+
+void
+TimeWindow::carrierSyncNotifySelection(bool selection)
+{
+  this->ui->guessCarrierButton->setEnabled(selection);
+}
+
+void
+TimeWindow::notifyTaskRunning(bool running)
+{
+  this->ui->taskAbortButton->setEnabled(running);
+  this->carrierSyncSetEnabled(!running);
+}
 
 void
 TimeWindow::recalcLimits(void)
@@ -460,6 +484,7 @@ TimeWindow::refreshUi(void)
   this->ui->periodLabel->setEnabled(haveSelection);
   this->ui->baudLabel->setEnabled(haveSelection);
   this->ui->actionSave_selection->setEnabled(haveSelection);
+  this->carrierSyncNotifySelection(haveSelection);
   this->ui->sampleRateLabel->setText(
         QString::number(static_cast<int>(
           this->ui->realWaveform->getSampleRate())));
@@ -637,6 +662,11 @@ TimeWindow::TimeWindow(QWidget *parent) :
   ui(new Ui::TimeWindow)
 {
   ui->setupUi(this);
+
+  // We can do this because both labels have the same font
+  QFontMetrics metrics(this->ui->notchWidthLabel->font());
+  this->ui->notchWidthLabel->setFixedWidth(metrics.width("XXXX.XX XHz"));
+  this->ui->averagerSpanLabel->setFixedWidth(metrics.width("XXXX.XX XHz"));
 
   this->ui->realWaveform->setRealComponent(true);
   this->ui->imagWaveform->setRealComponent(false);
@@ -1020,6 +1050,12 @@ TimeWindow::onShowEnvelope(void)
 }
 
 void
+TimeWindow::onAbort(void)
+{
+  this->taskController.cancel();
+}
+
+void
 TimeWindow::onShowPhase(void)
 {
   this->ui->realWaveform->setShowPhase(this->ui->actionShowPhase->isChecked());
@@ -1100,6 +1136,8 @@ TimeWindow::onTaskDone(void)
     this->taskController.process("xlateCarrier", cx);
   } else if (this->taskController.getName() == "xlateCarrier") {
     this->setDisplayData(&this->processedData, true);
+
+    this->notifyTaskRunning(false);
   }
 }
 
@@ -1109,6 +1147,8 @@ TimeWindow::onTaskCancelled(void)
   this->ui->taskProgressBar->setEnabled(true);
   this->ui->taskStateLabel->setText("Idle");
   this->ui->taskProgressBar->setValue(0);
+
+  this->notifyTaskRunning(false);
 }
 
 void
@@ -1116,6 +1156,9 @@ TimeWindow::onTaskError(QString error)
 {
   this->ui->taskStateLabel->setText("Idle");
   this->ui->taskProgressBar->setValue(0);
+
+  this->notifyTaskRunning(false);
+
   QMessageBox::warning(this, "Background task failed", "Task failed: " + error);
 }
 
@@ -1138,6 +1181,7 @@ TimeWindow::onGuessCarrier(void)
           / static_cast<qreal>(this->ui->dcNotchSlider->maximum()));
 
     this->taskController.process("guessCarrier", cd);
+    this->notifyTaskRunning(true);
   }
 }
 
@@ -1157,12 +1201,14 @@ TimeWindow::onSyncCarrier(void)
         relFreq);
 
   this->taskController.process("xlateCarrier", cx);
+  this->notifyTaskRunning(true);
 }
 
 void
 TimeWindow::onResetCarrier(void)
 {
   this->setDisplayData(this->data, true);
+  this->ui->syncFreqSpin->setValue(0);
 }
 
 void
@@ -1176,8 +1222,15 @@ TimeWindow::onCarrierSlidersChanged(void)
       / static_cast<qreal>(this->ui->averagerSlider->maximum());
 
   this->ui->notchWidthLabel->setText(
-        SuWidgetsHelpers::formatQuantity(this->fs * notchRelBw, "Hz"));
+        SuWidgetsHelpers::formatQuantityNearest(
+          this->fs * notchRelBw,
+          2,
+          "Hz"));
 
   this->ui->averagerSpanLabel->setText(
-        SuWidgetsHelpers::formatQuantity(this->fs * avgRelBw, "Hz"));
+        SuWidgetsHelpers::formatQuantityNearest(
+          this->fs * avgRelBw,
+          2,
+          "Hz"));
 }
+

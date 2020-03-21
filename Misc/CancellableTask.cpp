@@ -114,20 +114,24 @@ CancellableController::connectTask(void)
         SLOT(onError(QString)));
 }
 
+void
+CancellableController::deleteTask(void)
+{
+  if (this->task != nullptr) {
+    delete this->task;
+    this->task = nullptr;
+  }
+}
+
 bool
 CancellableController::process(QString const &name, CancellableTask *task)
 {
-  if (this->doneReceived) {
-    // Going to delete it nonetheless
-    if (this->task != nullptr)
-      delete this->task;
+  // Going to delete it nonetheless
+  if (this->doneReceived)
+    this->deleteTask();
 
-    this->task = nullptr;
-  }
-
-  if (this->task != nullptr) {
+  if (this->task != nullptr)
     return false;
-  }
 
   this->name = name;
   this->task = task;
@@ -151,6 +155,7 @@ CancellableController::cancel(void)
   if (this->task == nullptr || this->cancelledState)
     return false;
 
+  this->cancelledState = true;
   emit cancelling();
   emit queuedCancel();
 
@@ -164,18 +169,16 @@ CancellableController::onDone(void)
 
   emit done();
 
-  if (this->doneReceived) {
-    delete this->task;
-    this->task = nullptr;
-  }
+  if (this->doneReceived)
+    this->deleteTask();
 }
 
 void
 CancellableController::onCancelled(void)
 {
   this->cancelledState = true;
-  delete this->task;
-  this->task = nullptr;
+
+  this->deleteTask();
 
   emit cancelled();
 }
@@ -183,8 +186,7 @@ CancellableController::onCancelled(void)
 void
 CancellableController::onError(QString errmsg)
 {
-  delete this->task;
-  this->task = nullptr;
+  this->deleteTask();
 
   emit error(errmsg);
 }

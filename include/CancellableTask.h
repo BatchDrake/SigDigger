@@ -78,6 +78,8 @@ namespace SigDigger {
 
     QString name = "(no name)";
 
+    void deleteTask(void);
+
   public:
     explicit CancellableController(QObject *parent = nullptr);
     ~CancellableController();

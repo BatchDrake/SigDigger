@@ -912,7 +912,7 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="page_3">
+           <widget class="QWidget" name="carrierSyncPage">
             <property name="geometry">
              <rect>
               <x>0</x>
@@ -963,8 +963,16 @@
                 </property>
                 <item row="4" column="2">
                  <widget class="QLabel" name="averagerSpanLabel">
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>0 Hz</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                  </widget>
                 </item>
@@ -1026,8 +1034,16 @@
                 </item>
                 <item row="2" column="2">
                  <widget class="QLabel" name="notchWidthLabel">
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>0 Hz</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                  </widget>
                 </item>
