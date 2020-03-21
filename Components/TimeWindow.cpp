@@ -304,6 +304,12 @@ TimeWindow::connectAll(void)
         SIGNAL(clicked(void)),
         this,
         SLOT(onTriggerHistogram(void)));
+
+  connect(
+        this->histogramDialog,
+        SIGNAL(blanked(void)),
+        this,
+        SLOT(onTriggerHistogram(void)));
 }
 
 int
@@ -427,6 +433,8 @@ TimeWindow::setColorConfig(ColorConfig const &cfg)
   this->ui->imagWaveform->setAxesColor(cfg.spectrumAxes);
   this->ui->imagWaveform->setTextColor(cfg.spectrumText);
   this->ui->imagWaveform->setSelectionColor(cfg.selection);
+
+  this->histogramDialog->setColorConfig(cfg);
 }
 
 std::string

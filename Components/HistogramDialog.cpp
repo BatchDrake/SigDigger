@@ -29,14 +29,52 @@ HistogramDialog::HistogramDialog(QWidget *parent) :
 {
   this->ui->setupUi(this);
 
+  QFontMetrics metrics(this->ui->spanLabel->font());
+
+  this->ui->spanLabel->setFixedWidth(
+        metrics.width("XXXXXXXXXXXXX (XXXXXXX seconds)"));
+
+  this->ui->selRangeLabel->setFixedWidth(
+        metrics.width("XXXXXXXXXXXXX to XXXXXXXXXXXXX"));
+
+  this->ui->histogram->setDecider(&this->dummyDecider);
+  this->ui->histogram->setUpdateDecider(false);
+  this->ui->histogram->setDrawThreshold(false);
+
+  this->setWindowFlags(
+        this->windowFlags() | Qt::Window | Qt::WindowMaximizeButtonHint);
+
+  this->connectAll();
+
+  this->reset();
+}
+
+void
+HistogramDialog::connectAll(void)
+{
   connect(
         this->ui->buttonBox,
         SIGNAL(clicked(QAbstractButton *)),
         this,
         SLOT(onClose(void)));
 
-  this->ui->histogram->setDecider(&this->dummyDecider);
-  this->reset();
+  connect(
+        this->ui->histogram,
+        SIGNAL(newLimits(float, float)),
+        this,
+        SLOT(onNewLimits(float, float)));
+
+  connect(
+        this->ui->histogram,
+        SIGNAL(resetLimits(void)),
+        this,
+        SLOT(onResetLimits(void)));
+
+  connect(
+        this->ui->histogram,
+        SIGNAL(blanked()),
+        this,
+        SIGNAL(blanked()));
 }
 
 void
@@ -95,6 +133,52 @@ HistogramDialog::refreshUi(void)
               "Hz"));
       break;
   }
+
+  if (this->limits) {
+    float min, max;
+    QString units;
+
+    switch (this->properties.space) {
+      case AMPLITUDE:
+        min = this->selMin;
+        max = this->selMax;
+        units = "";
+        break;
+
+      case PHASE:
+        min = this->selMin / M_PI * 180;
+        max = this->selMax / M_PI * 180;
+        units = "º";
+        break;
+
+      case FREQUENCY:
+        min = .5 * this->selMin / M_PI * this->properties.fs;
+        max = .5 * this->selMax / M_PI * this->properties.fs;
+        units = "Hz";
+        break;
+    }
+
+    this->ui->selRangeLabel->setText(
+          SuWidgetsHelpers::formatQuantityNearest(
+            min,
+            2,
+            units)
+          + " to "
+          + SuWidgetsHelpers::formatQuantityNearest(
+            max,
+            2,
+            units));
+
+    this->ui->selRangeWidth->setText(
+          SuWidgetsHelpers::formatQuantityNearest(
+            max - min,
+            2,
+            units));
+
+  } else {
+    this->ui->selRangeLabel->setText("N/A");
+    this->ui->selRangeWidth->setText("N/A");
+  }
 }
 
 void
@@ -108,6 +192,15 @@ HistogramDialog::setProperties(SamplingProperties const &prop)
   }
 
   this->refreshUi();
+}
+
+
+void
+HistogramDialog::setColorConfig(ColorConfig const &colors)
+{
+  this->ui->histogram->setBackgroundColor(colors.histogramBackground);
+  this->ui->histogram->setForegroundColor(colors.histogramForeground);
+  this->ui->histogram->setAxesColor(colors.histogramAxes);
 }
 
 void
@@ -150,3 +243,22 @@ HistogramDialog::onClose(void)
 {
   this->hide();
 }
+
+void
+HistogramDialog::onNewLimits(float min, float max)
+{
+  this->limits = true;
+  this->selMin = min;
+  this->selMax = max;
+
+  this->refreshUi();
+}
+
+void
+HistogramDialog::onResetLimits(void)
+{
+  this->limits = false;
+
+  this->refreshUi();
+}
+

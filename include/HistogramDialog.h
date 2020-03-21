@@ -22,6 +22,7 @@
 #include <QDialog>
 #include "SamplingProperties.h"
 #include <SuWidgets/Decider.h>
+#include "ColorConfig.h"
 
 namespace Ui {
   class HistogramDialog;
@@ -38,7 +39,12 @@ namespace SigDigger {
     SUFLOAT min = INFINITY;
     SUFLOAT max = -INFINITY;
 
+    bool limits = false;
+    SUFLOAT selMin;
+    SUFLOAT selMax;
+
     void refreshUi(void);
+    void connectAll(void);
 
   public:
     explicit HistogramDialog(QWidget *parent = nullptr);
@@ -48,8 +54,15 @@ namespace SigDigger {
     void setProperties(SamplingProperties const &);
     void feed(const SUFLOAT *data, unsigned int len);
 
+    void setColorConfig(ColorConfig const &);
+
+  signals:
+    void blanked();
+
   public slots:
     void onClose(void);
+    void onNewLimits(float, float);
+    void onResetLimits(void);
 
   private:
     Ui::HistogramDialog *ui;
