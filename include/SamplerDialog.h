@@ -20,21 +20,63 @@
 #define SAMPLERDIALOG_H
 
 #include <QDialog>
+#include "WaveSampler.h"
+#include "ColorConfig.h"
 
 namespace Ui {
   class SamplerDialog;
 }
 
-class SamplerDialog : public QDialog
-{
-  Q_OBJECT
+namespace SigDigger {
+  class SamplerDialog : public QDialog
+  {
+    Q_OBJECT
 
-public:
-  explicit SamplerDialog(QWidget *parent = nullptr);
-  ~SamplerDialog();
+    Decider decider;
+    SamplingProperties properties;
 
-private:
-  Ui::SamplerDialog *ui;
-};
+    void connectAll(void);
+    void refreshUi(void);
+    bool scrolling = false;
+    bool autoScroll = true;
+
+    unsigned int getVScrollPageSize(void) const;
+    unsigned int getHScrollOffset(void) const;
+    void refreshHScrollBar(void) const;
+    void refreshVScrollBar(void) const;
+
+
+  public:
+    explicit SamplerDialog(QWidget *parent = nullptr);
+    ~SamplerDialog();
+
+    void setProperties(SamplingProperties const &prop);
+    void reset(void);
+    void feedSet(WaveSampleSet const &set);
+    void setColorConfig(ColorConfig const &cfg);
+
+    WaveSampler *makeSampler(void);
+
+  signals:
+    void resample(void);
+
+  public slots:
+    void onClose(void);
+    void onBpsChanged(void);
+    void onZoomChanged(void);
+    void onRowSizeChanged(void);
+    void onHScroll(int);
+    void onVScroll(int);
+    void onOffsetChanged(unsigned int);
+    void onHOffsetChanged(int);
+    void onStrideChanged(unsigned int);
+    void onSymViewZoomChanged(unsigned int);
+
+  private:
+    Ui::SamplerDialog *ui;
+
+
+  };
+}
 
 #endif // SAMPLERDIALOG_H

@@ -310,6 +310,19 @@ TimeWindow::connectAll(void)
         SIGNAL(blanked(void)),
         this,
         SLOT(onTriggerHistogram(void)));
+
+  connect(
+        this->ui->startSamplinButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onTriggerSampler(void)));
+
+  connect(
+        this->samplerDialog,
+        SIGNAL(resample(void)),
+        this,
+        SLOT(onTriggerSampler(void)));
+
 }
 
 int
@@ -435,6 +448,7 @@ TimeWindow::setColorConfig(ColorConfig const &cfg)
   this->ui->imagWaveform->setSelectionColor(cfg.selection);
 
   this->histogramDialog->setColorConfig(cfg);
+  this->samplerDialog->setColorConfig(cfg);
 }
 
 std::string
@@ -520,7 +534,7 @@ TimeWindow::populateSamplingProperties(SamplingProperties &prop)
       prop.symbolCount = prop.length / deltaT;
     }
   } else if (this->ui->clkManualButton->isChecked()) {
-    qreal seconds = prop.length * this->fs;
+    qreal seconds = prop.length / this->fs;
     prop.symbolCount = seconds * this->ui->baudSpin->value();
   } else {
     prop.symbolCount = this->ui->numSymSpin->value();
@@ -758,6 +772,7 @@ TimeWindow::TimeWindow(QWidget *parent) :
   ui->setupUi(this);
 
   this->histogramDialog = new HistogramDialog(this);
+  this->samplerDialog   = new SamplerDialog(this);
 
   // We can do this because both labels have the same font
   QFontMetrics metrics(this->ui->notchWidthLabel->font());
@@ -1237,6 +1252,9 @@ TimeWindow::onTaskDone(void)
   } else if (this->taskController.getName() == "triggerHistogram") {
     this->histogramDialog->show();
     this->notifyTaskRunning(false);
+  } else if (this->taskController.getName() == "triggerSampler") {
+    this->samplerDialog->show();
+    this->notifyTaskRunning(false);
   }
 }
 
@@ -1359,5 +1377,34 @@ TimeWindow::onTriggerHistogram(void)
   this->histogramDialog->show();
   this->notifyTaskRunning(true);
   this->taskController.process("triggerHistogram", hf);
+}
+
+void
+TimeWindow::onSampleSet(SigDigger::WaveSampleSet set)
+{
+  this->samplerDialog->feedSet(set);
+}
+
+void
+TimeWindow::onTriggerSampler(void)
+{
+  SamplingProperties props;
+
+  this->populateSamplingProperties(props);
+
+  this->samplerDialog->reset();
+  this->samplerDialog->setProperties(props);
+
+  WaveSampler *ws = this->samplerDialog->makeSampler();
+
+  connect(
+        ws,
+        SIGNAL(data(SigDigger::WaveSampleSet)),
+        this,
+        SLOT(onSampleSet(SigDigger::WaveSampleSet)));
+
+  this->samplerDialog->show();
+  this->notifyTaskRunning(true);
+  this->taskController.process("triggerSampler", ws);
 }
 

@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <widget class="Histogram" name="histogram">
@@ -54,45 +57,58 @@
       <property name="spacing">
        <number>3</number>
       </property>
-      <item row="0" column="6">
+      <item row="0" column="5">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Zoom</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Refresh decision</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
+      <item row="0" column="1">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Bits per symbol</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="4">
+      <item row="0" column="2">
+       <widget class="QSpinBox" name="bpsSpin">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>8</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Row size</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="0" column="0">
        <widget class="QPushButton" name="pushButton_2">
         <property name="text">
-         <string>Save as...</string>
+         <string>&amp;Save as...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
+       <widget class="QSpinBox" name="zoomSpin">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="minimum">
+         <number>1</number>
         </property>
        </widget>
       </item>
       <item row="0" column="7">
-       <widget class="QSpinBox" name="spinBox_2"/>
-      </item>
-      <item row="0" column="8">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -105,11 +121,21 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="5">
-       <widget class="QSpinBox" name="spinBox"/>
-      </item>
-      <item row="0" column="3">
-       <widget class="QSpinBox" name="spinBox_3"/>
+      <item row="0" column="4">
+       <widget class="QSpinBox" name="rowSize">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1800000000</number>
+        </property>
+        <property name="value">
+         <number>128</number>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

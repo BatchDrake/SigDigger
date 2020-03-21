@@ -25,6 +25,9 @@
 #include "ColorConfig.h"
 #include "Palette.h"
 #include "HistogramDialog.h"
+#include "SamplerDialog.h"
+
+#include "WaveSampler.h"
 
 #define TIME_WINDOW_MAX_SELECTION     4096
 #define TIME_WINDOW_MAX_DOPPLER_ITERS 200
@@ -41,6 +44,8 @@ namespace SigDigger {
 
     // Ui members
     HistogramDialog *histogramDialog = nullptr;
+    SamplerDialog *samplerDialog = nullptr;
+
     Ui::TimeWindow *ui = nullptr;
 
     bool adjusting = false;
@@ -156,6 +161,9 @@ namespace SigDigger {
 
     void onTriggerHistogram(void);
     void onHistogramSamples(const float *data, unsigned int len);
+
+    void onTriggerSampler(void);
+    void onSampleSet(SigDigger::WaveSampleSet);
 
     void onCarrierSlidersChanged(void);
   };

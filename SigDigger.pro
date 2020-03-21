@@ -108,6 +108,7 @@ SOURCES += \
     Tasks/CarrierDetector.cpp \
     Tasks/CarrierXlator.cpp \
     Tasks/HistogramFeeder.cpp \
+    Tasks/WaveSampler.cpp \
     UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
@@ -205,7 +206,8 @@ HEADERS += \
     include/WaitingSpinnerWidget.h \
     include/DeviceDialog.h \
     include/PanoramicDialog.h \
-    include/Scanner.h
+    include/Scanner.h \
+    include/WaveSampler.h
 
 
 FORMS += \
