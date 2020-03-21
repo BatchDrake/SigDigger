@@ -852,11 +852,11 @@ TimeWindow::onHoverTime(qreal time)
     normFreq = SU_ANG2NORM_FREQ(omegaAccum / count);
     SUFREQ freq = SU_NORM2ABS_FREQ(this->fs, normFreq);
     SUFREQ ifFreq = this->ui->refFreqSpin->value() - this->centerFreq;
-    SUFREQ doppler = -3e8 / this->centerFreq * (freq - ifFreq);
+    SUFREQ doppler = -TIME_WINDOW_SPEED_OF_LIGHT / this->centerFreq * (freq - ifFreq);
     this->ui->freqShiftLabel->setText(
-          SuWidgetsHelpers::formatIntegerPart(freq) + " Hz");
+          SuWidgetsHelpers::formatQuantityNearest(freq, 2, "Hz"));
     this->ui->dopplerShiftLabel->setText(
-          SuWidgetsHelpers::formatQuantity(doppler, "m/s"));
+          SuWidgetsHelpers::formatQuantityNearest(doppler, 2, "m/s"));
   } else {
     this->ui->freqShiftLabel->setText("N/A");
     this->ui->dopplerShiftLabel->setText("N/A");

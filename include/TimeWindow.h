@@ -25,8 +25,9 @@
 #include "ColorConfig.h"
 #include "Palette.h"
 
-#define TIME_WINDOW_MAX_SELECTION 4096
+#define TIME_WINDOW_MAX_SELECTION     4096
 #define TIME_WINDOW_MAX_DOPPLER_ITERS 200
+#define TIME_WINDOW_SPEED_OF_LIGHT    3e8
 
 namespace Ui {
   class TimeWindow;
