@@ -102,6 +102,58 @@ done:
 }
 
 void
+TimeWindow::connectFineTuneSelWidgets(void)
+{
+  connect(
+        this->ui->selStartDecDeltaTButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selStartDecSampleButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selStartIncDeltaTButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selStartIncSampleButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selEndDecDeltaTButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selEndDecSampleButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selEndIncDeltaTButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selEndIncSampleButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+}
+
+void
 TimeWindow::connectAll(void)
 {
   connect(
@@ -323,6 +375,7 @@ TimeWindow::connectAll(void)
         this,
         SLOT(onTriggerSampler(void)));
 
+  connectFineTuneSelWidgets();
 }
 
 int
@@ -469,6 +522,19 @@ TimeWindow::getPaletteOffset(void) const
 }
 
 void
+TimeWindow::fineTuneSelSetEnabled(bool enabled)
+{
+  this->ui->selStartButtonsWidget->setEnabled(enabled);
+  this->ui->selEndButtonsWidget->setEnabled(enabled);
+}
+
+void
+TimeWindow::fineTuneSelNotifySelection(bool sel)
+{
+  this->fineTuneSelSetEnabled(sel);;
+}
+
+void
 TimeWindow::carrierSyncSetEnabled(bool enabled)
 {
   this->ui->carrierSyncPage->setEnabled(enabled);
@@ -591,6 +657,7 @@ TimeWindow::refreshUi(void)
   this->ui->baudLabel->setEnabled(haveSelection);
   this->ui->actionSave_selection->setEnabled(haveSelection);
   this->carrierSyncNotifySelection(haveSelection);
+  this->fineTuneSelNotifySelection(haveSelection);
   this->samplingNotifySelection(haveSelection);
 
   this->ui->sampleRateLabel->setText(
@@ -1408,3 +1475,35 @@ TimeWindow::onTriggerSampler(void)
   this->taskController.process("triggerSampler", ws);
 }
 
+void
+TimeWindow::onFineTuneSelectionClicked(void)
+{
+  QPushButton *sender = static_cast<QPushButton *>(this->sender());
+  qint64 newSelStart =
+      static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionStart());
+  qint64 newSelEnd =
+      static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionEnd());
+  qint64 delta = newSelEnd - newSelStart;
+
+  if (sender == this->ui->selStartIncDeltaTButton)
+    newSelStart += delta;
+  else if (sender == this->ui->selStartIncSampleButton)
+    ++newSelStart;
+  else if (sender == this->ui->selStartDecDeltaTButton)
+    newSelStart -= delta;
+  else if (sender == this->ui->selStartDecSampleButton)
+    --newSelStart;
+  else if (sender == this->ui->selEndIncDeltaTButton)
+    newSelEnd += delta;
+  else if (sender == this->ui->selEndIncSampleButton)
+    ++newSelEnd;
+  else if (sender == this->ui->selEndDecDeltaTButton)
+    newSelEnd -= delta;
+  else if (sender == this->ui->selEndDecSampleButton)
+    --newSelEnd;
+  else
+    return;
+
+  this->ui->imagWaveform->selectHorizontal(newSelStart, newSelEnd);
+  this->ui->realWaveform->selectHorizontal(newSelStart, newSelEnd);
+}

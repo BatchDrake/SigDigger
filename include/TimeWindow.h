@@ -68,6 +68,7 @@ namespace SigDigger {
     std::vector<Palette> palettes;
     int getPeriodicDivision(void) const;
 
+    void connectFineTuneSelWidgets(void);
     void connectAll(void);
 
     static void kahanMeanAndRms(
@@ -97,6 +98,9 @@ namespace SigDigger {
 
     void samplingNotifySelection(bool);
     void samplingSetEnabled(bool);
+
+    void fineTuneSelNotifySelection(bool);
+    void fineTuneSelSetEnabled(bool);
 
     void populateSamplingProperties(SamplingProperties &prop);
 
@@ -166,6 +170,8 @@ namespace SigDigger {
     void onSampleSet(SigDigger::WaveSampleSet);
 
     void onCarrierSlidersChanged(void);
+
+    void onFineTuneSelectionClicked(void);
   };
 }
 
