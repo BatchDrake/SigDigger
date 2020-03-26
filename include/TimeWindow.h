@@ -99,6 +99,7 @@ namespace SigDigger {
     void samplingNotifySelection(bool);
     void samplingSetEnabled(bool);
 
+    bool fineTuneSenderIs(const QPushButton *sender) const;
     void fineTuneSelNotifySelection(bool);
     void fineTuneSelSetEnabled(bool);
 

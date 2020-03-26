@@ -1475,34 +1475,62 @@ TimeWindow::onTriggerSampler(void)
   this->taskController.process("triggerSampler", ws);
 }
 
+bool
+TimeWindow::fineTuneSenderIs(const QPushButton *button) const
+{
+  QPushButton *sender = static_cast<QPushButton *>(this->sender());
+
+  if (this->ui->lockButton->isChecked()) {
+#define CHECKPAIR(a, b)                                   \
+  if (button == this->ui->a || button == this->ui->b)     \
+    return sender == this->ui->a || sender == this->ui->b
+
+    CHECKPAIR(selStartIncDeltaTButton, selEndIncDeltaTButton);
+    CHECKPAIR(selStartIncSampleButton, selEndIncSampleButton);
+    CHECKPAIR(selStartDecDeltaTButton, selEndDecDeltaTButton);
+    CHECKPAIR(selStartDecSampleButton, selEndDecSampleButton);
+#undef CHECKPAIR
+  }
+
+  return button == sender;
+}
+
 void
 TimeWindow::onFineTuneSelectionClicked(void)
 {
-  QPushButton *sender = static_cast<QPushButton *>(this->sender());
   qint64 newSelStart =
       static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionStart());
   qint64 newSelEnd =
       static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionEnd());
   qint64 delta = newSelEnd - newSelStart;
 
-  if (sender == this->ui->selStartIncDeltaTButton)
+#define CHECKBUTTON(btn) this->fineTuneSenderIs(this->ui->btn)
+
+  if (CHECKBUTTON(selStartIncDeltaTButton))
     newSelStart += delta;
-  else if (sender == this->ui->selStartIncSampleButton)
+
+  if (CHECKBUTTON(selStartIncSampleButton))
     ++newSelStart;
-  else if (sender == this->ui->selStartDecDeltaTButton)
+
+  if (CHECKBUTTON(selStartDecDeltaTButton))
     newSelStart -= delta;
-  else if (sender == this->ui->selStartDecSampleButton)
+
+  if (CHECKBUTTON(selStartDecSampleButton))
     --newSelStart;
-  else if (sender == this->ui->selEndIncDeltaTButton)
+
+  if (CHECKBUTTON(selEndIncDeltaTButton))
     newSelEnd += delta;
-  else if (sender == this->ui->selEndIncSampleButton)
+
+  if (CHECKBUTTON(selEndIncSampleButton))
     ++newSelEnd;
-  else if (sender == this->ui->selEndDecDeltaTButton)
+
+  if (CHECKBUTTON(selEndDecDeltaTButton))
     newSelEnd -= delta;
-  else if (sender == this->ui->selEndDecSampleButton)
+
+  if (CHECKBUTTON(selEndDecSampleButton))
     --newSelEnd;
-  else
-    return;
+
+#undef CHECKBUTTON
 
   this->ui->imagWaveform->selectHorizontal(newSelStart, newSelEnd);
   this->ui->realWaveform->selectHorizontal(newSelStart, newSelEnd);
