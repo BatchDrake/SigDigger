@@ -122,6 +122,7 @@ void
 SamplerDialog::reset(void)
 {
   this->ui->symView->clear();
+  this->ui->histogram->reset();
 }
 
 void

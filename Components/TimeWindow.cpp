@@ -631,7 +631,7 @@ TimeWindow::populateSamplingProperties(SamplingProperties &prop)
 }
 
 void
-TimeWindow::samplingNotifySelection(bool selection)
+TimeWindow::samplingNotifySelection(bool selection, bool periodic)
 {
   this->ui->intSelectionButton->setEnabled(selection);
   this->ui->clkSelectionButton->setEnabled(selection);
@@ -644,7 +644,9 @@ TimeWindow::samplingNotifySelection(bool selection)
       this->ui->clkManualButton->setChecked(true);
   } else {
     this->ui->intSelectionButton->setChecked(true);
-    this->ui->clkSelectionButton->setChecked(true);
+
+    if (periodic)
+      this->ui->clkSelectionButton->setChecked(true);
   }
 }
 
@@ -683,10 +685,12 @@ TimeWindow::refreshUi(void)
   this->ui->baudLabel->setEnabled(haveSelection);
   this->ui->actionSave_selection->setEnabled(haveSelection);
 
-  if (haveSelection && !this->hadSelectionBefore) {
+  if (haveSelection != this->hadSelectionBefore) {
     this->carrierSyncNotifySelection(haveSelection);
     this->fineTuneSelNotifySelection(haveSelection);
-    this->samplingNotifySelection(haveSelection);
+    this->samplingNotifySelection(
+          haveSelection,
+          this->ui->periodicSelectionCheck->isChecked());
   }
 
   this->ui->sampleRateLabel->setText(

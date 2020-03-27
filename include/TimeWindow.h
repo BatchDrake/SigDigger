@@ -98,7 +98,7 @@ namespace SigDigger {
     void carrierSyncNotifySelection(bool);
     void carrierSyncSetEnabled(bool);
 
-    void samplingNotifySelection(bool);
+    void samplingNotifySelection(bool, bool);
     void samplingSetEnabled(bool);
 
     bool fineTuneSenderIs(const QPushButton *sender) const;
