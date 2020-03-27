@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    SamplerDialog.h: Sampler dialog
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -45,7 +45,6 @@ namespace SigDigger {
     void refreshHScrollBar(void) const;
     void refreshVScrollBar(void) const;
 
-
   public:
     explicit SamplerDialog(QWidget *parent = nullptr);
     ~SamplerDialog();
@@ -71,6 +70,7 @@ namespace SigDigger {
     void onHOffsetChanged(int);
     void onStrideChanged(unsigned int);
     void onSymViewZoomChanged(unsigned int);
+    void onHoverSymbol(unsigned int);
 
   private:
     Ui::SamplerDialog *ui;

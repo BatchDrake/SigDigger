@@ -47,8 +47,10 @@ WaveSampler::WaveSampler(
   // Gardner by default
   if (this->properties.sync == SamplingClockSync::GARDNER) {
     SUFLOAT bnor = SU_ABS2NORM_BAUD(props.fs, props.rate);
+#ifdef SIGDIGGER_WAVESAMPLER_USE_MF
     SUFLOAT tau = 1. / bnor;
     unsigned span;
+#endif // SIGDIGGER_WAVESAMPLER_USE_MF
 
     SU_ATTEMPT(
           su_clock_detector_init(
@@ -58,11 +60,11 @@ WaveSampler::WaveSampler(
           SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH) != -1);
     this->cdInit = true;
 
+#ifdef SIGDIGGER_WAVESAMPLER_USE_MF
     span = tau * SIGDIGGER_WAVESAMPLER_MF_PERIODS > SIGDIGGER_WAVESAMPLER_MAX_MF_SPAN
         ? SIGDIGGER_WAVESAMPLER_MAX_MF_SPAN
         : tau * SIGDIGGER_WAVESAMPLER_MF_PERIODS;
 
-#ifdef SIGDIGGER_WAVESAMPLER_USE_MF
     SU_ATTEMPT(
           su_iir_rrc_init(
             &this->mf,

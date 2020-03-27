@@ -97,6 +97,12 @@ SamplerDialog::connectAll(void)
         SIGNAL(strideChanged(unsigned int)),
         this,
         SLOT(onStrideChanged(unsigned int)));
+
+  connect(
+        this->ui->symView,
+        SIGNAL(hoverSymbol(unsigned int)),
+        this,
+        SLOT(onHoverSymbol(unsigned int)));
 }
 
 void
@@ -301,4 +307,11 @@ SamplerDialog::onSymViewZoomChanged(unsigned int zoom)
   this->ui->zoomSpin->setValue(static_cast<int>(zoom));
   this->refreshVScrollBar();
   this->refreshHScrollBar();
+}
+
+void
+SamplerDialog::onHoverSymbol(unsigned int index)
+{
+  this->ui->positionLabel->setText(
+        "Position: " + QString::number(index));
 }
