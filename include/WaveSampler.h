@@ -22,13 +22,17 @@
 #include "CancellableTask.h"
 #include "SamplingProperties.h"
 #include "Decider.h"
+#include <sigutils/clock.h>
+#include <sigutils/iir.h>
 
-#define SIGDIGGER_HISTOGRAM_FEEDER_BLOCK_LENGTH 4096
+#define SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH 4096
+#define SIGDIGGER_WAVESAMPLER_MAX_MF_SPAN         1024
+#define SIGDIGGER_WAVESAMPLER_MF_PERIODS          6
 
 namespace SigDigger {
   struct WaveSampleSet {
-    SUCOMPLEX block[SIGDIGGER_HISTOGRAM_FEEDER_BLOCK_LENGTH];
-    Symbol symbols[SIGDIGGER_HISTOGRAM_FEEDER_BLOCK_LENGTH];
+    SUCOMPLEX block[SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH];
+    Symbol symbols[SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH];
     size_t len;
   };
 
@@ -37,12 +41,23 @@ namespace SigDigger {
 
     const Decider *decider;
     SamplingProperties properties;
+    su_clock_detector_t cd;
+    bool cdInit = false;
+#ifdef SIGDIGGER_WAVESAMPLER_USE_MF
+    su_iir_filt_t mf;
+    bool mfInit = false;
+#endif // SIGDIGGER_WAVESAMPLER_USE_MF
     long p = 0;
     qreal delta = 0;
     qreal sampOffset;
-    SUCOMPLEX prevAvg = 0;
+    qreal progress;
+
+    SUCOMPLEX prevSample = 0;
 
     WaveSampleSet set;
+
+    bool sampleManual(void);
+    bool sampleGardner(void);
 
   public:
     WaveSampler(

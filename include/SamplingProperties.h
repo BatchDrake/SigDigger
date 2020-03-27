@@ -29,14 +29,22 @@ namespace SigDigger {
     FREQUENCY
   };
 
+  enum SamplingClockSync {
+    MANUAL,
+    GARDNER
+  };
+
   struct SamplingProperties {
+    SamplingClockSync sync;
     SamplingSpace space;
     qreal fs;
+    qreal loopGain;
     const SUCOMPLEX *data;
     size_t length;
 
     size_t symbolSync;
     qreal symbolCount;
+    qreal rate;
   };
 }
 

@@ -468,7 +468,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>3</number>
            </property>
            <property name="tabSpacing">
             <number>6</number>
@@ -1557,6 +1557,296 @@
              <property name="spacing">
               <number>3</number>
              </property>
+             <item row="2" column="0" colspan="2">
+              <widget class="QGroupBox" name="groupBox_4">
+               <property name="title">
+                <string>Clock source</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_12">
+                <property name="leftMargin">
+                 <number>3</number>
+                </property>
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <property name="rightMargin">
+                 <number>3</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>3</number>
+                </property>
+                <property name="spacing">
+                 <number>1</number>
+                </property>
+                <item row="4" column="0" colspan="2">
+                 <widget class="QRadioButton" name="clkPartitionButton">
+                  <property name="text">
+                   <string>Fixed interval partition</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">clckSourceBtnGrp</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="2" column="0" colspan="2">
+                 <widget class="QRadioButton" name="clkManualButton">
+                  <property name="text">
+                   <string>Manual</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">clckSourceBtnGrp</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="7" column="0">
+                 <widget class="QRadioButton" name="clkGardnerButton">
+                  <property name="text">
+                   <string>Gardner symbol recovery</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">clckSourceBtnGrp</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="2">
+                 <widget class="QRadioButton" name="clkSelectionButton">
+                  <property name="text">
+                   <string>Sync to selection intervals</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">clckSourceBtnGrp</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="5" column="0">
+                 <widget class="QFrame" name="clkPartitionFrame">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_16">
+                   <property name="leftMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="spacing">
+                    <number>1</number>
+                   </property>
+                   <item row="2" column="1">
+                    <widget class="QSpinBox" name="numSymSpin">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     </property>
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_28">
+                     <property name="text">
+                      <string>Number of symbols </string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QFrame" name="clkRateFrame">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_15">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>1</number>
+                   </property>
+                   <item row="0" column="1">
+                    <widget class="FrequencySpinBox" name="baudSpin">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_31">
+                     <property name="text">
+                      <string>Symbol rate </string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item row="8" column="0">
+                 <widget class="QFrame" name="clkGardnerFrame">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_17">
+                   <property name="leftMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="spacing">
+                    <number>1</number>
+                   </property>
+                   <item row="0" column="1">
+                    <widget class="QDoubleSpinBox" name="clkGardnerLoopGain">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     </property>
+                     <property name="suffix">
+                      <string> dB</string>
+                     </property>
+                     <property name="decimals">
+                      <number>1</number>
+                     </property>
+                     <property name="minimum">
+                      <double>-120.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>-13.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_33">
+                     <property name="text">
+                      <string>Loop gain  </string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QPushButton" name="startSamplinButton">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>&amp;Sample</string>
+               </property>
+               <property name="default">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QGroupBox" name="groupBox_3">
+               <property name="title">
+                <string>Sampling interval</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_11">
+                <property name="leftMargin">
+                 <number>3</number>
+                </property>
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <property name="rightMargin">
+                 <number>3</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>3</number>
+                </property>
+                <property name="spacing">
+                 <number>1</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="intFullButton">
+                  <property name="text">
+                   <string>Full capture</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">intervalButtonGrp</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QRadioButton" name="intSelectionButton">
+                  <property name="text">
+                   <string>Selection</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">intervalButtonGrp</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QPushButton" name="showHistogramButton">
+                  <property name="text">
+                   <string>Full histogram...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
              <item row="0" column="0">
               <widget class="QGroupBox" name="groupBox_2">
                <property name="title">
@@ -1576,7 +1866,7 @@
                  <number>3</number>
                 </property>
                 <property name="spacing">
-                 <number>3</number>
+                 <number>1</number>
                 </property>
                 <item row="0" column="0" colspan="2">
                  <widget class="QRadioButton" name="decAmplitudeButton">
@@ -1587,7 +1877,7 @@
                    <bool>true</bool>
                   </property>
                   <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup</string>
+                   <string notr="true">spaceButtonGrp</string>
                   </attribute>
                  </widget>
                 </item>
@@ -1597,7 +1887,7 @@
                    <string>Frequency</string>
                   </property>
                   <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup</string>
+                   <string notr="true">spaceButtonGrp</string>
                   </attribute>
                  </widget>
                 </item>
@@ -1607,21 +1897,14 @@
                    <string>Phase</string>
                   </property>
                   <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup</string>
+                   <string notr="true">spaceButtonGrp</string>
                   </attribute>
-                 </widget>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QPushButton" name="showHistogramButton">
-                  <property name="text">
-                   <string>Full histogram...</string>
-                  </property>
                  </widget>
                 </item>
                </layout>
               </widget>
              </item>
-             <item row="18" column="0">
+             <item row="20" column="0">
               <spacer name="verticalSpacer_4">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -1633,143 +1916,6 @@
                 </size>
                </property>
               </spacer>
-             </item>
-             <item row="1" column="0">
-              <widget class="QGroupBox" name="groupBox_3">
-               <property name="title">
-                <string>Sampling interval</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_11">
-                <property name="leftMargin">
-                 <number>3</number>
-                </property>
-                <property name="topMargin">
-                 <number>3</number>
-                </property>
-                <property name="rightMargin">
-                 <number>3</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>3</number>
-                </property>
-                <property name="spacing">
-                 <number>3</number>
-                </property>
-                <item row="0" column="0">
-                 <widget class="QRadioButton" name="intFullButton">
-                  <property name="text">
-                   <string>Full capture</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                  <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup_2</string>
-                  </attribute>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QRadioButton" name="intSelectionButton">
-                  <property name="text">
-                   <string>Selection</string>
-                  </property>
-                  <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup_2</string>
-                  </attribute>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QGroupBox" name="groupBox_4">
-               <property name="title">
-                <string>Clock source</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_12">
-                <property name="leftMargin">
-                 <number>3</number>
-                </property>
-                <property name="topMargin">
-                 <number>3</number>
-                </property>
-                <property name="rightMargin">
-                 <number>3</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>3</number>
-                </property>
-                <property name="spacing">
-                 <number>3</number>
-                </property>
-                <item row="4" column="0">
-                 <widget class="QLabel" name="label_28">
-                  <property name="text">
-                   <string>Symbols</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="1">
-                 <widget class="QSpinBox" name="numSymSpin">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="minimum">
-                   <number>1</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="0" colspan="2">
-                 <widget class="QRadioButton" name="clkPartitionButton">
-                  <property name="text">
-                   <string>Interval partition</string>
-                  </property>
-                  <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup_3</string>
-                  </attribute>
-                 </widget>
-                </item>
-                <item row="2" column="0" colspan="2">
-                 <widget class="FrequencySpinBox" name="baudSpin"/>
-                </item>
-                <item row="1" column="0" colspan="2">
-                 <widget class="QRadioButton" name="clkManualButton">
-                  <property name="text">
-                   <string>Manual</string>
-                  </property>
-                  <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup_3</string>
-                  </attribute>
-                 </widget>
-                </item>
-                <item row="0" column="0" colspan="2">
-                 <widget class="QRadioButton" name="clkSelectionButton">
-                  <property name="text">
-                   <string>Periodic selection</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                  <attribute name="buttonGroup">
-                   <string notr="true">buttonGroup_3</string>
-                  </attribute>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item row="11" column="0">
-              <widget class="QPushButton" name="startSamplinButton">
-               <property name="text">
-                <string>Start sampling</string>
-               </property>
-              </widget>
              </item>
             </layout>
            </widget>
@@ -1931,8 +2077,8 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup"/>
+  <buttongroup name="clckSourceBtnGrp"/>
+  <buttongroup name="intervalButtonGrp"/>
+  <buttongroup name="spaceButtonGrp"/>
  </buttongroups>
 </ui>

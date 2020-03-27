@@ -18,6 +18,9 @@
 //
 
 #include <WaveSampler.h>
+#include <Suscan/Library.h>
+#include <sigutils/sampling.h>
+#include <sigutils/taps.h>
 
 using namespace SigDigger;
 
@@ -40,27 +43,66 @@ WaveSampler::WaveSampler(
 
   this->delta = props.length / props.symbolCount;
   this->sampOffset = this->properties.symbolSync / delta;
+
+  // Gardner by default
+  if (this->properties.sync == SamplingClockSync::GARDNER) {
+    SUFLOAT bnor = SU_ABS2NORM_BAUD(props.fs, props.rate);
+    SUFLOAT tau = 1. / bnor;
+    unsigned span;
+
+    SU_ATTEMPT(
+          su_clock_detector_init(
+          &this->cd,
+          props.loopGain,
+          bnor,
+          SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH) != -1);
+    this->cdInit = true;
+
+    span = tau * SIGDIGGER_WAVESAMPLER_MF_PERIODS > SIGDIGGER_WAVESAMPLER_MAX_MF_SPAN
+        ? SIGDIGGER_WAVESAMPLER_MAX_MF_SPAN
+        : tau * SIGDIGGER_WAVESAMPLER_MF_PERIODS;
+
+#ifdef SIGDIGGER_WAVESAMPLER_USE_MF
+    SU_ATTEMPT(
+          su_iir_rrc_init(
+            &this->mf,
+            SIGDIGGER_WAVESAMPLER_MF_PERIODS,
+            tau,
+            props.loopGain));
+    this->mfInit = true;
+#endif // SIGDIGGER_WAVESAMPLER_USE_MF
+  }
+
 }
 
 WaveSampler::~WaveSampler()
 {
+  if (this->cdInit)
+    su_clock_detector_finalize(&this->cd);
+
+#ifdef SIGDIGGER_WAVESAMPLER_USE_MF
+  if (this->mfInit)
+    su_iir_filt_finalize(&this->mf);
+#endif // SIGDIGGER_WAVESAMPLER_USE_MF
 }
 
 bool
-WaveSampler::work(void)
+WaveSampler::sampleManual(void)
 {
   long amount = static_cast<long>(this->properties.symbolCount) - this->p;
   long p = this->p;
+
   unsigned int q = 0;
   SUFLOAT start, end;
   SUFLOAT tStart, tEnd;
   SUFLOAT deltaInv = 1.f / static_cast<SUFLOAT>(this->delta);
   long iStart, iEnd;
 
-  SUCOMPLEX avg, prevAvg = 0;
+  SUCOMPLEX avg;
+  SUCOMPLEX x = 0, prev = this->prevSample;
 
-  if (amount > SIGDIGGER_HISTOGRAM_FEEDER_BLOCK_LENGTH)
-    amount = SIGDIGGER_HISTOGRAM_FEEDER_BLOCK_LENGTH;
+  if (amount > SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH)
+    amount = SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH;
 
   while (amount--) {
     start = static_cast<SUFLOAT>(
@@ -80,52 +122,97 @@ WaveSampler::work(void)
     for (auto i = iStart; i <= iEnd; ++i) {
       if (i >= 0 && i < static_cast<long>(this->properties.length)) {
         if (i == iStart)
-          avg += tStart * this->properties.data[i];
+          x = tStart * this->properties.data[i];
         else if (i == iEnd)
-          avg += tEnd * this->properties.data[i];
+          x = tEnd * this->properties.data[i];
         else
-          avg += this->properties.data[i];
+          x = this->properties.data[i];
+      } else {
+        x = 0;
       }
+
+      if (this->properties.space == FREQUENCY)
+        avg += x * SU_C_CONJ(prev);
+      else
+        avg += x;
+
+      prev = x;
     }
 
-    switch (this->properties.space) {
-      case AMPLITUDE:
-      case PHASE:
-        this->set.block[q++] = deltaInv * avg;
-        break;
-
-      case FREQUENCY:
-        this->set.block[q++] = -avg * SU_C_CONJ(prevAvg);
-        break;
-    }
-
-    prevAvg = avg;
+    this->set.block[q++] = deltaInv * avg;
   }
 
-  this->prevAvg = prevAvg;
+  this->prevSample = prev;
+
   this->p = p;
   this->set.len = q;
 
+  this->progress = this->p / this->properties.symbolCount;
+
+  return this->p < static_cast<long>(this->properties.symbolCount);
+}
+
+bool
+WaveSampler::sampleGardner(void)
+{
+  long amount = static_cast<long>(this->properties.length) - this->p;
+  long p = this->p;
+  SUCOMPLEX x = 0, prev = this->prevSample;
+  SUSDIFF count;
+
+  if (this->properties.space == FREQUENCY) {
+    // Perform quadrature demodulation directly in here.
+    while (amount--) {
+      x = this->properties.data[p++];
+      su_clock_detector_feed(&this->cd, x * SU_C_CONJ(prev));
+      prev = x;
+    }
+
+    this->prevSample = prev;
+  } else {
+    while (amount--)
+      su_clock_detector_feed(&this->cd, this->properties.data[p++]);
+  }
+
+  count = su_clock_detector_read(
+        &this->cd,
+        this->set.block,
+        SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH);
+
+  this->p = p;
+  this->set.len = static_cast<size_t>(count);
+
+  this->progress = this->p / static_cast<qreal>(this->properties.length);
+
+  return this->p < static_cast<long>(this->properties.length);
+}
+
+bool
+WaveSampler::work(void)
+{
+  bool more;
+
+  if (this->properties.sync == SamplingClockSync::MANUAL)
+    more = this->sampleManual();
+  else
+    more = this->sampleGardner();
+
   // Perform decision
-  this->decider->decide(this->set.block, this->set.symbols, q);
+  this->decider->decide(this->set.block, this->set.symbols, this->set.len);
 
   this->setStatus("Demodulating ("
-                  + QString::number(p)
-                  + "/"
-                  + QString::number(this->properties.symbolCount)
+                  + QString::number(static_cast<int>(this->progress * 100))
                   + ")...");
 
-  this->setProgress(
-        static_cast<qreal>(p) / static_cast<qreal>(this->properties.symbolCount));
+  this->setProgress(this->progress);
 
   // Deliver data
   emit data(this->set);
 
-  if (this->p < static_cast<long>(this->properties.symbolCount))
-    return true;
+  if (!more)
+    emit done();
 
-  emit done();
-  return false;
+  return more;
 }
 
 void

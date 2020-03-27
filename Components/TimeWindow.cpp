@@ -375,6 +375,12 @@ TimeWindow::connectAll(void)
         this,
         SLOT(onTriggerSampler(void)));
 
+  connect(
+        this->ui->clckSourceBtnGrp,
+        SIGNAL(buttonClicked(int)),
+        this,
+        SLOT(onClkSourceButtonClicked()));
+
   connectFineTuneSelWidgets();
 }
 
@@ -526,12 +532,13 @@ TimeWindow::fineTuneSelSetEnabled(bool enabled)
 {
   this->ui->selStartButtonsWidget->setEnabled(enabled);
   this->ui->selEndButtonsWidget->setEnabled(enabled);
+  this->ui->lockButton->setEnabled(enabled);
 }
 
 void
 TimeWindow::fineTuneSelNotifySelection(bool sel)
 {
-  this->fineTuneSelSetEnabled(sel);;
+  this->fineTuneSelSetEnabled(sel);
 }
 
 void
@@ -559,8 +566,14 @@ TimeWindow::populateSamplingProperties(SamplingProperties &prop)
   bool haveSelection = this->ui->realWaveform->getHorizontalSelectionPresent();
   bool intSelection =
       haveSelection && this->ui->intSelectionButton->isChecked();
+  qreal seconds;
 
   prop.fs = this->fs;
+  prop.loopGain = 0;
+
+  prop.sync = this->ui->clkGardnerButton->isChecked()
+      ? SamplingClockSync::GARDNER
+      : SamplingClockSync::MANUAL;
 
   if (this->ui->decAmplitudeButton->isChecked())
     prop.space = SamplingSpace::AMPLITUDE;
@@ -568,7 +581,6 @@ TimeWindow::populateSamplingProperties(SamplingProperties &prop)
     prop.space = SamplingSpace::PHASE;
   else if (this->ui->decFrequencyButton->isChecked())
     prop.space = SamplingSpace::FREQUENCY;
-
 
   if (intSelection) {
     size_t start = static_cast<size_t>(
@@ -585,10 +597,13 @@ TimeWindow::populateSamplingProperties(SamplingProperties &prop)
     prop.symbolSync = 0;
   }
 
+  seconds = prop.length / this->fs;
+
   if (haveSelection && this->ui->clkSelectionButton->isChecked()) {
     if (intSelection) {
       // Interval is selection. Select all subdivisions
       prop.symbolCount = this->ui->periodicDivisionsSpin->value();
+      prop.rate        = prop.symbolCount / seconds;
     } else {
       qreal selLength =
             this->ui->realWaveform->getHorizontalSelectionEnd()
@@ -596,14 +611,22 @@ TimeWindow::populateSamplingProperties(SamplingProperties &prop)
 
       // Compute deltaT based on selection and then the number of symbols
       // in the defined interval.
-      qreal deltaT = selLength / this->ui->periodicDivisionsSpin->value();
+      qreal deltaT     = selLength / this->ui->periodicDivisionsSpin->value();
+      prop.rate        = 1 / deltaT;
       prop.symbolCount = prop.length / deltaT;
     }
   } else if (this->ui->clkManualButton->isChecked()) {
-    qreal seconds = prop.length / this->fs;
-    prop.symbolCount = seconds * this->ui->baudSpin->value();
-  } else {
+    prop.rate        = this->ui->baudSpin->value();
+    prop.symbolCount = seconds * prop.rate;
+  } else if (this->ui->clkPartitionButton->isChecked()) {
     prop.symbolCount = this->ui->numSymSpin->value();
+    prop.rate        = prop.symbolCount / seconds;
+  } else {
+    prop.rate        = this->ui->baudSpin->value();
+    prop.loopGain       =
+        static_cast<qreal>(
+          SU_MAG_RAW(
+            static_cast<SUFLOAT>(this->ui->clkGardnerLoopGain->value())));
   }
 }
 
@@ -619,6 +642,9 @@ TimeWindow::samplingNotifySelection(bool selection)
 
     if (this->ui->clkSelectionButton->isChecked())
       this->ui->clkManualButton->setChecked(true);
+  } else {
+    this->ui->intSelectionButton->setChecked(true);
+    this->ui->clkSelectionButton->setChecked(true);
   }
 }
 
@@ -656,13 +682,33 @@ TimeWindow::refreshUi(void)
   this->ui->periodLabel->setEnabled(haveSelection);
   this->ui->baudLabel->setEnabled(haveSelection);
   this->ui->actionSave_selection->setEnabled(haveSelection);
-  this->carrierSyncNotifySelection(haveSelection);
-  this->fineTuneSelNotifySelection(haveSelection);
-  this->samplingNotifySelection(haveSelection);
+
+  if (haveSelection && !this->hadSelectionBefore) {
+    this->carrierSyncNotifySelection(haveSelection);
+    this->fineTuneSelNotifySelection(haveSelection);
+    this->samplingNotifySelection(haveSelection);
+  }
 
   this->ui->sampleRateLabel->setText(
         QString::number(static_cast<int>(
           this->ui->realWaveform->getSampleRate())));
+
+  this->ui->clkRateFrame->setEnabled(
+        this->ui->clkManualButton->isChecked()
+        || this->ui->clkGardnerButton->isChecked());
+  this->ui->clkPartitionFrame->setEnabled(
+        this->ui->clkPartitionButton->isChecked());
+  this->ui->clkGardnerFrame->setEnabled(
+        this->ui->clkGardnerButton->isChecked());
+
+  if (this->ui->clkSelectionButton->isChecked()
+      || this->ui->clkPartitionButton->isChecked()) {
+    SamplingProperties sp;
+    this->populateSamplingProperties(sp);
+    this->ui->baudSpin->setValue((sp.symbolCount * this->fs) / sp.length);
+  }
+
+  this->hadSelectionBefore = haveSelection;
 }
 
 void
@@ -1534,4 +1580,10 @@ TimeWindow::onFineTuneSelectionClicked(void)
 
   this->ui->imagWaveform->selectHorizontal(newSelStart, newSelEnd);
   this->ui->realWaveform->selectHorizontal(newSelStart, newSelEnd);
+}
+
+void
+TimeWindow::onClkSourceButtonClicked(void)
+{
+  this->refreshUi();
 }

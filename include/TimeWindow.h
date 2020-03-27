@@ -48,9 +48,11 @@ namespace SigDigger {
 
     Ui::TimeWindow *ui = nullptr;
 
+    bool      hadSelectionBefore = false;
     bool adjusting = false;
 
     qreal     fs;
+
     std::vector<SUCOMPLEX> const *data;
     std::vector<SUCOMPLEX> processedData;
 
@@ -173,6 +175,7 @@ namespace SigDigger {
     void onCarrierSlidersChanged(void);
 
     void onFineTuneSelectionClicked(void);
+    void onClkSourceButtonClicked(void);
   };
 }
 
