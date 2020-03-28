@@ -123,8 +123,8 @@ SamplerDialog::setProperties(SamplingProperties const &prop)
 
     case PHASE:
       this->decider.setDecisionMode(Decider::ARGUMENT);
-      this->decider.setMinimum(-M_PI);
-      this->decider.setMaximum(M_PI);
+      this->decider.setMinimum(-PI);
+      this->decider.setMaximum(PI);
 
       this->ui->histogram->overrideDataRange(2 * M_PI);
       this->ui->histogram->overrideDisplayRange(360);
@@ -133,8 +133,8 @@ SamplerDialog::setProperties(SamplingProperties const &prop)
 
     case FREQUENCY:
       this->decider.setDecisionMode(Decider::ARGUMENT);
-      this->decider.setMinimum(-M_PI);
-      this->decider.setMaximum(M_PI);
+      this->decider.setMinimum(-PI);
+      this->decider.setMaximum(PI);
 
       this->ui->histogram->overrideDataRange(2 * M_PI);
       this->ui->histogram->overrideDisplayRange(this->properties.fs);
