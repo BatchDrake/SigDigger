@@ -47,6 +47,8 @@ namespace SigDigger {
   class InspectorPanel : public PersistentWidget
   {
     Q_OBJECT
+
+  public:
     enum State {
       DETACHED,
       ATTACHED

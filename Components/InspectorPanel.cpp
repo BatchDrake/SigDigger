@@ -146,11 +146,15 @@ InspectorPanel::refreshUi(void)
     case DETACHED:
       this->ui->openInspectorButton->setEnabled(false);
       this->ui->bandwidthSpin->setEnabled(false);
+      this->ui->captureButton->setEnabled(false);
+      this->ui->autoSquelchButton->setEnabled(false);
       break;
 
     case ATTACHED:
       this->ui->openInspectorButton->setEnabled(true);
       this->ui->bandwidthSpin->setEnabled(true);
+      this->ui->captureButton->setEnabled(true);
+      this->ui->autoSquelchButton->setEnabled(true);
       break;
   }
 }

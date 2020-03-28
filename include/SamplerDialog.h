@@ -53,11 +53,13 @@ namespace SigDigger {
     void reset(void);
     void feedSet(WaveSampleSet const &set);
     void setColorConfig(ColorConfig const &cfg);
+    void closeEvent(QCloseEvent *);
 
     WaveSampler *makeSampler(void);
 
   signals:
     void resample(void);
+    void stopTask(void);
 
   public slots:
     void onClose(void);
@@ -71,6 +73,7 @@ namespace SigDigger {
     void onStrideChanged(unsigned int);
     void onSymViewZoomChanged(unsigned int);
     void onHoverSymbol(unsigned int);
+    void onSaveSymView(void);
 
   private:
     Ui::SamplerDialog *ui;

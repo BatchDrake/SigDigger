@@ -183,7 +183,7 @@
        </spacer>
       </item>
       <item row="0" column="0">
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="saveButton">
         <property name="text">
          <string>&amp;Save as...</string>
         </property>

@@ -376,6 +376,18 @@ TimeWindow::connectAll(void)
         SLOT(onResample(void)));
 
   connect(
+        this->samplerDialog,
+        SIGNAL(stopTask(void)),
+        this,
+        SLOT(onAbort(void)));
+
+  connect(
+        this->histogramDialog,
+        SIGNAL(stopTask(void)),
+        this,
+        SLOT(onAbort(void)));
+
+  connect(
         this->ui->clckSourceBtnGrp,
         SIGNAL(buttonClicked(int)),
         this,

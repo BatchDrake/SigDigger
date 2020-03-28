@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    SamplerDialog.cpp: Sampler dialog implementation
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,8 +16,13 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+
 #include "SamplerDialog.h"
 #include "ui_SamplerDialog.h"
+
+#include <SuWidgetsHelpers.h>
+#include <QMessageBox>
+#include <QFileDialog>
 
 using namespace SigDigger;
 
@@ -108,6 +113,12 @@ SamplerDialog::connectAll(void)
         SIGNAL(hoverSymbol(unsigned int)),
         this,
         SLOT(onHoverSymbol(unsigned int)));
+
+  connect(
+        this->ui->saveButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSaveSymView()));
 }
 
 void
@@ -251,6 +262,12 @@ SamplerDialog::refreshVScrollBar(void) const
 }
 
 
+void
+SamplerDialog::closeEvent(QCloseEvent *)
+{
+  emit stopTask();
+}
+
 SamplerDialog::~SamplerDialog()
 {
   delete ui;
@@ -260,7 +277,8 @@ SamplerDialog::~SamplerDialog()
 void
 SamplerDialog::onClose(void)
 {
-
+  emit stopTask();
+  this->hide();
 }
 
 void
@@ -348,4 +366,62 @@ SamplerDialog::onHoverSymbol(unsigned int index)
 {
   this->ui->positionLabel->setText(
         "Position: " + QString::number(index));
+}
+
+void
+SamplerDialog::onSaveSymView(void)
+{
+  QFileDialog dialog(this->ui->symView);
+  QStringList filters;
+  enum SymView::FileFormat fmt = SymView::FILE_FORMAT_TEXT;
+
+  filters << "Text file (*.txt)"
+          << "Binary file (*.bin)"
+          << "C source file (*.c)"
+          << "Microsoft Windows Bitmap (*.bmp)"
+          << "PNG Image (*.png)"
+          << "JPEG Image (*.jpg)"
+          << "Portable Pixel Map (*.ppm)";
+
+  dialog.setFileMode(QFileDialog::AnyFile);
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+  dialog.setWindowTitle(QString("Save current symbol capture as..."));
+  dialog.setNameFilters(filters);
+
+  if (dialog.exec()) {
+    // This sucks
+    QString filter = dialog.selectedNameFilter();
+    QString path = dialog.selectedFiles().first();
+    QFileInfo fi(path);
+    QString ext = fi.size() > 0
+        ? fi.suffix()
+        : SuWidgetsHelpers::extractFilterExtension(filter);
+
+    if (ext == "txt")
+      fmt = SymView::FILE_FORMAT_TEXT;
+    else if (ext == "bin")
+      fmt = SymView::FILE_FORMAT_RAW;
+    else if (ext == "c" || ext == "h" || ext == "cpp")
+      fmt = SymView::FILE_FORMAT_C_ARRAY;
+    else if (ext == "bmp")
+      fmt = SymView::FILE_FORMAT_BMP;
+    else if (ext == "png")
+      fmt = SymView::FILE_FORMAT_PNG;
+    else if (ext == "jpg" || ext == "jpeg")
+      fmt = SymView::FILE_FORMAT_JPEG;
+    else if (ext == "ppm")
+      fmt = SymView::FILE_FORMAT_PPM;
+
+    try {
+      this->ui->symView->save(
+            SuWidgetsHelpers::ensureExtension(path, ext),
+            fmt);
+    } catch (std::ios_base::failure const &) {
+      (void) QMessageBox::critical(
+            this->ui->symView,
+            "Save symbol file",
+            "Failed to save file in the specified location. Please try again.",
+            QMessageBox::Close);
+    }
+  }
 }

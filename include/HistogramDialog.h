@@ -56,8 +56,11 @@ namespace SigDigger {
 
     void setColorConfig(ColorConfig const &);
 
+    void closeEvent(QCloseEvent *);
+
   signals:
     void blanked();
+    void stopTask();
 
   public slots:
     void onClose(void);

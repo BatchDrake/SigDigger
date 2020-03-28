@@ -16,10 +16,11 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include "include/HistogramDialog.h"
+
+#include "HistogramDialog.h"
 #include "ui_HistogramDialog.h"
 
-#include <SuWidgets/SuWidgetsHelpers.h>
+#include "SuWidgetsHelpers.h"
 
 using namespace SigDigger;
 
@@ -250,6 +251,12 @@ HistogramDialog::feed(const SUFLOAT *data, unsigned int len)
   this->ui->histogram->feed(data, len);
 }
 
+void
+HistogramDialog::closeEvent(QCloseEvent *)
+{
+  emit stopTask();
+}
+
 HistogramDialog::~HistogramDialog()
 {
   delete ui;
@@ -258,6 +265,7 @@ HistogramDialog::~HistogramDialog()
 void
 HistogramDialog::onClose(void)
 {
+  emit stopTask();
   this->hide();
 }
 

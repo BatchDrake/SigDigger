@@ -162,6 +162,9 @@ WaveSampler::sampleGardner(void)
   SUCOMPLEX x = 0, prev = this->prevSample;
   SUSDIFF count;
 
+  if (amount > SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH)
+    amount = SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH;
+
   if (this->properties.space == FREQUENCY) {
     // Perform quadrature demodulation directly in here.
     while (amount--) {
