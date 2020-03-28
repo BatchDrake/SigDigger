@@ -29,6 +29,7 @@
 #include <climits>
 #include <CarrierDetector.h>
 #include <CarrierXlator.h>
+#include <HistogramFeeder.h>
 
 using namespace SigDigger;
 
@@ -98,6 +99,58 @@ done:
     sf_close(sfp);
 
   return ok;
+}
+
+void
+TimeWindow::connectFineTuneSelWidgets(void)
+{
+  connect(
+        this->ui->selStartDecDeltaTButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selStartDecSampleButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selStartIncDeltaTButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selStartIncSampleButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selEndDecDeltaTButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selEndDecSampleButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selEndIncDeltaTButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
+
+  connect(
+        this->ui->selEndIncSampleButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onFineTuneSelectionClicked(void)));
 }
 
 void
@@ -297,6 +350,50 @@ TimeWindow::connectAll(void)
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onCarrierSlidersChanged(void)));
+
+  connect(
+        this->ui->showHistogramButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onTriggerHistogram(void)));
+
+  connect(
+        this->histogramDialog,
+        SIGNAL(blanked(void)),
+        this,
+        SLOT(onTriggerHistogram(void)));
+
+  connect(
+        this->ui->startSamplinButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onTriggerSampler(void)));
+
+  connect(
+        this->samplerDialog,
+        SIGNAL(resample(void)),
+        this,
+        SLOT(onResample(void)));
+
+  connect(
+        this->samplerDialog,
+        SIGNAL(stopTask(void)),
+        this,
+        SLOT(onAbort(void)));
+
+  connect(
+        this->histogramDialog,
+        SIGNAL(stopTask(void)),
+        this,
+        SLOT(onAbort(void)));
+
+  connect(
+        this->ui->clckSourceBtnGrp,
+        SIGNAL(buttonClicked(int)),
+        this,
+        SLOT(onClkSourceButtonClicked()));
+
+  connectFineTuneSelWidgets();
 }
 
 int
@@ -420,6 +517,9 @@ TimeWindow::setColorConfig(ColorConfig const &cfg)
   this->ui->imagWaveform->setAxesColor(cfg.spectrumAxes);
   this->ui->imagWaveform->setTextColor(cfg.spectrumText);
   this->ui->imagWaveform->setSelectionColor(cfg.selection);
+
+  this->histogramDialog->setColorConfig(cfg);
+  this->samplerDialog->setColorConfig(cfg);
 }
 
 std::string
@@ -440,6 +540,20 @@ TimeWindow::getPaletteOffset(void) const
 }
 
 void
+TimeWindow::fineTuneSelSetEnabled(bool enabled)
+{
+  this->ui->selStartButtonsWidget->setEnabled(enabled);
+  this->ui->selEndButtonsWidget->setEnabled(enabled);
+  this->ui->lockButton->setEnabled(enabled);
+}
+
+void
+TimeWindow::fineTuneSelNotifySelection(bool sel)
+{
+  this->fineTuneSelSetEnabled(sel);
+}
+
+void
 TimeWindow::carrierSyncSetEnabled(bool enabled)
 {
   this->ui->carrierSyncPage->setEnabled(enabled);
@@ -452,10 +566,108 @@ TimeWindow::carrierSyncNotifySelection(bool selection)
 }
 
 void
+TimeWindow::samplingSetEnabled(bool enabled)
+{
+  this->ui->samplingPage->setEnabled(enabled);
+}
+
+
+void
+TimeWindow::populateSamplingProperties(SamplingProperties &prop)
+{
+  bool haveSelection = this->ui->realWaveform->getHorizontalSelectionPresent();
+  bool intSelection =
+      haveSelection && this->ui->intSelectionButton->isChecked();
+  qreal seconds;
+
+  prop.fs = this->fs;
+  prop.loopGain = 0;
+
+  prop.sync = this->ui->clkGardnerButton->isChecked()
+      ? SamplingClockSync::GARDNER
+      : SamplingClockSync::MANUAL;
+
+  if (this->ui->decAmplitudeButton->isChecked())
+    prop.space = SamplingSpace::AMPLITUDE;
+  else if (this->ui->decPhaseButton->isChecked())
+    prop.space = SamplingSpace::PHASE;
+  else if (this->ui->decFrequencyButton->isChecked())
+    prop.space = SamplingSpace::FREQUENCY;
+
+  if (intSelection) {
+    size_t start = static_cast<size_t>(
+          this->ui->realWaveform->getHorizontalSelectionStart());
+    prop.data = this->getDisplayData() + start;
+    prop.length =
+        static_cast<size_t>(
+          this->ui->realWaveform->getHorizontalSelectionEnd()
+          - this->ui->realWaveform->getHorizontalSelectionStart());
+    prop.symbolSync = start;
+  } else {
+    prop.data = this->getDisplayData();
+    prop.length = this->getDisplayDataLength();
+    prop.symbolSync = 0;
+  }
+
+  seconds = prop.length / this->fs;
+
+  if (haveSelection && this->ui->clkSelectionButton->isChecked()) {
+    if (intSelection) {
+      // Interval is selection. Select all subdivisions
+      prop.symbolCount = this->ui->periodicDivisionsSpin->value();
+      prop.rate        = prop.symbolCount / seconds;
+    } else {
+      qreal selLength =
+            this->ui->realWaveform->getHorizontalSelectionEnd()
+            - this->ui->realWaveform->getHorizontalSelectionStart();
+
+      // Compute deltaT based on selection and then the number of symbols
+      // in the defined interval.
+      qreal deltaT     = selLength / this->ui->periodicDivisionsSpin->value();
+      prop.rate        = 1 / deltaT;
+      prop.symbolCount = prop.length / deltaT;
+    }
+  } else if (this->ui->clkManualButton->isChecked()) {
+    prop.rate        = this->ui->baudSpin->value();
+    prop.symbolCount = seconds * prop.rate;
+  } else if (this->ui->clkPartitionButton->isChecked()) {
+    prop.symbolCount = this->ui->numSymSpin->value();
+    prop.rate        = prop.symbolCount / seconds;
+  } else {
+    prop.rate        = this->ui->baudSpin->value();
+    prop.loopGain       =
+        static_cast<qreal>(
+          SU_MAG_RAW(
+            static_cast<SUFLOAT>(this->ui->clkGardnerLoopGain->value())));
+  }
+}
+
+void
+TimeWindow::samplingNotifySelection(bool selection, bool periodic)
+{
+  this->ui->intSelectionButton->setEnabled(selection);
+  this->ui->clkSelectionButton->setEnabled(selection);
+
+  if (!selection) {
+    if (this->ui->intSelectionButton->isChecked())
+      this->ui->intFullButton->setChecked(true);
+
+    if (this->ui->clkSelectionButton->isChecked())
+      this->ui->clkManualButton->setChecked(true);
+  } else {
+    this->ui->intSelectionButton->setChecked(true);
+
+    if (periodic)
+      this->ui->clkSelectionButton->setChecked(true);
+  }
+}
+
+void
 TimeWindow::notifyTaskRunning(bool running)
 {
   this->ui->taskAbortButton->setEnabled(running);
   this->carrierSyncSetEnabled(!running);
+  this->samplingSetEnabled(!running);
 }
 
 void
@@ -484,10 +696,51 @@ TimeWindow::refreshUi(void)
   this->ui->periodLabel->setEnabled(haveSelection);
   this->ui->baudLabel->setEnabled(haveSelection);
   this->ui->actionSave_selection->setEnabled(haveSelection);
-  this->carrierSyncNotifySelection(haveSelection);
+
+  if (haveSelection != this->hadSelectionBefore) {
+    this->carrierSyncNotifySelection(haveSelection);
+    this->fineTuneSelNotifySelection(haveSelection);
+    this->samplingNotifySelection(
+          haveSelection,
+          this->ui->periodicSelectionCheck->isChecked());
+  }
+
   this->ui->sampleRateLabel->setText(
         QString::number(static_cast<int>(
           this->ui->realWaveform->getSampleRate())));
+
+  this->ui->clkRateFrame->setEnabled(
+        this->ui->clkManualButton->isChecked()
+        || this->ui->clkGardnerButton->isChecked());
+  this->ui->clkPartitionFrame->setEnabled(
+        this->ui->clkPartitionButton->isChecked());
+  this->ui->clkGardnerFrame->setEnabled(
+        this->ui->clkGardnerButton->isChecked());
+
+  if (this->ui->clkSelectionButton->isChecked()
+      || this->ui->clkPartitionButton->isChecked()) {
+    SamplingProperties sp;
+    this->populateSamplingProperties(sp);
+    this->ui->baudSpin->setValue((sp.symbolCount * this->fs) / sp.length);
+  }
+
+  this->hadSelectionBefore = haveSelection;
+}
+
+void
+TimeWindow::startSampling(void)
+{
+  WaveSampler *ws = this->samplerDialog->makeSampler();
+
+  connect(
+        ws,
+        SIGNAL(data(SigDigger::WaveSampleSet)),
+        this,
+        SLOT(onSampleSet(SigDigger::WaveSampleSet)));
+
+  this->samplerDialog->show();
+  this->notifyTaskRunning(true);
+  this->taskController.process("triggerSampler", ws);
 }
 
 void
@@ -662,6 +915,9 @@ TimeWindow::TimeWindow(QWidget *parent) :
   ui(new Ui::TimeWindow)
 {
   ui->setupUi(this);
+
+  this->histogramDialog = new HistogramDialog(this);
+  this->samplerDialog   = new SamplerDialog(this);
 
   // We can do this because both labels have the same font
   QFontMetrics metrics(this->ui->notchWidthLabel->font());
@@ -1138,6 +1394,12 @@ TimeWindow::onTaskDone(void)
     this->setDisplayData(&this->processedData, true);
 
     this->notifyTaskRunning(false);
+  } else if (this->taskController.getName() == "triggerHistogram") {
+    this->histogramDialog->show();
+    this->notifyTaskRunning(false);
+  } else if (this->taskController.getName() == "triggerSampler") {
+    this->samplerDialog->show();
+    this->notifyTaskRunning(false);
   }
 }
 
@@ -1180,8 +1442,8 @@ TimeWindow::onGuessCarrier(void)
           static_cast<qreal>(this->ui->dcNotchSlider->value())
           / static_cast<qreal>(this->ui->dcNotchSlider->maximum()));
 
-    this->taskController.process("guessCarrier", cd);
     this->notifyTaskRunning(true);
+    this->taskController.process("guessCarrier", cd);
   }
 }
 
@@ -1200,8 +1462,8 @@ TimeWindow::onSyncCarrier(void)
         this->getDisplayDataLength(),
         relFreq);
 
-  this->taskController.process("xlateCarrier", cx);
   this->notifyTaskRunning(true);
+  this->taskController.process("xlateCarrier", cx);
 }
 
 void
@@ -1234,3 +1496,123 @@ TimeWindow::onCarrierSlidersChanged(void)
           "Hz"));
 }
 
+void
+TimeWindow::onHistogramSamples(const float *samples, unsigned int size)
+{
+  this->histogramDialog->feed(samples, size);
+}
+
+void
+TimeWindow::onTriggerHistogram(void)
+{
+  SamplingProperties props;
+
+  this->populateSamplingProperties(props);
+
+  HistogramFeeder *hf = new HistogramFeeder(props);
+
+  connect(
+        hf,
+        SIGNAL(data(const float *, unsigned int)),
+        this,
+        SLOT(onHistogramSamples(const float *, unsigned int)));
+
+  this->histogramDialog->reset();
+  this->histogramDialog->setProperties(props);
+  this->histogramDialog->show();
+  this->notifyTaskRunning(true);
+  this->taskController.process("triggerHistogram", hf);
+}
+
+void
+TimeWindow::onSampleSet(SigDigger::WaveSampleSet set)
+{
+  this->samplerDialog->feedSet(set);
+}
+
+void
+TimeWindow::onTriggerSampler(void)
+{
+  SamplingProperties props;
+
+  this->populateSamplingProperties(props);
+
+  this->samplerDialog->reset();
+  this->samplerDialog->setProperties(props);
+
+  this->startSampling();
+}
+
+void
+TimeWindow::onResample(void)
+{
+  this->samplerDialog->reset();
+  this->startSampling();
+}
+
+bool
+TimeWindow::fineTuneSenderIs(const QPushButton *button) const
+{
+  QPushButton *sender = static_cast<QPushButton *>(this->sender());
+
+  if (this->ui->lockButton->isChecked()) {
+#define CHECKPAIR(a, b)                                   \
+  if (button == this->ui->a || button == this->ui->b)     \
+    return sender == this->ui->a || sender == this->ui->b
+
+    CHECKPAIR(selStartIncDeltaTButton, selEndIncDeltaTButton);
+    CHECKPAIR(selStartIncSampleButton, selEndIncSampleButton);
+    CHECKPAIR(selStartDecDeltaTButton, selEndDecDeltaTButton);
+    CHECKPAIR(selStartDecSampleButton, selEndDecSampleButton);
+#undef CHECKPAIR
+  }
+
+  return button == sender;
+}
+
+void
+TimeWindow::onFineTuneSelectionClicked(void)
+{
+  qint64 newSelStart =
+      static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionStart());
+  qint64 newSelEnd =
+      static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionEnd());
+  qint64 delta = newSelEnd - newSelStart;
+
+#define CHECKBUTTON(btn) this->fineTuneSenderIs(this->ui->btn)
+
+  if (CHECKBUTTON(selStartIncDeltaTButton))
+    newSelStart += delta;
+
+  if (CHECKBUTTON(selStartIncSampleButton))
+    ++newSelStart;
+
+  if (CHECKBUTTON(selStartDecDeltaTButton))
+    newSelStart -= delta;
+
+  if (CHECKBUTTON(selStartDecSampleButton))
+    --newSelStart;
+
+  if (CHECKBUTTON(selEndIncDeltaTButton))
+    newSelEnd += delta;
+
+  if (CHECKBUTTON(selEndIncSampleButton))
+    ++newSelEnd;
+
+  if (CHECKBUTTON(selEndDecDeltaTButton))
+    newSelEnd -= delta;
+
+  if (CHECKBUTTON(selEndDecSampleButton))
+    --newSelEnd;
+
+#undef CHECKBUTTON
+
+  this->ui->imagWaveform->selectHorizontal(newSelStart, newSelEnd);
+  this->ui->realWaveform->selectHorizontal(newSelStart, newSelEnd);
+}
+
+void
+TimeWindow::onClkSourceButtonClicked(void)
+{
+  this->refreshUi();
+}

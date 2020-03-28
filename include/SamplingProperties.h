@@ -1,6 +1,6 @@
 //
-//    CarrierXlator.h: Translate central frequency
-//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
+//    filename: description
+//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,39 +16,36 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef CARRIERXLATOR_H
-#define CARRIERXLATOR_H
+#ifndef SAMPLINGPROPERTIES_H
+#define SAMPLINGPROPERTIES_H
 
-#include "CancellableTask.h"
+#include <Qt>
 #include <sigutils/types.h>
-#include <sigutils/ncqo.h>
-
-#define SIGDIGGER_CARRIER_XLATOR_BLOCK_LENGTH 4096
 
 namespace SigDigger {
-  class CarrierXlator : public CancellableTask {
-    Q_OBJECT
+  enum SamplingSpace {
+    AMPLITUDE,
+    PHASE,
+    FREQUENCY
+  };
 
-    const SUCOMPLEX *origin = nullptr;
-    SUCOMPLEX       *destination = nullptr;
+  enum SamplingClockSync {
+    MANUAL,
+    GARDNER
+  };
 
+  struct SamplingProperties {
+    SamplingClockSync sync;
+    SamplingSpace space;
+    qreal fs;
+    qreal loopGain;
+    const SUCOMPLEX *data;
     size_t length;
-    size_t p = 0;
 
-    su_ncqo_t ncqo;
-
-  public:
-    CarrierXlator(
-        const SUCOMPLEX *data,
-        SUCOMPLEX *destination,
-        size_t length,
-        SUFLOAT relFreq,
-        QObject *parent = nullptr);
-    virtual ~CarrierXlator() override;
-
-    virtual bool work(void) override;
-    virtual void cancel(void) override;
+    size_t symbolSync;
+    qreal symbolCount;
+    qreal rate;
   };
 }
 
-#endif // CARRIERXLATOR_H
+#endif // SAMPLINGPROPERTIES_H

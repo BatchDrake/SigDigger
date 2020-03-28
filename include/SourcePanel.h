@@ -162,7 +162,6 @@ namespace SigDigger {
       void setIORate(qreal);
       void setRecordState(bool state);
       void setSavePath(std::string const &path);
-      void setState(enum State state);
       void setDCRemove(bool remove);
       void setIQReverse(bool rev);
       void setAGCEnabled(bool enabled);

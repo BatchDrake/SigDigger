@@ -20,10 +20,14 @@
 #define TIMEWINDOW_H
 
 #include <QMainWindow>
-#include <sigutils/types.h>
+#include "SamplingProperties.h"
 #include "CancellableTask.h"
 #include "ColorConfig.h"
 #include "Palette.h"
+#include "HistogramDialog.h"
+#include "SamplerDialog.h"
+
+#include "WaveSampler.h"
 
 #define TIME_WINDOW_MAX_SELECTION     4096
 #define TIME_WINDOW_MAX_DOPPLER_ITERS 200
@@ -38,9 +42,17 @@ namespace SigDigger {
   {
     Q_OBJECT
 
+    // Ui members
+    HistogramDialog *histogramDialog = nullptr;
+    SamplerDialog *samplerDialog = nullptr;
+
+    Ui::TimeWindow *ui = nullptr;
+
+    bool hadSelectionBefore = true; // Yep. This must be true.
     bool adjusting = false;
 
     qreal     fs;
+
     std::vector<SUCOMPLEX> const *data;
     std::vector<SUCOMPLEX> processedData;
 
@@ -58,6 +70,7 @@ namespace SigDigger {
     std::vector<Palette> palettes;
     int getPeriodicDivision(void) const;
 
+    void connectFineTuneSelWidgets(void);
     void connectAll(void);
 
     static void kahanMeanAndRms(
@@ -84,6 +97,16 @@ namespace SigDigger {
 
     void carrierSyncNotifySelection(bool);
     void carrierSyncSetEnabled(bool);
+
+    void samplingNotifySelection(bool, bool);
+    void samplingSetEnabled(bool);
+
+    bool fineTuneSenderIs(const QPushButton *sender) const;
+    void fineTuneSelNotifySelection(bool);
+    void fineTuneSelSetEnabled(bool);
+
+    void populateSamplingProperties(SamplingProperties &prop);
+    void startSampling(void);
 
     void setDisplayData(
         std::vector<SUCOMPLEX> const *displayData,
@@ -144,10 +167,17 @@ namespace SigDigger {
     void onSyncCarrier(void);
     void onResetCarrier(void);
 
+    void onTriggerHistogram(void);
+    void onHistogramSamples(const float *data, unsigned int len);
+
+    void onTriggerSampler(void);
+    void onResample(void);
+    void onSampleSet(SigDigger::WaveSampleSet);
+
     void onCarrierSlidersChanged(void);
 
-  private:
-    Ui::TimeWindow *ui;
+    void onFineTuneSelectionClicked(void);
+    void onClkSourceButtonClicked(void);
   };
 }
 

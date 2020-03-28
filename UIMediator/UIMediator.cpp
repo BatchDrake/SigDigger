@@ -148,6 +148,11 @@ UIMediator::refreshUI(void)
       break;
   }
 
+  this->ui->inspectorPanel->setState(
+        this->state == RUNNING
+        ? InspectorPanel::State::ATTACHED
+        : InspectorPanel::State::DETACHED);
+
   if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {
     sourceDesc = QString::fromStdString(dev.getDesc());
   } else {

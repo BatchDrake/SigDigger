@@ -55,8 +55,30 @@ InspectorUI::InspectorUI(
 
   this->ui->setupUi(owner);
 
-  if (config->hasPrefix("ask"))
+  if (config->hasPrefix("ask")) {
     this->decider.setDecisionMode(Decider::MODULUS);
+    this->decider.setMinimum(0);
+    this->decider.setMaximum(1);
+
+    this->ui->histogram->overrideDisplayRange(1);
+    this->ui->histogram->overrideUnits("");
+    this->ui->histogram->overrideDataRange(1);
+  } else if (config->hasPrefix("psk")) {
+    this->decider.setDecisionMode(Decider::ARGUMENT);
+    this->decider.setMinimum(-PI);
+    this->decider.setMaximum(PI);
+
+    this->ui->histogram->overrideDataRange(2 * M_PI);
+    this->ui->histogram->overrideDisplayRange(360);
+    this->ui->histogram->overrideUnits("º");
+  } else if (config->hasPrefix("fsk")) {
+    this->decider.setDecisionMode(Decider::ARGUMENT);
+    this->decider.setMinimum(-PI);
+    this->decider.setMaximum(PI);
+
+    this->ui->histogram->overrideDataRange(2 * M_PI);
+    this->ui->histogram->overrideUnits("Hz");
+  }
 
   this->ui->wfSpectrum->setFreqUnits(1);
 
@@ -138,6 +160,9 @@ InspectorUI::setSampleRate(float rate)
         + " sps");
   this->ui->bwLcd->setMin(0);
   this->ui->bwLcd->setMax(static_cast<qint64>(rate));
+
+  if (this->config->hasPrefix("fsk"))
+    this->ui->histogram->overrideDisplayRange(static_cast<qreal>(rate));
 }
 
 void

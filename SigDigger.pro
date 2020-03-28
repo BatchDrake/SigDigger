@@ -65,10 +65,12 @@ SOURCES += \
     Components/FftPanel.cpp \
     Components/GainSlider.cpp \
     Components/GenericDataSaverUI.cpp \
+    Components/HistogramDialog.cpp \
     Components/InspectorPanel.cpp \
     Components/MainSpectrum.cpp \
     Components/MainWindow.cpp \
     Components/PersistentWidget.cpp \
+    Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
     Components/TimeWindow.cpp \
@@ -105,6 +107,8 @@ SOURCES += \
     Suscan/Source.cpp \
     Tasks/CarrierDetector.cpp \
     Tasks/CarrierXlator.cpp \
+    Tasks/HistogramFeeder.cpp \
+    Tasks/WaveSampler.cpp \
     UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
@@ -133,7 +137,11 @@ HEADERS += \
     include/CarrierXlator.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
+    include/HistogramDialog.h \
+    include/HistogramFeeder.h \
     include/PortAudioPlayer.h \
+    include/SamplerDialog.h \
+    include/SamplingProperties.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \
     include/Suscan/Messages/InspectorMessage.h \
@@ -198,7 +206,8 @@ HEADERS += \
     include/WaitingSpinnerWidget.h \
     include/DeviceDialog.h \
     include/PanoramicDialog.h \
-    include/Scanner.h
+    include/Scanner.h \
+    include/WaveSampler.h
 
 
 FORMS += \
@@ -214,11 +223,13 @@ FORMS += \
     ui/FftPanel.ui \
     ui/GainControl.ui \
     ui/GainSlider.ui \
+    ui/HistogramDialog.ui \
     ui/Inspector.ui \
     ui/InspectorPanel.ui \
     ui/MainSpectrum.ui \
     ui/MainWindow.ui \
     ui/MfControl.ui \
+    ui/SamplerDialog.ui \
     ui/SourcePanel.ui \
     ui/TimeWindow.ui \
     ui/ToneControl.ui \
