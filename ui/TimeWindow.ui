@@ -468,12 +468,12 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>3</number>
+            <number>0</number>
            </property>
            <property name="tabSpacing">
             <number>6</number>
            </property>
-           <widget class="QWidget" name="page">
+           <widget class="QWidget" name="measurementsPage">
             <property name="geometry">
              <rect>
               <x>0</x>
@@ -1760,6 +1760,9 @@
                       <double>-120.000000000000000</double>
                      </property>
                      <property name="maximum">
+                      <double>0.000000000000000</double>
+                     </property>
+                     <property name="value">
                       <double>-13.000000000000000</double>
                      </property>
                     </widget>
@@ -1840,7 +1843,7 @@
                 <item row="2" column="0">
                  <widget class="QPushButton" name="showHistogramButton">
                   <property name="text">
-                   <string>Full histogram...</string>
+                   <string>&amp;Histogram</string>
                   </property>
                  </widget>
                 </item>

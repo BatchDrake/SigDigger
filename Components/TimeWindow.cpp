@@ -373,7 +373,7 @@ TimeWindow::connectAll(void)
         this->samplerDialog,
         SIGNAL(resample(void)),
         this,
-        SLOT(onTriggerSampler(void)));
+        SLOT(onResample(void)));
 
   connect(
         this->ui->clckSourceBtnGrp,
@@ -713,6 +713,22 @@ TimeWindow::refreshUi(void)
   }
 
   this->hadSelectionBefore = haveSelection;
+}
+
+void
+TimeWindow::startSampling(void)
+{
+  WaveSampler *ws = this->samplerDialog->makeSampler();
+
+  connect(
+        ws,
+        SIGNAL(data(SigDigger::WaveSampleSet)),
+        this,
+        SLOT(onSampleSet(SigDigger::WaveSampleSet)));
+
+  this->samplerDialog->show();
+  this->notifyTaskRunning(true);
+  this->taskController.process("triggerSampler", ws);
 }
 
 void
@@ -1512,17 +1528,14 @@ TimeWindow::onTriggerSampler(void)
   this->samplerDialog->reset();
   this->samplerDialog->setProperties(props);
 
-  WaveSampler *ws = this->samplerDialog->makeSampler();
+  this->startSampling();
+}
 
-  connect(
-        ws,
-        SIGNAL(data(SigDigger::WaveSampleSet)),
-        this,
-        SLOT(onSampleSet(SigDigger::WaveSampleSet)));
-
-  this->samplerDialog->show();
-  this->notifyTaskRunning(true);
-  this->taskController.process("triggerSampler", ws);
+void
+TimeWindow::onResample(void)
+{
+  this->samplerDialog->reset();
+  this->startSampling();
 }
 
 bool

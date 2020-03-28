@@ -203,8 +203,8 @@ HistogramDialog::setProperties(SamplingProperties const &prop)
     this->dummyDecider.setMaximum(1);
     this->dummyDecider.setDecisionMode(Decider::MODULUS);
   } else {
-    this->dummyDecider.setMinimum(-M_PI);
-    this->dummyDecider.setMaximum(M_PI);
+    this->dummyDecider.setMinimum(-PI);
+    this->dummyDecider.setMaximum(PI);
     this->dummyDecider.setDecisionMode(Decider::ARGUMENT);
   }
 

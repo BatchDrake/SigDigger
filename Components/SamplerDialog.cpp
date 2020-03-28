@@ -26,6 +26,11 @@ SamplerDialog::SamplerDialog(QWidget *parent) :
   ui(new Ui::SamplerDialog)
 {
   ui->setupUi(this);
+
+  this->setWindowFlags(
+        this->windowFlags() | Qt::Window | Qt::WindowMaximizeButtonHint);
+  this->setModal(true);
+
   this->connectAll();
 }
 
@@ -302,7 +307,6 @@ void
 SamplerDialog::onHScroll(int offset)
 {
   this->scrolling = true;
-
   this->ui->symView->setHOffset(offset);
   this->scrolling = false;
 }
@@ -310,8 +314,10 @@ SamplerDialog::onHScroll(int offset)
 void
 SamplerDialog::onOffsetChanged(unsigned int offset)
 {
-  if (!this->scrolling)
+  if (!this->scrolling) {
+    this->refreshVScrollBar();
     this->ui->verticalScrollBar->setValue(static_cast<int>(offset));
+  }
 }
 
 void

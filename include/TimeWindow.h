@@ -106,6 +106,7 @@ namespace SigDigger {
     void fineTuneSelSetEnabled(bool);
 
     void populateSamplingProperties(SamplingProperties &prop);
+    void startSampling(void);
 
     void setDisplayData(
         std::vector<SUCOMPLEX> const *displayData,
@@ -170,6 +171,7 @@ namespace SigDigger {
     void onHistogramSamples(const float *data, unsigned int len);
 
     void onTriggerSampler(void);
+    void onResample(void);
     void onSampleSet(SigDigger::WaveSampleSet);
 
     void onCarrierSlidersChanged(void);
