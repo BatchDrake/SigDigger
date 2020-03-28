@@ -100,35 +100,47 @@ HistogramDialog::refreshUi(void)
   switch (this->properties.space) {
     case AMPLITUDE:
       this->ui->spaceLabel->setText("Amplitude");
+      this->ui->histogram->overrideDisplayRange(1);
+      this->ui->histogram->overrideUnits("");
+      this->ui->histogram->overrideDataRange(1);
+
       this->ui->rangeLabel->setText(
             SuWidgetsHelpers::formatQuantity(
-              this->dummyDecider.getMinAngle(),
+              this->dummyDecider.getMinimum(),
               "")
             + " to "
             + SuWidgetsHelpers::formatQuantity(
-              this->dummyDecider.getMaxAngle(),
+              this->dummyDecider.getMaximum(),
               ""));
       break;
 
     case PHASE:
       this->ui->spaceLabel->setText("Phase");
+      this->ui->histogram->overrideDataRange(2 * M_PI);
+      this->ui->histogram->overrideDisplayRange(360);
+      this->ui->histogram->overrideUnits("º");
+
       this->ui->rangeLabel->setText(
-            QString::number(this->dummyDecider.getMinAngle() / M_PI * 180)
+            QString::number(this->dummyDecider.getMinimum() / M_PI * 180)
             + "º to "
-            + QString::number(this->dummyDecider.getMaxAngle() / M_PI * 180)
+            + QString::number(this->dummyDecider.getMaximum() / M_PI * 180)
             + "º");
       break;
 
     case FREQUENCY:
       this->ui->spaceLabel->setText("Frequency");
+      this->ui->histogram->overrideDataRange(2 * M_PI);
+      this->ui->histogram->overrideDisplayRange(this->properties.fs);
+      this->ui->histogram->overrideUnits("Hz");
+
       this->ui->rangeLabel->setText(
             SuWidgetsHelpers::formatQuantityNearest(
-              .5 * this->dummyDecider.getMinAngle() / M_PI * this->properties.fs,
+              .5 * this->dummyDecider.getMinimum() / M_PI * this->properties.fs,
               2,
               "Hz")
             + " to "
             + SuWidgetsHelpers::formatQuantityNearest(
-              .5 * this->dummyDecider.getMaxAngle() / M_PI * this->properties.fs,
+              .5 * this->dummyDecider.getMaximum() / M_PI * this->properties.fs,
               2,
               "Hz"));
       break;
@@ -186,9 +198,14 @@ HistogramDialog::setProperties(SamplingProperties const &prop)
 {
   this->properties = prop;
 
-  if (prop.space != SamplingSpace::AMPLITUDE) {
-    this->dummyDecider.setMinAngle(-M_PI);
-    this->dummyDecider.setMaxAngle(M_PI);
+  if (prop.space == SamplingSpace::AMPLITUDE) {
+    this->dummyDecider.setMinimum(0);
+    this->dummyDecider.setMaximum(1);
+    this->dummyDecider.setDecisionMode(Decider::MODULUS);
+  } else {
+    this->dummyDecider.setMinimum(-M_PI);
+    this->dummyDecider.setMaximum(M_PI);
+    this->dummyDecider.setDecisionMode(Decider::ARGUMENT);
   }
 
   this->refreshUi();
@@ -224,8 +241,8 @@ HistogramDialog::feed(const SUFLOAT *data, unsigned int len)
   }
 
   if (adjustDecider) {
-    this->dummyDecider.setMinAngle(this->min);
-    this->dummyDecider.setMaxAngle(this->max);
+    this->dummyDecider.setMinimum(this->min);
+    this->dummyDecider.setMaximum(this->max);
     this->ui->histogram->reset();
     this->refreshUi();
   }

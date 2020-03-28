@@ -110,10 +110,37 @@ SamplerDialog::setProperties(SamplingProperties const &prop)
 {
   this->properties = prop;
 
-  if (prop.space == SamplingSpace::AMPLITUDE)
-    this->decider.setDecisionMode(Decider::MODULUS);
-  else
-    this->decider.setDecisionMode(Decider::ARGUMENT);
+  switch (prop.space) {
+    case AMPLITUDE:
+      this->decider.setDecisionMode(Decider::MODULUS);
+      this->decider.setMinimum(0);
+      this->decider.setMaximum(1);
+
+      this->ui->histogram->overrideDisplayRange(1);
+      this->ui->histogram->overrideUnits("");
+      this->ui->histogram->overrideDataRange(1);
+      break;
+
+    case PHASE:
+      this->decider.setDecisionMode(Decider::ARGUMENT);
+      this->decider.setMinimum(-M_PI);
+      this->decider.setMaximum(M_PI);
+
+      this->ui->histogram->overrideDataRange(2 * M_PI);
+      this->ui->histogram->overrideDisplayRange(360);
+      this->ui->histogram->overrideUnits("º");
+      break;
+
+    case FREQUENCY:
+      this->decider.setDecisionMode(Decider::ARGUMENT);
+      this->decider.setMinimum(-M_PI);
+      this->decider.setMaximum(M_PI);
+
+      this->ui->histogram->overrideDataRange(2 * M_PI);
+      this->ui->histogram->overrideDisplayRange(this->properties.fs);
+      this->ui->histogram->overrideUnits("Hz");
+      break;
+  }
 
   this->ui->histogram->setDecider(&this->decider);
 }

@@ -48,7 +48,7 @@ namespace SigDigger {
 
     Ui::TimeWindow *ui = nullptr;
 
-    bool      hadSelectionBefore = false;
+    bool hadSelectionBefore = true; // Yep. This must be true.
     bool adjusting = false;
 
     qreal     fs;
