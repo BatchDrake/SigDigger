@@ -55,7 +55,7 @@ InspectorUI::InspectorUI(
 
   this->ui->setupUi(owner);
 
-  if (config->hasPrefix("ask")) {
+  if (this->config->hasPrefix("ask")) {
     this->decider.setDecisionMode(Decider::MODULUS);
     this->decider.setMinimum(0);
     this->decider.setMaximum(1);
@@ -63,7 +63,7 @@ InspectorUI::InspectorUI(
     this->ui->histogram->overrideDisplayRange(1);
     this->ui->histogram->overrideUnits("");
     this->ui->histogram->overrideDataRange(1);
-  } else if (config->hasPrefix("psk")) {
+  } else if (this->config->hasPrefix("afc")) {
     this->decider.setDecisionMode(Decider::ARGUMENT);
     this->decider.setMinimum(-PI);
     this->decider.setMaximum(PI);
@@ -71,7 +71,7 @@ InspectorUI::InspectorUI(
     this->ui->histogram->overrideDataRange(2 * M_PI);
     this->ui->histogram->overrideDisplayRange(360);
     this->ui->histogram->overrideUnits("º");
-  } else if (config->hasPrefix("fsk")) {
+  } else if (this->config->hasPrefix("fsk")) {
     this->decider.setDecisionMode(Decider::ARGUMENT);
     this->decider.setMinimum(-PI);
     this->decider.setMaximum(PI);
@@ -115,6 +115,7 @@ InspectorUI::InspectorUI(
   this->ui->transition->setThrottleControl(&this->throttle);
   this->ui->histogram->setThrottleControl(&this->throttle);
   this->ui->histogram->setDecider(&this->decider);
+  this->ui->histogram->reset();
   this->ui->wfSpectrum->setCenterFreq(0);
   this->ui->wfSpectrum->resetHorizontalZoom();
   this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
