@@ -470,7 +470,8 @@ InspectorPanel::InspectorPanel(QWidget *parent) :
   ui->setupUi(this);
 
   this->assertConfig();
-
+  this->setState(DETACHED);
+  this->refreshUi();
   this->connectAll();
 }
 
