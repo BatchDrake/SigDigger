@@ -21,7 +21,7 @@
 
 #include <QDialog>
 #include "SamplingProperties.h"
-#include <SuWidgets/Decider.h>
+#include "Decider.h"
 #include "ColorConfig.h"
 
 namespace Ui {
