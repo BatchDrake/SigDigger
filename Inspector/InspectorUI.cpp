@@ -126,6 +126,8 @@ InspectorUI::InspectorUI(
   // Refresh UI
   this->refreshUi();
 
+
+
   // Force refresh of waterfall
   this->onRangeChanged();
   this->onAspectSliderChanged(this->ui->aspectSlider->value());
@@ -141,6 +143,19 @@ InspectorUI::~InspectorUI()
   if (this->socketForwarder != nullptr)
     delete this->socketForwarder;
 
+}
+
+void
+InspectorUI::adjustSizes(void)
+{
+  QList<int> sizes;
+  int width = this->ui->scrollAreaWidgetContents->sizeHint().width() - 25;
+
+  // Adjust splitter
+  sizes.append(width);
+  sizes.append(this->ui->splitter->width() - width);
+
+  this->ui->splitter->setSizes(sizes);
 }
 
 void
@@ -882,6 +897,7 @@ InspectorUI::populate(void)
         SIGNAL(forwardStateChanged(bool)),
         this,
         SLOT(onToggleNetForward(void)));
+
 }
 
 void

@@ -2017,7 +2017,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show waveform</string>
+    <string>&amp;Waveform</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle display waveform</string>
    </property>
   </action>
   <action name="actionShowEnvelope">
@@ -2025,7 +2028,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show envelope</string>
+    <string>&amp;Envelope</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle overlay envelope</string>
    </property>
   </action>
   <action name="actionShowPhase">
@@ -2036,7 +2042,10 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Show phase</string>
+    <string>&amp;Phase</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle phase colorization</string>
    </property>
   </action>
   <action name="actionPhaseDerivative">
@@ -2047,7 +2056,10 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Phase derivative</string>
+    <string>&amp;Frequency</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle phase derivative (frequency)</string>
    </property>
   </action>
  </widget>
@@ -2080,8 +2092,8 @@
  </resources>
  <connections/>
  <buttongroups>
+  <buttongroup name="spaceButtonGrp"/>
   <buttongroup name="clckSourceBtnGrp"/>
   <buttongroup name="intervalButtonGrp"/>
-  <buttongroup name="spaceButtonGrp"/>
  </buttongroups>
 </ui>

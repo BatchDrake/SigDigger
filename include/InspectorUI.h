@@ -141,6 +141,7 @@ namespace SigDigger {
       void refreshInspectorCtls(void);
       unsigned int getBandwidth(void) const;
       int getLo(void) const;
+      void adjustSizes(void);
 
       enum State getState(void) const;
 

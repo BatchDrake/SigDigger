@@ -110,6 +110,15 @@ Inspector::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
 }
 
 void
+Inspector::showEvent(QShowEvent *)
+{
+  if (!this->adjusted) {
+    this->ui->adjustSizes();
+    this->adjusted = true;
+  }
+}
+
+void
 Inspector::updateEstimator(Suscan::EstimatorId id, float val)
 {
   this->ui->updateEstimator(id, val);
