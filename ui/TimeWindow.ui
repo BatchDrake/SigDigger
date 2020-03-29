@@ -141,22 +141,10 @@
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>300</width>
-     <height>379</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>1920</width>
-     <height>1080</height>
-    </size>
    </property>
    <property name="font">
     <font>
@@ -491,7 +479,7 @@
             <attribute name="label">
              <string>Measurements</string>
             </attribute>
-            <layout class="QGridLayout" name="gridLayout_5">
+            <layout class="QGridLayout" name="measurementsGrid">
              <property name="leftMargin">
               <number>0</number>
              </property>
@@ -631,7 +619,7 @@
                 <item row="0" column="0">
                  <widget class="QPushButton" name="selEndDecDeltaTButton">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -647,7 +635,7 @@
                 <item row="0" column="1">
                  <widget class="QPushButton" name="selEndDecSampleButton">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -663,7 +651,7 @@
                 <item row="0" column="2">
                  <widget class="QPushButton" name="selEndIncSampleButton">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -679,7 +667,7 @@
                 <item row="0" column="3">
                  <widget class="QPushButton" name="selEndIncDeltaTButton">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -731,7 +719,7 @@
                 <item row="0" column="1">
                  <widget class="QPushButton" name="selStartDecSampleButton">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -747,7 +735,7 @@
                 <item row="0" column="2">
                  <widget class="QPushButton" name="selStartIncSampleButton">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -763,7 +751,7 @@
                 <item row="0" column="0">
                  <widget class="QPushButton" name="selStartDecDeltaTButton">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -779,7 +767,7 @@
                 <item row="0" column="3">
                  <widget class="QPushButton" name="selStartIncDeltaTButton">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>

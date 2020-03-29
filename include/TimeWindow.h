@@ -32,6 +32,7 @@
 #define TIME_WINDOW_MAX_SELECTION     4096
 #define TIME_WINDOW_MAX_DOPPLER_ITERS 200
 #define TIME_WINDOW_SPEED_OF_LIGHT    3e8
+#define TIME_WINDOW_EXTRA_WIDTH       72
 
 namespace Ui {
   class TimeWindow;
@@ -50,6 +51,7 @@ namespace SigDigger {
 
     bool hadSelectionBefore = true; // Yep. This must be true.
     bool adjusting = false;
+    bool firstShow = true;
 
     qreal     fs;
 
@@ -126,6 +128,8 @@ namespace SigDigger {
 
     std::string getPalette(void) const;
     unsigned int getPaletteOffset(void) const;
+
+    void showEvent(QShowEvent *event);
 
   signals:
     void configChanged();

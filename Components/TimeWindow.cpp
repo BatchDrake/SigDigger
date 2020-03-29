@@ -415,6 +415,17 @@ TimeWindow::getDisplayDataLength(void) const
 }
 
 void
+TimeWindow::showEvent(QShowEvent *)
+{
+  if (this->firstShow) {
+    this->ui->dockWidget->setMinimumWidth(
+          this->ui->measurementsGrid->sizeHint().width()
+            + TIME_WINDOW_EXTRA_WIDTH);
+    this->firstShow = false;
+  }
+}
+
+void
 TimeWindow::kahanMeanAndRms(
     SUCOMPLEX *mean,
     SUFLOAT *rms,
