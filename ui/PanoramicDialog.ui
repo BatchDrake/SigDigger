@@ -74,25 +74,6 @@
       <property name="spacing">
        <number>3</number>
       </property>
-      <item row="4" column="4">
-       <widget class="QDoubleSpinBox" name="rangeEndSpin">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="showGroupSeparator" stdset="0">
-         <bool>true</bool>
-        </property>
-        <property name="suffix">
-         <string> Hz</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <double>4000000000.000000000000000</double>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -280,25 +261,6 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="2">
-       <widget class="QDoubleSpinBox" name="rangeStartSpin">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="showGroupSeparator" stdset="0">
-         <bool>true</bool>
-        </property>
-        <property name="suffix">
-         <string> Hz</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <double>4000000000.000000000000000</double>
-        </property>
-       </widget>
-      </item>
       <item row="6" column="4">
        <widget class="QComboBox" name="partitioningCombo">
         <item>
@@ -357,6 +319,12 @@
          <double>20000000000.000000000000000</double>
         </property>
        </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="FrequencySpinBox" name="rangeStartSpin"/>
+      </item>
+      <item row="4" column="4">
+       <widget class="FrequencySpinBox" name="rangeEndSpin"/>
       </item>
      </layout>
     </widget>
@@ -536,6 +504,11 @@
    <class>Waterfall</class>
    <extends>QFrame</extends>
    <header>Waterfall.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FrequencySpinBox</class>
+   <extends>QWidget</extends>
+   <header>FrequencySpinBox.h</header>
   </customwidget>
  </customwidgets>
  <resources>

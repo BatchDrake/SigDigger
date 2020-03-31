@@ -104,7 +104,7 @@ namespace SigDigger {
       void setRanges(Suscan::Source::Device const &);
       void setWfRange(qint64 min, qint64 max);
       void adjustRanges(void);
-
+      static int getFrequencyUnits(qint64);
       static unsigned int preferredRttMs(Suscan::Source::Device const &dev);
 
     public:
@@ -159,7 +159,7 @@ namespace SigDigger {
       void onFullRangeChanged(void);
       void onFreqRangeChanged(void);
       void onRangeChanged(float, float);
-      void onNewZoomLevel(void);
+      void onNewZoomLevel(float);
       void onNewOffset(void);
       void onNewBandwidth(int, int);
       void onNewCenterFreq(qint64);

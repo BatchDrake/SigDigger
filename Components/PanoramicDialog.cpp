@@ -238,7 +238,7 @@ PanoramicDialog::connectAll(void)
         this->ui->waterfall,
         SIGNAL(newZoomLevel(float)),
         this,
-        SLOT(onNewZoomLevel(void)));
+        SLOT(onNewZoomLevel(float)));
 
   connect(
         this->ui->waterfall,
@@ -435,18 +435,23 @@ PanoramicDialog::setWfRange(qint64 freqStart, qint64 freqEnd)
     this->ui->waterfall->setCenterFreq(fc);
 
     if (bw != this->currBw) {
+      qint64 demodBw = bw / 10;
       this->ui->waterfall->setLocked(false);
       this->ui->waterfall->setSampleRate(bw);
       this->ui->waterfall->setDemodRanges(
-            -static_cast<int>(bw / 2),
+            -bw / 2,
             0,
             0,
-            static_cast<int>(bw / 2),
+            bw / 2,
             true);
 
+
+      if (demodBw > 4000000000)
+        demodBw = 4000000000;
+
       this->ui->waterfall->setHiLowCutFrequencies(
-            -static_cast<int>(bw / 20),
-            static_cast<int>(bw / 20));
+            -demodBw / 2,
+            demodBw / 2);
 
       this->ui->waterfall->resetHorizontalZoom();
       this->currBw = bw;
@@ -577,6 +582,26 @@ PanoramicDialog::invalidRange(void) const
   return fabs(
         this->ui->rangeEndSpin->value() - this->ui->rangeStartSpin->value()) < 1;
 }
+
+int
+PanoramicDialog::getFrequencyUnits(qint64 freq)
+{
+  if (freq < 0)
+    freq = -freq;
+
+  if (freq < 1000)
+    return 1;
+
+  if (freq < 1000000)
+    return 1000;
+
+  if (freq < 1000000000)
+    return 1000000;
+
+  return 1000000000;
+}
+
+
 void
 PanoramicDialog::setRanges(Suscan::Source::Device const &dev)
 {
@@ -585,22 +610,18 @@ PanoramicDialog::setRanges(Suscan::Source::Device const &dev)
 
   // Prevents Waterfall frequencies from overflowing.
 
-  if (minFreq < 0)
-    minFreq = 0;
-
-  if (maxFreq < 0)
-    maxFreq = 0;
-
-  if (minFreq > 2e9)
-    minFreq = 2e9;
-
-  if (maxFreq > 2e9)
-    maxFreq = 2e9;
-
   this->ui->rangeStartSpin->setMinimum(minFreq);
   this->ui->rangeStartSpin->setMaximum(maxFreq);
   this->ui->rangeEndSpin->setMinimum(minFreq);
   this->ui->rangeEndSpin->setMaximum(maxFreq);
+
+  this->ui->waterfall->setFreqUnits(
+        getFrequencyUnits(
+          static_cast<qint64>(maxFreq)));
+
+  this->ui->waterfall->setSpanFreq(static_cast<qint64>(maxFreq - minFreq));
+  this->ui->waterfall->setFftCenterFreq(
+        static_cast<quint64>(maxFreq + minFreq) / 2);
 
   if (this->invalidRange() || this->ui->fullRangeCheck->isChecked()) {
     this->ui->rangeStartSpin->setValue(minFreq);
@@ -639,6 +660,8 @@ PanoramicDialog::run(void)
   this->deserializePalettes();
   this->exec();
   this->saveConfig();
+  this->ui->scanButton->setChecked(false);
+  this->onToggleScan();
   emit stop();
 }
 
@@ -868,7 +891,7 @@ PanoramicDialog::onToggleScan(void)
 }
 
 void
-PanoramicDialog::onNewZoomLevel(void)
+PanoramicDialog::onNewZoomLevel(float)
 {
   qint64 min, max;
   qint64 fc = abs(
@@ -883,6 +906,20 @@ PanoramicDialog::onNewZoomLevel(void)
 
     min = fc - span / 2;
     max = fc + span / 2;
+
+    if (min < this->getMinFreq() && max <= this->getMaxFreq()) {
+      // Too much zooming on the left. Reinject it to the max
+      qint64 extra = static_cast<qint64>(this->getMinFreq()) - min;
+      min += extra;
+      max += extra;
+      adjLeft = adjRight = true;
+    } else if (min >= this->getMinFreq() && max > this->getMaxFreq()) {
+      // Too much zooming on the right. Reinject it to the max
+      qint64 extra = max - static_cast<qint64>(this->getMaxFreq());
+      min -= extra;
+      max -= extra;
+      adjLeft = adjRight = true;
+    }
 
     if (min < this->getMinFreq()) {
       min = static_cast<qint64>(this->getMinFreq());
