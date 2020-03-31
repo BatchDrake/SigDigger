@@ -129,7 +129,7 @@ namespace SigDigger {
     std::string getAudioRecordSavePath(void) const;
 
     bool getPanSpectrumDevice(Suscan::Source::Device &) const;
-    bool getPanSpectrumRange(quint64 &min, quint64 &max) const;
+    bool getPanSpectrumRange(qint64 &min, qint64 &max) const;
     unsigned int getPanSpectrumRttMs(void) const;
     float getPanSpectrumRelBw(void) const;
     float getPanSpectrumGain(QString const &) const;
@@ -195,7 +195,7 @@ namespace SigDigger {
 
     void panSpectrumStart(void);
     void panSpectrumStop(void);
-    void panSpectrumRangeChanged(quint64 min, quint64 max, bool);
+    void panSpectrumRangeChanged(qint64 min, qint64 max, bool);
     void panSpectrumSkipChanged(void);
     void panSpectrumRelBwChanged(void);
     void panSpectrumReset(void);
@@ -264,7 +264,7 @@ namespace SigDigger {
     // Panoramic spectrum dialog
     void onPanoramicSpectrumStart(void);
     void onPanoramicSpectrumStop(void);
-    void onPanoramicSpectrumDetailChanged(quint64 min, quint64 max, bool);
+    void onPanoramicSpectrumDetailChanged(qint64 min, qint64 max, bool);
   };
 };
 

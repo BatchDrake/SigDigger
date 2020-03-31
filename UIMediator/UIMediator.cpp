@@ -496,11 +496,11 @@ UIMediator::getPanSpectrumDevice(Suscan::Source::Device &dev) const
 }
 
 bool
-UIMediator::getPanSpectrumRange(quint64 &min, quint64 &max) const
+UIMediator::getPanSpectrumRange(qint64 &min, qint64 &max) const
 {
   if (!this->ui->panoramicDialog->invalidRange()) {
-    min = static_cast<quint64>(this->ui->panoramicDialog->getMinFreq());
-    max = static_cast<quint64>(this->ui->panoramicDialog->getMaxFreq());
+    min = static_cast<qint64>(this->ui->panoramicDialog->getMinFreq());
+    max = static_cast<qint64>(this->ui->panoramicDialog->getMaxFreq());
     return true;
   }
 

@@ -143,7 +143,7 @@ namespace SigDigger {
       void applyConfig(void) override;
 
     signals:
-      void detailChanged(quint64 freqMin, quint64 freqMax, bool noHop);
+      void detailChanged(qint64 freqMin, qint64 freqMax, bool noHop);
       void start(void);
       void stop(void);
       void reset(void);

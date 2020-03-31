@@ -197,7 +197,7 @@ namespace SigDigger {
     // Panoramic spectrum slots
     void onPanSpectrumStart(void);
     void onPanSpectrumStop(void);
-    void onPanSpectrumRangeChanged(quint64, quint64, bool);
+    void onPanSpectrumRangeChanged(qint64, qint64, bool);
     void onPanSpectrumSkipChanged(void);
     void onPanSpectrumRelBwChanged(void);
     void onPanSpectrumReset(void);

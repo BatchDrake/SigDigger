@@ -509,9 +509,9 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
-        SIGNAL(panSpectrumRangeChanged(quint64, quint64, bool)),
+        SIGNAL(panSpectrumRangeChanged(qint64, qint64, bool)),
         this,
-        SLOT(onPanSpectrumRangeChanged(quint64, quint64, bool)));
+        SLOT(onPanSpectrumRangeChanged(qint64, qint64, bool)));
 
   connect(
         this->mediator,
@@ -1421,8 +1421,8 @@ void
 Application::onPanSpectrumStart(void)
 {
   if (this->scanner == nullptr) {
-    quint64 freqMin;
-    quint64 freqMax;
+    qint64 freqMin;
+    qint64 freqMax;
     Suscan::Source::Device device;
 
     if (this->mediator->getPanSpectrumRange(freqMin, freqMax)
@@ -1489,7 +1489,7 @@ Application::onPanSpectrumStop(void)
 }
 
 void
-Application::onPanSpectrumRangeChanged(quint64 min, quint64 max, bool noHop)
+Application::onPanSpectrumRangeChanged(qint64 min, qint64 max, bool noHop)
 {
   if (this->scanner != nullptr)
     this->scanner->setViewRange(min, max, noHop);

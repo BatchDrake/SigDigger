@@ -804,8 +804,10 @@ PanoramicDialog::applyConfig(void)
   this->setPaletteGradient(QString::fromStdString(this->dialogConfig->palette));
   this->ui->lnbDoubleSpinBox->setValue(
         static_cast<SUFREQ>(this->dialogConfig->lnbFreq));
-  this->ui->rangeStartSpin->setValue(this->dialogConfig->rangeMin);
-  this->ui->rangeEndSpin->setValue(this->dialogConfig->rangeMax);
+  this->ui->rangeStartSpin->setValue(
+        this->dialogConfig->rangeMin - this->getLnbOffset());
+  this->ui->rangeEndSpin->setValue(
+        this->dialogConfig->rangeMax - this->getLnbOffset());
   this->ui->fullRangeCheck->setChecked(this->dialogConfig->fullRange);
   this->ui->sampleRateSpin->setValue(this->dialogConfig->sampRate);
   this->ui->waterfall->setPandapterRange(
@@ -831,8 +833,8 @@ PanoramicDialog::onDeviceChanged(void)
     if (rtt != 0)
       this->ui->rttSpin->setValue(static_cast<int>(rtt));
     if (this->ui->fullRangeCheck->isChecked()) {
-      this->ui->rangeStartSpin->setValue(dev.getMinFreq());
-      this->ui->rangeEndSpin->setValue(dev.getMaxFreq());
+      this->ui->rangeStartSpin->setValue(dev.getMinFreq() - this->getLnbOffset());
+      this->ui->rangeEndSpin->setValue(dev.getMaxFreq() - this->getLnbOffset());
     }
   } else {
     this->clearGains();
@@ -847,8 +849,8 @@ PanoramicDialog::onFullRangeChanged(void)
 
   if (this->getSelectedDevice(dev)) {
     if (checked) {
-      this->ui->rangeStartSpin->setValue(dev.getMinFreq());
-      this->ui->rangeEndSpin->setValue(dev.getMaxFreq());
+      this->ui->rangeStartSpin->setValue(dev.getMinFreq() - this->getLnbOffset());
+      this->ui->rangeEndSpin->setValue(dev.getMaxFreq() - this->getLnbOffset());
     }
   }
 
@@ -894,9 +896,9 @@ void
 PanoramicDialog::onNewZoomLevel(float)
 {
   qint64 min, max;
-  qint64 fc = abs(
+  qint64 fc =
         this->ui->waterfall->getCenterFreq()
-        + this->ui->waterfall->getFftCenterFreq());
+        + this->ui->waterfall->getFftCenterFreq();
   qint64 span = static_cast<qint64>(this->ui->waterfall->getSpanFreq());
   bool adjLeft = false;
   bool adjRight = false;
@@ -945,10 +947,7 @@ PanoramicDialog::onNewZoomLevel(float)
     this->setWfRange(min, max);
     this->adjustingRange = false;
 
-    emit detailChanged(
-          static_cast<quint64>(min),
-          static_cast<quint64>(max),
-          this->fixedFreqMode);
+    emit detailChanged(min, max, this->fixedFreqMode);
   }
 }
 

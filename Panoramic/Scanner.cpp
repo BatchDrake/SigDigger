@@ -350,6 +350,7 @@ Scanner::Scanner(
   params.minFreq = freqMin;
   params.maxFreq = freqMax;
 
+
   this->analyzer = new Suscan::Analyzer(params, cfg);
 
   connect(
@@ -458,12 +459,6 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
     freqMax = tmp;
   }
 
-  if (freqMin < this->freqMin)
-    freqMin = this->freqMin;
-
-  if (freqMax > this->freqMax)
-    freqMax = this->freqMax;
-
   if (!noHop) {
     searchMin = freqMin - fs / 2;
     searchMax = freqMax + fs / 2;
@@ -473,11 +468,14 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
     freqMax = searchMax + fs / 2;
   }
 
+  if (searchMin < this->freqMin)
+    searchMin = this->freqMin;
+
+  if (searchMax > this->freqMax)
+    searchMax = this->freqMax;
+
   // Scanner in zoom mode, copy this view back to mainView
   try {
-    if (searchMin < 0)
-      searchMin = 0;
-
     // Limits adjusted.
     if (std::fabs(this->getSpectrumView().freqMin - freqMin) > 1 ||
         std::fabs(this->getSpectrumView().freqMax - freqMax) > 1) {
@@ -486,6 +484,7 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
       this->getSpectrumView().setRange(freqMin, freqMax);
       this->getSpectrumView().feed(previous);
     }
+
     this->analyzer->setHopRange(searchMin, searchMax);
   } catch (Suscan::Exception const &) {
     // Invalid limits, warn?

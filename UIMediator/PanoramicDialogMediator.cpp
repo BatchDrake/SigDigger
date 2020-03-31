@@ -38,9 +38,9 @@ UIMediator::connectPanoramicDialog(void)
 
   connect(
         this->ui->panoramicDialog,
-        SIGNAL(detailChanged(quint64, quint64, bool)),
+        SIGNAL(detailChanged(qint64, qint64, bool)),
         this,
-        SLOT(onPanoramicSpectrumDetailChanged(quint64, quint64, bool)));
+        SLOT(onPanoramicSpectrumDetailChanged(qint64, qint64, bool)));
 
   connect(
         this->ui->panoramicDialog,
@@ -92,7 +92,7 @@ UIMediator::onPanoramicSpectrumStop(void)
 }
 
 void
-UIMediator::onPanoramicSpectrumDetailChanged(quint64 min, quint64 max, bool noHop)
+UIMediator::onPanoramicSpectrumDetailChanged(qint64 min, qint64 max, bool noHop)
 {
   emit panSpectrumRangeChanged(min, max, noHop);
 }
