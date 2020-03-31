@@ -426,7 +426,7 @@ PanoramicDialog::setWfRange(qint64 freqStart, qint64 freqEnd)
       this->currBw = bw;
     }
   } else {
-    quint64 fc = static_cast<quint64>(.5 * (freqEnd + freqStart));
+    qint64 fc = static_cast<qint64>(.5 * (freqEnd + freqStart));
     qint64 bw = static_cast<qint64>(freqEnd - freqStart);
 
     // In other cases, we must adjust the limits and the bandwidth.
@@ -462,8 +462,8 @@ PanoramicDialog::setWfRange(qint64 freqStart, qint64 freqEnd)
 
 void
 PanoramicDialog::feed(
-    quint64 freqStart,
-    quint64 freqEnd,
+    qint64 freqStart,
+    qint64 freqEnd,
     float *data,
     size_t size)
 {
@@ -1005,10 +1005,7 @@ PanoramicDialog::onNewCenterFreq(qint64 freq)
     this->ui->waterfall->setCenterFreq(
         static_cast<quint64>(.5 * (max + min)));
 
-  emit detailChanged(
-        static_cast<quint64>(min),
-        static_cast<quint64>(max),
-        this->fixedFreqMode);
+  emit detailChanged(min, max, this->fixedFreqMode);
 }
 
 void

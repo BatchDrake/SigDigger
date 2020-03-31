@@ -81,8 +81,8 @@ namespace SigDigger {
 
       SavedSpectrum saved;
 
-      quint64 freqStart = 0;
-      quint64 freqEnd = 0;
+      qint64 freqStart = 0;
+      qint64 freqEnd = 0;
       qint64 currBw = 0;
       qint64 demodFreq = 0;
       quint64 frames = 0;
@@ -112,8 +112,8 @@ namespace SigDigger {
       ~PanoramicDialog() override;
 
       void feed(
-          quint64 freqStart,
-          quint64 freqEnd,
+          qint64 freqStart,
+          qint64 freqEnd,
           float *data,
           size_t size);
 
