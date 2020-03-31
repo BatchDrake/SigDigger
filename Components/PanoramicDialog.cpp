@@ -161,6 +161,7 @@ PanoramicDialog::PanoramicDialog(QWidget *parent) :
 
   this->assertConfig();
   this->setWindowFlags(Qt::Window);
+  this->ui->sampleRateSpin->setUnits("sps");
   this->connectAll();
 }
 
@@ -188,7 +189,7 @@ PanoramicDialog::connectAll(void)
 
   connect(
         this->ui->sampleRateSpin,
-        SIGNAL(valueChanged(int)),
+        SIGNAL(valueChanged(double)),
         this,
         SLOT(onSampleRateSpinChanged(void)));
 
@@ -1079,5 +1080,6 @@ void
 PanoramicDialog::onSampleRateSpinChanged(void)
 {
   if (!this->running)
-    this->dialogConfig->sampRate = this->ui->sampleRateSpin->value();
+    this->dialogConfig->sampRate = static_cast<int>(
+        this->ui->sampleRateSpin->value());
 }

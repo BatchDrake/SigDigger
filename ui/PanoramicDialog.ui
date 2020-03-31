@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>971</width>
+    <width>1063</width>
     <height>571</height>
    </rect>
   </property>
@@ -285,46 +285,17 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QSpinBox" name="sampleRateSpin">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="showGroupSeparator" stdset="0">
-         <bool>true</bool>
-        </property>
-        <property name="suffix">
-         <string> sps</string>
-        </property>
-        <property name="maximum">
-         <number>64000000</number>
-        </property>
-        <property name="value">
-         <number>20000000</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="4">
-       <widget class="QDoubleSpinBox" name="lnbDoubleSpinBox">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="showGroupSeparator" stdset="0">
-         <bool>true</bool>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <double>20000000000.000000000000000</double>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="2">
        <widget class="FrequencySpinBox" name="rangeStartSpin"/>
       </item>
       <item row="4" column="4">
        <widget class="FrequencySpinBox" name="rangeEndSpin"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="FrequencySpinBox" name="sampleRateSpin"/>
+      </item>
+      <item row="1" column="4">
+       <widget class="FrequencySpinBox" name="lnbDoubleSpinBox"/>
       </item>
      </layout>
     </widget>
