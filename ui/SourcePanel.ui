@@ -45,7 +45,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>272</width>
+        <width>315</width>
         <height>264</height>
        </rect>
       </property>
@@ -251,13 +251,6 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
-        <widget class="QDoubleSpinBox" name="bwSpin">
-         <property name="suffix">
-          <string> Hz</string>
-         </property>
-        </widget>
-       </item>
        <item row="9" column="0" colspan="2">
         <widget class="QFrame" name="gainsFrame">
          <property name="sizePolicy">
@@ -397,12 +390,22 @@
          </property>
         </spacer>
        </item>
+       <item row="8" column="1">
+        <widget class="FrequencySpinBox" name="bwSpin"/>
+       </item>
       </layout>
      </widget>
     </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FrequencySpinBox</class>
+   <extends>QWidget</extends>
+   <header>FrequencySpinBox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>

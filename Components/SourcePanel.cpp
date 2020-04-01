@@ -207,8 +207,6 @@ SourcePanel::setSampleRate(unsigned int rate)
 
     if (step >= 10.f)
       step /= 10.f;
-
-    this->ui->bwSpin->setSingleStep(static_cast<int>(step));
   }
 }
 
