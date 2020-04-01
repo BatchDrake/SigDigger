@@ -278,6 +278,12 @@ PanoramicDialog::connectAll(void)
         SLOT(onPaletteChanged(int)));
 
   connect(
+        this->ui->allocationCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onBandPlanChanged(int)));
+
+  connect(
         this->ui->walkStrategyCombo,
         SIGNAL(currentIndexChanged(const QString &)),
         this,
@@ -574,6 +580,11 @@ PanoramicDialog::getSelectedDevice(Suscan::Source::Device &dev) const
 void
 PanoramicDialog::adjustRanges(void)
 {
+  SUFREQ minFreq, maxFreq;
+
+  minFreq = this->ui->rangeStartSpin->value();
+  maxFreq = this->ui->rangeEndSpin->value();
+
   if (this->ui->rangeStartSpin->value() >
       this->ui->rangeEndSpin->value()) {
     auto val = this->ui->rangeStartSpin->value();
@@ -581,6 +592,14 @@ PanoramicDialog::adjustRanges(void)
           this->ui->rangeEndSpin->value());
     this->ui->rangeEndSpin->setValue(val);
   }
+
+  this->ui->waterfall->setFreqUnits(
+        getFrequencyUnits(
+          static_cast<qint64>(maxFreq)));
+
+  this->ui->waterfall->setSpanFreq(static_cast<qint64>(maxFreq - minFreq));
+  this->ui->waterfall->setCenterFreq(static_cast<quint64>(maxFreq + minFreq) / 2);
+  this->ui->waterfall->setFftCenterFreq(0);
 }
 
 bool
@@ -622,14 +641,6 @@ PanoramicDialog::setRanges(Suscan::Source::Device const &dev)
   this->ui->rangeEndSpin->setMinimum(minFreq);
   this->ui->rangeEndSpin->setMaximum(maxFreq);
 
-  this->ui->waterfall->setFreqUnits(
-        getFrequencyUnits(
-          static_cast<qint64>(maxFreq)));
-
-  this->ui->waterfall->setSpanFreq(static_cast<qint64>(maxFreq - minFreq));
-  this->ui->waterfall->setFftCenterFreq(
-        static_cast<quint64>(maxFreq + minFreq) / 2);
-
   if (this->invalidRange() || this->ui->fullRangeCheck->isChecked()) {
     this->ui->rangeStartSpin->setValue(minFreq);
     this->ui->rangeEndSpin->setValue(maxFreq);
@@ -660,11 +671,73 @@ PanoramicDialog::saveConfig(void)
   this->dialogConfig->fullRange = this->ui->fullRangeCheck->isChecked();
 }
 
+FrequencyBand
+PanoramicDialog::deserializeFrequencyBand(Suscan::Object const &obj)
+{
+  FrequencyBand band;
+
+  band.min = static_cast<qint64>(obj.get("min", 0.f));
+  band.max = static_cast<qint64>(obj.get("max", 0.f));
+  band.primary = obj.get("primary", std::string());
+  band.secondary = obj.get("secondary", std::string());
+  band.footnotes = obj.get("footnotes", std::string());
+
+  band.color.setNamedColor(
+        QString::fromStdString(obj.get("color", std::string("#1f1f1f"))));
+
+  return band;
+}
+
+void
+PanoramicDialog::deserializeFATs(void)
+{
+  if (this->FATs.size() == 0) {
+    Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+    Suscan::Object bands;
+    unsigned int i, count, ndx = 0;
+
+    for (auto p = sus->getFirstFAT();
+         p != sus->getLastFAT();
+         p++) {
+      this->FATs.resize(ndx + 1);
+      this->FATs[ndx] = new FrequencyAllocationTable(p->getField("name").value());
+      bands = p->getField("bands");
+
+      SU_ATTEMPT(bands.getType() == SUSCAN_OBJECT_TYPE_SET);
+
+      count = bands.length();
+
+      for (i = 0; i < count; ++i) {
+        try {
+          this->FATs[ndx]->pushBand(deserializeFrequencyBand(bands[i]));
+        } catch (Suscan::Exception &) {
+        }
+      }
+
+      ++ndx;
+    }
+  }
+
+  if (this->ui->allocationCombo->count() == 0) {
+    this->ui->allocationCombo->insertItem(
+          0,
+          "(No bandplan)",
+          QVariant::fromValue(-1));
+
+    for (unsigned i = 0; i < this->FATs.size(); ++i)
+      this->ui->allocationCombo->insertItem(
+          static_cast<int>(i + 1),
+          QString::fromStdString(this->FATs[i]->getName()),
+          QVariant::fromValue(static_cast<int>(i)));
+  }
+}
+
 void
 PanoramicDialog::run(void)
 {
   this->populateDeviceCombo();
   this->deserializePalettes();
+  this->deserializeFATs();
   this->exec();
   this->saveConfig();
   this->ui->scanButton->setChecked(false);
@@ -816,10 +889,8 @@ PanoramicDialog::applyConfig(void)
   this->setPaletteGradient(QString::fromStdString(this->dialogConfig->palette));
   this->ui->lnbDoubleSpinBox->setValue(
         static_cast<SUFREQ>(this->dialogConfig->lnbFreq));
-  this->ui->rangeStartSpin->setValue(
-        this->dialogConfig->rangeMin - this->getLnbOffset());
-  this->ui->rangeEndSpin->setValue(
-        this->dialogConfig->rangeMax - this->getLnbOffset());
+  this->ui->rangeStartSpin->setValue(this->dialogConfig->rangeMin);
+  this->ui->rangeEndSpin->setValue(this->dialogConfig->rangeMax);
   this->ui->fullRangeCheck->setChecked(this->dialogConfig->fullRange);
   this->ui->sampleRateSpin->setValue(this->dialogConfig->sampRate);
   this->ui->waterfall->setPandapterRange(
@@ -851,6 +922,8 @@ PanoramicDialog::onDeviceChanged(void)
   } else {
     this->clearGains();
   }
+
+  this->adjustRanges();
 }
 
 void
@@ -1071,6 +1144,24 @@ PanoramicDialog::onExport(void)
       done = true;
     }
   } while (!done);
+}
+
+void
+PanoramicDialog::onBandPlanChanged(int)
+{
+  int val = this->ui->allocationCombo->currentData().value<int>();
+
+  if (this->currentFAT.size() > 0)
+    this->ui->waterfall->removeFAT(this->currentFAT);
+
+  if (val > 0) {
+    this->ui->waterfall->setFATsVisible(true);
+    this->ui->waterfall->pushFAT(this->FATs[static_cast<unsigned>(val)]);
+    this->currentFAT = this->FATs[static_cast<unsigned>(val)]->getName();
+  } else {
+    this->ui->waterfall->setFATsVisible(false);
+    this->currentFAT = "";
+  }
 }
 
 void

@@ -76,6 +76,7 @@ namespace SigDigger {
       std::vector<DeviceGain *> gainControls;
       std::vector<Palette> palettes;
       std::map<std::string, Suscan::Source::Device> deviceMap;
+      std::vector<FrequencyAllocationTable *> FATs;
 
       QString bannedDevice;
 
@@ -88,6 +89,7 @@ namespace SigDigger {
       quint64 frames = 0;
       quint64 minBwForZoom = 0;
       QString paletteGradient = "Suscan";
+      std::string currentFAT = "";
 
       bool adjustingRange = false;
       bool fixedFreqMode = false;
@@ -100,10 +102,12 @@ namespace SigDigger {
       void clearGains(void);
       void refreshGains(Suscan::Source::Device &device);
       void deserializePalettes(void);
-
+      void deserializeFATs(void);
       void setRanges(Suscan::Source::Device const &);
       void setWfRange(qint64 min, qint64 max);
       void adjustRanges(void);
+
+      static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
       static int getFrequencyUnits(qint64);
       static unsigned int preferredRttMs(Suscan::Source::Device const &dev);
 
@@ -162,6 +166,7 @@ namespace SigDigger {
       void onNewZoomLevel(float);
       void onNewOffset(void);
       void onNewBandwidth(int, int);
+      void onBandPlanChanged(int);
       void onNewCenterFreq(qint64);
       void onPaletteChanged(int);
       void onStrategyChanged(QString);
