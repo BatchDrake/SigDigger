@@ -1154,7 +1154,7 @@ PanoramicDialog::onBandPlanChanged(int)
   if (this->currentFAT.size() > 0)
     this->ui->waterfall->removeFAT(this->currentFAT);
 
-  if (val > 0) {
+  if (val >= 0) {
     this->ui->waterfall->setFATsVisible(true);
     this->ui->waterfall->pushFAT(this->FATs[static_cast<unsigned>(val)]);
     this->currentFAT = this->FATs[static_cast<unsigned>(val)]->getName();

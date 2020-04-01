@@ -57,7 +57,7 @@ SpectrumView::interpolate(void)
 
   for (i = 0; i < SIGDIGGER_SCANNER_SPECTRUM_SIZE; ++i) {
     if (!inGap) {
-      if (this->psdCount[i] < 1) {
+      if (this->psdCount[i] <= .5f) {
         // Found zero!
         inGap = true;
         zero_pos = i;
@@ -75,7 +75,7 @@ SpectrumView::interpolate(void)
         }
       }
     } else {
-      if (this->psdCount[i] < 1) {
+      if (this->psdCount[i] <= .5f) {
         ++count;
       } else {
         // End of gap of zeroes. Compute right and interpolate
@@ -234,11 +234,12 @@ SpectrumView::feedHistogramMode(
   SUFLOAT inv = 1. / SIGDIGGER_SCANNER_SPECTRUM_SIZE;
   unsigned int i;
   SUFLOAT accum = 0;
-  unsigned int j = static_cast<unsigned int>(fStart);
 
   fStart *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
   fEnd   *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
   relBw  *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+
+  unsigned int j = static_cast<unsigned int>(fStart);
 
   // Now, relBw represents the relative size of the range
   // with respecto to the spectrum bin.
@@ -278,7 +279,7 @@ SpectrumView::feed(
 {
   SUFREQ fftCount = (freqMax - freqMin) / this->freqRange;
 
-  if (fftCount < SIGDIGGER_SCANNER_SPECTRUM_SIZE)
+  if (fftCount * SIGDIGGER_SCANNER_SPECTRUM_SIZE >= 2)
     this->feedLinearMode(psd, count, freqMin, freqMax, adjustSides);
   else
     this->feedHistogramMode(psd, freqMin, freqMax);
