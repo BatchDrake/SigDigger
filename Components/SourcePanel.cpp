@@ -81,6 +81,9 @@ SourcePanel::SourcePanel(QWidget *parent) :
 
   this->saverUI = new DataSaverUI(this);
   this->ui->dataSaverGrid->addWidget(this->saverUI);
+  this->ui->throttleSpin->setUnits("sps");
+  this->ui->throttleSpin->setMinimum(0);
+
   this->assertConfig();
   this->connectAll();
 }
@@ -96,7 +99,7 @@ SourcePanel::connectAll(void)
 
   connect(
         this->ui->throttleSpin,
-        SIGNAL(valueChanged(int)),
+        SIGNAL(valueChanged(qreal)),
         this,
         SLOT(onThrottleChanged(void)));
 
