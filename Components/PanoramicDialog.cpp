@@ -22,6 +22,7 @@
 #include "ui_PanoramicDialog.h"
 #include "DefaultGradient.h"
 #include "MainSpectrum.h"
+#include <SuWidgetsHelpers.h>
 #include <fstream>
 #include <iomanip>
 #include <limits>
@@ -162,6 +163,11 @@ PanoramicDialog::PanoramicDialog(QWidget *parent) :
   this->assertConfig();
   this->setWindowFlags(Qt::Window);
   this->ui->sampleRateSpin->setUnits("sps");
+
+  QFontMetrics metrics(this->ui->centerLabel->font());
+  this->ui->centerLabel->setFixedWidth(metrics.width("XXX.XXXXXXXXX XHz"));
+  this->ui->bwLabel->setFixedWidth(metrics.width("XXX.XXXXXXXXX XHz"));
+
   this->connectAll();
 }
 
@@ -674,13 +680,18 @@ PanoramicDialog::redrawMeasures(void)
         .5 * (this->freqStart + this->freqEnd));
 
   this->ui->centerLabel->setText(
-        QString::number(
-          static_cast<qint64>(
+        SuWidgetsHelpers::formatQuantityNearest(
+          static_cast<qreal>(
             this->ui->waterfall->getFilterOffset() +
-            .5 * (this->freqStart + this->freqEnd))) + " Hz");
+            .5 * (this->freqStart + this->freqEnd)),
+          3,
+          "Hz"));
 
   this->ui->bwLabel->setText(
-        QString::number(this->ui->waterfall->getFilterBw()) + " Hz");
+        SuWidgetsHelpers::formatQuantityNearest(
+          static_cast<qreal>(this->ui->waterfall->getFilterBw()),
+          3,
+          "Hz"));
 
   this->ui->framesLabel->setText(QString::number(this->frames));
 }
