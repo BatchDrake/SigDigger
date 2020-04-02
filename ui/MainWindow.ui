@@ -147,6 +147,9 @@
    <property name="text">
     <string>Run</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
   </action>
   <action name="actionSetup">
    <property name="icon">
@@ -215,6 +218,9 @@
    <property name="text">
     <string>&amp;Quit</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
   </action>
   <action name="actionDevices">
    <property name="icon">
@@ -235,6 +241,9 @@
    </property>
    <property name="text">
     <string>&amp;Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionClear_recent">
@@ -275,6 +284,7 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
+  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>
