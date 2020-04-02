@@ -38,6 +38,7 @@ ClockRecovery::ClockRecovery(QWidget *parent, Suscan::Config *config) :
   this->registerWidget(this->ui->phaseSlider, SIGNAL(valueChanged(int)));
 
   this->ui->baudRateSpin->setUnits("baud");
+  this->ui->baudRateSpin->setAutoUnitMultiplierEnabled(false);
 }
 
 bool
