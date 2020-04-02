@@ -598,8 +598,7 @@ PanoramicDialog::adjustRanges(void)
           static_cast<qint64>(maxFreq)));
 
   this->ui->waterfall->setSpanFreq(static_cast<qint64>(maxFreq - minFreq));
-  this->ui->waterfall->setCenterFreq(static_cast<quint64>(maxFreq + minFreq) / 2);
-  this->ui->waterfall->setFftCenterFreq(0);
+  this->ui->waterfall->setCenterFreq(static_cast<qint64>(maxFreq + minFreq) / 2);
 }
 
 bool
@@ -970,6 +969,7 @@ PanoramicDialog::onToggleScan(void)
     emit stop();
   }
 
+  this->ui->waterfall->setRunningState(this->ui->scanButton->isChecked());
   this->ui->scanButton->setText(
         this->ui->scanButton->isChecked()
         ? "Stop"
@@ -1087,7 +1087,7 @@ PanoramicDialog::onNewCenterFreq(qint64 freq)
 
   if (rightBorder || leftBorder)
     this->ui->waterfall->setCenterFreq(
-        static_cast<quint64>(.5 * (max + min)));
+        static_cast<qint64>(.5 * (max + min)));
 
   emit detailChanged(min, max, this->fixedFreqMode);
 }

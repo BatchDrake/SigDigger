@@ -240,10 +240,8 @@ MainSpectrum::setCenterFreq(qint64 freq)
 {
   qint64 loFreq = this->getLoFreq();
   this->ui->fcLcd->setValue(freq);
-  this->ui->mainSpectrum->setCenterFreq(static_cast<quint64>(freq));
-  this->ui->mainSpectrum->setFreqUnits(
-        getFrequencyUnits(
-          static_cast<qint64>(freq)));
+  this->ui->mainSpectrum->setCenterFreq(freq);
+  this->ui->mainSpectrum->setFreqUnits(getFrequencyUnits(freq));
   this->updateLimits();
   this->setLoFreq(loFreq);
 }
