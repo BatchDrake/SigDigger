@@ -1127,6 +1127,12 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
 
   // this->ui->histogram->setModelColor(colors.histogramModel);
 
+  this->ui->bwLcd->setForegroundColor(colors.lcdForeground);
+  this->ui->bwLcd->setBackgroundColor(colors.lcdBackground);
+
+  this->ui->loLcd->setForegroundColor(colors.lcdForeground);
+  this->ui->loLcd->setBackgroundColor(colors.lcdBackground);
+
   this->ui->wfSpectrum->setFftPlotColor(colors.spectrumForeground);
   this->ui->wfSpectrum->setFftBgColor(colors.spectrumBackground);
   this->ui->wfSpectrum->setFftAxesColor(colors.spectrumAxes);
