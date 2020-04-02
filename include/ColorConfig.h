@@ -6,10 +6,10 @@
 #include <QObject>
 #include <QColor>
 
-#define SIGDIGGER_DEFAULT_FOREGROUND QColor("#3ed281")
-#define SIGDIGGER_DEFAULT_BACKGROUND QColor("#090a18")
+#define SIGDIGGER_DEFAULT_FOREGROUND QColor("#3ed180")
+#define SIGDIGGER_DEFAULT_BACKGROUND QColor("#070d0c")
 #define SIGDIGGER_DEFAULT_AXES       QColor("#152d2b")
-#define SIGDIGGER_DEFAULT_TEXT       QColor("#9effcb")
+#define SIGDIGGER_DEFAULT_TEXT       QColor("#ffffff")
 #define SIGDIGGER_DEFAULT_SELECTION  QColor("#152d2b")
 #define SIGDIGGER_DEFAULT_FILTER_BOX QColor("#327d54")
 

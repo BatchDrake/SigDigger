@@ -45,9 +45,9 @@ namespace SigDigger {
 
     unsigned int timeSpan = 0;
 
-    bool rangeLock = false;
+    bool rangeLock = true;
 
-    std::string palette = "Suscan";
+    std::string palette = "Magma (Feely)";
 
     int zoom = 1;
 

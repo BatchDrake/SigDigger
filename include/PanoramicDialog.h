@@ -54,7 +54,7 @@ namespace SigDigger {
     std::string device;
     std::string strategy;
     std::string partitioning;
-    std::string palette;
+    std::string palette = "Turbo (Gqrx)";
 
     std::map<std::string, float> gains;
     bool hasGain(std::string const &dev, std::string const &name) const;
