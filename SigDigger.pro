@@ -62,6 +62,7 @@ SOURCES += \
     Components/ConfigDialog.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
+    Components/DopplerDialog.cpp \
     Components/FftPanel.cpp \
     Components/GainSlider.cpp \
     Components/GenericDataSaverUI.cpp \
@@ -107,6 +108,7 @@ SOURCES += \
     Suscan/Source.cpp \
     Tasks/CarrierDetector.cpp \
     Tasks/CarrierXlator.cpp \
+    Tasks/DopplerCalculator.cpp \
     Tasks/HistogramFeeder.cpp \
     Tasks/WaveSampler.cpp \
     UIMediator/AudioMediator.cpp \
@@ -135,6 +137,8 @@ HEADERS += \
     include/CancellableTask.h \
     include/CarrierDetector.h \
     include/CarrierXlator.h \
+    include/DopplerCalculator.h \
+    include/DopplerDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
     include/HistogramDialog.h \
@@ -219,6 +223,7 @@ FORMS += \
     ui/Config.ui \
     ui/DataSaverUI.ui \
     ui/DeviceGain.ui \
+    ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
     ui/FftPanel.ui \
     ui/GainControl.ui \

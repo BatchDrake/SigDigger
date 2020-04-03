@@ -1,5 +1,5 @@
 //
-//    CarrierDetector.cpp: Find dominant frequency and center
+//    DopplerCalculator.cpp: Compute Doppler effect
 //    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,28 +16,31 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include "CarrierDetector.h"
+#include "DopplerCalculator.h"
 #include <sigutils/taps.h>
+#include <sigutils/sampling.h>
+
+#define SPEED_OF_LIGHT 299792458.
 
 using namespace SigDigger;
 
-CarrierDetector::CarrierDetector(
+DopplerCalculator::DopplerCalculator(
+    SUFREQ f0,
     const SUCOMPLEX *data,
     size_t len,
-    qreal avgRelBw,
-    qreal dcNotchRelBw,
+    SUFLOAT fs,
     QObject *parent) : CancellableTask(parent)
 {
+  this->f0   = f0;
   this->data = data;
-  this->len = len;
-  this->avgRelBw = avgRelBw;
+  this->len  = len;
+  this->fs   = fs;
   this->setProgress(0);
-  this->dcNotchRelBw = qBound(0., dcNotchRelBw, 1.);
 
   this->setStatus("Estimating best FFT plan");
 }
 
-CarrierDetector::~CarrierDetector()
+DopplerCalculator::~DopplerCalculator()
 {
   if (this->plan != nullptr)
     SU_FFTW(_destroy_plan)(this->plan);
@@ -47,13 +50,15 @@ CarrierDetector::~CarrierDetector()
 }
 
 bool
-CarrierDetector::work(void)
+DopplerCalculator::work(void)
 {
   // Initializing state
   switch (this->state) {
     case ESTIMATING:
       while (this->allocation < this->len)
         this->allocation <<= 1;
+
+      this->psd.resize(this->allocation);
 
       if ((this->buffer = static_cast<SU_FFTW(_complex) *>(
              SU_FFTW(_malloc)(this->allocation * sizeof(SUCOMPLEX)))) == nullptr) {
@@ -92,36 +97,50 @@ CarrierDetector::work(void)
 
     case EXECUTING:
       SU_FFTW(_execute)(this->plan);
-      this->transitionTo(COMPUTING);
+      this->transitionTo(COMPUTE);
       break;
 
-    case COMPUTING:
+    case COMPUTE:
       int i;
       int maxNdx = 0;
-      int bins = static_cast<int>(this->allocation * this->avgRelBw) + 1;
-      int delta = (bins - 1) / 2;
+      int bins = static_cast<int>(this->allocation);
+      int delta = bins / 2;
       int start;
-      int skipLen = static_cast<int>(.5 * this->dcNotchRelBw * this->allocation);
       SUFLOAT maxVal = 0;
       SUCOMPLEX *asSuComplex = reinterpret_cast<SUCOMPLEX *>(this->buffer);
       SUFLOAT psd;
       SUCOMPLEX acc = 0;
+      SUFLOAT peak;
+      SUFLOAT lambda = static_cast<SUFLOAT>(SPEED_OF_LIGHT / this->f0);
+      SUFLOAT dispAcc = 0;
+      SUFLOAT totalEnergy = 0;
+      SUFLOAT err = 0, t, y;
 
       // Find maximum
-      for (i = skipLen; i < static_cast<int>(this->allocation) - skipLen; ++i) {
+      for (i = 0; i < bins; ++i) {
         asSuComplex[i] *= SU_C_CONJ(asSuComplex[i]);
         psd = SU_C_REAL(asSuComplex[i]);
         if (psd > maxVal) {
           maxVal = psd;
           maxNdx = i;
         }
+
+        this->psd[(static_cast<size_t>(bins - i) + delta) % bins] = psd;
+
+        // Accumulate with Kahan
+        y = psd - err;
+        t = totalEnergy + y;
+        err = (t - totalEnergy) - y;
+        totalEnergy = t;
       }
 
-      // Compute centroid.
+      this->max = maxVal;
+
+      // Compute centroid and dispersion.
       start = maxNdx - delta;
 
       for (i = 0; i < bins; ++i) {
-        int j = i + start;
+        int64_t j = i + start;
         if (j < 0)
           j += this->allocation;
 
@@ -131,23 +150,38 @@ CarrierDetector::work(void)
         SUFLOAT nFreq = 2.f * j / static_cast<SUFLOAT>(this->allocation);
 
         acc += psd * SU_C_EXP(I * SU_ASFLOAT(M_PI) * nFreq);
+
+        // Correct j to make it centered around 0
+        if (j >= delta)
+          j -= bins;
+
+        // Divide by delta instead of bins to work with normalized frequencies
+        // (in half cycles per sample)
+        dispAcc += (i * i * psd / totalEnergy) / (delta * delta);
       }
 
       // Finish
-      this->peak = SU_C_ARG(acc);
+      peak = SU_C_ARG(acc);
+      if (peak > PI)
+        peak -= 2 * PI;
+      peak = SU_NORM2ABS_FREQ(this->fs, SU_ANG2NORM_FREQ(peak));
+      this->peak = -lambda * peak;
 
-      if (this->peak > M_PI)
-        this->peak -= 2 * M_PI;
+      // Sigma provides a measure of the standard deviation of velocities.
+      // What we have in dispAcc is a normalized frequency variance,
+      // with differences:
+      this->sigma = SU_NORM2ABS_FREQ(this->fs, std::sqrt(dispAcc));
 
       emit done();
       return false;
+
   }
 
   return true;
 }
 
 void
-CarrierDetector::cancel(void)
+DopplerCalculator::cancel(void)
 {
   emit cancelled();
 }

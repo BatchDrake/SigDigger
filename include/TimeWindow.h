@@ -26,6 +26,7 @@
 #include "Palette.h"
 #include "HistogramDialog.h"
 #include "SamplerDialog.h"
+#include "DopplerDialog.h"
 
 #include "WaveSampler.h"
 
@@ -46,6 +47,7 @@ namespace SigDigger {
     // Ui members
     HistogramDialog *histogramDialog = nullptr;
     SamplerDialog *samplerDialog = nullptr;
+    DopplerDialog *dopplerDialog = nullptr;
 
     Ui::TimeWindow *ui = nullptr;
 
@@ -182,6 +184,7 @@ namespace SigDigger {
 
     void onFineTuneSelectionClicked(void);
     void onClkSourceButtonClicked(void);
+    void onCalculateDoppler(void);
   };
 }
 

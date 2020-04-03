@@ -218,7 +218,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>300</width>
+          <width>231</width>
           <height>733</height>
          </rect>
         </property>
@@ -274,13 +274,6 @@
             <property name="spacing">
              <number>3</number>
             </property>
-            <item row="1" column="1">
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>t:</string>
-              </property>
-             </widget>
-            </item>
             <item row="4" column="2">
              <widget class="QLabel" name="magPhaseLabel">
               <property name="font">
@@ -295,22 +288,23 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QLabel" name="label_7">
-              <property name="text">
-               <string>Q:</string>
+            <item row="2" column="2">
+             <widget class="QLabel" name="iLabel">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
               </property>
-             </widget>
-            </item>
-            <item row="6" column="2">
-             <widget class="QLabel" name="dopplerShiftLabel">
               <property name="font">
                <font>
                 <family>Monospace</family>
+                <weight>50</weight>
+                <bold>false</bold>
                </font>
               </property>
               <property name="text">
-               <string>0 m/s</string>
+               <string>0</string>
               </property>
              </widget>
             </item>
@@ -364,17 +358,27 @@
               </property>
              </widget>
             </item>
-            <item row="5" column="0" colspan="2">
-             <widget class="QLabel" name="label_23">
+            <item row="5" column="2">
+             <widget class="QLabel" name="freqShiftLabel">
+              <property name="font">
+               <font>
+                <family>Monospace</family>
+               </font>
+              </property>
               <property name="text">
-               <string>Frequency shift</string>
+               <string>0 Hz</string>
               </property>
              </widget>
             </item>
-            <item row="6" column="0" colspan="2">
-             <widget class="QLabel" name="label_25">
+            <item row="6" column="2">
+             <widget class="QLabel" name="dopplerShiftLabel">
+              <property name="font">
+               <font>
+                <family>Monospace</family>
+               </font>
+              </property>
               <property name="text">
-               <string>Doppler shift</string>
+               <string>0 m/s</string>
               </property>
              </widget>
             </item>
@@ -382,6 +386,34 @@
              <widget class="QLabel" name="label_8">
               <property name="text">
                <string>I:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0" colspan="2">
+             <widget class="QLabel" name="label_23">
+              <property name="text">
+               <string>Frequency shift</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0" colspan="2">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Mag (phase)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>t:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>Q:</string>
               </property>
              </widget>
             </item>
@@ -399,42 +431,10 @@
               </property>
              </widget>
             </item>
-            <item row="5" column="2">
-             <widget class="QLabel" name="freqShiftLabel">
-              <property name="font">
-               <font>
-                <family>Monospace</family>
-               </font>
-              </property>
+            <item row="6" column="0" colspan="2">
+             <widget class="QLabel" name="label_25">
               <property name="text">
-               <string>0 Hz</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0" colspan="2">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Mag (phase)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="2">
-             <widget class="QLabel" name="iLabel">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Monospace</family>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>0</string>
+               <string>Doppler shift</string>
               </property>
              </widget>
             </item>
@@ -466,7 +466,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>294</width>
+              <width>225</width>
               <height>509</height>
              </rect>
             </property>
@@ -495,22 +495,22 @@
              <property name="spacing">
               <number>3</number>
              </property>
-             <item row="16" column="0">
-              <widget class="QCheckBox" name="periodicSelectionCheck">
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_14">
                <property name="text">
-                <string>Periodic selection</string>
+                <string>Center frequency</string>
                </property>
               </widget>
              </item>
-             <item row="27" column="0" colspan="3">
-              <widget class="Line" name="line_3">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+             <item row="34" column="0">
+              <widget class="QLabel" name="label_20">
+               <property name="text">
+                <string>Max Q</string>
                </property>
               </widget>
              </item>
-             <item row="25" column="0">
-              <widget class="QLabel" name="label_17">
+             <item row="23" column="0">
+              <widget class="QLabel" name="label_10">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
@@ -518,17 +518,198 @@
                 </size>
                </property>
                <property name="text">
-                <string>Selection ΔT</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                <string>Selection start</string>
                </property>
               </widget>
              </item>
-             <item row="10" column="0" rowspan="4" colspan="3">
-              <widget class="Line" name="line">
+             <item row="25" column="0">
+              <widget class="QLabel" name="label_12">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Selection length</string>
+               </property>
+              </widget>
+             </item>
+             <item row="28" column="0" colspan="3">
+              <widget class="Line" name="line_3">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="20" column="0">
+              <widget class="QLabel" name="label_29">
+               <property name="text">
+                <string>Fine tune sel. start</string>
+               </property>
+              </widget>
+             </item>
+             <item row="34" column="1" colspan="2">
+              <widget class="QLabel" name="maxQLabel">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+             <item row="33" column="1" colspan="2">
+              <widget class="QLabel" name="meanQLabel">
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+             <item row="32" column="1" colspan="2">
+              <widget class="QLabel" name="minQLabel">
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+             <item row="36" column="0">
+              <widget class="QLabel" name="label_15">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>RMS</string>
+               </property>
+              </widget>
+             </item>
+             <item row="25" column="1" colspan="2">
+              <widget class="QLabel" name="selLengthLabel">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>0 ms (0)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="24" column="0">
+              <widget class="QLabel" name="label_11">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Selection end</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_27">
+               <property name="text">
+                <string>Sample rate</string>
+               </property>
+              </widget>
+             </item>
+             <item row="22" column="0" colspan="3">
+              <widget class="Line" name="line_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1" colspan="2">
+              <widget class="QLabel" name="lengthLabel">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>0 samples</string>
+               </property>
+              </widget>
+             </item>
+             <item row="24" column="1" colspan="2">
+              <widget class="QLabel" name="selEndLabel">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>0 ms (0)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="27" column="0">
+              <widget class="QLabel" name="label_16">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Selection freq</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -552,10 +733,77 @@
                </property>
               </widget>
              </item>
-             <item row="19" column="0">
-              <widget class="QLabel" name="label_29">
+             <item row="26" column="1" colspan="2">
+              <widget class="QLabel" name="periodLabel">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
                <property name="text">
-                <string>Fine tune sel. start</string>
+                <string>N/A</string>
+               </property>
+              </widget>
+             </item>
+             <item row="31" column="1" colspan="2">
+              <widget class="QLabel" name="maxILabel">
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1" colspan="2">
+              <widget class="QLabel" name="durationLabel">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>0 ms</string>
+               </property>
+              </widget>
+             </item>
+             <item row="29" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Min I</string>
+               </property>
+              </widget>
+             </item>
+             <item row="32" column="0">
+              <widget class="QLabel" name="label_18">
+               <property name="text">
+                <string>Min Q</string>
                </property>
               </widget>
              </item>
@@ -572,121 +820,34 @@
                </property>
               </widget>
              </item>
-             <item row="31" column="0">
-              <widget class="QLabel" name="label_18">
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="text">
-                <string>Min Q</string>
+                <string>Length</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_27">
+             <item row="21" column="0">
+              <widget class="QLabel" name="label_30">
                <property name="text">
-                <string>Sample rate</string>
+                <string>Fine tune sel. end</string>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0">
+              <widget class="QLabel" name="label_22">
+               <property name="text">
+                <string>Source frequency</string>
                </property>
               </widget>
              </item>
              <item row="20" column="1">
-              <widget class="QWidget" name="selEndButtonsWidget" native="true">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>16</height>
-                </size>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_14">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <property name="horizontalSpacing">
-                 <number>0</number>
-                </property>
-                <item row="0" column="0">
-                 <widget class="QPushButton" name="selEndDecDeltaTButton">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string>&lt;&lt;</string>
-                  </property>
-                  <property name="autoRepeat">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QPushButton" name="selEndDecSampleButton">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string>&lt;</string>
-                  </property>
-                  <property name="autoRepeat">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QPushButton" name="selEndIncSampleButton">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string>&gt;</string>
-                  </property>
-                  <property name="autoRepeat">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <widget class="QPushButton" name="selEndIncDeltaTButton">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string>&gt;&gt;</string>
-                  </property>
-                  <property name="autoRepeat">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item row="9" column="0" colspan="3">
-              <widget class="FrequencySpinBox" name="refFreqSpin"/>
-             </item>
-             <item row="19" column="1">
               <widget class="QWidget" name="selStartButtonsWidget" native="true">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
@@ -783,7 +944,7 @@
                </layout>
               </widget>
              </item>
-             <item row="35" column="1" colspan="2">
+             <item row="36" column="1" colspan="2">
               <widget class="QLabel" name="rmsLabel">
                <property name="minimumSize">
                 <size>
@@ -803,48 +964,21 @@
                </property>
               </widget>
              </item>
-             <item row="35" column="0">
-              <widget class="QLabel" name="label_15">
+             <item row="30" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Mean I</string>
+               </property>
+              </widget>
+             </item>
+             <item row="23" column="1" colspan="2">
+              <widget class="QLabel" name="selStartLabel">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
                  <height>0</height>
                 </size>
                </property>
-               <property name="text">
-                <string>RMS</string>
-               </property>
-              </widget>
-             </item>
-             <item row="23" column="0">
-              <widget class="QLabel" name="label_11">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Selection end</string>
-               </property>
-              </widget>
-             </item>
-             <item row="33" column="0">
-              <widget class="QLabel" name="label_20">
-               <property name="text">
-                <string>Max Q</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_14">
-               <property name="text">
-                <string>Center frequency</string>
-               </property>
-              </widget>
-             </item>
-             <item row="32" column="1" colspan="2">
-              <widget class="QLabel" name="meanQLabel">
                <property name="font">
                 <font>
                  <family>Monospace</family>
@@ -853,11 +987,11 @@
                 </font>
                </property>
                <property name="text">
-                <string>0</string>
+                <string>0 ms (0)</string>
                </property>
               </widget>
              </item>
-             <item row="26" column="1" colspan="2">
+             <item row="27" column="1" colspan="2">
               <widget class="QLabel" name="baudLabel">
                <property name="minimumSize">
                 <size>
@@ -878,80 +1012,6 @@
               </widget>
              </item>
              <item row="29" column="1" colspan="2">
-              <widget class="QLabel" name="meanILabel">
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>0</string>
-               </property>
-              </widget>
-             </item>
-             <item row="36" column="0">
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="29" column="0">
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>Mean I</string>
-               </property>
-              </widget>
-             </item>
-             <item row="32" column="0">
-              <widget class="QLabel" name="label_19">
-               <property name="text">
-                <string>Mean Q</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_3">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Length</string>
-               </property>
-              </widget>
-             </item>
-             <item row="20" column="0">
-              <widget class="QLabel" name="label_30">
-               <property name="text">
-                <string>Fine tune sel. end</string>
-               </property>
-              </widget>
-             </item>
-             <item row="28" column="0">
-              <widget class="QLabel" name="label_13">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Min I</string>
-               </property>
-              </widget>
-             </item>
-             <item row="28" column="1" colspan="2">
               <widget class="QLabel" name="minILabel">
                <property name="minimumSize">
                 <size>
@@ -971,26 +1031,31 @@
                </property>
               </widget>
              </item>
-             <item row="21" column="0" colspan="3">
-              <widget class="Line" name="line_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+             <item row="17" column="0">
+              <widget class="QCheckBox" name="periodicSelectionCheck">
+               <property name="text">
+                <string>Periodic selection</string>
                </property>
               </widget>
              </item>
-             <item row="26" column="0">
-              <widget class="QLabel" name="label_16">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
+             <item row="30" column="1" colspan="2">
+              <widget class="QLabel" name="meanILabel">
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
                </property>
                <property name="text">
-                <string>Selection freq</string>
+                <string>0</string>
                </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </widget>
+             </item>
+             <item row="33" column="0">
+              <widget class="QLabel" name="label_19">
+               <property name="text">
+                <string>Mean Q</string>
                </property>
               </widget>
              </item>
@@ -1006,68 +1071,111 @@
                </property>
               </widget>
              </item>
-             <item row="8" column="0">
-              <widget class="QLabel" name="label_22">
-               <property name="text">
-                <string>Source frequency</string>
+             <item row="11" column="0" rowspan="4" colspan="3">
+              <widget class="Line" name="line">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
                </property>
               </widget>
              </item>
-             <item row="31" column="1" colspan="2">
-              <widget class="QLabel" name="minQLabel">
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
+             <item row="21" column="1">
+              <widget class="QWidget" name="selEndButtonsWidget" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
                </property>
-               <property name="text">
-                <string>0</string>
-               </property>
-              </widget>
-             </item>
-             <item row="33" column="1" colspan="2">
-              <widget class="QLabel" name="maxQLabel">
-               <property name="minimumSize">
+               <property name="maximumSize">
                 <size>
-                 <width>0</width>
-                 <height>0</height>
+                 <width>16777215</width>
+                 <height>16</height>
                 </size>
                </property>
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>0</string>
-               </property>
+               <layout class="QGridLayout" name="gridLayout_14">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="horizontalSpacing">
+                 <number>0</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QPushButton" name="selEndDecDeltaTButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>&lt;&lt;</string>
+                  </property>
+                  <property name="autoRepeat">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QPushButton" name="selEndDecSampleButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>&lt;</string>
+                  </property>
+                  <property name="autoRepeat">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QPushButton" name="selEndIncSampleButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>&gt;</string>
+                  </property>
+                  <property name="autoRepeat">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QPushButton" name="selEndIncDeltaTButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>&gt;&gt;</string>
+                  </property>
+                  <property name="autoRepeat">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
-             <item row="24" column="1" colspan="2">
-              <widget class="QLabel" name="selLengthLabel">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>0 ms (0)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="16" column="1" colspan="2">
+             <item row="17" column="1" colspan="2">
               <widget class="QSpinBox" name="periodicDivisionsSpin">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -1095,154 +1203,43 @@
                </property>
               </widget>
              </item>
-             <item row="25" column="1" colspan="2">
-              <widget class="QLabel" name="periodLabel">
+             <item row="37" column="0">
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="26" column="0">
+              <widget class="QLabel" name="label_17">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
                  <height>0</height>
                 </size>
                </property>
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
                <property name="text">
-                <string>N/A</string>
+                <string>Selection ΔT</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
-             <item row="2" column="1" colspan="2">
-              <widget class="QLabel" name="lengthLabel">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>0 samples</string>
-               </property>
-              </widget>
-             </item>
-             <item row="30" column="1" colspan="2">
-              <widget class="QLabel" name="maxILabel">
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>0</string>
-               </property>
-              </widget>
-             </item>
-             <item row="30" column="0">
+             <item row="31" column="0">
               <widget class="QLabel" name="label_5">
                <property name="text">
                 <string>Max I</string>
                </property>
               </widget>
              </item>
-             <item row="24" column="0">
-              <widget class="QLabel" name="label_12">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Selection length</string>
-               </property>
-              </widget>
-             </item>
-             <item row="22" column="0">
-              <widget class="QLabel" name="label_10">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Selection start</string>
-               </property>
-              </widget>
-             </item>
-             <item row="23" column="1" colspan="2">
-              <widget class="QLabel" name="selEndLabel">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>0 ms (0)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1" colspan="2">
-              <widget class="QLabel" name="durationLabel">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>0 ms</string>
-               </property>
-              </widget>
-             </item>
-             <item row="22" column="1" colspan="2">
-              <widget class="QLabel" name="selStartLabel">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Monospace</family>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>0 ms (0)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="19" column="2" rowspan="2">
+             <item row="20" column="2" rowspan="2">
               <widget class="QPushButton" name="lockButton">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -1264,6 +1261,16 @@
                </property>
               </widget>
              </item>
+             <item row="9" column="0" colspan="3">
+              <widget class="FrequencySpinBox" name="refFreqSpin"/>
+             </item>
+             <item row="10" column="0" colspan="3">
+              <widget class="QPushButton" name="dopplerButton">
+               <property name="text">
+                <string>Show &amp;velocity distribution</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </widget>
            <widget class="QWidget" name="page_2">
@@ -1271,7 +1278,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>294</width>
+              <width>225</width>
               <height>509</height>
              </rect>
             </property>
@@ -1339,8 +1346,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>294</width>
-              <height>509</height>
+              <width>237</width>
+              <height>495</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1522,8 +1529,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>294</width>
-              <height>509</height>
+              <width>261</width>
+              <height>495</height>
              </rect>
             </property>
             <attribute name="label">
@@ -2080,8 +2087,8 @@
  </resources>
  <connections/>
  <buttongroups>
+  <buttongroup name="intervalButtonGrp"/>
   <buttongroup name="spaceButtonGrp"/>
   <buttongroup name="clckSourceBtnGrp"/>
-  <buttongroup name="intervalButtonGrp"/>
  </buttongroups>
 </ui>

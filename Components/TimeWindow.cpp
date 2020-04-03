@@ -30,6 +30,7 @@
 #include <CarrierDetector.h>
 #include <CarrierXlator.h>
 #include <HistogramFeeder.h>
+#include <DopplerCalculator.h>
 
 using namespace SigDigger;
 
@@ -393,6 +394,12 @@ TimeWindow::connectAll(void)
         this,
         SLOT(onClkSourceButtonClicked()));
 
+  connect(
+        this->ui->dopplerButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onCalculateDoppler(void)));
+
   connectFineTuneSelWidgets();
 }
 
@@ -531,6 +538,7 @@ TimeWindow::setColorConfig(ColorConfig const &cfg)
 
   this->histogramDialog->setColorConfig(cfg);
   this->samplerDialog->setColorConfig(cfg);
+  this->dopplerDialog->setColorConfig(cfg);
 }
 
 std::string
@@ -707,6 +715,7 @@ TimeWindow::refreshUi(void)
   this->ui->periodLabel->setEnabled(haveSelection);
   this->ui->baudLabel->setEnabled(haveSelection);
   this->ui->actionSave_selection->setEnabled(haveSelection);
+  this->ui->dopplerButton->setEnabled(haveSelection);
 
   if (haveSelection != this->hadSelectionBefore) {
     this->carrierSyncNotifySelection(haveSelection);
@@ -929,6 +938,7 @@ TimeWindow::TimeWindow(QWidget *parent) :
 
   this->histogramDialog = new HistogramDialog(this);
   this->samplerDialog   = new SamplerDialog(this);
+  this->dopplerDialog   = new DopplerDialog(this);
 
   // We can do this because both labels have the same font
   QFontMetrics metrics(this->ui->notchWidthLabel->font());
@@ -1411,6 +1421,24 @@ TimeWindow::onTaskDone(void)
   } else if (this->taskController.getName() == "triggerSampler") {
     this->samplerDialog->show();
     this->notifyTaskRunning(false);
+  } else if (this->taskController.getName() == "computeDoppler") {
+    SUFLOAT lambda = static_cast<SUFLOAT>(299792458. / this->ui->refFreqSpin->value());
+    // Oh my god. Please provide something better than this
+    DopplerCalculator *dc =
+        (DopplerCalculator *) this->taskController.getTask();
+    std::vector<SUCOMPLEX> spectrum = std::move(dc->takeSpectrum());
+
+    // If the selected wave was captured at a sample rate fs,
+    // then the RBW is fs / data.size()
+    // Therefore delta V is RBW * lambda
+
+    this->dopplerDialog->setVelocityStep(this->fs / spectrum.size() * lambda);
+    this->dopplerDialog->setSigmaV(static_cast<qreal>(dc->getSigma()));
+    this->dopplerDialog->setCenterFreq(this->ui->refFreqSpin->value());
+    this->dopplerDialog->setDominantVelocity(static_cast<qreal>(dc->getPeak()));
+    this->dopplerDialog->giveSpectrum(std::move(spectrum));
+    this->dopplerDialog->setMax(dc->getMax());
+    this->dopplerDialog->show();
   }
 }
 
@@ -1627,3 +1655,31 @@ TimeWindow::onClkSourceButtonClicked(void)
 {
   this->refreshUi();
 }
+
+void
+TimeWindow::onCalculateDoppler(void)
+{
+  if (this->ui->realWaveform->getHorizontalSelectionPresent()) {
+    const SUCOMPLEX *data = this->getDisplayData();
+    qint64 selStart = static_cast<qint64>(
+          this->ui->realWaveform->getHorizontalSelectionStart());
+    qint64 selEnd = static_cast<qint64>(
+          this->ui->realWaveform->getHorizontalSelectionEnd());
+
+    if (selStart < 0)
+      selStart = 0;
+
+    if (selEnd >= static_cast<qint64>(this->data->size()))
+      selEnd = static_cast<qint64>(this->data->size());
+
+    DopplerCalculator *dc = new DopplerCalculator(
+          this->ui->refFreqSpin->value(),
+          data + selStart,
+          static_cast<size_t>(selEnd - selStart),
+          static_cast<SUFLOAT>(this->fs));
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("computeDoppler", dc);
+  }
+}
+
