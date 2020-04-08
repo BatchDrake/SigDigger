@@ -19,7 +19,7 @@
 
 #include <QApplication>
 #include <iostream>
-
+#include <QFont>
 #include "Loader.h"
 using namespace SigDigger;
 
@@ -28,6 +28,10 @@ main(int argc, char *argv[])
 {
   int ret;
 
+#ifdef __APPLE__
+  QFont::insertSubstitution("Monospace", "Monaco");
+#endif // __APPLE__
+  
   QApplication app(argc, argv);
 
   Application main_app;
