@@ -118,6 +118,10 @@ namespace SigDigger {
     const SUCOMPLEX *getDisplayData(void) const;
     size_t getDisplayDataLength(void) const;
 
+    static void adjustButtonToSize(
+            QPushButton *button,
+            QString text = "");
+
   public:
     explicit TimeWindow(QWidget *parent = nullptr);
     ~TimeWindow();

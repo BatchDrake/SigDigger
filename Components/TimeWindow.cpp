@@ -930,6 +930,17 @@ TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs)
   this->onCarrierSlidersChanged();
 }
 
+void
+TimeWindow::adjustButtonToSize(QPushButton *button, QString text)
+{
+  QFontMetrics m(button->font());
+
+  if (text.size() == 0)
+    text = button->text();
+
+  button->setMaximumWidth(m.width(text) + 5 * m.width(" "));
+}
+
 TimeWindow::TimeWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::TimeWindow)
@@ -949,6 +960,27 @@ TimeWindow::TimeWindow(QWidget *parent) :
   this->ui->imagWaveform->setRealComponent(false);
 
   this->ui->syncFreqSpin->setExtraDecimals(6);
+
+#ifdef __APPLE__
+  // Fix Qt limitations in MacOS
+  QFontMetrics m(this->ui->selStartDecDeltaTButton->font());
+  this->ui->selStartButtonsWidget->setMaximumHeight(7 * m.height() / 4);
+  this->ui->selEndButtonsWidget->setMaximumHeight(7 * m.height() / 4);
+
+  adjustButtonToSize(this->ui->selStartDecDeltaTButton, ">>");
+  adjustButtonToSize(this->ui->selStartDecSampleButton, ">>");
+  adjustButtonToSize(this->ui->selStartIncSampleButton, ">>");
+  adjustButtonToSize(this->ui->selStartIncDeltaTButton, ">>");
+
+  adjustButtonToSize(this->ui->selEndDecDeltaTButton, ">>");
+  adjustButtonToSize(this->ui->selEndDecSampleButton, ">>");
+  adjustButtonToSize(this->ui->selEndIncSampleButton, ">>");
+  adjustButtonToSize(this->ui->selEndIncDeltaTButton, ">>");
+
+  this->ui->gridLayout_9->setVerticalSpacing(6);
+  this->ui->gridLayout_11->setVerticalSpacing(6);
+  this->ui->gridLayout_12->setVerticalSpacing(6);
+#endif
 
   this->recalcLimits();
 
