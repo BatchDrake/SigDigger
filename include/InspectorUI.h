@@ -100,6 +100,7 @@ namespace SigDigger {
     void pushControl(InspectorCtl *ctl);
     void setBps(unsigned int bps);
     void connectAll(void);
+    void initUi(void);
     unsigned int getBps(void) const;
     unsigned int getBaudRate(void) const;
     std::string getClassName(void) const;

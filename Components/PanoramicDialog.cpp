@@ -164,9 +164,15 @@ PanoramicDialog::PanoramicDialog(QWidget *parent) :
   this->setWindowFlags(Qt::Window);
   this->ui->sampleRateSpin->setUnits("sps");
 
-  QFontMetrics metrics(this->ui->centerLabel->font());
-  this->ui->centerLabel->setFixedWidth(metrics.width("XXX.XXXXXXXXX XHz"));
-  this->ui->bwLabel->setFixedWidth(metrics.width("XXX.XXXXXXXXX XHz"));
+  this->ui->centerLabel->setFixedWidth(
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->centerLabel,
+          "XXX.XXXXXXXXX XHz"));
+
+  this->ui->bwLabel->setFixedWidth(
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->bwLabel,
+          "XXX.XXXXXXXXX XHz"));
 
   this->connectAll();
 }

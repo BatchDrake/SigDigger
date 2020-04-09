@@ -30,13 +30,15 @@ HistogramDialog::HistogramDialog(QWidget *parent) :
 {
   this->ui->setupUi(this);
 
-  QFontMetrics metrics(this->ui->spanLabel->font());
-
   this->ui->spanLabel->setFixedWidth(
-        metrics.width("XXXXXXXXXXXXX (XXXXXXX seconds)"));
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->spanLabel,
+          "XXXXXXXXXXXXX (XXXXXXX seconds)"));
 
   this->ui->selRangeLabel->setFixedWidth(
-        metrics.width("XXXXXXXXXXXXX to XXXXXXXXXXXXX"));
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->selRangeLabel,
+          "XXXXXXXXXXXXX to XXXXXXXXXXXXX"));
 
   this->ui->histogram->setDecider(&this->dummyDecider);
   this->ui->histogram->setUpdateDecider(false);

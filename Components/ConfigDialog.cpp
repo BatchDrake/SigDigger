@@ -21,7 +21,7 @@
 #include <QMessageBox>
 
 #include <Suscan/Library.h>
-
+#include "SuWidgetsHelpers.h"
 #include "ConfigDialog.h"
 
 using namespace SigDigger;
@@ -515,8 +515,10 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
   this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 
   // Setup sample rate size
-  QFontMetrics metrics(this->ui->trueRateLabel->font());
-  this->ui->trueRateLabel->setFixedWidth(metrics.width("XXX.XXX Xsps"));
+  this->ui->trueRateLabel->setFixedWidth(
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->trueRateLabel,
+          "XXX.XXX Xsps"));
 
   // Setup integer validators
   this->ui->fftSizeEdit->setValidator(new QIntValidator(1, 1 << 20, this));

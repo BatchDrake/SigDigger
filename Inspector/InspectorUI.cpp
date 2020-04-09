@@ -46,9 +46,6 @@ InspectorUI::InspectorUI(
     QWidget *owner,
     Suscan::Config *config)
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  unsigned int ndx;
-
   this->ui = new Ui::Inspector();
   this->config = config;
   this->owner  = owner;
@@ -80,7 +77,36 @@ InspectorUI::InspectorUI(
     this->ui->histogram->overrideUnits("Hz");
   }
 
-  this->ui->wfSpectrum->setFreqUnits(1);
+  this->initUi();
+
+  this->connectAll();
+
+  // Refresh UI
+  this->refreshUi();
+
+  // Force refresh of waterfall
+  this->onRangeChanged();
+  this->onAspectSliderChanged(this->ui->aspectSlider->value());
+}
+
+InspectorUI::~InspectorUI()
+{
+  delete this->ui;
+
+  if (this->dataSaver != nullptr)
+    delete this->dataSaver;
+
+  if (this->socketForwarder != nullptr)
+    delete this->socketForwarder;
+}
+
+void
+InspectorUI::initUi(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  unsigned int ndx;
+
+ this->ui->wfSpectrum->setFreqUnits(1);
 
   // TODO: put shared UI objects in a singleton
   this->palettes.push_back(Palette("Suscan", wf_gradient));
@@ -104,8 +130,6 @@ InspectorUI::InspectorUI(
 
   this->setPalette("Suscan");
 
-  this->connectAll();
-
   this->populate();
 
   // Configure throttleable widgets
@@ -123,26 +147,11 @@ InspectorUI::InspectorUI(
   // Refresh Bps
   this->setBps(1);
 
-  // Refresh UI
-  this->refreshUi();
-
-
-
-  // Force refresh of waterfall
-  this->onRangeChanged();
-  this->onAspectSliderChanged(this->ui->aspectSlider->value());
-}
-
-InspectorUI::~InspectorUI()
-{
-  delete this->ui;
-
-  if (this->dataSaver != nullptr)
-    delete this->dataSaver;
-
-  if (this->socketForwarder != nullptr)
-    delete this->socketForwarder;
-
+#ifdef __APPLE__
+  // Qt for MacOS X does not now how to handle proper button styling. We
+  // just get rid of it for the sake of clarity.
+  this->ui->recordButton->setStyleSheet("");
+#endif // __APPLE__
 }
 
 void

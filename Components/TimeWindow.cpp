@@ -933,12 +933,12 @@ TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs)
 void
 TimeWindow::adjustButtonToSize(QPushButton *button, QString text)
 {
-  QFontMetrics m(button->font());
-
   if (text.size() == 0)
     text = button->text();
 
-  button->setMaximumWidth(m.width(text) + 5 * m.width(" "));
+  button->setMaximumWidth(
+        SuWidgetsHelpers::getWidgetTextWidth(button, text) +
+        5 * SuWidgetsHelpers::getWidgetTextWidth(button, " "));
 }
 
 TimeWindow::TimeWindow(QWidget *parent) :
@@ -952,9 +952,15 @@ TimeWindow::TimeWindow(QWidget *parent) :
   this->dopplerDialog   = new DopplerDialog(this);
 
   // We can do this because both labels have the same font
-  QFontMetrics metrics(this->ui->notchWidthLabel->font());
-  this->ui->notchWidthLabel->setFixedWidth(metrics.width("XXXX.XX XHz"));
-  this->ui->averagerSpanLabel->setFixedWidth(metrics.width("XXXX.XX XHz"));
+  this->ui->notchWidthLabel->setFixedWidth(
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->notchWidthLabel,
+          "XXXX.XX XHz"));
+
+  this->ui->averagerSpanLabel->setFixedWidth(
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->averagerSpanLabel,
+          "XXXX.XX XHz"));
 
   this->ui->realWaveform->setRealComponent(true);
   this->ui->imagWaveform->setRealComponent(false);
@@ -962,8 +968,8 @@ TimeWindow::TimeWindow(QWidget *parent) :
   this->ui->syncFreqSpin->setExtraDecimals(6);
 
 #ifdef __APPLE__
+  QFontMetrics m(this->ui->selStartButtonsWidget->font());
   // Fix Qt limitations in MacOS
-  QFontMetrics m(this->ui->selStartDecDeltaTButton->font());
   this->ui->selStartButtonsWidget->setMaximumHeight(7 * m.height() / 4);
   this->ui->selEndButtonsWidget->setMaximumHeight(7 * m.height() / 4);
 
