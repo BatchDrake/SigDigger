@@ -25,12 +25,14 @@
 #include <fstream>
 #include <iomanip>
 #include <SuWidgetsHelpers.h>
-#include "ui_TimeWindow.h"
+#include <SigDiggerHelpers.h>
 #include <climits>
 #include <CarrierDetector.h>
 #include <CarrierXlator.h>
 #include <HistogramFeeder.h>
 #include <DopplerCalculator.h>
+
+#include "ui_TimeWindow.h"
 
 using namespace SigDigger;
 
@@ -496,15 +498,11 @@ TimeWindow::calcLimits(
 void
 TimeWindow::setPalette(std::string const &name)
 {
-  int ndx = 0;
+  int index = SigDiggerHelpers::instance()->getPaletteIndex(name);
 
-  for (auto p : this->palettes) {
-    if (p.getName() == name) {
-      this->ui->paletteCombo->setCurrentIndex(ndx);
-      this->onPaletteChanged(ndx);
-      break;
-    }
-    ++ndx;
+  if (index >= 0) {
+    this->ui->paletteCombo->setCurrentIndex(index);
+    this->onPaletteChanged(index);
   }
 }
 
@@ -544,12 +542,13 @@ TimeWindow::setColorConfig(ColorConfig const &cfg)
 std::string
 TimeWindow::getPalette(void) const
 {
-  if (this->ui->paletteCombo->currentIndex() < 0
-      || this->ui->paletteCombo->currentIndex() >=
-      static_cast<int>(this->palettes.size()))
+  const Palette *palette = SigDiggerHelpers::instance()->getPalette(
+        this->ui->paletteCombo->currentIndex());
+
+  if (palette == nullptr)
     return "Suscan";
 
-  return this->palettes[this->ui->paletteCombo->currentIndex()].getName();
+  return palette->getName();
 }
 
 unsigned int
@@ -862,33 +861,6 @@ TimeWindow::refreshMeasures(void)
 }
 
 void
-TimeWindow::deserializePalettes(void)
-{
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  int ndx = 0;
-
-  // Fill palette vector
-  for (auto i = sus->getFirstPalette();
-       i != sus->getLastPalette();
-       i++)
-    this->palettes.push_back(Palette(*i));
-
-  this->ui->paletteCombo->clear();
-
-  // Populate combo
-  for (auto p : this->palettes) {
-    this->ui->paletteCombo->insertItem(
-          ndx,
-          QIcon(QPixmap::fromImage(p.getThumbnail())),
-          QString::fromStdString(p.getName()),
-          QVariant::fromValue(ndx));
-    ++ndx;
-  }
-
-  this->onPaletteChanged(0);
-}
-
-void
 TimeWindow::setCenterFreq(SUFREQ center)
 {
   this->centerFreq = center;
@@ -992,7 +964,7 @@ TimeWindow::TimeWindow(QWidget *parent) :
 
   this->refreshUi();
   this->refreshMeasures();
-  this->deserializePalettes();
+  SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
   this->connectAll();
 }
 
@@ -1393,10 +1365,12 @@ TimeWindow::onPhaseDerivative(void)
 void
 TimeWindow::onPaletteChanged(int index)
 {
-  this->ui->realWaveform->setPalette(
-        this->palettes[static_cast<unsigned>(index)].getGradient());
-  this->ui->imagWaveform->setPalette(
-        this->palettes[static_cast<unsigned>(index)].getGradient());
+  const Palette *palette = SigDiggerHelpers::instance()->getPalette(index);
+
+  if (palette != nullptr) {
+    this->ui->realWaveform->setPalette(palette->getGradient());
+    this->ui->imagWaveform->setPalette(palette->getGradient());
+  }
 
   emit configChanged();
 }

@@ -20,6 +20,7 @@
 #define TIMEWINDOW_H
 
 #include <QMainWindow>
+
 #include "SamplingProperties.h"
 #include "CancellableTask.h"
 #include "ColorConfig.h"
@@ -71,7 +72,6 @@ namespace SigDigger {
 
     CancellableController taskController;
 
-    std::vector<Palette> palettes;
     int getPeriodicDivision(void) const;
 
     void connectFineTuneSelWidgets(void);
@@ -94,7 +94,6 @@ namespace SigDigger {
     void recalcLimits(void);
     void refreshMeasures(void);
     void refreshUi(void);
-    void deserializePalettes(void);
     void saveSamples(int start, int end);
 
     void notifyTaskRunning(bool);
