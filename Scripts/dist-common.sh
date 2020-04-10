@@ -28,6 +28,8 @@
 DISTROOT="$PWD"
 BRANCH=develop
 OSTYPE=`uname -s`
+ARCH=`uname -m`
+
 if [ "$OSTYPE" == "Linux" ]; then
     SCRIPTPATH=`realpath "$0"`
 else
@@ -160,3 +162,24 @@ function build()
         skip "Skipping build..."
     fi
 }
+
+ESCAPE=`echo -en '\033'`
+echo -en '\033[0;1m'
+
+cat << EOF
+Welcome to...$ESCAPE[1;36m
+
+    ____  _       ____  _                       
+   / ___|(_) __ _|  _ \(_) __ _  __ _  ___ _ __ 
+   \___ \| |/ _\` | | | | |/ _\` |/ _\` |/ _ \ \'__|
+    ___) | | (_| | |_| | | (_| | (_| |  __/ |   
+   |____/|_|\__, |____/|_|\__, |\__, |\___|_|   ('s)   
+            |___/         |___/ |___/           
+
+$ESCAPE[0;1m...multi platform deployment script.$ESCAPE[0m
+EOF
+
+echo
+echo "Attempting deployment on $OSTYPE ($ARCH)"
+echo "Date: "`date`
+echo

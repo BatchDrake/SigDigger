@@ -152,12 +152,13 @@ DopplerCalculator::work(void)
         acc += psd * SU_C_EXP(I * SU_ASFLOAT(M_PI) * nFreq);
 
         // Correct j to make it centered around 0
+        j = i;
         if (j >= delta)
           j -= bins;
 
         // Divide by delta instead of bins to work with normalized frequencies
         // (in half cycles per sample)
-        dispAcc += (i * i * psd / totalEnergy) / (delta * delta);
+        dispAcc += (j * j * psd / totalEnergy) / (delta * delta);
       }
 
       // Finish
