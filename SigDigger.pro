@@ -90,6 +90,7 @@ SOURCES += \
     Misc/CancellableTask.cpp \
     Misc/Palette.cpp \
     Misc/SNREstimator.cpp \
+    Misc/SigDiggerHelpers.cpp \
     Suscan/Messages/ChannelMessage.cpp \
     Suscan/Messages/GenericMessage.cpp \
     Suscan/Messages/InspectorMessage.cpp \
@@ -146,6 +147,7 @@ HEADERS += \
     include/PortAudioPlayer.h \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
+    include/SigDiggerHelpers.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \
     include/Suscan/Messages/InspectorMessage.h \

@@ -20,9 +20,9 @@
 #include <PanoramicDialog.h>
 #include <Suscan/Library.h>
 #include "ui_PanoramicDialog.h"
-#include "DefaultGradient.h"
 #include "MainSpectrum.h"
 #include <SuWidgetsHelpers.h>
+#include <SigDiggerHelpers.h>
 #include <fstream>
 #include <iomanip>
 #include <limits>
@@ -324,36 +324,6 @@ PanoramicDialog::preferredRttMs(Suscan::Source::Device const &dev)
 }
 
 void
-PanoramicDialog::deserializePalettes(void)
-{
-  if (this->palettes.size() == 0) {
-    Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-    int ndx = 0;
-    this->palettes.push_back(Palette("Suscan", wf_gradient));
-    this->palettes.push_back(*MainSpectrum::getGqrxPalette());
-
-    for (auto i = sus->getFirstPalette();
-         i != sus->getLastPalette();
-         i++)
-      this->palettes.push_back(Palette(*i));
-
-    this->ui->paletteCombo->clear();
-
-    // Populate combo
-    for (auto p : this->palettes) {
-      this->ui->paletteCombo->insertItem(
-            ndx,
-            QIcon(QPixmap::fromImage(p.getThumbnail())),
-            QString::fromStdString(p.getName()),
-            QVariant::fromValue(ndx));
-      ++ndx;
-    }
-
-    this->setPaletteGradient(this->paletteGradient);
-  }
-}
-
-void
 PanoramicDialog::refreshUi(void)
 {
   bool empty = this->deviceMap.size() == 0;
@@ -522,15 +492,13 @@ PanoramicDialog::setColors(ColorConfig const &cfg)
 void
 PanoramicDialog::setPaletteGradient(QString const &name)
 {
+  int index = SigDiggerHelpers::instance()->getPaletteIndex(name.toStdString());
   this->paletteGradient = name;
 
-  for (unsigned i = 0; i < this->palettes.size(); ++i) {
-    if (this->palettes[i].getName() == this->paletteGradient.toStdString()) {
-      this->ui->paletteCombo->setCurrentIndex(
-            static_cast<int>(i));
-      this->ui->waterfall->setPalette(this->palettes[i].getGradient());
-      break;
-    }
+  if (index >= 0) {
+    this->ui->paletteCombo->setCurrentIndex(index);
+    this->ui->waterfall->setPalette(
+          SigDiggerHelpers::instance()->getPalette(index)->getGradient());
   }
 }
 
@@ -741,7 +709,6 @@ void
 PanoramicDialog::run(void)
 {
   this->populateDeviceCombo();
-  this->deserializePalettes();
   this->deserializeFATs();
   this->exec();
   this->saveConfig();
@@ -889,7 +856,7 @@ PanoramicDialog::allocConfig(void)
 void
 PanoramicDialog::applyConfig(void)
 {
-  this->deserializePalettes();
+  SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
 
   this->setPaletteGradient(QString::fromStdString(this->dialogConfig->palette));
   this->ui->lnbDoubleSpinBox->setValue(

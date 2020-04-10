@@ -74,7 +74,6 @@ namespace SigDigger {
       bool running = false;
       QWidget *noGainLabel = nullptr;
       std::vector<DeviceGain *> gainControls;
-      std::vector<Palette> palettes;
       std::map<std::string, Suscan::Source::Device> deviceMap;
       std::vector<FrequencyAllocationTable *> FATs;
 
@@ -101,7 +100,6 @@ namespace SigDigger {
       DeviceGain *lookupGain(std::string const &name);
       void clearGains(void);
       void refreshGains(Suscan::Source::Device &device);
-      void deserializePalettes(void);
       void deserializeFATs(void);
       void setRanges(Suscan::Source::Device const &);
       void setWfRange(qint64 min, qint64 max);

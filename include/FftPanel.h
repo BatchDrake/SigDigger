@@ -72,12 +72,12 @@ namespace SigDigger {
     unsigned int fftSize = 0;
     unsigned int refreshRate = 0;
     unsigned int defaultRefreshRate = 0;
-    std::vector<Palette> palettes;
+
     std::vector<unsigned int> sizes;
     std::vector<unsigned int> refreshRates;
     std::vector<unsigned int> timeSpans;
 
-    Palette *selected = nullptr;
+    const Palette *selected = nullptr;
 
     // Private methods
     void addFftSize(unsigned int sz);
@@ -93,7 +93,7 @@ namespace SigDigger {
     explicit FftPanel(QWidget *parent = nullptr);
     ~FftPanel() override;
 
-    void deserializePalettes(void);
+    void refreshPalettes(void);
 
     // Getters
     const QColor *getPaletteGradient(void) const;

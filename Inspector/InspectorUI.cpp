@@ -33,9 +33,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <Suscan/Library.h>
-#include <DefaultGradient.h>
 #include <QMessageBox>
 #include <SuWidgetsHelpers.h>
+#include <SigDiggerHelpers.h>
 
 #include <iomanip>
 #include <fcntl.h>
@@ -103,30 +103,9 @@ InspectorUI::~InspectorUI()
 void
 InspectorUI::initUi(void)
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  unsigned int ndx;
+  this->ui->wfSpectrum->setFreqUnits(1);
 
- this->ui->wfSpectrum->setFreqUnits(1);
-
-  // TODO: put shared UI objects in a singleton
-  this->palettes.push_back(Palette("Suscan", wf_gradient));
-  this->palettes.push_back(*MainSpectrum::getGqrxPalette());
-
-  for (auto i = sus->getFirstPalette();
-       i != sus->getLastPalette();
-       i++) {
-    ndx = static_cast<unsigned int>(i - sus->getFirstPalette());
-
-    this->palettes.push_back(Palette(*i));
-
-    this->ui->paletteCombo->insertItem(
-          static_cast<int>(ndx),
-          QIcon(QPixmap::fromImage(this->palettes[ndx].getThumbnail())),
-          QString::fromStdString(this->palettes[ndx].getName()),
-          QVariant::fromValue(ndx));
-
-    this->palettes[ndx].getThumbnail();
-  }
+  SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
 
   this->setPalette("Suscan");
 
@@ -225,17 +204,16 @@ InspectorUI::getLo(void) const
 bool
 InspectorUI::setPalette(std::string const &str)
 {
-  unsigned int i;
+  int index = SigDiggerHelpers::instance()->getPaletteIndex(str);
 
-  for (i = 0; i < this->palettes.size(); ++i) {
-    if (this->palettes[i].getName().compare(str) == 0) {
-      this->ui->wfSpectrum->setPalette(this->palettes[i].getGradient());
-      this->ui->paletteCombo->setCurrentIndex(static_cast<int>(i));
-      return true;
-    }
-  }
+  if (index < 0)
+    return false;
 
-  return false;
+  this->ui->wfSpectrum->setPalette(
+        SigDiggerHelpers::instance()->getPalette(index)->getGradient());
+  this->ui->paletteCombo->setCurrentIndex(index);
+
+  return true;
 }
 
 void
@@ -1241,7 +1219,7 @@ InspectorUI::onSpectrumConfigChanged(void)
 {
   int index = this->ui->paletteCombo->currentIndex();
   this->ui->wfSpectrum->setPalette(
-        this->palettes[static_cast<unsigned>(index)].getGradient());
+        SigDiggerHelpers::instance()->getPalette(index)->getGradient());
   this->ui->wfSpectrum->setPeakDetection(
         this->ui->peakDetectionButton->isChecked(), 3);
 

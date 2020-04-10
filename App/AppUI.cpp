@@ -18,6 +18,7 @@
 //
 
 #include "AppUI.h"
+#include "SigDiggerHelpers.h"
 
 using namespace SigDigger;
 
@@ -47,8 +48,11 @@ AppUI::AppUI(QMainWindow *owner)
 void
 AppUI::postLoadInit(QMainWindow *owner)
 {
+  // Singleton config has been deserialized. Refresh UI with these changes.
+  SigDiggerHelpers::instance()->deserializePalettes();
+
   this->configDialog = new ConfigDialog(owner);
-  this->fftPanel->deserializePalettes();  
+  this->fftPanel->refreshPalettes();
   this->sourcePanel->deserializeAutoGains();
   this->spectrum->deserializeFATs();
   this->inspectorPanel->postLoadInit();

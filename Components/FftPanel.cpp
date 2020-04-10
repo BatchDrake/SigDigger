@@ -17,10 +17,9 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include <Suscan/Library.h>
-#include "DefaultGradient.h"
-#include "MainSpectrum.h"
 #include "FftPanel.h"
 #include "ui_FftPanel.h"
+#include "SigDiggerHelpers.h"
 
 using namespace SigDigger;
 
@@ -76,7 +75,6 @@ FftPanel::allocConfig(void)
   return this->panelConfig = new FftPanelConfig();
 }
 
-
 void
 FftPanel::applyConfig(void)
 {
@@ -94,31 +92,6 @@ FftPanel::applyConfig(void)
   this->setPeakDetect(savedConfig.peakDetect);
   this->setRangeLock(savedConfig.rangeLock);
   this->setTimeSpan(savedConfig.timeSpan);
-}
-
-void
-FftPanel::deserializePalettes(void)
-{
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  int ndx = 0;
-
-  // Fill palette vector
-  for (auto i = sus->getFirstPalette();
-       i != sus->getLastPalette();
-       i++)
-    this->palettes.push_back(Palette(*i));
-
-  this->ui->paletteCombo->clear();
-
-  // Populate combo
-  for (auto p : this->palettes) {
-    this->ui->paletteCombo->insertItem(
-          ndx,
-          QIcon(QPixmap::fromImage(p.getThumbnail())),
-          QString::fromStdString(p.getName()),
-          QVariant::fromValue(ndx));
-    ++ndx;
-  }
 }
 
 void
@@ -212,9 +185,6 @@ FftPanel::FftPanel(QWidget *parent) :
 
   ui->setupUi(this);
 
-  this->palettes.push_back(Palette("Suscan", wf_gradient));
-  this->palettes.push_back(*MainSpectrum::getGqrxPalette());
-
   this->assertConfig();
 
   for (i = 9; i < 17; ++i)
@@ -249,6 +219,12 @@ FftPanel::FftPanel(QWidget *parent) :
   this->addTimeSpan(48 * 3600);
 
   this->connectAll();
+}
+
+void
+FftPanel::refreshPalettes(void)
+{
+  SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
 }
 
 void
@@ -378,7 +354,7 @@ FftPanel::getPalette(void) const
   if (this->selected != nullptr)
     return this->selected->getName();
 
-  return this->palettes[0].getName();
+  return SigDiggerHelpers::instance()->getPalette(0)->getName();
 }
 
 float
@@ -423,7 +399,8 @@ FftPanel::getPaletteGradient(void) const
 {
   if (this->selected != nullptr)
     return this->selected->getGradient();
-  return this->palettes[0].getGradient();
+
+  return SigDiggerHelpers::instance()->getPalette(0)->getGradient();
 }
 
 unsigned int
@@ -479,18 +456,16 @@ FftPanel::getWindowFunction(void) const
 bool
 FftPanel::setPalette(std::string const &str)
 {
-  unsigned int i;
+  int index = SigDiggerHelpers::instance()->getPaletteIndex(str);
 
-  for (i = 0; i < this->palettes.size(); ++i) {
-    if (this->palettes[i].getName().compare(str) == 0) {
-      this->ui->paletteCombo->setCurrentIndex(static_cast<int>(i));
-      this->selected = &this->palettes[i];
-      this->panelConfig->palette = str;
-      return true;
-    }
-  }
+  if (index < 0)
+    return false;
 
-  return false;
+  this->ui->paletteCombo->setCurrentIndex(index);
+  this->selected = SigDiggerHelpers::instance()->getPalette(index);
+  this->panelConfig->palette = str;
+
+  return true;
 }
 
 void
@@ -675,8 +650,9 @@ FftPanel::onFreqZoomChanged(int)
 void
 FftPanel::onPaletteChanged(int index)
 {
-  this->selected = &this->palettes[static_cast<unsigned>(index)];
+  this->selected = SigDiggerHelpers::instance()->getPalette(index);
   this->panelConfig->palette = this->selected->getName();
+
   emit paletteChanged();
 }
 

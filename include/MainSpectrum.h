@@ -71,7 +71,6 @@ namespace SigDigger {
     void updateLimits(void);
 
     // Static members
-    static Palette *gqrxPalette;
     static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
 
   public:
@@ -121,7 +120,7 @@ namespace SigDigger {
     FrequencyAllocationTable *getFAT(QString const &) const;
 
     static int getFrequencyUnits(qint64 frew);
-    static Palette *getGqrxPalette(void);
+
 
   signals:
     void bandwidthChanged(void);

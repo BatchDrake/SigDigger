@@ -80,7 +80,6 @@ namespace SigDigger {
     std::vector<SUCOMPLEX> buffer;
 
     // UI objects
-    std::vector<Palette> palettes;
     std::vector<Suscan::Estimator> estimators;
     std::vector<Suscan::SpectrumSource> spectsrcs;
     std::map<Suscan::EstimatorId, EstimatorControl *> estimatorCtls;
