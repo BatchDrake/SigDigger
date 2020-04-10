@@ -464,13 +464,13 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <property name="minimumValue">
+         <property name="minimumValue" stdset="0">
           <number>-70</number>
          </property>
-         <property name="minimumPosition">
+         <property name="minimumPosition" stdset="0">
           <number>-70</number>
          </property>
-         <property name="maximumPosition">
+         <property name="maximumPosition" stdset="0">
           <number>-10</number>
          </property>
         </widget>
@@ -496,10 +496,10 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <property name="minimumValue">
+         <property name="minimumValue" stdset="0">
           <number>-70</number>
          </property>
-         <property name="maximumPosition">
+         <property name="maximumPosition" stdset="0">
           <number>-10</number>
          </property>
         </widget>
@@ -559,6 +559,9 @@
        </item>
        <item row="13" column="1">
         <widget class="QComboBox" name="paletteCombo">
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
          <property name="iconSize">
           <size>
            <width>64</width>
