@@ -66,7 +66,7 @@ function deploy_deps()
 function remove_full_paths()
 {
   FULLPATH="$2"
-  RPATHNAME='@rpath/'`basename "$FULLPATH"`
+  RPATHNAME='@executable_path/../Frameworks/'`basename "$FULLPATH"`
    
   install_name_tool -change "$FULLPATH" "$RPATHNAME" "$1"
 }
@@ -79,10 +79,11 @@ function remove_full_path_stdin () {
 
 function ensure_rpath()
 {
-  for i in "$LIBPATH"/*.dylib; do
+  for i in "$LIBPATH"/*.dylib "$BUNDLEPATH"/Contents/MacOS/SigDigger; do
     if ! [ -L "$i" ]; then
       try "Fixing "`basename $i`"..." true
       otool -L "$i" | grep '\t/usr/local/' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
+      otool -L "$i" | grep '\t@rpath/.*\.dylib' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
     fi
   done
 }
