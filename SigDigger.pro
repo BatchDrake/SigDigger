@@ -48,6 +48,8 @@ isEmpty(SIGDIGGER_PREFIX) {
 }
 
 darwin: ICON = icons/SigDigger.icns
+darwin: QMAKE_RPATHDIR += $$SUWIDGETS_INSTALL_LIBS
+datwin: QMAKE_RPATHDIR += /usr/local/lib
 
 INCLUDEPATH += $$PWD/include $$SUWIDGETS_INSTALL_HEADERS
 SOURCES += \
