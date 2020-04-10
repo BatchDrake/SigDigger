@@ -63,8 +63,33 @@ function deploy_deps()
   bundle_libs "SoapySDR libraries" /usr/local/lib/libSoapySDR*dylib
 }
 
+function remove_full_paths()
+{
+  FULLPATH="$2"
+  RPATHNAME='@rpath/'`basename "$FULLPATH"`
+   
+  install_name_tool -change "$FULLPATH" "$RPATHNAME" "$1"
+}
+
+function remove_full_path_stdin () {
+  while read line; do
+    remove_full_paths "$1" "$line"
+  done
+}
+
+function ensure_rpath()
+{
+  for i in "$LIBPATH"/*.dylib; do
+    if ! [ -L "$i" ]; then
+      try "Fixing "`basename $i`"..." true
+      otool -L "$i" | grep '\t/usr/local/' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
+    fi
+  done
+}
+
 function create_dmg()
 {
+  try "Cleaning up old files..." rm -Rfv "$STAGINGDIR"
   try "Creating staging directory..." mkdir -p "$STAGINGDIR"
   try "Copying bundle to staging dir..."   cp -Rfv "$BUNDLEPATH" "$STAGINGDIR"
   try "Creating .dmg file and finishing..." hdiutil create -volname SigDigger -srcfolder "$STAGINGDIR" -ov -format UDZO "$DISTROOT"/SigDigger.dmg
@@ -78,6 +103,7 @@ function deploy()
   try "Bundling built libraries..." cp -Rfv "$DEPLOYROOT/usr/lib/"*.dylib "$LIBPATH"
   
   deploy_deps
+  ensure_rpath
 }
 
 build
