@@ -47,6 +47,8 @@ isEmpty(SIGDIGGER_PREFIX) {
   target.path=$$SIGDIGGER_PREFIX/bin
 }
 
+darwin: ICON = icons/SigDigger.icns
+
 INCLUDEPATH += $$PWD/include $$SUWIDGETS_INSTALL_HEADERS
 SOURCES += \
     App/AppConfig.cpp \
