@@ -150,8 +150,8 @@ HistogramDialog::refreshUi(void)
   }
 
   if (this->limits) {
-    float min, max;
-    QString units;
+    float min = 0, max = 1;
+    QString units = "u";
 
     switch (this->properties.space) {
       case AMPLITUDE:

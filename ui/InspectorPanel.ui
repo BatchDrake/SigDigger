@@ -45,8 +45,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>357</width>
-        <height>468</height>
+        <width>343</width>
+        <height>504</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
@@ -86,7 +86,7 @@ font-weight: bold;</string>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="FrequencySpinBox" name="bandwidthSpin" native="true"/>
+        <widget class="FrequencySpinBox" name="bandwidthSpin"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_18">
@@ -225,6 +225,11 @@ font-weight: bold;</string>
           </property>
           <item row="2" column="2">
            <widget class="QLabel" name="sampleRateLabel">
+            <property name="font">
+             <font>
+              <family>Monospace</family>
+             </font>
+            </property>
             <property name="text">
              <string>0 sps</string>
             </property>
@@ -232,6 +237,11 @@ font-weight: bold;</string>
           </item>
           <item row="3" column="2">
            <widget class="QLabel" name="durationLabel">
+            <property name="font">
+             <font>
+              <family>Monospace</family>
+             </font>
+            </property>
             <property name="text">
              <string>0 ms</string>
             </property>
@@ -318,6 +328,11 @@ font-weight: bold;</string>
           </item>
           <item row="4" column="2">
            <widget class="QLabel" name="memoryLabel">
+            <property name="font">
+             <font>
+              <family>Monospace</family>
+             </font>
+            </property>
             <property name="text">
              <string>0 bytes</string>
             </property>
@@ -475,7 +490,7 @@ font-weight: bold;</string>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="FrequencySpinBox" name="frequencySpinBox" native="true"/>
+        <widget class="FrequencySpinBox" name="frequencySpinBox"/>
        </item>
       </layout>
      </widget>

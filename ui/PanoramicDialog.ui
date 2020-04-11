@@ -389,6 +389,11 @@
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+         </font>
+        </property>
         <property name="text">
          <string>0</string>
         </property>
@@ -398,6 +403,9 @@
        <widget class="QLabel" name="label_6">
         <property name="text">
          <string>Bandwidth</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -435,7 +443,7 @@
          <string>0 Hz</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -443,6 +451,9 @@
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Frames</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -496,7 +507,7 @@
          <string>0 Hz</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>

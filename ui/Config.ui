@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>654</width>
-    <height>468</height>
+    <height>408</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1150,7 +1150,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="windowButtonGroup"/>
   <buttongroup name="sourceTypeGroup"/>
+  <buttongroup name="windowButtonGroup"/>
  </buttongroups>
 </ui>
