@@ -67,7 +67,7 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>194</width>
+         <width>198</width>
          <height>692</height>
         </rect>
        </property>
@@ -203,7 +203,7 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>194</width>
+         <width>198</width>
          <height>692</height>
         </rect>
        </property>
@@ -242,7 +242,7 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>194</width>
+             <width>198</width>
              <height>692</height>
             </rect>
            </property>
@@ -276,7 +276,7 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>194</width>
+         <width>198</width>
          <height>692</height>
         </rect>
        </property>
@@ -339,7 +339,7 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>194</width>
+             <width>198</width>
              <height>692</height>
             </rect>
            </property>
@@ -398,7 +398,7 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>194</width>
+         <width>198</width>
          <height>692</height>
         </rect>
        </property>
@@ -627,7 +627,7 @@ font-family: Monospace;</string>
        <item row="1" column="0">
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="documentMode">
           <bool>true</bool>
@@ -943,6 +943,11 @@ font-family: Monospace;</string>
               </item>
               <item row="3" column="15">
                <widget class="QLabel" name="dataSizeLabel">
+                <property name="font">
+                 <font>
+                  <family>Monospace</family>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Data size: 0 bits</string>
                 </property>
@@ -955,6 +960,11 @@ font-family: Monospace;</string>
                   <width>0</width>
                   <height>0</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Monospace</family>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Capture size: 0 sym</string>

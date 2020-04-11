@@ -142,7 +142,7 @@
    </property>
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/start.png</normaloff>:/icons/start.png</iconset>
+     <normaloff>:/icons/start-capture.png</normaloff>:/icons/start-capture.png</iconset>
    </property>
    <property name="text">
     <string>Run</string>
@@ -172,7 +172,7 @@
   <action name="actionStart_capture">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/start.png</normaloff>:/icons/start.png</iconset>
+     <normaloff>:/icons/start-shiki.png</normaloff>:/icons/start-shiki.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Start capture</string>
@@ -181,7 +181,7 @@
   <action name="actionStop_capture">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/stop.png</normaloff>:/icons/stop.png</iconset>
+     <normaloff>:/icons/stop-shiki.png</normaloff>:/icons/stop-shiki.png</iconset>
    </property>
    <property name="text">
     <string>S&amp;top capture</string>
@@ -195,7 +195,7 @@
   <action name="actionImport_profile">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/import.png</normaloff>:/icons/import.png</iconset>
+     <normaloff>:/icons/document-import.png</normaloff>:/icons/document-import.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Import profile</string>
@@ -204,7 +204,7 @@
   <action name="actionExport_profile">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/export.png</normaloff>:/icons/export.png</iconset>
+     <normaloff>:/icons/document-export.png</normaloff>:/icons/document-export.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Export profile</string>
@@ -284,7 +284,6 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>

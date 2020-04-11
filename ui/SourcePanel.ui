@@ -143,6 +143,11 @@
        </item>
        <item row="0" column="1">
         <widget class="QLabel" name="sampleRateLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+          </font>
+         </property>
          <property name="text">
           <string>N/A</string>
          </property>
@@ -346,6 +351,11 @@
        </item>
        <item row="1" column="1">
         <widget class="QLabel" name="processingRateLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+          </font>
+         </property>
          <property name="text">
           <string>N/A</string>
          </property>

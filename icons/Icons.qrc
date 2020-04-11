@@ -32,11 +32,8 @@
         <file>object-flip-vertical.png</file>
         <file>object-flip-horizontal.png</file>
         <file>document-save.png</file>
-        <file>start.png</file>
-        <file>stop.png</file>
-        <file>export.png</file>
-        <file>import.png</file>
-        <file>save-selection.png</file>
+        <file>stop-shiki.png</file>
+        <file>start-shiki.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>
