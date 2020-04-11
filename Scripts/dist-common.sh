@@ -29,6 +29,8 @@ DISTROOT="$PWD"
 BRANCH=develop
 OSTYPE=`uname -s`
 ARCH=`uname -m`
+RELEASE="0.1.0"
+DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
 
 if [ "$OSTYPE" == "Linux" ]; then
     SCRIPTPATH=`realpath "$0"`
@@ -182,4 +184,5 @@ EOF
 echo
 echo "Attempting deployment on $OSTYPE ($ARCH)"
 echo "Date: "`date`
+echo "SigDigger release to be built: $RELEASE"
 echo

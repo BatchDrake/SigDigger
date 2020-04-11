@@ -27,10 +27,14 @@
 
 . dist-common.sh
 
+BUNDLEID="org.actinid.SigDigger"
+
 BUNDLEPATH="$DEPLOYROOT/usr/bin/SigDigger.app"
+PLISTPATH="$BUNDLEPATH/Contents/Info.plist"
 RSRCPATH="$BUNDLEPATH/Contents/Resources"
 LIBPATH="$BUNDLEPATH/Contents/Frameworks"
 STAGINGDIR="$DEPLOYROOT/SigDigger.dir"
+DMG_NAME="$DISTFILENAME".dmg
 
 function locate_macdeploy()
 {
@@ -93,7 +97,16 @@ function create_dmg()
   try "Cleaning up old files..." rm -Rfv "$STAGINGDIR"
   try "Creating staging directory..." mkdir -p "$STAGINGDIR"
   try "Copying bundle to staging dir..."   cp -Rfv "$BUNDLEPATH" "$STAGINGDIR"
-  try "Creating .dmg file and finishing..." hdiutil create -volname SigDigger -srcfolder "$STAGINGDIR" -ov -format UDZO "$DISTROOT"/SigDigger.dmg
+  try "Creating .dmg file and finishing..." hdiutil create -volname SigDigger -srcfolder "$STAGINGDIR" -ov -format UDZO "$DISTROOT/$DMG_NAME"
+}
+
+function fix_plist()
+{
+  try "Setting bundle ID..."                 plutil -replace CFBundleIdentifier -string "$BUNDLEID" "$PLISTPATH"
+  try "Setting bundle name..."               plutil -replace CFBundleName -string "SigDigger" "$PLISTPATH"
+  try "Setting bundle version ($RELEASE)..." plutil -replace CFBundleShortVersionString -string "$RELEASE" "$PLISTPATH"
+  try "Setting bundle language..."           plutil -replace CFBundleDevelopmentRegion -string "en" "$PLISTPATH"
+  try "Setting NOTE..."                      plutil -replace NOTE -string "Bundled width SigDigger's deployment script" "$PLISTPATH"
 }
 
 function deploy()
@@ -105,6 +118,7 @@ function deploy()
   
   deploy_deps
   ensure_rpath
+  fix_plist
 }
 
 build
