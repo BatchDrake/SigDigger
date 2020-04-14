@@ -531,6 +531,10 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
   this->ui->nLevelAvgAlphaEdit->setValidator(new QDoubleValidator(0., 1., 10, this));
   this->ui->snrThresholdEdit->setValidator(new QDoubleValidator(0., 10., 10, this));
 
+  // Set limits
+  this->ui->lnbSpinBox->setMaximum(300e9);
+  this->ui->lnbSpinBox->setMinimum(-300e9);
+
   this->populateCombos();
   this->ui->sampleRateSpinBox->setUnits("sps");
   this->connectAll();
