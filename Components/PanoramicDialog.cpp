@@ -174,6 +174,9 @@ PanoramicDialog::PanoramicDialog(QWidget *parent) :
           this->ui->bwLabel,
           "XXX.XXXXXXXXX XHz"));
 
+  this->ui->lnbDoubleSpinBox->setMinimum(-300e9);
+  this->ui->lnbDoubleSpinBox->setMaximum(300e9);
+
   this->connectAll();
 }
 
@@ -604,8 +607,8 @@ PanoramicDialog::getFrequencyUnits(qint64 freq)
 void
 PanoramicDialog::setRanges(Suscan::Source::Device const &dev)
 {
-  SUFREQ minFreq = dev.getMinFreq() - this->getLnbOffset();
-  SUFREQ maxFreq = dev.getMaxFreq() - this->getLnbOffset();
+  SUFREQ minFreq = dev.getMinFreq() + this->getLnbOffset();
+  SUFREQ maxFreq = dev.getMaxFreq() + this->getLnbOffset();
 
   // Prevents Waterfall frequencies from overflowing.
 
@@ -888,8 +891,8 @@ PanoramicDialog::onDeviceChanged(void)
     if (rtt != 0)
       this->ui->rttSpin->setValue(static_cast<int>(rtt));
     if (this->ui->fullRangeCheck->isChecked()) {
-      this->ui->rangeStartSpin->setValue(dev.getMinFreq() - this->getLnbOffset());
-      this->ui->rangeEndSpin->setValue(dev.getMaxFreq() - this->getLnbOffset());
+      this->ui->rangeStartSpin->setValue(dev.getMinFreq() + this->getLnbOffset());
+      this->ui->rangeEndSpin->setValue(dev.getMaxFreq() + this->getLnbOffset());
     }
   } else {
     this->clearGains();
@@ -906,8 +909,8 @@ PanoramicDialog::onFullRangeChanged(void)
 
   if (this->getSelectedDevice(dev)) {
     if (checked) {
-      this->ui->rangeStartSpin->setValue(dev.getMinFreq() - this->getLnbOffset());
-      this->ui->rangeEndSpin->setValue(dev.getMaxFreq() - this->getLnbOffset());
+      this->ui->rangeStartSpin->setValue(dev.getMinFreq() + this->getLnbOffset());
+      this->ui->rangeEndSpin->setValue(dev.getMaxFreq() + this->getLnbOffset());
     }
   }
 

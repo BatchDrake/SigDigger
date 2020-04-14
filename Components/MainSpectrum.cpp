@@ -103,8 +103,8 @@ MainSpectrum::feed(float *data, int size)
 void
 MainSpectrum::updateLimits(void)
 {
-  qint64 minLcd = this->minFreq - this->getLnbFreq();
-  qint64 maxLcd = this->maxFreq - this->getLnbFreq();
+  qint64 minLcd = this->minFreq + this->getLnbFreq();
+  qint64 maxLcd = this->maxFreq + this->getLnbFreq();
 
   // Center frequency LCD limits
   this->ui->fcLcd->setMin(minLcd);
