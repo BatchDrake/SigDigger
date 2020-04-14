@@ -39,12 +39,16 @@ isEmpty(SUWIDGETS_PREFIX) {
   SUWIDGETS_INSTALL_HEADERS=$$SUWIDGETS_PREFIX/include/SuWidgets
 }
 
-isEmpty(SIGDIGGER_PREFIX) {
+isEmpty(PREFIX) {
   # Default rules for deployment.
   qnx: target.path = /tmp/$${TARGET}/bin
   else: unix:!android: target.path = /opt/$${TARGET}/bin
 } else {
-  target.path=$$SIGDIGGER_PREFIX/bin
+  target.path=$$PREFIX/bin
+}
+
+!isEmpty(PKGVERSION) {
+  QMAKE_CXXFLAGS += "-DSIGDIGGER_PKGVERSION='\""$$PKGVERSION"\"'"
 }
 
 darwin: ICON = icons/SigDigger.icns
@@ -213,6 +217,7 @@ HEADERS += \
     include/FileDataSaver.h \
     include/SocketForwarder.h \
     include/NetForwarderUI.h \
+    include/Version.h \
     include/WaitingSpinnerWidget.h \
     include/DeviceDialog.h \
     include/PanoramicDialog.h \

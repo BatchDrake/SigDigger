@@ -39,6 +39,10 @@ namespace SigDigger {
     Palette *getGqrxPalette(void);
 
   public:
+    static unsigned int abiVersion(void);
+    static QString version(void);
+    static QString pkgversion(void);
+
     static SigDiggerHelpers *instance(void);
     int getPaletteIndex(std::string const &) const;
     const Palette *getPalette(std::string const &) const;

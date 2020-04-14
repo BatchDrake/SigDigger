@@ -39,6 +39,7 @@ AppConfig::serialize(void)
 
   obj.setClass("qtui");
 
+  obj.set("version", this->version);
   obj.set("width", this->width);
   obj.set("height", this->height);
   obj.set("x", this->x);
@@ -104,6 +105,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->inspectorConfig->deserialize(conf.getField("inspectorPanel")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
 
+    TRYSILENT(this->version    = conf.get("version", SIGDIGGER_UICONFIG_DEFAULT_VERSION));
     TRYSILENT(this->width      = conf.get("width", this->width));
     TRYSILENT(this->height     = conf.get("height", this->height));
     TRYSILENT(this->x          = conf.get("x", this->x));

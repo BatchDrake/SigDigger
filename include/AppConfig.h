@@ -25,6 +25,7 @@
 #include <Suscan/AnalyzerParams.h>
 #include <AppUI.h>
 
+#include "Version.h"
 #include "ColorConfig.h"
 
 #define SIGDIGGER_FFT_WINDOW_SIZE  4096u
@@ -53,6 +54,7 @@ namespace SigDigger {
       Suscan::Serializable *audioConfig = nullptr;
       Suscan::Serializable *panSpectrumConfig = nullptr;
 
+      int version = SIGDIGGER_UICONFIG_VERSION;
       int width = 1280;
       int height = 1024;
       bool fullScreen = false;

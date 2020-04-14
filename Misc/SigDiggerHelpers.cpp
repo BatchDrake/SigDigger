@@ -19,7 +19,13 @@
 
 #include "SigDiggerHelpers.h"
 #include "DefaultGradient.h"
+#include "Version.h"
 #include <QComboBox>
+
+#ifndef SIGDIGGER_PKGVERSION
+#  define SIGDIGGER_PKGVERSION \
+  "custom build on " __DATE__ " at " __TIME__ " (" __VERSION__ ")"
+#endif /* SUSCAN_BUILD_STRING */
 
 using namespace SigDigger;
 
@@ -32,6 +38,18 @@ SigDiggerHelpers::instance(void)
     currInstance = new SigDiggerHelpers();
 
   return currInstance;
+}
+
+QString
+SigDiggerHelpers::version(void)
+{
+  return QString(SIGDIGGER_VERSION_STRING);
+}
+
+QString
+SigDiggerHelpers::pkgversion(void)
+{
+  return QString(SIGDIGGER_PKGVERSION);
 }
 
 Palette *

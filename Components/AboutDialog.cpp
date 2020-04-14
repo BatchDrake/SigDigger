@@ -19,9 +19,23 @@
 
 #include "AboutDialog.h"
 #include "ui_AboutDialog.h"
+#include "SigDiggerHelpers.h"
+
 #include <Suscan/Library.h>
 
 using namespace SigDigger;
+
+QString
+AboutDialog::substituteVersions(QString text)
+{
+  return text.replace(
+        "%SIGDIGGER_VERSION%",
+        SigDiggerHelpers::version())
+      .replace(
+        "%SIGDIGGER_PKGVERSION%",
+        SigDiggerHelpers::pkgversion());
+
+}
 
 AboutDialog::AboutDialog(QWidget *parent) :
   QDialog(parent),
@@ -32,13 +46,17 @@ AboutDialog::AboutDialog(QWidget *parent) :
 
   ui->setupUi(this);
 
-  sigutilsVer = "sigutils "
+  sigutilsVer = "With sigutils "
       + QString::fromStdString(Suscan::Singleton::sigutilsVersion());
-  suscanVer = "suscan "
+  suscanVer = "With suscan "
       + QString::fromStdString(Suscan::Singleton::suscanVersion());
 
   this->ui->sigutilsVerLabel->setText(sigutilsVer);
   this->ui->suscanVerLabel->setText(suscanVer);
+
+  this->ui->bannerLabel->setText(
+        substituteVersions(
+          this->ui->bannerLabel->text()));
 }
 
 AboutDialog::~AboutDialog()

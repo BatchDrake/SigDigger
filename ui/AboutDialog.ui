@@ -279,24 +279,25 @@ p, li { white-space: pre-wrap; }
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="bannerLabel">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:18pt; font-weight:600;&quot;&gt;SigDigger - A free and multiplatform digital signal analyzer&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Brought to you with love and kindness by Gonzalo J. Carracedo&lt;br/&gt;&lt;a href=&quot;http://actinid.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://actinid.org&lt;br/&gt;&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-size:18pt; font-weight:600;&quot;&gt;SigDigger %SIGDIGGER_VERSION%&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;The free multiplatform signal analyzer&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Brought to you with love and kindness by Gonzalo J. Carracedo - &lt;a href=&quot;http://actinid.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://actinid.org&lt;/span&gt;&lt;/a&gt;&lt;br/&gt;%SIGDIGGER_PKGVERSION%&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
      </property>
      <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
     <widget class="QLabel" name="sigutilsVerLabel">
-     <property name="font">
-      <font>
-       <family>Monospace</family>
-      </font>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="text">
       <string>TextLabel</string>
@@ -308,10 +309,11 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="2" column="1">
     <widget class="QLabel" name="suscanVerLabel">
-     <property name="font">
-      <font>
-       <family>Monospace</family>
-      </font>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="text">
       <string>TextLabel</string>
