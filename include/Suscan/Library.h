@@ -118,6 +118,9 @@ namespace Suscan {
     const Source::Device *getDeviceAt(unsigned int index) const;
 
     static Singleton *get_instance(void);
+
+    static std::string sigutilsVersion(void);
+    static std::string suscanVersion(void);
   };
 };
 

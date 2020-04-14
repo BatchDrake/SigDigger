@@ -18,6 +18,7 @@
 //
 
 #include <Suscan/Library.h>
+#include <analyzer/version.h>
 
 using namespace Suscan;
 
@@ -53,6 +54,20 @@ Singleton::get_instance(void)
   }
 
   return Singleton::instance;
+}
+
+std::string
+Singleton::sigutilsVersion(void)
+{
+  return std::string(sigutils_api_version())
+      + " (" + std::string(sigutils_pkgversion()) + ")";
+}
+
+std::string
+Singleton::suscanVersion(void)
+{
+  return std::string(suscan_api_version())
+      + " (" + std::string(suscan_pkgversion()) + ")";
 }
 
 // Initialization methods
