@@ -129,10 +129,12 @@ namespace SigDigger {
     void setData(std::vector<SUCOMPLEX> const &data, qreal fs);
     void setPalette(std::string const &);
     void setPaletteOffset(unsigned int);
+    void setPaletteContrast(int);
     void setColorConfig(ColorConfig const &);
 
     std::string getPalette(void) const;
     unsigned int getPaletteOffset(void) const;
+    int getPaletteContrast(void) const;
 
     void showEvent(QShowEvent *event);
 
@@ -163,6 +165,7 @@ namespace SigDigger {
     void onPhaseDerivative(void);
     void onPaletteChanged(int);
     void onChangePaletteOffset(int);
+    void onChangePaletteContrast(int);
 
     void onAbort(void);
 

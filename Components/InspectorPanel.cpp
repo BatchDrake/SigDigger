@@ -69,6 +69,7 @@ InspectorPanel::applyConfig(void)
   this->setPrecise(this->panelConfig->precise);
   this->timeWindow->setPalette(this->panelConfig->palette);
   this->timeWindow->setPaletteOffset(this->panelConfig->paletteOffset);
+  this->timeWindow->setPaletteContrast(this->panelConfig->paletteContrast);
   this->ui->frequencySpinBox->setEditable(false);
   this->ui->triggerSpin->setValue(
         static_cast<qreal>(this->panelConfig->autoSquelchTriggerSNR));
@@ -558,6 +559,7 @@ InspectorPanel::onTimeWindowConfigChanged(void)
 {
   this->panelConfig->palette = this->timeWindow->getPalette();
   this->panelConfig->paletteOffset = this->timeWindow->getPaletteOffset();
+  this->panelConfig->paletteContrast = this->timeWindow->getPaletteContrast();
 }
 
 void

@@ -37,6 +37,7 @@ namespace SigDigger {
     std::string palette = "Suscan";
     SUFLOAT autoSquelchTriggerSNR = SIGDIGGER_DEFAULT_SQUELCH_TRIGGER;
     unsigned int paletteOffset;
+    int paletteContrast;
     bool precise = false;
 
     // Overriden methods

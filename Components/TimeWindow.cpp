@@ -288,6 +288,12 @@ TimeWindow::connectAll(void)
         SLOT(onChangePaletteOffset(int)));
 
   connect(
+        this->ui->contrastSlider,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onChangePaletteContrast(int)));
+
+  connect(
         this->ui->taskAbortButton,
         SIGNAL(clicked(void)),
         this,
@@ -516,6 +522,13 @@ TimeWindow::setPaletteOffset(unsigned int offset)
 }
 
 void
+TimeWindow::setPaletteContrast(int contrast)
+{
+  this->ui->contrastSlider->setValue(contrast);
+  this->onChangePaletteContrast(contrast);
+}
+
+void
 TimeWindow::setColorConfig(ColorConfig const &cfg)
 {
   this->ui->constellation->setBackgroundColor(cfg.constellationBackground);
@@ -554,7 +567,13 @@ TimeWindow::getPalette(void) const
 unsigned int
 TimeWindow::getPaletteOffset(void) const
 {
-  return this->ui->offsetSlider->value();
+  return static_cast<unsigned>(this->ui->offsetSlider->value());
+}
+
+int
+TimeWindow::getPaletteContrast(void) const
+{
+  return this->ui->contrastSlider->value();
 }
 
 void
@@ -1380,6 +1399,19 @@ TimeWindow::onChangePaletteOffset(int val)
 {
   this->ui->realWaveform->setPhaseDiffOrigin(static_cast<unsigned>(val));
   this->ui->imagWaveform->setPhaseDiffOrigin(static_cast<unsigned>(val));
+
+  emit configChanged();
+}
+
+void
+TimeWindow::onChangePaletteContrast(int contrast)
+{
+  qreal realContrast = std::pow(
+        static_cast<qreal>(10),
+        static_cast<qreal>(contrast / 20.));
+
+  this->ui->realWaveform->setPhaseDiffContrast(realContrast);
+  this->ui->imagWaveform->setPhaseDiffContrast(realContrast);
 
   emit configChanged();
 }
