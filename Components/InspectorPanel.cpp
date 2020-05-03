@@ -36,6 +36,7 @@ InspectorPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(precise);
   LOAD(palette);
   LOAD(paletteOffset);
+  LOAD(paletteContrast);
   LOAD(autoSquelchTriggerSNR);
 }
 
@@ -50,6 +51,7 @@ InspectorPanelConfig::serialize(void)
   STORE(precise);
   STORE(palette);
   STORE(paletteOffset);
+  STORE(paletteContrast);
   STORE(autoSquelchTriggerSNR);
 
   return this->persist(obj);

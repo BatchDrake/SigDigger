@@ -456,7 +456,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="tabSpacing">
             <number>6</number>
@@ -1201,6 +1201,9 @@
                <property name="maximum">
                 <number>65536</number>
                </property>
+               <property name="value">
+                <number>1</number>
+               </property>
               </widget>
              </item>
              <item row="37" column="0">
@@ -1616,7 +1619,7 @@
                 <item row="7" column="0">
                  <widget class="QRadioButton" name="clkGardnerButton">
                   <property name="text">
-                   <string>Gardner symbol recovery</string>
+                   <string>Gardner clock recovery</string>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">clckSourceBtnGrp</string>
