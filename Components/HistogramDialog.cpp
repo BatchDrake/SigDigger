@@ -20,7 +20,7 @@
 #include "HistogramDialog.h"
 #include "ui_HistogramDialog.h"
 
-#include "SuWidgetsHelpers.h"
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 

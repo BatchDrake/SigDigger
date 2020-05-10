@@ -21,7 +21,7 @@
 #include <QMessageBox>
 
 #include <Suscan/Library.h>
-#include "SuWidgetsHelpers.h"
+#include <SuWidgetsHelpers.h>
 #include "ConfigDialog.h"
 
 using namespace SigDigger;
