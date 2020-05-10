@@ -104,7 +104,9 @@ function locate_sdk()
   try "Locating sndfile... " pkg-config sndfile
   try "Locating libxml2..." pkg-config libxml-2.0
   try "Locating FFTW3..." pkg-config fftw3
-  try "Locating PortAudio..." pkg-config portaudio-2.0
+  if [ "$OSTYPE" == "Darwin" ]; then
+      try "Locating PortAudio..." pkg-config portaudio-2.0
+  fi
   try "Locating SoapySDR..." pkg-config SoapySDR
   
   if ! pkg-config volk; then
@@ -150,13 +152,13 @@ function build()
         try "Deploying suscan..."          make -j $THREADS -C suscan/build install
 
         cd SuWidgets
-        try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += release" SUWIDGETS_PREFIX="$DEPLOYROOT/usr"
+        try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += release" PREFIX="$DEPLOYROOT/usr"
         try "Building SuWidgets..."        make -j $THREADS
         try "Deploying SuWidgets..."       make install
         cd ..
 
         cd SigDigger
-        try "Running QMake (SigDigger)..." qmake SigDigger.pro "CONFIG += release" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" SIGDIGGER_PREFIX="$DEPLOYROOT/usr"
+        try "Running QMake (SigDigger)..." qmake SigDigger.pro "CONFIG += release" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr"
         try "Building SigDigger..."        make -j $THREADS
         try "Deploying SigDigger..."       make install
         cd ..
