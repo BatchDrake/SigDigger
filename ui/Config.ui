@@ -256,6 +256,11 @@
             </item>
             <item>
              <property name="text">
+              <string>Raw unsigned8 I/Q capture</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
               <string>WAV file</string>
              </property>
             </item>

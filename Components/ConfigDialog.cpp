@@ -295,8 +295,12 @@ ConfigDialog::refreshProfileUi(void)
       this->ui->formatCombo->setCurrentIndex(1);
       break;
 
-    case SUSCAN_SOURCE_FORMAT_WAV:
+    case SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8:
       this->ui->formatCombo->setCurrentIndex(2);
+      break;
+
+    case SUSCAN_SOURCE_FORMAT_WAV:
+      this->ui->formatCombo->setCurrentIndex(3);
       break;
   }
 
@@ -617,6 +621,10 @@ ConfigDialog::onFormatChanged(int index)
         break;
 
       case 2:
+        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8);
+        break;
+
+      case 3:
         this->profile.setFormat(SUSCAN_SOURCE_FORMAT_WAV);
         break;
     }
@@ -787,6 +795,11 @@ ConfigDialog::onBrowseCaptureFile(void)
       break;
 
     case SUSCAN_SOURCE_FORMAT_RAW_FLOAT32:
+      title = "Open I/Q file";
+      format = "I/Q files (*.raw);;All files (*)";
+      break;
+
+    case SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8:
       title = "Open I/Q file";
       format = "I/Q files (*.raw);;All files (*)";
       break;
