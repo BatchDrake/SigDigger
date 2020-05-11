@@ -83,7 +83,7 @@ AudioBuffer::AudioBuffer()
          SIGDIGGER_AUDIO_BUFFER_ALLOC,
          PROT_READ | PROT_WRITE,
          MAP_PRIVATE | MAP_ANONYMOUS,
-         0,
+         -1,
          0))) == reinterpret_cast<float *>(-1)) {
     throw std::runtime_error(
           "Failed to allocate "
