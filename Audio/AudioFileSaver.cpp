@@ -75,8 +75,6 @@ AudioFileWriter::prepare(void)
         break;
     }
 
-    fileName[127] = '\0';
-
     do {
       snprintf(
             fileName,
