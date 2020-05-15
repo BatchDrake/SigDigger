@@ -75,12 +75,10 @@ AudioFileWriter::prepare(void)
         break;
     }
 
-    fileName[127] = '\0';
-
     do {
       snprintf(
             fileName,
-            127,
+            sizeof(fileName),
             "audio-%s-%.0lf-%d-%04d.wav",
             modulation.c_str(),
             this->params.frequency,
