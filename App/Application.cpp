@@ -1146,7 +1146,7 @@ Application::openCaptureFile(void)
 
   snprintf(
         baseName,
-        64,
+        sizeof(baseName),
         "sigdigger_%d_%.0lf_float32_iq.raw",
         this->mediator->getProfile()->getDecimatedSampleRate(),
         this->mediator->getProfile()->getFreq());
