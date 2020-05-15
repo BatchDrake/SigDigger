@@ -749,6 +749,15 @@ ConfigDialog::guessParamsFromFileName(void)
 
   if (sscanf(
         baseName.c_str(),
+        "sigdigger_%08d_%06dZ_%d_%lg_float32_iq",
+        &date,
+        &time,
+        &fs,
+        &fc) == 4) {
+    haveFc = true;
+    haveFs = true;
+  } else if (sscanf(
+        baseName.c_str(),
         "sigdigger_%d_%lg_float32_iq",
         &fs,
         &fc) == 2) {
