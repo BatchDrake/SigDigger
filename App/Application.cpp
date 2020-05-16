@@ -1136,18 +1136,26 @@ Application::onThrottleConfigChanged(void)
 }
 
 //
-// sigdigger_XXXXXXXXXX_XXXXXXXXXXXXXXXXXXXX_float32_iq.raw
+// sigdigger_XXXXXXXX_XXXXXXZ_XXXXXXXXXX_XXXXXXXXXXXXXXXXXXXX_float32_iq.raw
 //
 int
 Application::openCaptureFile(void)
 {
   int fd = -1;
-  char baseName[64];
+  char baseName[80];
+  char datetime[17];
+  time_t unixtime;
+  struct tm tm;
+
+  unixtime = time(NULL);
+  gmtime_r(&unixtime, &tm);
+  strftime(datetime, sizeof(datetime), "%Y%m%d_%H%M%SZ", &tm);
 
   snprintf(
         baseName,
         sizeof(baseName),
-        "sigdigger_%d_%.0lf_float32_iq.raw",
+        "sigdigger_%s_%d_%.0lf_float32_iq.raw",
+        datetime,
         this->mediator->getProfile()->getDecimatedSampleRate(),
         this->mediator->getProfile()->getFreq());
 
