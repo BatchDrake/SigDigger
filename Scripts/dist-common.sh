@@ -29,7 +29,7 @@ DISTROOT="$PWD"
 BRANCH=develop
 OSTYPE=`uname -s`
 ARCH=`uname -m`
-RELEASE="0.1.0"
+RELEASE="0.1.1"
 DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
 
 if [ "$OSTYPE" == "Linux" ]; then
