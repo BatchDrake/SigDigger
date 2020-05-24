@@ -1476,6 +1476,8 @@ TimeWindow::onTaskDone(void)
     // then the RBW is fs / data.size()
     // Therefore delta V is RBW * lambda
 
+    this->notifyTaskRunning(false);
+
     this->dopplerDialog->setVelocityStep(this->fs / spectrum.size() * lambda);
     this->dopplerDialog->setSigmaV(static_cast<qreal>(dc->getSigma()));
     this->dopplerDialog->setCenterFreq(this->ui->refFreqSpin->value());
