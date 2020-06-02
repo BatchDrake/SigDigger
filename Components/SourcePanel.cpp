@@ -440,6 +440,8 @@ SourcePanel::allocConfig(void)
 void
 SourcePanel::applyConfig(void)
 {
+  this->loadingConfig = true;
+
   this->ui->throttleCheck->setChecked(this->panelConfig->throttle);
   this->ui->dcRemoveCheck->setChecked(this->panelConfig->dcRemove);
   this->ui->swapIQCheck->setChecked(this->panelConfig->iqRev);
@@ -447,6 +449,8 @@ SourcePanel::applyConfig(void)
   this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
 
   this->saverUI->applyConfig();
+
+  this->loadingConfig = false;
 }
 
 void
@@ -539,14 +543,16 @@ SourcePanel::onRecordStartStop(void)
 void
 SourcePanel::onThrottleChanged(void)
 {
-  bool throttling = this->ui->throttleCheck->isChecked();
+  if (!this->loadingConfig) {
+    bool throttling = this->ui->throttleCheck->isChecked();
 
-  this->panelConfig->throttle = throttling;
-  this->panelConfig->throttleRate = static_cast<unsigned>(this->ui->throttleSpin->value());
+    this->panelConfig->throttle = throttling;
+    this->panelConfig->throttleRate = static_cast<unsigned>(this->ui->throttleSpin->value());
 
-  this->ui->throttleSpin->setEnabled(throttling);
+    this->ui->throttleSpin->setEnabled(throttling);
 
-  emit throttleConfigChanged();
+    emit throttleConfigChanged();
+  }
 }
 
 void

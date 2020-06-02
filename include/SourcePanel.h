@@ -77,6 +77,7 @@ namespace SigDigger {
       bool throttleable = false;
       std::vector<AutoGain> *currAutoGainSet;
       AutoGain *currentAutoGain = nullptr;
+      bool loadingConfig = false;
 
       // Private methods
       DeviceGain *lookupGain(std::string const &name);
