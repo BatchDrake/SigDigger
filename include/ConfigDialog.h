@@ -26,6 +26,9 @@
 #include <ColorConfig.h>
 #include <SaveProfileDialog.h>
 
+#define SIGDIGGER_MIN_RADIO_FREQ  -3e11
+#define SIGDIGGER_MAX_RADIO_FREQ   3e11
+
 namespace SigDigger {
   class ConfigDialog : public QDialog
   {
@@ -50,7 +53,9 @@ namespace SigDigger {
     void refreshColorUi(void);
     void refreshAnalyzerParamsUi(void);
     void refreshProfileUi(void);
+    void refreshFrequencyLimits(void);
     void refreshUi(void);
+    void saveProfile(void);
     void refreshUiState(void);
     void refreshTrueSampleRate(void);
     void loadProfile(Suscan::Source::Config &config);

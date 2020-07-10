@@ -29,7 +29,7 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
 {
   ui->setupUi(this);
   this->connectAll();
-  this->setCenterFreq(0);
+  this->setFreqs(0, 0);
   this->setShowFATs(true);
 }
 
@@ -201,12 +201,7 @@ MainSpectrum::notifyHalt(void)
 void
 MainSpectrum::setCenterFreq(qint64 freq)
 {
-  qint64 loFreq = this->getLoFreq();
-  this->ui->fcLcd->setValue(freq);
-  this->ui->mainSpectrum->setCenterFreq(freq);
-  this->ui->mainSpectrum->setFreqUnits(getFrequencyUnits(freq));
-  this->updateLimits();
-  this->setLoFreq(loFreq);
+  this->setFreqs(freq, this->getLnbFreq());
 }
 
 void
@@ -222,8 +217,22 @@ MainSpectrum::setLoFreq(qint64 loFreq)
 void
 MainSpectrum::setLnbFreq(qint64 lnbFreq)
 {
+  this->setFreqs(this->getCenterFreq(), lnbFreq);
+}
+
+void
+MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq)
+{
+  qint64 loFreq = this->getLoFreq();
+
   this->ui->lnbLcd->setValue(lnbFreq);
+  this->ui->fcLcd->setValue(freq);
+
+  this->ui->mainSpectrum->setCenterFreq(freq);
+  this->ui->mainSpectrum->setFreqUnits(getFrequencyUnits(freq));
+
   this->updateLimits();
+  this->setLoFreq(loFreq);
 }
 
 void

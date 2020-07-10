@@ -88,6 +88,7 @@ namespace SigDigger {
     void setCenterFreq(qint64 freq);
     void setLoFreq(qint64 loFreq);
     void setLnbFreq(qint64 lnbFreq);
+    void setFreqs(qint64 freq, qint64 lnbFreq);
     void setFilterBandwidth(unsigned int bw);
 
     void setPaletteGradient(const QColor *color);

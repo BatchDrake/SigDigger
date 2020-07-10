@@ -24,6 +24,9 @@
 #include <SuWidgetsHelpers.h>
 #include "ConfigDialog.h"
 
+#define SIGDIGGER_CONFIG_DIALOG_MIN_DEVICE_FREQ 0
+#define SIGDIGGER_CONFIG_DIALOG_MAX_DEVICE_FREQ 7.5e9
+
 using namespace SigDigger;
 
 Q_DECLARE_METATYPE(Suscan::Source::Config); // Unicorns
@@ -169,6 +172,30 @@ ConfigDialog::refreshAnalyzerParamsUi(void)
   }
 }
 
+void
+ConfigDialog::refreshFrequencyLimits(void)
+{
+  SUFREQ lnbFreq = this->ui->lnbSpinBox->value();
+  SUFREQ devMinFreq = SIGDIGGER_CONFIG_DIALOG_MIN_DEVICE_FREQ;
+  SUFREQ devMaxFreq = SIGDIGGER_CONFIG_DIALOG_MAX_DEVICE_FREQ;
+
+  if (this->profile.getType() == SUSCAN_SOURCE_TYPE_FILE) {
+    devMinFreq = SIGDIGGER_MIN_RADIO_FREQ;
+    devMaxFreq = SIGDIGGER_MAX_RADIO_FREQ;
+  } else {
+    const Suscan::Source::Device *dev = &(this->profile.getDevice());
+
+    if (dev != nullptr) {
+      devMinFreq = dev->getMinFreq();
+      devMaxFreq = dev->getMaxFreq();
+    }
+  }
+  // DEVFREQ = FREQ - LNB
+
+  this->ui->frequencySpinBox->setMinimum(devMinFreq + lnbFreq);
+  this->ui->frequencySpinBox->setMaximum(devMaxFreq + lnbFreq);
+}
+
 #define CCREFRESH(widget, field) this->ui->widget->setColor(this->colors.field)
 #define CCSAVE(widget, field) this->ui->widget->getColor(this->colors.field)
 
@@ -260,9 +287,6 @@ ConfigDialog::refreshProfileUi(void)
 
   this->refreshSampRates();
 
-  this->ui->frequencySpinBox->setValue(this->profile.getFreq());
-  this->ui->lnbSpinBox->setValue(this->profile.getLnbFreq());
-
   this->ui->decimationSpin->setValue(
         static_cast<int>(this->profile.getDecimation()));
 
@@ -321,9 +345,14 @@ ConfigDialog::refreshProfileUi(void)
     }
   }
 
+  if (this->ui->deviceCombo->currentIndex() == -1)
+    this->ui->deviceCombo->setCurrentIndex(0);
+
+  this->ui->lnbSpinBox->setValue(this->profile.getLnbFreq());
+  this->ui->frequencySpinBox->setValue(this->profile.getFreq());
+  this->refreshFrequencyLimits();
   this->refreshUiState();
   this->refreshAntennas();
-
   this->refreshTrueSampleRate();
 }
 
@@ -336,6 +365,18 @@ ConfigDialog::refreshUi(void)
   this->refreshProfileUi();
 
   this->refreshing = false;
+}
+
+
+void
+ConfigDialog::saveProfile()
+{
+  this->onToggleSourceType(this->ui->sdrRadio->isChecked());
+  this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
+  this->onFormatChanged(this->ui->formatCombo->currentIndex());
+  this->onCheckButtonsToggled(false);
+  this->onSpinsChanged();
+  this->onBandwidthChanged(this->ui->bandwidthSpinBox->value());
 }
 
 void
@@ -577,12 +618,15 @@ void
 ConfigDialog::onToggleSourceType(bool)
 {
   if (!this->refreshing) {
-    if (this->ui->sdrRadio->isChecked())
+    if (this->ui->sdrRadio->isChecked()) {
       this->profile.setType(SUSCAN_SOURCE_TYPE_SDR);
-    else
+    } else {
       this->profile.setType(SUSCAN_SOURCE_TYPE_FILE);
+      this->guessParamsFromFileName();
+    }
 
     this->refreshUiState();
+    this->refreshFrequencyLimits();
   }
 }
 
@@ -690,8 +734,9 @@ ConfigDialog::onSpinsChanged(void)
     SUFREQ lnbFreq;
     unsigned int sampRate;
 
-    freq = this->ui->frequencySpinBox->value();
     lnbFreq = this->ui->lnbSpinBox->value();
+    this->refreshFrequencyLimits();
+    freq = this->ui->frequencySpinBox->value();
     sampRate = this->getSelectedSampleRate();
 
     this->profile.setFreq(freq);
@@ -733,6 +778,7 @@ ConfigDialog::onAccepted(void)
 {
   this->saveColors();
   this->saveAnalyzerParams();
+  this->saveProfile();
   this->accepted = true;
 }
 

@@ -44,6 +44,9 @@ Source::Device::setDevice(const suscan_source_device_t *dev, unsigned int channe
   this->antennas.clear();
   this->gains.clear();
 
+  this->freqMin = 0;
+  this->freqMax = 0;
+
   if (suscan_source_device_get_info(dev, channel, &info)) {
     this->freqMax = info.freq_max;
     this->freqMin = 0; //info.freq_min;

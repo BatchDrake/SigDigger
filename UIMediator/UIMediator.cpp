@@ -618,28 +618,33 @@ void
 UIMediator::refreshProfile(void)
 {
   qint64 min = 0, max = 0;
-
   this->ui->sourcePanel->setProfile(&this->appConfig->profile);
   this->ui->configDialog->setProfile(this->appConfig->profile);
-  this->ui->spectrum->setCenterFreq(
-        static_cast<qint64>(this->appConfig->profile.getFreq()));
-  this->ui->spectrum->setLnbFreq(
-        static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
 
   if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
     min = static_cast<qint64>(
           this->appConfig->profile.getDevice().getMinFreq());
     max = static_cast<qint64>(
           this->appConfig->profile.getDevice().getMaxFreq());
+  } else {
+    min = SIGDIGGER_MIN_RADIO_FREQ;
+    max = SIGDIGGER_MAX_RADIO_FREQ;
   }
 
-  if (max - min < 1000) {
-    min = SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ;
-    max = SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ;
-  }
+  // Dummy device should not accept modifications if we don't accept
+  // them in the ConfigDialog.
+  //
+  // if (max - min < 1000) {
+  //   min = SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ;
+  //   max = SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ;
+  // }
 
   this->ui->spectrum->setFrequencyLimits(min, max);
+  this->ui->spectrum->setFreqs(
+        static_cast<qint64>(this->appConfig->profile.getFreq()),
+        static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
   this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
+
 }
 
 Suscan::Source::Config *
