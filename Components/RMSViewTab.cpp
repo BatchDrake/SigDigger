@@ -68,7 +68,7 @@ RMSViewTab::saveToMatlab(QString const &path)
     return false;
   }
 
-  fprintf(fp, "RATE=%.9f;\n", this->rate);
+  fprintf(fp, "RATE=%.9f;\n", this->rate / this->ui->intSpin->value());
   fprintf(fp, "TIMESTAMP=%.6f;\n", this->first);
   fprintf(fp, "X=[\n");
   for (size_t i = 0; i < this->data.size(); ++i)

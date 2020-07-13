@@ -34,6 +34,7 @@ RMSViewer::RMSViewer(QWidget *parent) :
   ui->setupUi(this);
 
   this->settingsDialog = new RMSViewerSettingsDialog(this);
+  this->settingsDialog->setWindowTitle("TCP server settings");
   this->connectAll();
 }
 
