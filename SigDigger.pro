@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -137,7 +137,10 @@ SOURCES += \
     Components/DeviceDialog.cpp \
     UIMediator/DeviceDialogMediator.cpp \
     Components/PanoramicDialog.cpp \
-    Panoramic/Scanner.cpp
+    Panoramic/Scanner.cpp \
+    Components/RMSViewer.cpp \
+    Components/RMSViewTab.cpp \
+    Components/RMSViewerSettingsDialog.cpp
 
 
 HEADERS += \
@@ -222,7 +225,10 @@ HEADERS += \
     include/DeviceDialog.h \
     include/PanoramicDialog.h \
     include/Scanner.h \
-    include/WaveSampler.h
+    include/WaveSampler.h \
+    include/RMSViewer.h \
+    include/RMSViewTab.h \
+    include/RMSViewerSettingsDialog.h
 
 
 FORMS += \
@@ -253,7 +259,10 @@ FORMS += \
     ui/EstimatorControl.ui \
     ui/NetForwarderUI.ui \
     ui/DeviceDialog.ui \
-    ui/PanoramicDialog.ui
+    ui/PanoramicDialog.ui \
+    ui/RMSViewer.ui \
+    ui/RMSViewTab.ui \
+    ui/RMSViewerSettingsDialog.ui
 
 !isEmpty(target.path): INSTALLS += target
 
@@ -299,3 +308,6 @@ DISTFILES += \
     icons/splash.xcf \
     icons/start.png \
     icons/stop.png
+
+SUBDIRS += \
+    RMSViewer/RMSViewer.pro

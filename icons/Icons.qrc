@@ -34,6 +34,7 @@
         <file>document-save.png</file>
         <file>stop-shiki.png</file>
         <file>start-shiki.png</file>
+        <file>autoscroll.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

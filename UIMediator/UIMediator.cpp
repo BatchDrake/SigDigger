@@ -639,12 +639,16 @@ UIMediator::refreshProfile(void)
   //   max = SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ;
   // }
 
+  printf("Setting frequency limits: %lld, %lld\n", min, max);
   this->ui->spectrum->setFrequencyLimits(min, max);
+  printf("Set frequencies: %lld, %lld\n",
+         static_cast<qint64>(this->appConfig->profile.getFreq()),
+         static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
   this->ui->spectrum->setFreqs(
         static_cast<qint64>(this->appConfig->profile.getFreq()),
         static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
   this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
-
+  printf("Sample rate: %d\n", this->appConfig->profile.getDecimatedSampleRate());
 }
 
 Suscan::Source::Config *
