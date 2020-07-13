@@ -31,14 +31,27 @@ namespace Ui {
 
 namespace SigDigger {
   class RMSViewTab;
+  class RMSViewerSettingsDialog;
+
   class RMSViewer : public QMainWindow
   {
-    Q_OBJECT
+      Q_OBJECT
 
-    QTcpServer server;
+      QTcpServer server;
+      RMSViewerSettingsDialog *settingsDialog = nullptr;
 
-    void openNewView(QTcpSocket *);
-    void connectAll(void);
+      bool     listening  = false;
+      QString  listenAddr = "";
+      uint16_t listenPort = 0;
+
+      void openNewView(QTcpSocket *);
+      void connectAll(void);
+
+      bool haveAddrData(void) const;
+      bool openSettings(void);
+
+      bool getListeningState(void) const;
+      void setListeningState(bool);
 
     public:
       explicit RMSViewer(QWidget *parent = nullptr);
@@ -50,6 +63,12 @@ namespace SigDigger {
     public slots:
       void onAcceptError(QAbstractSocket::SocketError socketError);
       void onNewConnection(void);
+
+      void onToggleListening(void);
+      void onOpenSettings(void);
+
+      void onTitleChanged(QString);
+      void onTabCloseRequested(int);
   };
 };
 

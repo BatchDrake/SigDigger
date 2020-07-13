@@ -1,5 +1,5 @@
 //
-//    RMSViewerSettingsDialog.cpp: Description
+//    RMSViewerSettingsDialog.cpp: RMSViewer settings dialog
 //    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,11 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include "include/RMSViewerSettingsDialog.h"
+
+#include <RMSViewerSettingsDialog.h>
 #include "ui_RMSViewerSettingsDialog.h"
+
+using namespace SigDigger;
 
 RMSViewerSettingsDialog::RMSViewerSettingsDialog(QWidget *parent) :
   QDialog(parent),
@@ -29,4 +32,16 @@ RMSViewerSettingsDialog::RMSViewerSettingsDialog(QWidget *parent) :
 RMSViewerSettingsDialog::~RMSViewerSettingsDialog()
 {
   delete ui;
+}
+
+QString
+RMSViewerSettingsDialog::getHost(void) const
+{
+  return this->ui->listenAddrEdit->text();
+}
+
+uint16_t
+RMSViewerSettingsDialog::getPort(void) const
+{
+  return static_cast<uint16_t>(this->ui->listenPortSpin->value());
 }

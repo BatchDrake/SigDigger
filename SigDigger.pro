@@ -307,7 +307,9 @@ DISTFILES += \
     icons/start-capture.png \
     icons/splash.xcf \
     icons/start.png \
-    icons/stop.png
+    icons/stop.png \
+    icons/online.png \
+    icons/offline.png
 
 SUBDIRS += \
     RMSViewer/RMSViewer.pro

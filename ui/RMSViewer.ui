@@ -77,7 +77,7 @@
       <widget class="QWidget" name="page_2">
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="welcomeLabel">
           <property name="text">
            <string>&lt;i&gt;Click start button to start RMS Viewer server.&lt;/i&gt;</string>
           </property>
@@ -139,6 +139,7 @@
   </action>
  </widget>
  <resources>
+  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>

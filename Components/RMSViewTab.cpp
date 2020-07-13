@@ -25,6 +25,7 @@
 #include <utility>
 #include <string>
 #include <QDateTime>
+#include <QFileDialog>
 
 #define MAX_LINE_SIZE  4096
 #define TIMER_INTERVAL_MS 100
@@ -52,6 +53,36 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
 }
 
 // https://stackoverflow.com/questions/12966957/is-there-an-equivalent-in-c-of-phps-explode-function
+
+bool
+RMSViewTab::saveToMatlab(QString const &path)
+{
+  FILE *fp;
+
+  if ((fp = fopen(path.toStdString().c_str(), "w")) == nullptr) {
+    QMessageBox::critical(
+          this,
+          "Save data to MATLAB file",
+          "Failed to save data to MATLAB file: "
+          + QString(strerror(errno)));
+    return false;
+  }
+
+  fprintf(fp, "RATE=%.9f;\n", this->rate);
+  fprintf(fp, "TIMESTAMP=%.6f;\n", this->first);
+  fprintf(fp, "X=[\n");
+  for (size_t i = 0; i < this->data.size(); ++i)
+    fprintf(
+          fp,
+          "  %.9e, %.9f\n",
+          SU_C_REAL(this->data[i]),
+          SU_C_IMAG(this->data[i]));
+
+  fprintf(fp, "];\n");
+  fclose(fp);
+
+  return true;
+}
 
 void
 RMSViewTab::integrateMeasure(qreal timestamp, SUFLOAT mag)
@@ -84,6 +115,12 @@ RMSViewTab::parseLine(void)
   qreal rate;
   std::vector<std::string> fields;
   std::istringstream iss(this->line);
+
+  // Description line allows commas and stuff
+  if (line.compare(0, 5, "DESC,") == 0) {
+    emit titleChanged(QString(line.c_str() + 5));
+    return true;
+  }
 
   for (std::string token; std::getline(iss, token, ','); )
     fields.push_back(std::move(token));
@@ -168,11 +205,15 @@ RMSViewTab::disconnectSocket(void)
 {
   if (this->socket != nullptr) {
     this->socket->close();
+    delete this->socket;
     this->socket = nullptr;
   }
 
   this->ui->stopButton->setEnabled(false);
+  this->ui->stopButton->setChecked(false);
+  this->ui->stopButton->setIcon(QIcon(":/icons/offline.png"));
 }
+
 void
 RMSViewTab::connectAll(void)
 {
@@ -193,6 +234,12 @@ RMSViewTab::connectAll(void)
         SIGNAL(clicked(bool)),
         this,
         SLOT(onStop()));
+
+  connect(
+        this->ui->saveButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSave()));
 
   connect(
         this->ui->resetButton,
@@ -236,7 +283,15 @@ RMSViewTab::~RMSViewTab()
 void
 RMSViewTab::onSave(void)
 {
+  QString fileName =
+      QFileDialog::getSaveFileName(
+        this,
+        "Save data to MATLAB file",
+        "power.m",
+        "MATLAB scripts (*.m)");
 
+  if (fileName.size() > 0)
+    this->saveToMatlab(fileName);
 }
 
 void

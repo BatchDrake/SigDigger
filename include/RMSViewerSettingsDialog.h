@@ -25,16 +25,20 @@ namespace Ui {
   class RMSViewerSettingsDialog;
 }
 
-class RMSViewerSettingsDialog : public QDialog
-{
-    Q_OBJECT
+namespace SigDigger {
+  class RMSViewerSettingsDialog : public QDialog
+  {
+      Q_OBJECT
 
-  public:
-    explicit RMSViewerSettingsDialog(QWidget *parent = nullptr);
-    ~RMSViewerSettingsDialog();
+    public:
+      explicit RMSViewerSettingsDialog(QWidget *parent = nullptr);
+      ~RMSViewerSettingsDialog();
+      QString getHost(void) const;
+      uint16_t getPort(void) const;
 
-  private:
-    Ui::RMSViewerSettingsDialog *ui;
+    private:
+      Ui::RMSViewerSettingsDialog *ui;
+  };
 };
 
 #endif // RMSVIEWERSETTINGSDIALOG_H

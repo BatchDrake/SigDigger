@@ -51,6 +51,7 @@ namespace SigDigger {
       void integrateMeasure(qreal timestamp, SUFLOAT mag);
       bool parseLine(void);
       void processSocketData(void);
+      bool saveToMatlab(QString const &);
       void disconnectSocket(void);
 
     public:
@@ -59,6 +60,9 @@ namespace SigDigger {
 
     private:
       Ui::RMSViewTab *ui;
+
+    signals:
+      void titleChanged(QString);
 
     public slots:
       void onTimeout();
