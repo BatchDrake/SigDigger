@@ -34,7 +34,7 @@ Source::GainDescription::GainDescription(const struct suscan_source_gain_desc *d
 void
 Source::Device::setDevice(const suscan_source_device_t *dev, unsigned int channel)
 {
-  int i;
+  unsigned int i;
 
   struct suscan_source_device_info info =
       suscan_source_device_info_INITIALIZER;
