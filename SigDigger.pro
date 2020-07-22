@@ -270,7 +270,7 @@ RESOURCES += \
     icons/Icons.qrc
 
 unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += suscan
+unix: PKGCONFIG += suscan fftw3f
 
 packagesExist(volk) {
   PKGCONFIG += volk
