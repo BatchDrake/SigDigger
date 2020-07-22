@@ -11,16 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = SigDigger
 TEMPLATE = app
 
-# The following define makes your compiler emit warnings if you use
-# any feature of Qt which has been marked as deprecated (the exact warnings
-# depend on your compiler). Please consult the documentation of the
-# deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
-
-# You can also make your code fail to compile if you use deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
   QMAKE_CXXFLAGS += -std=gnu++14
@@ -40,12 +31,10 @@ isEmpty(SUWIDGETS_PREFIX) {
 }
 
 isEmpty(PREFIX) {
-  # Default rules for deployment.
-  qnx: target.path = /tmp/$${TARGET}/bin
-  else: unix:!android: target.path = /opt/$${TARGET}/bin
-} else {
-  target.path=$$PREFIX/bin
+  PREFIX=/usr/local
 }
+
+target.path=$$PREFIX/bin
 
 !isEmpty(PKGVERSION) {
   QMAKE_CXXFLAGS += "-DSIGDIGGER_PKGVERSION='\""$$PKGVERSION"\"'"
@@ -54,6 +43,13 @@ isEmpty(PREFIX) {
 darwin: ICON = icons/SigDigger.icns
 darwin: QMAKE_RPATHDIR += $$SUWIDGETS_INSTALL_LIBS
 datwin: QMAKE_RPATHDIR += /usr/local/lib
+
+unix:  QMAKE_SUBSTITUTES += SigDigger.desktop.in RMSViewer.desktop.in
+unix:  desktop.path  = $$PREFIX/share/applications
+unix:  desktop.files = SigDigger.desktop RMSViewer.desktop
+unix:  icons.path    = $$PREFIX/share/icons/hicolor/256x256/apps/
+unix:  icons.files   = icons/SigDigger.png
+unix:  INSTALLS     += desktop icons
 
 INCLUDEPATH += $$PWD/include $$SUWIDGETS_INSTALL_HEADERS
 SOURCES += \
@@ -310,6 +306,3 @@ DISTFILES += \
     icons/stop.png \
     icons/online.png \
     icons/offline.png
-
-SUBDIRS += \
-    RMSViewer/RMSViewer.pro

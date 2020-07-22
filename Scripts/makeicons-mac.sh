@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ICONPATH=../icons/icon-256x256.png
+ICONPATH=../icons/SigDigger.png
 
 mkdir SigDigger.iconset
 sips -z 16 16     "$ICONPATH" --out SigDigger.iconset/icon_16x16.png

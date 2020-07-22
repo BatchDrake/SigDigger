@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=RMSViewer
+Comment=Integrate and plot RMS measurements from Suscan\'s CLI
+Exec=$$target.path/SigDigger -t RMSViewer
+Icon=SigDigger
+Categories=HamRadio;

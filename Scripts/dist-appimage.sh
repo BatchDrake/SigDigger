@@ -113,7 +113,7 @@ try "Creating metainfo..."  mkdir -p "$DEPLOYROOT"/usr/share/metainfo
 try "Copying metainfo..."   cp "$SCRIPTDIR/SigDigger.appdata.xml" "$DEPLOYROOT"/usr/share/metainfo/org.actinid.SigDigger.xml
 try "Creating icondir..."   mkdir -p "$DEPLOYROOT"/usr/share/icons/hicolor/256x256/apps
 
-try "Copying icons..." cp "$BUILDROOT"/SigDigger/icons/icon-256x256.png "$DEPLOYROOT"/usr/share/icons/hicolor/256x256/apps/SigDigger.png
+try "Copying icons..." cp "$BUILDROOT"/SigDigger/icons/SigDigger.png "$DEPLOYROOT"/usr/share/icons/hicolor/256x256/apps
 echo "[Desktop Entry]
 Type=Application
 Name=SigDigger
