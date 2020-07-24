@@ -371,7 +371,11 @@ ConfigDialog::refreshUi(void)
 void
 ConfigDialog::saveProfile()
 {
-  this->onToggleSourceType(this->ui->sdrRadio->isChecked());
+  this->profile.setType(
+        this->ui->sdrRadio->isChecked()
+        ? SUSCAN_SOURCE_TYPE_SDR
+        : SUSCAN_SOURCE_TYPE_FILE);
+
   this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
   this->onFormatChanged(this->ui->formatCombo->currentIndex());
   this->onCheckButtonsToggled(false);
