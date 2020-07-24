@@ -1449,6 +1449,8 @@ Application::onPanSpectrumStart(void)
       config.setDCRemove(true);
       config.setBandwidth(this->mediator->getPanSpectrumPreferredSampleRate());
       config.setLnbFreq(this->mediator->getPanSpectrumLnbOffset());
+      config.setFreq(.5 * (this->scanMinFreq + this->scanMaxFreq));
+
       try {
         Suscan::Logger::getInstance()->flush();
         this->scanner = new Scanner(this, freqMin, freqMax, config);
