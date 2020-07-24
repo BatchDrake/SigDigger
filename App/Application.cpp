@@ -760,6 +760,18 @@ Application::startCapture(void)
 }
 
 void
+Application::orderedHalt(void)
+{
+  this->analyzer = nullptr;
+  this->uninstallDataSaver();
+  this->mediator->setRecordState(false);
+  this->mediator->detachAllInspectors();
+  this->closeAudio();
+  this->rawInspectorOpened = false;
+  this->mediator->setState(UIMediator::HALTED);
+}
+
+void
 Application::stopCapture(void)
 {
   if (this->mediator->getState() == UIMediator::RUNNING) {
@@ -782,12 +794,7 @@ Application::onAnalyzerHalted(void)
 {
   bool restart = this->mediator->getState() == UIMediator::RESTARTING;
 
-  this->analyzer = nullptr;
-  this->uninstallDataSaver();
-  this->mediator->setState(UIMediator::HALTED);
-  this->mediator->detachAllInspectors();
-  this->closeAudio();
-  this->rawInspectorOpened = false;
+  this->orderedHalt();
 
   if (restart)
     this->startCapture();
@@ -806,11 +813,7 @@ Application::onAnalyzerEos(void)
         + "</pre>",
         QMessageBox::Ok);
 
-  this->mediator->setState(UIMediator::HALTED);
-  this->mediator->detachAllInspectors();
-  this->analyzer = nullptr;
-  this->closeAudio();
-  this->uninstallDataSaver();
+  this->orderedHalt();
 }
 
 void
@@ -962,9 +965,8 @@ Application::onAnalyzerReadError(void)
         + getLogText()
         + "</pre>",
         QMessageBox::Ok);
-  this->mediator->setState(UIMediator::HALTED);
-  this->analyzer = nullptr;
-  this->uninstallDataSaver();
+
+  this->orderedHalt();
 }
 
 Application::~Application()

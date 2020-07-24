@@ -289,7 +289,6 @@ SourcePanel::setThrottleable(bool val)
 
   this->ui->throttleSpin->setEnabled(this->ui->throttleCheck->isChecked());
   this->ui->bwSpin->setEnabled(!val);
-  this->saverUI->setEnabled(!val);
 }
 
 DeviceGain *

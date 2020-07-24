@@ -108,6 +108,7 @@ namespace SigDigger {
     void uninstallDataSaver(void);
     bool openAudioFileSaver(void);
     void closeAudioFileSaver(void);
+    void orderedHalt(void);
     void setAudioInspectorParams(
         unsigned int rate,
         SUFLOAT cutOff,
