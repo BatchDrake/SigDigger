@@ -195,16 +195,12 @@ void
 Application::setAudioInspectorParams(
     unsigned int rate,
     SUFLOAT cutOff,
-    SUFLOAT volume,
     unsigned int demod)
 {
   if (this->audioConfigured) {
-    SUFLOAT correctedVolume = 2 * (exp(volume / 100) - 1);
-
-
     Suscan::Config cfg(this->audioCfgTemplate);
     cfg.set("audio.cutoff", cutOff);
-    cfg.set("audio.volume", correctedVolume);
+    cfg.set("audio.volume", 1.f);
     cfg.set("audio.sample-rate", static_cast<uint64_t>(rate));
     cfg.set("audio.demodulator", static_cast<uint64_t>(demod));
     this->analyzer->setInspectorConfig(this->audioInspHandle, cfg, 0);
@@ -212,7 +208,6 @@ Application::setAudioInspectorParams(
   } else {
     this->delayedRate    = rate;
     this->delayedCutOff  = cutOff;
-    this->delayedVolume  = volume;
     this->delayedDemod   = demod;
   }
 }
@@ -286,10 +281,12 @@ Application::openAudio(unsigned int rate)
               ch,
               SIGDIGGER_AUDIO_INSPECTOR_REQID);
 
+        this->playBack->setVolume(
+              this->ui.audioPanel->getMuteableVolume() / 100.f);
+
         this->setAudioInspectorParams(
               this->audioSampleRate,
               this->ui.audioPanel->getCutOff(),
-              this->ui.audioPanel->getVolume(),
               this->ui.audioPanel->getDemod() + 1);
         opened = true;
       } catch (Suscan::Exception const &e) {
@@ -464,6 +461,12 @@ Application::connectUI(void)
         SIGNAL(audioChanged(void)),
         this,
         SLOT(onAudioChanged(void)));
+
+  connect(
+        this->mediator,
+        SIGNAL(audioVolumeChanged(float)),
+        this,
+        SLOT(onAudioVolumeChanged(float)));
 
   connect(
         this->mediator,
@@ -880,7 +883,6 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
           this->setAudioInspectorParams(
                 this->audioSampleRate,
                 this->delayedCutOff,
-                this->delayedVolume,
                 this->delayedDemod);
           break;
 
@@ -1347,7 +1349,6 @@ Application::onAudioChanged(void)
        this->setAudioInspectorParams(
              this->audioSampleRate,
              this->ui.audioPanel->getCutOff(),
-             this->ui.audioPanel->getVolume(),
              this->ui.audioPanel->getDemod() + 1);
      } else {
        // Disable audio
@@ -1355,6 +1356,13 @@ Application::onAudioChanged(void)
      }
     }
   }
+}
+
+void
+Application::onAudioVolumeChanged(float)
+{
+  if (this->playBack != nullptr)
+    this->playBack->setVolume(this->ui.audioPanel->getMuteableVolume() / 100.f);
 }
 
 void

@@ -37,6 +37,8 @@
         <file>autoscroll.png</file>
         <file>offline.png</file>
         <file>online.png</file>
+        <file>audio-volume-muted-panel.png</file>
+        <file>audio-volume-medium-panel.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

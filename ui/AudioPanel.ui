@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>244</width>
-    <height>242</height>
+    <width>262</width>
+    <height>246</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -75,15 +75,56 @@
       <property name="spacing">
        <number>1</number>
       </property>
-      <item row="3" column="3">
+      <item row="6" column="2">
+       <widget class="QLineEdit" name="savePath">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="2">
+       <widget class="QComboBox" name="demodCombo">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <item>
+         <property name="text">
+          <string>AM</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>FM</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>USB</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>LSB</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="8" column="2">
+       <widget class="QLabel" name="captureSizeLabel">
+        <property name="text">
+         <string>0 bytes</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
        <widget class="QLabel" name="volumeLabel">
         <property name="text">
          <string>0%</string>
         </property>
        </widget>
-      </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QComboBox" name="sampleRateCombo"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_2">
@@ -108,13 +149,6 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="3">
-       <widget class="QPushButton" name="saveButton">
-        <property name="text">
-         <string>Browse...</string>
-        </property>
-       </widget>
-      </item>
       <item row="8" column="0" colspan="2">
        <widget class="QLabel" name="label_30">
         <property name="text">
@@ -122,16 +156,6 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="2" colspan="2">
-       <widget class="QProgressBar" name="diskUsageProgress">
-        <property name="styleSheet">
-         <string notr="true">font-size: 7pt;</string>
-        </property>
-        <property name="value">
-         <number>0</number>
         </property>
        </widget>
       </item>
@@ -155,57 +179,6 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="3">
-       <widget class="QLabel" name="cutoffLabel">
-        <property name="minimumSize">
-         <size>
-          <width>62</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>22222 Hz</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" colspan="2">
-       <widget class="QComboBox" name="demodCombo">
-        <item>
-         <property name="text">
-          <string>AM</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>FM</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>USB</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>LSB</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="6" column="2">
-       <widget class="QLineEdit" name="savePath">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="4">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="1" colspan="2">
        <widget class="QSlider" name="volumeSlider">
         <property name="maximum">
@@ -222,13 +195,6 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="2">
-       <widget class="QLabel" name="captureSizeLabel">
-        <property name="text">
-         <string>0 bytes</string>
-        </property>
-       </widget>
-      </item>
       <item row="6" column="0" colspan="2">
        <widget class="QLabel" name="label_28">
         <property name="text">
@@ -236,19 +202,6 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="3">
-       <widget class="QPushButton" name="recordStartStopButton">
-        <property name="styleSheet">
-         <string notr="true">font-weight: bold;</string>
-        </property>
-        <property name="text">
-         <string>Record</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -272,7 +225,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="4">
+      <item row="5" column="0" colspan="5">
        <widget class="QLabel" name="label_3">
         <property name="font">
          <font>
@@ -285,11 +238,87 @@
         </property>
        </widget>
       </item>
+      <item row="7" column="2" colspan="3">
+       <widget class="QProgressBar" name="diskUsageProgress">
+        <property name="styleSheet">
+         <string notr="true">font-size: 7pt;</string>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="4">
+       <widget class="QPushButton" name="saveButton">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="4">
+       <widget class="QPushButton" name="recordStartStopButton">
+        <property name="styleSheet">
+         <string notr="true">font-weight: bold;</string>
+        </property>
+        <property name="text">
+         <string>Record</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QLabel" name="cutoffLabel">
+        <property name="minimumSize">
+         <size>
+          <width>62</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>22222 Hz</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="5">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="4">
+       <widget class="QComboBox" name="sampleRateCombo"/>
+      </item>
+      <item row="0" column="4">
+       <widget class="QPushButton" name="muteButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../icons/Icons.qrc">
+          <normaloff>:/icons/audio-volume-medium-panel.png</normaloff>:/icons/audio-volume-medium-panel.png</iconset>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../icons/Icons.qrc"/>
+  <include location="../icons/Icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

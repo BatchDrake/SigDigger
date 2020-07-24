@@ -74,6 +74,7 @@ namespace SigDigger {
     void setSampleRate(unsigned int);
     void setCutOff(SUFLOAT);
     void setVolume(SUFLOAT);
+    void setMuted(bool);
 
     // Overriden setters
     void setRecordSavePath(std::string const &) override;
@@ -89,6 +90,8 @@ namespace SigDigger {
     unsigned int getSampleRate(void) const;
     SUFLOAT getCutOff(void) const;
     SUFLOAT getVolume(void) const;
+    bool    isMuted(void) const;
+    SUFLOAT getMuteableVolume(void) const;
 
     // Overriden getters
     bool getRecordState(void) const override;
@@ -103,6 +106,7 @@ namespace SigDigger {
     void onSampleRateChanged(void);
     void onFilterChanged(void);
     void onVolumeChanged(void);
+    void onMuteToggled(bool);
     void onEnabledChanged(void);
 
     void onChangeSavePath(void);
@@ -110,6 +114,7 @@ namespace SigDigger {
 
   signals:
     void changed(void);
+    void volumeChanged(float);
 
   private:
     Ui::AudioPanel *ui = nullptr;

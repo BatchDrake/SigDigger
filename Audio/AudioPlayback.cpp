@@ -32,7 +32,8 @@ using namespace SigDigger;
 
 #define ATTEMPT(expr, what) \
   if ((err = expr) < 0)  \
-    throw std::runtime_error("Failed to " + std::string(what) + ": " + std::string(snd_strerror(err)))
+    throw std::runtime_error("Failed to " + std::string(what) + ": " + \
+      std::string(snd_strerror(err)))
 
 ///////////////////////////// Playback worker /////////////////////////////////
 PlaybackWorker::PlaybackWorker(
@@ -44,12 +45,22 @@ PlaybackWorker::PlaybackWorker(
 }
 
 void
+PlaybackWorker::setGain(float vol)
+{
+  this->gain = vol;
+}
+
+void
 PlaybackWorker::play(void)
 {
   float *buffer;
+  unsigned int i;
 
   while (!this->halting && (buffer = this->instance->next()) != nullptr) {
     bool ok;
+
+    for (i = 0; i < SIGDIGGER_AUDIO_BUFFER_SIZE; ++i)
+      buffer[i] *= this->gain;
 
     ok = this->player->write(buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
 
@@ -352,6 +363,24 @@ unsigned int
 AudioPlayback::getSampleRate(void) const
 {
   return this->sampRate;
+}
+
+float
+AudioPlayback::getVolume(void) const
+{
+  return this->volume;
+}
+
+void
+AudioPlayback::setVolume(float vol)
+{
+  if (vol < 0)
+    vol = 0;
+  else if (vol > 1)
+    vol = 1;
+
+  this->volume = vol;
+  this->worker->setGain(2 * (exp(vol) - 1));
 }
 
 void

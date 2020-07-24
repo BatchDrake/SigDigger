@@ -133,6 +133,12 @@ AudioPanel::connectAll(void)
       SLOT(onVolumeChanged(void)));
 
   connect(
+      this->ui->muteButton,
+      SIGNAL(toggled(bool)),
+      this,
+      SLOT(onMuteToggled(bool)));
+
+  connect(
         this->ui->saveButton,
         SIGNAL(clicked(bool)),
         this,
@@ -268,6 +274,12 @@ AudioPanel::setVolume(SUFLOAT volume)
         QString::number(this->ui->volumeSlider->value()) + "%");
 }
 
+void
+AudioPanel::setMuted(bool muted)
+{
+  this->ui->muteButton->setChecked(muted);
+}
+
 // Overriden setters
 void
 AudioPanel::setRecordSavePath(std::string const &path)
@@ -371,6 +383,18 @@ AudioPanel::getVolume(void) const
   return this->ui->volumeSlider->value();
 }
 
+SUFLOAT
+AudioPanel::getMuteableVolume(void) const
+{
+  return this->isMuted() ? 0 : this->getVolume();
+}
+
+bool
+AudioPanel::isMuted(void) const
+{
+  return this->ui->muteButton->isChecked();
+}
+
 // Overriden getters
 bool
 AudioPanel::getRecordState(void) const
@@ -434,7 +458,23 @@ AudioPanel::onVolumeChanged(void)
 {
   this->setVolume(this->getVolume());
 
-  emit changed();
+  emit volumeChanged(this->getMuteableVolume());
+}
+
+
+void
+AudioPanel::onMuteToggled(bool)
+{
+  this->ui->volumeSlider->setEnabled(!this->isMuted());
+  this->ui->volumeLabel->setEnabled(!this->isMuted());
+
+  this->ui->muteButton->setIcon(
+        QIcon(
+          this->isMuted()
+          ? ":/icons/audio-volume-muted-panel.png"
+          : ":/icons/audio-volume-medium-panel.png"));
+
+  emit volumeChanged(this->isMuted());
 }
 
 void

@@ -191,6 +191,7 @@ namespace SigDigger {
     void recentCleared(void);
 
     void audioChanged(void);
+    void audioVolumeChanged(float);
     void audioRecordStateChanged(void);
 
     void panSpectrumStart(void);
@@ -250,7 +251,6 @@ namespace SigDigger {
 
     // Audio panel
     void onAudioChanged(void);
-    void onAudioRecordStateChanged(void);
 
     // Inspector
     void onInspBandwidthChanged(void);

@@ -45,11 +45,13 @@ namespace SigDigger {
       bool halting = false;
       GenericAudioPlayer *player = nullptr;  // Weak
       AudioBufferList *instance; // Weak
+      float gain = 1;
 
     public:
       PlaybackWorker(
           AudioBufferList *instance = nullptr,
           GenericAudioPlayer *player = nullptr);
+      void setGain(float);
 
     public slots:
       void play(void);
@@ -134,6 +136,7 @@ namespace SigDigger {
     bool buffering = true;
     bool failed = false;
     float *current_buffer = nullptr;
+    float volume = 1;
     GenericAudioPlayer *player = nullptr;
 
     unsigned int completed = 0;
@@ -149,6 +152,9 @@ namespace SigDigger {
       virtual ~AudioPlayback();
       unsigned int getSampleRate(void) const;
       void write(const SUCOMPLEX *samples, SUSCOUNT size);
+
+      float getVolume(void) const;
+      void setVolume(float);
 
     public slots:
       void onError(void);

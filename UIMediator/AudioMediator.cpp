@@ -32,9 +32,15 @@ UIMediator::connectAudioPanel(void)
 
   connect(
         this->ui->audioPanel,
+        SIGNAL(volumeChanged(float)),
+        this,
+        SIGNAL(audioVolumeChanged(float)));
+
+  connect(
+        this->ui->audioPanel,
         SIGNAL(recordStateChanged(bool)),
         this,
-        SLOT(onAudioRecordStateChanged(void)));
+        SIGNAL(audioRecordStateChanged(void)));
 }
 
 void
@@ -56,10 +62,4 @@ UIMediator::onAudioChanged(void)
   }
 
   emit audioChanged();
-}
-
-void
-UIMediator::onAudioRecordStateChanged(void)
-{
-  emit audioRecordStateChanged();
 }

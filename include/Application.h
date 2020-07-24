@@ -88,7 +88,6 @@ namespace SigDigger {
     // Delayed audio parameters
     unsigned int delayedRate = 0;
     SUFLOAT delayedCutOff = 0;
-    SUFLOAT delayedVolume = 0;
     unsigned int delayedDemod = 0;
 
     // Rediscover devices
@@ -112,7 +111,6 @@ namespace SigDigger {
     void setAudioInspectorParams(
         unsigned int rate,
         SUFLOAT cutOff,
-        SUFLOAT volume,
         unsigned int demod);
     SUFREQ getAudioInspectorLo(void) const;
     SUFREQ getAudioInspectorBandwidth(void) const;
@@ -164,6 +162,7 @@ namespace SigDigger {
     void onChannelBandwidthChanged(qreal);
     void onAudioChanged(void);
     void onAudioRecordStateChanged(void);
+    void onAudioVolumeChanged(float);
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
     void onDeviceRefresh(void);
