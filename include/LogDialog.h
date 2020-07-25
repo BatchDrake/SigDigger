@@ -21,6 +21,7 @@
 
 #include <QDialog>
 #include <Suscan/Logger.h>
+#include <QVector>
 
 namespace Ui {
   class LogDialog;
@@ -33,8 +34,10 @@ namespace SigDigger {
   {
       Q_OBJECT
 
+      QVector<Suscan::LoggerMessage> msgVec;
       Suscan::Logger *logger;
       void connectAll(void);
+      void saveLog(QString path);
       static QTableWidgetItem *makeSeverityItem(
           enum sigutils_log_severity);
 

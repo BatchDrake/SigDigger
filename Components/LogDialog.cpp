@@ -16,7 +16,13 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+
 #include <LogDialog.h>
+#include <QMessageBox>
+#include <cerrno>
+#include <cstring>
+#include <QFileDialog>
+
 #include "ui_LogDialog.h"
 
 #include <QDateTime>
@@ -38,6 +44,37 @@ LogDialog::LogDialog(QWidget *parent) :
 }
 
 void
+LogDialog::saveLog(QString path)
+{
+  FILE *fp;
+
+  if ((fp = fopen(path.toStdString().c_str(), "w")) == nullptr) {
+    QString error(errno);
+
+    QMessageBox::critical(
+          this,
+          "Save message log",
+          "Failed to save message log to file: " + error + "\n\n");
+    return;
+  }
+
+  for (int i = 0; i < this->msgVec.size(); ++i) {
+    fprintf(
+          fp,
+          "%ld.%ld,%s,%s,%s:%d,%s",
+          this->msgVec[i].time.tv_sec,
+          this->msgVec[i].time.tv_usec,
+          su_log_severity_to_string(this->msgVec[i].severity),
+          this->msgVec[i].domain.c_str(),
+          this->msgVec[i].function.c_str(),
+          this->msgVec[i].line,
+          this->msgVec[i].message.c_str());
+  }
+
+  fclose(fp);
+}
+
+void
 LogDialog::connectAll(void)
 {
   connect(
@@ -48,13 +85,13 @@ LogDialog::connectAll(void)
 
   connect(
         this->ui->saveButton,
-        SIGNAL(triggered(QAction *)),
+        SIGNAL(clicked(bool)),
         this,
         SLOT(onSave(void)));
 
   connect(
         this->ui->clearButton,
-        SIGNAL(triggered(QAction *)),
+        SIGNAL(clicked(bool)),
         this,
         SLOT(onClear(void)));
 }
@@ -93,6 +130,7 @@ LogDialog::onMessage(Suscan::LoggerMessage msg)
 {
   int newRow = this->ui->logTableWidget->rowCount();
 
+  this->msgVec.push_back(msg);
   this->ui->logTableWidget->insertRow(newRow);
 
   this->ui->logTableWidget->setItem(
@@ -136,12 +174,28 @@ LogDialog::onMessage(Suscan::LoggerMessage msg)
 void
 LogDialog::onClear(void)
 {
-  this->ui->logTableWidget->clear();
+  this->ui->logTableWidget->setRowCount(0);
+  this->msgVec.clear();
 }
 
 void
 LogDialog::onSave(void)
 {
+  QFileDialog dialog(this);
+  QStringList filters;
 
+  dialog.setFileMode(QFileDialog::FileMode::AnyFile);
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+  dialog.setWindowTitle(QString("Save message log"));
+
+  filters << "Log files (*.log)"
+          << "Any (*)";
+
+  dialog.setNameFilters(filters);
+
+  if (dialog.exec()) {
+    QString path = dialog.selectedFiles().first();
+    this->saveLog(path);
+  }
 }
 
