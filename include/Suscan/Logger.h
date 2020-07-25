@@ -1,5 +1,5 @@
 //
-//    filename: description
+//    Logger.h: Sigutils logger wrapper
 //    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,8 @@
 #include <Suscan/Compat.h>
 #include <sigutils/log.h>
 
+#include <QObject>
+
 namespace Suscan {
   struct LoggerMessage {
     enum sigutils_log_severity severity;
@@ -36,7 +38,10 @@ namespace Suscan {
     std::string message;
   };
 
-  class Logger {
+  class Logger : public QObject {
+
+      Q_OBJECT
+
   private:
     static Logger *instance; // Singleton instance
     std::mutex mutex;
@@ -48,6 +53,7 @@ namespace Suscan {
 
     Logger(void);
     void push(const struct sigutils_log_message *message);
+    virtual ~Logger();
 
   public:
     static Logger *getInstance(void);
@@ -60,6 +66,8 @@ namespace Suscan {
     std::vector<LoggerMessage>::const_iterator begin(void);
     std::vector<LoggerMessage>::const_iterator end(void);
 
+  signals:
+    void messageEmitted(Suscan::LoggerMessage);
   };
 };
 

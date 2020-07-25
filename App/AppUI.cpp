@@ -43,6 +43,7 @@ AppUI::AppUI(QMainWindow *owner)
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);
   this->panoramicDialog = new PanoramicDialog(owner);
+  this->logDialog = new LogDialog(owner);
 }
 
 void

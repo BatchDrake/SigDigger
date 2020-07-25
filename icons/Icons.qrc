@@ -12,7 +12,6 @@
         <file>start-capture.png</file>
         <file>about.png</file>
         <file>critical.png</file>
-        <file>Icons.qrc</file>
         <file>splash.xcf</file>
         <file>splash-background</file>
         <file>warning.png</file>
@@ -39,6 +38,12 @@
         <file>online.png</file>
         <file>audio-volume-muted-panel.png</file>
         <file>audio-volume-medium-panel.png</file>
+        <file>edit-clear.png</file>
+        <file>go-bottom.png</file>
+        <file>system-run.png</file>
+        <file>dialog-warning.png</file>
+        <file>dialog-information.png</file>
+        <file>dialog-error.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

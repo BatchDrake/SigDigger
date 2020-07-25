@@ -221,6 +221,7 @@ namespace SigDigger {
     void onTriggerRecent(bool);
     void onTriggerPanoramicSpectrum(bool);
     void onTriggerBandPlan(void);
+    void onTriggerLogMessages(void);
 
     // Spectrum slots
     void onSpectrumBandwidthChanged(void);

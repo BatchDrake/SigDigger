@@ -248,6 +248,12 @@ UIMediator::connectMainWindow(void)
         SIGNAL(triggered(bool)),
         this,
         SLOT(onTriggerPanoramicSpectrum(bool)));
+
+  connect(
+        this->ui->main->actionLogMessages,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerLogMessages(void)));
 }
 
 UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
@@ -1032,4 +1038,10 @@ UIMediator::onTriggerBandPlan(void)
   } else {
     this->ui->spectrum->removeFAT(asAction->text());
   }
+}
+
+void
+UIMediator::onTriggerLogMessages(void)
+{
+  this->ui->logDialog->show();
 }

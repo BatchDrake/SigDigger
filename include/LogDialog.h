@@ -1,6 +1,6 @@
 //
-//    MainWindow.h: Main application window
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    LogDialog.h: Display log messages
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,25 +16,40 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef LOGDIALOG_H
+#define LOGDIALOG_H
 
-#include <QMainWindow>
+#include <QDialog>
+#include <Suscan/Logger.h>
 
 namespace Ui {
-  class MainWindow;
+  class LogDialog;
 }
 
-class MainWindow : public QMainWindow
-{
-  Q_OBJECT
+class QTableWidgetItem;
 
-public:
-  explicit MainWindow(QWidget *parent = nullptr);
-  ~MainWindow();
+namespace SigDigger {
+  class LogDialog : public QDialog
+  {
+      Q_OBJECT
 
-private:
-  Ui::MainWindow *ui;
-};
+      Suscan::Logger *logger;
+      void connectAll(void);
+      static QTableWidgetItem *makeSeverityItem(
+          enum sigutils_log_severity);
 
-#endif // MAINWINDOW_H
+    public:
+      explicit LogDialog(QWidget *parent = nullptr);
+      ~LogDialog();
+
+    public slots:
+      void onMessage(Suscan::LoggerMessage);
+      void onClear(void);
+      void onSave(void);
+
+    private:
+      Ui::LogDialog *ui;
+  };
+}
+
+#endif // LOGDIALOG_H
