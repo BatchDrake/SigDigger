@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>1251</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -102,6 +102,7 @@
     <addaction name="actionDevices"/>
     <addaction name="actionPanoramicSpectrum"/>
     <addaction name="separator"/>
+    <addaction name="actionLogMessages"/>
     <addaction name="actionOptions"/>
    </widget>
    <addaction name="menuFile"/>
@@ -281,10 +282,14 @@
     <string>F11</string>
    </property>
   </action>
+  <action name="actionLogMessages">
+   <property name="text">
+    <string>&amp;Log messages</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>
  <connections/>

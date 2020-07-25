@@ -136,7 +136,8 @@ SOURCES += \
     Panoramic/Scanner.cpp \
     Components/RMSViewer.cpp \
     Components/RMSViewTab.cpp \
-    Components/RMSViewerSettingsDialog.cpp
+    Components/RMSViewerSettingsDialog.cpp \
+    Components/LogDialog.cpp
 
 
 HEADERS += \
@@ -162,7 +163,6 @@ HEADERS += \
     include/Suscan/Messages/SamplesMessage.h \
     include/Suscan/Analyzer.h \
     include/Suscan/AnalyzerParams.h \
-    include/Suscan/AutoGain_copy.h \
     include/Suscan/Channel.h \
     include/Suscan/Compat.h \
     include/Suscan/Config.h \
@@ -224,7 +224,8 @@ HEADERS += \
     include/WaveSampler.h \
     include/RMSViewer.h \
     include/RMSViewTab.h \
-    include/RMSViewerSettingsDialog.h
+    include/RMSViewerSettingsDialog.h \
+    include/LogDialog.h
 
 
 FORMS += \
@@ -258,7 +259,8 @@ FORMS += \
     ui/PanoramicDialog.ui \
     ui/RMSViewer.ui \
     ui/RMSViewTab.ui \
-    ui/RMSViewerSettingsDialog.ui
+    ui/RMSViewerSettingsDialog.ui \
+    ui/LogDialog.ui
 
 !isEmpty(target.path): INSTALLS += target
 

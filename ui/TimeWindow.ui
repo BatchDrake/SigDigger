@@ -218,8 +218,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>231</width>
-          <height>733</height>
+          <width>269</width>
+          <height>730</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -466,8 +466,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>225</width>
-              <height>509</height>
+              <width>263</width>
+              <height>521</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -1265,7 +1265,7 @@
               </widget>
              </item>
              <item row="9" column="0" colspan="3">
-              <widget class="FrequencySpinBox" name="refFreqSpin"/>
+              <widget class="FrequencySpinBox" name="refFreqSpin" native="true"/>
              </item>
              <item row="10" column="0" colspan="3">
               <widget class="QPushButton" name="dopplerButton">
@@ -1281,8 +1281,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>225</width>
-              <height>509</height>
+              <width>263</width>
+              <height>459</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1369,8 +1369,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>253</width>
-              <height>495</height>
+              <width>263</width>
+              <height>459</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1543,7 +1543,7 @@
               </widget>
              </item>
              <item row="0" column="1" colspan="3">
-              <widget class="FrequencySpinBox" name="syncFreqSpin"/>
+              <widget class="FrequencySpinBox" name="syncFreqSpin" native="true"/>
              </item>
             </layout>
            </widget>
@@ -1552,8 +1552,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>277</width>
-              <height>495</height>
+              <width>276</width>
+              <height>445</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1714,7 +1714,7 @@
                     <number>1</number>
                    </property>
                    <item row="0" column="1">
-                    <widget class="FrequencySpinBox" name="baudSpin">
+                    <widget class="FrequencySpinBox" name="baudSpin" native="true">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                        <horstretch>0</horstretch>
@@ -1975,8 +1975,8 @@
   </action>
   <action name="actionSave_selection">
    <property name="icon">
-    <iconset>
-     <normaloff>:/icons/save-selection.png</normaloff>:/icons/save-selection.png</iconset>
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
    </property>
    <property name="text">
     <string>Save selection</string>
@@ -2093,25 +2093,23 @@
    <header>Waveform.h</header>
   </customwidget>
   <customwidget>
-   <class>QVerticalLabel</class>
-   <extends>QLabel</extends>
-   <header>QVerticalLabel.h</header>
-  </customwidget>
-  <customwidget>
    <class>FrequencySpinBox</class>
    <extends>QWidget</extends>
    <header>FrequencySpinBox.h</header>
   </customwidget>
+  <customwidget>
+   <class>QVerticalLabel</class>
+   <extends>QLabel</extends>
+   <header>QVerticalLabel.h</header>
+  </customwidget>
  </customwidgets>
  <resources>
-  <include location="../icons/Icons.qrc"/>
-  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>
  <connections/>
  <buttongroups>
   <buttongroup name="spaceButtonGrp"/>
-  <buttongroup name="intervalButtonGrp"/>
   <buttongroup name="clckSourceBtnGrp"/>
+  <buttongroup name="intervalButtonGrp"/>
  </buttongroups>
 </ui>
