@@ -1604,11 +1604,14 @@ color: white;</string>
                          <height>64</height>
                         </size>
                        </property>
+                       <property name="minimum">
+                        <number>-100</number>
+                       </property>
                        <property name="maximum">
                         <number>100</number>
                        </property>
                        <property name="value">
-                        <number>50</number>
+                        <number>0</number>
                        </property>
                        <property name="notchesVisible">
                         <bool>true</bool>
@@ -1664,11 +1667,14 @@ color: white;</string>
                          <height>64</height>
                         </size>
                        </property>
+                       <property name="minimum">
+                        <number>-100</number>
+                       </property>
                        <property name="maximum">
                         <number>100</number>
                        </property>
                        <property name="value">
-                        <number>50</number>
+                        <number>0</number>
                        </property>
                        <property name="invertedAppearance">
                         <bool>false</bool>

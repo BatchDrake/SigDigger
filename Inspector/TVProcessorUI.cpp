@@ -237,6 +237,18 @@ InspectorUI::connectTVProcessorUi(void)
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVProcessorUiChanged()));
+
+  connect(
+        this->ui->brightnessDial,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onTVBrightnessChanged()));
+
+  connect(
+        this->ui->contrastDial,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onTVContrastChanged()));
 }
 
 void
@@ -493,3 +505,16 @@ InspectorUI::onTVProcessorError(QString error)
 {
   QMessageBox::critical(this->ui->tvDisplay, "TV Processor error", error);
 }
+
+void
+InspectorUI::onTVContrastChanged(void)
+{
+  this->ui->tvDisplay->setContrast(this->ui->contrastDial->value() / 100.);
+}
+
+void
+InspectorUI::onTVBrightnessChanged(void)
+{
+  this->ui->tvDisplay->setBrightness(this->ui->brightnessDial->value() / 100.);
+}
+

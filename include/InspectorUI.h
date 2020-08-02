@@ -217,6 +217,8 @@ namespace SigDigger {
 
       // TV Processor UI slots
       void onTVProcessorUiChanged(void);
+      void onTVContrastChanged(void);
+      void onTVBrightnessChanged(void);
 
     signals:
       void configChanged(void);
