@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1125</width>
-    <height>802</height>
+    <width>1159</width>
+    <height>904</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,8 +67,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>203</width>
-         <height>672</height>
+         <width>139</width>
+         <height>780</height>
         </rect>
        </property>
        <attribute name="label">
@@ -203,8 +203,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>203</width>
-         <height>672</height>
+         <width>68</width>
+         <height>794</height>
         </rect>
        </property>
        <attribute name="label">
@@ -242,8 +242,8 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>203</width>
-             <height>672</height>
+             <width>68</width>
+             <height>794</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="estimatorsGrid">
@@ -276,8 +276,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>203</width>
-         <height>672</height>
+         <width>68</width>
+         <height>794</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -339,8 +339,8 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>203</width>
-             <height>672</height>
+             <width>68</width>
+             <height>794</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -398,8 +398,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>203</width>
-         <height>672</height>
+         <width>68</width>
+         <height>794</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -477,6 +477,81 @@ QToolBox::tab:hover {
           <property name="spacing">
            <number>3</number>
           </property>
+          <item row="3" column="3">
+           <widget class="QLabel" name="snrLabel">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">font-weight: bold;
+background-color: black;
+color: rgb(255, 255, 0);
+font-family: Monospace;</string>
+            </property>
+            <property name="text">
+             <string>N / A</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="5" rowspan="3">
+           <widget class="Histogram" name="histogram">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="orderHint">
+             <UInt>1</UInt>
+            </property>
+            <property name="foregroundColor">
+             <color>
+              <red>255</red>
+              <green>255</green>
+              <blue>0</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2" rowspan="3">
+           <widget class="Transition" name="transition">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>100</height>
+             </size>
+            </property>
+            <property name="foregroundColor">
+             <color>
+              <red>255</red>
+              <green>255</green>
+              <blue>0</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="resetFpsButton">
+            <property name="text">
+             <string>Reset</string>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="0">
            <widget class="QPushButton" name="burnCPUButton">
             <property name="text">
@@ -513,29 +588,6 @@ QToolBox::tab:hover {
             </property>
            </widget>
           </item>
-          <item row="1" column="2" rowspan="3">
-           <widget class="Transition" name="transition">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>100</height>
-             </size>
-            </property>
-            <property name="foregroundColor">
-             <color>
-              <red>255</red>
-              <green>255</green>
-              <blue>0</blue>
-             </color>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="3">
            <widget class="QPushButton" name="snrButton">
             <property name="text">
@@ -543,32 +595,6 @@ QToolBox::tab:hover {
             </property>
             <property name="checkable">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="5" rowspan="3">
-           <widget class="Histogram" name="histogram">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="orderHint">
-             <UInt>1</UInt>
-            </property>
-            <property name="foregroundColor">
-             <color>
-              <red>255</red>
-              <green>255</green>
-              <blue>0</blue>
-             </color>
             </property>
            </widget>
           </item>
@@ -592,32 +618,6 @@ QToolBox::tab:hover {
               <green>255</green>
               <blue>0</blue>
              </color>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="3">
-           <widget class="QLabel" name="snrLabel">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">font-weight: bold;
-background-color: black;
-color: rgb(255, 255, 0);
-font-family: Monospace;</string>
-            </property>
-            <property name="text">
-             <string>N / A</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QPushButton" name="resetFpsButton">
-            <property name="text">
-             <string>Reset</string>
             </property>
            </widget>
           </item>
@@ -1127,93 +1127,67 @@ color: white;</string>
            <string>Analog TV</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_14">
-           <item row="3" column="1">
-            <widget class="QWidget" name="widget_3" native="true">
-             <layout class="QGridLayout" name="gridLayout_16">
-              <property name="leftMargin">
-               <number>3</number>
-              </property>
-              <property name="topMargin">
-               <number>3</number>
-              </property>
-              <property name="rightMargin">
-               <number>3</number>
-              </property>
-              <property name="bottomMargin">
-               <number>3</number>
-              </property>
-              <property name="spacing">
-               <number>3</number>
-              </property>
-              <item row="0" column="2">
-               <widget class="QDial" name="dial_2">
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="value">
-                 <number>50</number>
-                </property>
-                <property name="notchesVisible">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QDial" name="dial">
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="value">
-                 <number>50</number>
-                </property>
-                <property name="invertedAppearance">
-                 <bool>false</bool>
-                </property>
-                <property name="invertedControls">
-                 <bool>false</bool>
-                </property>
-                <property name="notchesVisible">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
+           <item row="2" column="1" rowspan="2" colspan="3">
+            <widget class="QFrame" name="tvFrame">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_13">
               <item row="1" column="0">
-               <widget class="QLabel" name="label_13">
-                <property name="text">
-                 <string>Brightness</string>
+               <widget class="TVDisplay" name="tvDisplay">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
                 </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QLabel" name="label_14">
-                <property name="text">
-                 <string>Contrast</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <spacer name="horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
+                <property name="minimumSize">
                  <size>
-                  <width>40</width>
-                  <height>20</height>
+                  <width>640</width>
+                  <height>480</height>
                  </size>
                 </property>
-               </spacer>
+               </widget>
               </item>
              </layout>
             </widget>
            </item>
-           <item row="0" column="0">
+           <item row="0" column="3">
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>&amp;Snapshot</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
             <widget class="QPushButton" name="enableTvButton">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
@@ -1232,248 +1206,1021 @@ color: white;</string>
 color: white;</string>
              </property>
              <property name="text">
-              <string>Enable</string>
+              <string>&amp;Enable</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
              </property>
             </widget>
            </item>
-           <item row="0" column="1" rowspan="2">
-            <widget class="QFrame" name="tvFrame">
+           <item row="1" column="1" colspan="3">
+            <widget class="QTabWidget" name="tvToolTab">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="minimumSize">
+             <property name="tabPosition">
+              <enum>QTabWidget::South</enum>
+             </property>
+             <property name="tabShape">
+              <enum>QTabWidget::Rounded</enum>
+             </property>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <property name="iconSize">
               <size>
-               <width>640</width>
-               <height>480</height>
+               <width>12</width>
+               <height>12</height>
               </size>
              </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+             <property name="documentMode">
+              <bool>false</bool>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_13">
-              <item row="0" column="0">
-               <widget class="QGraphicsView" name="graphicsView"/>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="1" column="0" rowspan="3">
-            <widget class="QFrame" name="frame_5">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_12">
-              <property name="leftMargin">
-               <number>3</number>
+             <widget class="QWidget" name="pictureTab">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="topMargin">
-               <number>3</number>
-              </property>
-              <property name="rightMargin">
-               <number>3</number>
-              </property>
-              <property name="bottomMargin">
-               <number>3</number>
-              </property>
-              <property name="spacing">
-               <number>3</number>
-              </property>
-              <item row="12" column="0" colspan="2">
-               <widget class="QRadioButton" name="radioButton_3">
-                <property name="text">
-                 <string>&amp;Custom...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="13" column="0" colspan="2">
-               <widget class="QFrame" name="frame_6">
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_15">
-                 <property name="leftMargin">
-                  <number>3</number>
+              <attribute name="title">
+               <string>Picture</string>
+              </attribute>
+              <layout class="QGridLayout" name="gridLayout_17">
+               <item row="0" column="0">
+                <widget class="QWidget" name="widget_3" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Ignored">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
                  </property>
-                 <property name="topMargin">
-                  <number>3</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>3</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>3</number>
-                 </property>
-                 <property name="spacing">
-                  <number>3</number>
-                 </property>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_17">
-                   <property name="text">
-                    <string>HSYNC</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-                   <property name="suffix">
-                    <string> us</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_16">
-                   <property name="text">
-                    <string>Frame rate</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QDoubleSpinBox" name="doubleSpinBox">
-                   <property name="suffix">
-                    <string> us</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QSpinBox" name="spinBox">
-                   <property name="suffix">
-                    <string> Hz</string>
-                   </property>
-                   <property name="prefix">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_18">
-                   <property name="text">
-                    <string>VSYNC</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_19">
-                   <property name="text">
-                    <string>Field sync</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QComboBox" name="comboBox">
-                   <item>
-                    <property name="text">
-                     <string>Even</string>
+                 <layout class="QGridLayout" name="gridLayout_27">
+                  <property name="leftMargin">
+                   <number>3</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>3</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>3</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>3</number>
+                  </property>
+                  <property name="spacing">
+                   <number>3</number>
+                  </property>
+                  <item row="0" column="1" rowspan="2">
+                   <widget class="QGroupBox" name="groupBox_5">
+                    <property name="title">
+                     <string>Presets</string>
                     </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Odd</string>
+                    <layout class="QGridLayout" name="gridLayout_19">
+                     <property name="leftMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="spacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QRadioButton" name="ntscRadio">
+                       <property name="text">
+                        <string>&amp;NTSC</string>
+                       </property>
+                       <property name="checked">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QRadioButton" name="palRadio">
+                       <property name="text">
+                        <string>&amp;PAL</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QRadioButton" name="customRadio">
+                       <property name="text">
+                        <string>&amp;Custom...</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item row="0" column="7">
+                   <widget class="QGroupBox" name="groupBox_11">
+                    <property name="title">
+                     <string>Zoom</string>
                     </property>
-                   </item>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="6" column="1">
-               <widget class="QSlider" name="horizontalSlider">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_11">
-                <property name="text">
-                 <string>White level</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0">
-               <widget class="QLabel" name="label_10">
-                <property name="text">
-                 <string>Sync level</string>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="0" colspan="2">
-               <widget class="QRadioButton" name="radioButton_2">
-                <property name="text">
-                 <string>&amp;PAL</string>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="0" colspan="2">
-               <widget class="QRadioButton" name="radioButton">
-                <property name="text">
-                 <string>&amp;NTSC</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QSlider" name="horizontalSlider_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="0">
-               <widget class="QLabel" name="label_12">
-                <property name="text">
-                 <string>Black level</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="1">
-               <widget class="QSlider" name="horizontalSlider_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="18" column="0">
-               <spacer name="verticalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="9" column="0">
-               <widget class="QLabel" name="label_15">
-                <property name="text">
-                 <string>TV Standard</string>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="0" colspan="2">
-               <widget class="Line" name="line_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
+                    <layout class="QGridLayout" name="gridLayout_28">
+                     <property name="leftMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="spacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QSpinBox" name="tvZoomSpin">
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                       <property name="minimum">
+                        <number>1</number>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item row="1" column="4">
+                   <widget class="QGroupBox" name="groupBox_2">
+                    <property name="title">
+                     <string>Invert polarity</string>
+                    </property>
+                    <layout class="QGridLayout" name="gridLayout_23">
+                     <property name="leftMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="spacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QCheckBox" name="invertSyncCheck">
+                       <property name="text">
+                        <string>Sync</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QCheckBox" name="invertImageCheck">
+                       <property name="text">
+                        <string>Image</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item row="0" column="2" rowspan="2">
+                   <widget class="QGroupBox" name="geometryGroup">
+                    <property name="title">
+                     <string>Geometry</string>
+                    </property>
+                    <layout class="QGridLayout" name="gridLayout_18">
+                     <property name="leftMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="spacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="1">
+                      <widget class="QSpinBox" name="linesSpin">
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                       <property name="minimum">
+                        <number>1</number>
+                       </property>
+                       <property name="maximum">
+                        <number>65536</number>
+                       </property>
+                       <property name="value">
+                        <number>625</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QCheckBox" name="combFilterCheck">
+                       <property name="text">
+                        <string>Comb filter</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_10">
+                       <property name="text">
+                        <string>Line period</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_24">
+                       <property name="text">
+                        <string>Lines</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="2">
+                      <widget class="QDoubleSpinBox" name="frameRateSpin">
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                       <property name="readOnly">
+                        <bool>true</bool>
+                       </property>
+                       <property name="buttonSymbols">
+                        <enum>QAbstractSpinBox::NoButtons</enum>
+                       </property>
+                       <property name="suffix">
+                        <string> Hz</string>
+                       </property>
+                       <property name="maximum">
+                        <double>120.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1" colspan="2">
+                      <widget class="TimeSpinBox" name="linePeriodSpin">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="QPushButton" name="swapCombFilterButton">
+                       <property name="text">
+                        <string>Swap Y/C</string>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item row="0" column="6" rowspan="2">
+                   <widget class="QGroupBox" name="groupBox_4">
+                    <property name="title">
+                     <string>Rotation</string>
+                    </property>
+                    <layout class="QGridLayout" name="gridLayout_24">
+                     <property name="leftMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="spacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QDial" name="rotationDial">
+                       <property name="maximum">
+                        <number>359</number>
+                       </property>
+                       <property name="wrapping">
+                        <bool>true</bool>
+                       </property>
+                       <property name="notchesVisible">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item row="1" column="7">
+                   <widget class="QGroupBox" name="groupBox_3">
+                    <property name="title">
+                     <string>Flip</string>
+                    </property>
+                    <layout class="QGridLayout" name="gridLayout_25">
+                     <property name="leftMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="spacing">
+                      <number>3</number>
+                     </property>
+                     <item row="1" column="0">
+                      <widget class="QCheckBox" name="flipVerticalCheck">
+                       <property name="text">
+                        <string>Vertical</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="0">
+                      <widget class="QCheckBox" name="flipHorizontalCheck">
+                       <property name="text">
+                        <string>Horizontal</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item row="0" column="0" rowspan="2">
+                   <widget class="QGroupBox" name="groupBox">
+                    <property name="title">
+                     <string>Adjust</string>
+                    </property>
+                    <layout class="QGridLayout" name="gridLayout_16">
+                     <property name="leftMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="spacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="1">
+                      <widget class="QDial" name="contrastDial">
+                       <property name="minimumSize">
+                        <size>
+                         <width>64</width>
+                         <height>64</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>64</width>
+                         <height>64</height>
+                        </size>
+                       </property>
+                       <property name="maximum">
+                        <number>100</number>
+                       </property>
+                       <property name="value">
+                        <number>50</number>
+                       </property>
+                       <property name="notchesVisible">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_13">
+                       <property name="text">
+                        <string>Brightness</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="2">
+                      <widget class="QDial" name="gammaDial">
+                       <property name="minimumSize">
+                        <size>
+                         <width>64</width>
+                         <height>64</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>64</width>
+                         <height>64</height>
+                        </size>
+                       </property>
+                       <property name="maximum">
+                        <number>100</number>
+                       </property>
+                       <property name="value">
+                        <number>50</number>
+                       </property>
+                       <property name="notchesVisible">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="0">
+                      <widget class="QDial" name="brightnessDial">
+                       <property name="minimumSize">
+                        <size>
+                         <width>64</width>
+                         <height>64</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>64</width>
+                         <height>64</height>
+                        </size>
+                       </property>
+                       <property name="maximum">
+                        <number>100</number>
+                       </property>
+                       <property name="value">
+                        <number>50</number>
+                       </property>
+                       <property name="invertedAppearance">
+                        <bool>false</bool>
+                       </property>
+                       <property name="invertedControls">
+                        <bool>false</bool>
+                       </property>
+                       <property name="notchesVisible">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="2">
+                      <widget class="QLabel" name="label_20">
+                       <property name="text">
+                        <string>Gamma</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QLabel" name="label_14">
+                       <property name="text">
+                        <string>Contrast</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item row="0" column="4">
+                   <widget class="QGroupBox" name="levelGroup">
+                    <property name="title">
+                     <string>Levels</string>
+                    </property>
+                    <layout class="QGridLayout" name="gridLayout_26">
+                     <property name="leftMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="spacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="1">
+                      <widget class="QDoubleSpinBox" name="dcSpin">
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                       <property name="suffix">
+                        <string>%</string>
+                       </property>
+                       <property name="decimals">
+                        <number>1</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="2">
+                      <widget class="QCheckBox" name="agcCheck">
+                       <property name="text">
+                        <string>AGC</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_15">
+                       <property name="text">
+                        <string>DC</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item row="1" column="8">
+                   <spacer name="horizontalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="0" column="3" rowspan="2">
+                   <widget class="QGroupBox" name="groupBox_7">
+                    <property name="title">
+                     <string>Field dominance</string>
+                    </property>
+                    <layout class="QGridLayout" name="gridLayout_29">
+                     <property name="leftMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>6</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="horizontalSpacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QRadioButton" name="nonInterlacedRadio">
+                       <property name="text">
+                        <string>Non-interlaced</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QRadioButton" name="fieldOneRadio">
+                       <property name="text">
+                        <string>Field one</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QRadioButton" name="fieldTwoRadio">
+                       <property name="text">
+                        <string>Field two</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="syncTab">
+              <attribute name="title">
+               <string>Synchronization</string>
+              </attribute>
+              <layout class="QGridLayout" name="gridLayout_20">
+               <item row="0" column="1">
+                <widget class="QGroupBox" name="groupBox_9">
+                 <property name="title">
+                  <string>Time constants</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_12">
+                  <property name="leftMargin">
+                   <number>6</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>3</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>6</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>3</number>
+                  </property>
+                  <property name="spacing">
+                   <number>3</number>
+                  </property>
+                  <item row="3" column="3">
+                   <widget class="QDoubleSpinBox" name="fastTrackTauSpin">
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="suffix">
+                     <string> lines</string>
+                    </property>
+                    <property name="maximum">
+                     <double>1000000.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="2">
+                   <widget class="QLabel" name="label_26">
+                    <property name="text">
+                     <string>Slow track</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QLabel" name="label_12">
+                    <property name="text">
+                     <string>Line adjust</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="3">
+                   <widget class="QDoubleSpinBox" name="slowTrackTauSpin">
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="suffix">
+                     <string> lines</string>
+                    </property>
+                    <property name="maximum">
+                     <double>1000000.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="1">
+                   <widget class="QDoubleSpinBox" name="lineLenTauSpin">
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="prefix">
+                     <string/>
+                    </property>
+                    <property name="suffix">
+                     <string> frames</string>
+                    </property>
+                    <property name="maximum">
+                     <double>1000000.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="2">
+                   <widget class="QLabel" name="label_16">
+                    <property name="text">
+                     <string>Fast track</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_11">
+                    <property name="text">
+                     <string>AGC</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QDoubleSpinBox" name="agcTauSpin">
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="suffix">
+                     <string> frames</string>
+                    </property>
+                    <property name="maximum">
+                     <double>1000000.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="0" column="0" rowspan="2">
+                <widget class="QGroupBox" name="groupBoxSync">
+                 <property name="title">
+                  <string>Synchronization</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_15">
+                  <property name="leftMargin">
+                   <number>6</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>6</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>3</number>
+                  </property>
+                  <property name="spacing">
+                   <number>3</number>
+                  </property>
+                  <item row="3" column="1">
+                   <widget class="QSpinBox" name="vsyncTrainLengthSpin">
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="suffix">
+                     <string> pulses</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_17">
+                    <property name="text">
+                     <string>HSYNC</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_18">
+                    <property name="text">
+                     <string>VSYNC</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="TimeSpinBox" name="hsyncSpin">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0" colspan="2">
+                   <widget class="QCheckBox" name="enableSyncCheck">
+                    <property name="text">
+                     <string>Sync to pulses</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_32">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text">
+                     <string>Train length</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="TimeSpinBox" name="vsyncSpin">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="0" column="2" rowspan="2">
+                <widget class="QGroupBox" name="groupBox_8">
+                 <property name="title">
+                  <string>Tolerances</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_30">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_27">
+                    <property name="text">
+                     <string>Time tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QSlider" name="timeTolSlider">
+                    <property name="minimum">
+                     <number>-800</number>
+                    </property>
+                    <property name="maximum">
+                     <number>0</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="tickPosition">
+                     <enum>QSlider::TicksBothSides</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="2">
+                   <widget class="QLabel" name="timeTolLabel">
+                    <property name="text">
+                     <string>0%</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_28">
+                    <property name="text">
+                     <string>Level tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QSlider" name="levelTolSlider">
+                    <property name="minimum">
+                     <number>-800</number>
+                    </property>
+                    <property name="maximum">
+                     <number>0</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="tickPosition">
+                     <enum>QSlider::TicksBothSides</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QLabel" name="levelTolLabel">
+                    <property name="text">
+                     <string>0%</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_29">
+                    <property name="text">
+                     <string>Geometry tolerance</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QSlider" name="geomTolSlider">
+                    <property name="minimum">
+                     <number>-800</number>
+                    </property>
+                    <property name="maximum">
+                     <number>0</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="tickPosition">
+                     <enum>QSlider::TicksBothSides</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="2">
+                   <widget class="QLabel" name="geomTolLabel">
+                    <property name="text">
+                     <string>0%</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QGroupBox" name="groupBox_6">
+                 <property name="title">
+                  <string>Error triggers</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_21">
+                  <property name="leftMargin">
+                   <number>6</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>3</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>6</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>3</number>
+                  </property>
+                  <property name="spacing">
+                   <number>3</number>
+                  </property>
+                  <item row="3" column="1">
+                   <widget class="QSlider" name="hugeErrorSlider">
+                    <property name="minimum">
+                     <number>-800</number>
+                    </property>
+                    <property name="maximum">
+                     <number>0</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="tickPosition">
+                     <enum>QSlider::TicksBothSides</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_31">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text">
+                     <string>Hsync error interval</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="2">
+                   <widget class="QLabel" name="hugeErrorLabel">
+                    <property name="text">
+                     <string>TextLabel</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_30">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text">
+                     <string>Fast correction threshold</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="ctkRangeSlider" name="hsyncErrorRange">
+                    <property name="minimum">
+                     <number>-800</number>
+                    </property>
+                    <property name="maximum">
+                     <number>0</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="tickPosition">
+                     <enum>QSlider::NoTicks</enum>
+                    </property>
+                    <property name="minimumValue">
+                     <number>-800</number>
+                    </property>
+                    <property name="maximumValue">
+                     <number>0</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QLabel" name="hsyncErrorRangeLabel">
+                    <property name="text">
+                     <string>TextLabel</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
             </widget>
            </item>
           </layout>
@@ -1521,6 +2268,16 @@ color: white;</string>
    <class>ctkRangeSlider</class>
    <extends>QSlider</extends>
    <header>ctkRangeSlider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TVDisplay</class>
+   <extends>QFrame</extends>
+   <header>TVDisplay.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TimeSpinBox</class>
+   <extends>QWidget</extends>
+   <header>TimeSpinBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

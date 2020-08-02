@@ -81,6 +81,8 @@ SOURCES += \
     Components/TimeWindow.cpp \
     Inspector/Inspector.cpp \
     Inspector/InspectorUI.cpp \
+    Inspector/TVProcessorUI.cpp \
+    Inspector/TVProcessorWorker.cpp \
     InspectorCtl/AfcControl.cpp \
     InspectorCtl/AskControl.cpp \
     InspectorCtl/ClockRecovery.cpp \
@@ -208,6 +210,7 @@ HEADERS += \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
     include/SourcePanel.h \
+    include/TVProcessorWorker.h \
     include/TimeWindow.h \
     include/ToneControl.h \
     include/UIMediator.h \

@@ -77,9 +77,22 @@ InspectorUI::InspectorUI(
     this->ui->histogram->overrideUnits("Hz");
   }
 
+  this->tvThread = new QThread();
+  this->tvWorker = new TVProcessorWorker();
+  this->tvWorker->moveToThread(this->tvThread);
+
+  connect(
+        this->tvThread,
+        &QThread::finished,
+        this->tvWorker,
+        &QObject::deleteLater);
+
+  this->tvThread->start();
+
   this->initUi();
 
   this->connectAll();
+  this->connectTVProcessorUi();
 
   // Refresh UI
   this->refreshUi();
@@ -98,6 +111,9 @@ InspectorUI::~InspectorUI()
 
   if (this->socketForwarder != nullptr)
     delete this->socketForwarder;
+
+  if (this->tvThread != nullptr)
+    this->tvThread->quit();
 }
 
 void
@@ -131,6 +147,9 @@ InspectorUI::initUi(void)
   // just get rid of it for the sake of clarity.
   this->ui->recordButton->setStyleSheet("");
 #endif // __APPLE__
+
+  // Initialize TV UI
+  this->onTVProcessorUiChanged();
 }
 
 void
@@ -168,6 +187,8 @@ InspectorUI::setSampleRate(float rate)
   if (this->config->hasPrefix("fsk"))
     this->ui->histogram->overrideDisplayRange(static_cast<qreal>(rate));
 }
+
+
 
 void
 InspectorUI::setBandwidth(unsigned int bandwidth)
@@ -752,6 +773,22 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
     }
   }
 
+  if (this->tvProcessing) {
+    this->floatBuffer.resize(size);
+
+    if (this->decider.getDecisionMode() == Decider::MODULUS) {
+      for (unsigned i = 0; i < size; ++i)
+        this->floatBuffer[i] = SU_C_ABS(data[i]);
+    } else {
+      for (unsigned i = 0; i < size; ++i)
+        this->floatBuffer[i] = SU_C_ARG(data[i]) / PI;
+    }
+
+    this->tvWorker->pushData(this->floatBuffer);
+
+    emit tvProcessorData();
+  }
+
   if (this->recording || this->forwarding) {
     if (this->decider.getDecisionMode() == Decider::MODULUS) {
       if (this->recording)
@@ -923,12 +960,18 @@ InspectorUI::setBps(unsigned int bps)
 unsigned int
 InspectorUI::getBaudRate(void) const
 {
+  return static_cast<unsigned int>(this->getBaudRateFloat());
+}
+
+SUFLOAT
+InspectorUI::getBaudRateFloat(void) const
+{
   const Suscan::FieldValue *val;
-  unsigned int baud = 1;
+  SUFLOAT baud = 1.;
 
   // Check baudrate
   if ((val = this->config->get("clock.baud")) != nullptr)
-    baud = static_cast<unsigned int>(val->getFloat());
+    baud = val->getFloat();
 
   return baud;
 }
@@ -997,6 +1040,7 @@ InspectorUI::onInspectorControlChanged(void)
     this->saverUI->setRecordState(this->recording);
   }
 
+  this->emitTVProcessorParameters();
   this->saverUI->setEnabled(newRate != 0);
   this->netForwarderUI->setEnabled(newRate != 0);
 
