@@ -1742,6 +1742,9 @@ color: white;</string>
                        <property name="decimals">
                         <number>1</number>
                        </property>
+                       <property name="minimum">
+                        <double>-100.000000000000000</double>
+                       </property>
                       </widget>
                      </item>
                      <item row="0" column="2">

@@ -775,13 +775,14 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
 
   if (this->tvProcessing) {
     this->floatBuffer.resize(size);
-
+    SUFLOAT k = this->ui->invertSyncCheck->isChecked() ? -1 : 1;
+    SUFLOAT dc = static_cast<SUFLOAT>(this->ui->dcSpin->value()) / 100;
     if (this->decider.getDecisionMode() == Decider::MODULUS) {
       for (unsigned i = 0; i < size; ++i)
-        this->floatBuffer[i] = SU_C_ABS(data[i]);
+        this->floatBuffer[i] = k * SU_C_ABS(data[i]) + dc;
     } else {
       for (unsigned i = 0; i < size; ++i)
-        this->floatBuffer[i] = SU_C_ARG(data[i]) / PI;
+        this->floatBuffer[i] = k * SU_C_ARG(data[i]) / PI + dc;
     }
 
     this->tvWorker->pushData(this->floatBuffer);
