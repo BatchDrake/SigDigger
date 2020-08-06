@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1159</width>
-    <height>904</height>
+    <width>1308</width>
+    <height>968</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,8 +67,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>139</width>
-         <height>780</height>
+         <width>162</width>
+         <height>824</height>
         </rect>
        </property>
        <attribute name="label">
@@ -138,23 +138,23 @@ QToolBox::tab:hover {
             <height>32</height>
            </size>
           </property>
-          <property name="segScale">
+          <property name="segScale" stdset="0">
            <double>0.900000000000000</double>
           </property>
-          <property name="thickness">
+          <property name="thickness" stdset="0">
            <double>0.300000000000000</double>
           </property>
-          <property name="zoom">
+          <property name="zoom" stdset="0">
            <double>0.600000000000000</double>
           </property>
-          <property name="backgroundColor">
+          <property name="backgroundColor" stdset="0">
            <color>
             <red>0</red>
             <green>0</green>
             <blue>0</blue>
            </color>
           </property>
-          <property name="foregroundColor">
+          <property name="foregroundColor" stdset="0">
            <color>
             <red>144</red>
             <green>177</green>
@@ -171,23 +171,23 @@ QToolBox::tab:hover {
             <height>32</height>
            </size>
           </property>
-          <property name="segScale">
+          <property name="segScale" stdset="0">
            <double>0.900000000000000</double>
           </property>
-          <property name="thickness">
+          <property name="thickness" stdset="0">
            <double>0.300000000000000</double>
           </property>
-          <property name="zoom">
+          <property name="zoom" stdset="0">
            <double>0.600000000000000</double>
           </property>
-          <property name="backgroundColor">
+          <property name="backgroundColor" stdset="0">
            <color>
             <red>0</red>
             <green>0</green>
             <blue>0</blue>
            </color>
           </property>
-          <property name="foregroundColor">
+          <property name="foregroundColor" stdset="0">
            <color>
             <red>144</red>
             <green>177</green>
@@ -204,7 +204,7 @@ QToolBox::tab:hover {
          <x>0</x>
          <y>0</y>
          <width>68</width>
-         <height>794</height>
+         <height>838</height>
         </rect>
        </property>
        <attribute name="label">
@@ -243,7 +243,7 @@ QToolBox::tab:hover {
              <x>0</x>
              <y>0</y>
              <width>68</width>
-             <height>794</height>
+             <height>838</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="estimatorsGrid">
@@ -277,7 +277,7 @@ QToolBox::tab:hover {
          <x>0</x>
          <y>0</y>
          <width>68</width>
-         <height>794</height>
+         <height>838</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -340,7 +340,7 @@ QToolBox::tab:hover {
              <x>0</x>
              <y>0</y>
              <width>68</width>
-             <height>794</height>
+             <height>838</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -399,7 +399,7 @@ QToolBox::tab:hover {
          <x>0</x>
          <y>0</y>
          <width>68</width>
-         <height>794</height>
+         <height>838</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -510,10 +510,10 @@ font-family: Monospace;</string>
               <height>0</height>
              </size>
             </property>
-            <property name="orderHint">
+            <property name="orderHint" stdset="0">
              <UInt>1</UInt>
             </property>
-            <property name="foregroundColor">
+            <property name="foregroundColor" stdset="0">
              <color>
               <red>255</red>
               <green>255</green>
@@ -536,7 +536,7 @@ font-family: Monospace;</string>
               <height>100</height>
              </size>
             </property>
-            <property name="foregroundColor">
+            <property name="foregroundColor" stdset="0">
              <color>
               <red>255</red>
               <green>255</green>
@@ -612,7 +612,7 @@ font-family: Monospace;</string>
               <height>100</height>
              </size>
             </property>
-            <property name="foregroundColor">
+            <property name="foregroundColor" stdset="0">
              <color>
               <red>255</red>
               <green>255</green>
@@ -722,13 +722,13 @@ font-family: Monospace;</string>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
-                <property name="minimumValue">
+                <property name="minimumValue" stdset="0">
                  <number>-60</number>
                 </property>
-                <property name="maximumValue">
+                <property name="maximumValue" stdset="0">
                  <number>-10</number>
                 </property>
-                <property name="minimumPosition">
+                <property name="minimumPosition" stdset="0">
                  <number>-60</number>
                 </property>
                </widget>
@@ -1472,7 +1472,7 @@ color: white;</string>
                       </widget>
                      </item>
                      <item row="1" column="1" colspan="2">
-                      <widget class="TimeSpinBox" name="linePeriodSpin">
+                      <widget class="TimeSpinBox" name="linePeriodSpin" native="true">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                          <horstretch>0</horstretch>
@@ -1982,7 +1982,7 @@ color: white;</string>
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="TimeSpinBox" name="hsyncSpin">
+                   <widget class="TimeSpinBox" name="hsyncSpin" native="true">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -2012,7 +2012,7 @@ color: white;</string>
                    </widget>
                   </item>
                   <item row="2" column="1">
-                   <widget class="TimeSpinBox" name="vsyncSpin">
+                   <widget class="TimeSpinBox" name="vsyncSpin" native="true">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -2049,14 +2049,25 @@ color: white;</string>
                      <enum>Qt::Horizontal</enum>
                     </property>
                     <property name="tickPosition">
-                     <enum>QSlider::TicksBothSides</enum>
+                     <enum>QSlider::NoTicks</enum>
                     </property>
                    </widget>
                   </item>
                   <item row="0" column="2">
                    <widget class="QLabel" name="timeTolLabel">
+                    <property name="minimumSize">
+                     <size>
+                      <width>64</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>Monospace</family>
+                     </font>
+                    </property>
                     <property name="text">
-                     <string>0%</string>
+                     <string>100.01</string>
                     </property>
                    </widget>
                   </item>
@@ -2079,12 +2090,17 @@ color: white;</string>
                      <enum>Qt::Horizontal</enum>
                     </property>
                     <property name="tickPosition">
-                     <enum>QSlider::TicksBothSides</enum>
+                     <enum>QSlider::NoTicks</enum>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="2">
                    <widget class="QLabel" name="levelTolLabel">
+                    <property name="font">
+                     <font>
+                      <family>Monospace</family>
+                     </font>
+                    </property>
                     <property name="text">
                      <string>0%</string>
                     </property>
@@ -2109,12 +2125,17 @@ color: white;</string>
                      <enum>Qt::Horizontal</enum>
                     </property>
                     <property name="tickPosition">
-                     <enum>QSlider::TicksBothSides</enum>
+                     <enum>QSlider::NoTicks</enum>
                     </property>
                    </widget>
                   </item>
                   <item row="2" column="2">
                    <widget class="QLabel" name="geomTolLabel">
+                    <property name="font">
+                     <font>
+                      <family>Monospace</family>
+                     </font>
+                    </property>
                     <property name="text">
                      <string>0%</string>
                     </property>
@@ -2156,7 +2177,7 @@ color: white;</string>
                      <enum>Qt::Horizontal</enum>
                     </property>
                     <property name="tickPosition">
-                     <enum>QSlider::TicksBothSides</enum>
+                     <enum>QSlider::NoTicks</enum>
                     </property>
                    </widget>
                   </item>
@@ -2175,6 +2196,11 @@ color: white;</string>
                   </item>
                   <item row="3" column="2">
                    <widget class="QLabel" name="hugeErrorLabel">
+                    <property name="font">
+                     <font>
+                      <family>Monospace</family>
+                     </font>
+                    </property>
                     <property name="text">
                      <string>TextLabel</string>
                     </property>
@@ -2207,18 +2233,29 @@ color: white;</string>
                     <property name="tickPosition">
                      <enum>QSlider::NoTicks</enum>
                     </property>
-                    <property name="minimumValue">
+                    <property name="minimumValue" stdset="0">
                      <number>-800</number>
                     </property>
-                    <property name="maximumValue">
+                    <property name="maximumValue" stdset="0">
                      <number>0</number>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="2">
                    <widget class="QLabel" name="hsyncErrorRangeLabel">
+                    <property name="minimumSize">
+                     <size>
+                      <width>135</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>Monospace</family>
+                     </font>
+                    </property>
                     <property name="text">
-                     <string>TextLabel</string>
+                     <string>100.00%-100.00%</string>
                     </property>
                    </widget>
                   </item>
@@ -2244,31 +2281,37 @@ color: white;</string>
    <class>Constellation</class>
    <extends>QFrame</extends>
    <header>Constellation.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>Transition</class>
    <extends>QFrame</extends>
    <header>Transition.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>Histogram</class>
    <extends>QFrame</extends>
    <header>Histogram.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>LCD</class>
    <extends>QFrame</extends>
    <header>LCD.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>SymView</class>
    <extends>QFrame</extends>
    <header>SymView.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>Waterfall</class>
    <extends>QFrame</extends>
    <header>Waterfall.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>ctkRangeSlider</class>
@@ -2279,6 +2322,7 @@ color: white;</string>
    <class>TVDisplay</class>
    <extends>QFrame</extends>
    <header>TVDisplay.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>TimeSpinBox</class>

@@ -20,9 +20,12 @@
 #include "InspectorUI.h"
 #include "ui_Inspector.h"
 #include <QMessageBox>
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
+#define EP 1e2
+#define EP_INV (1. / (EP))
 
 void
 InspectorUI::connectTVProcessorUi(void)
@@ -305,35 +308,38 @@ InspectorUI::refreshTVProcessorParametersUiState(void)
   this->ui->vsyncSpin->setEnabled(this->ui->enableSyncCheck->isChecked());
 
   this->ui->levelTolLabel->setText(
-        QString::number(
-          100 * std::pow(10., this->ui->levelTolSlider->value() / 100.))
-        + "%");
+        SuWidgetsHelpers::formatQuantity(
+          100 * std::pow(10., this->ui->levelTolSlider->value() / 100.),
+          ""));
 
   this->ui->timeTolLabel->setText(
-        QString::number(
-          100 * std::pow(10., this->ui->timeTolSlider->value() / 100.))
-        + "%");
+        SuWidgetsHelpers::formatQuantity(
+          100 * std::pow(10., this->ui->timeTolSlider->value() / 100.),
+          ""));
 
   this->ui->geomTolLabel->setText(
-        QString::number(
-          100 * std::pow(10., this->ui->geomTolSlider->value() / 100.))
-        + "%");
+        SuWidgetsHelpers::formatQuantity(
+          100 * std::pow(10., this->ui->geomTolSlider->value() / 100.),
+          ""));
 
   this->ui->hsyncErrorRangeLabel->setText(
         QString::number(
-          100 * std::pow(
-            10.,
-            this->ui->hsyncErrorRange->minimumPosition() / 100.))
+          EP_INV * std::round(
+            EP * 100 * std::pow(
+              10.,
+              this->ui->hsyncErrorRange->minimumPosition() / 100.)))
         + "% - "
         + QString::number(
-          100 * std::pow(
-            10.,
-            this->ui->hsyncErrorRange->maximumPosition() / 100.))
+            EP_INV * std::round(
+              EP * 100 * std::pow(
+                10.,
+                this->ui->hsyncErrorRange->maximumPosition() / 100.)))
         + "%");
 
   this->ui->hugeErrorLabel->setText(
         QString::number(
-          100 * std::pow(10., this->ui->hugeErrorSlider->value() / 100.))
+          EP_INV * std::round(
+            EP * 100 * std::pow(10., this->ui->hugeErrorSlider->value() / 100.)))
         + "%");
 
   this->ui->frameRateSpin->setValue(
