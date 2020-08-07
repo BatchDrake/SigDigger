@@ -252,6 +252,31 @@ InspectorUI::connectTVProcessorUi(void)
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVContrastChanged()));
+
+  connect(
+        this->ui->rotationDial,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onTVAspectChanged()));
+
+  connect(
+        this->ui->tvZoomSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onTVAspectChanged()));
+
+  connect(
+        this->ui->flipHorizontalCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onTVAspectChanged()));
+
+
+  connect(
+        this->ui->flipVerticalCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onTVAspectChanged()));
 }
 
 void
@@ -524,3 +549,13 @@ InspectorUI::onTVBrightnessChanged(void)
   this->ui->tvDisplay->setBrightness(this->ui->brightnessDial->value() / 100.);
 }
 
+void
+InspectorUI::onTVAspectChanged(void)
+{
+  this->ui->tvDisplay->setRotation(this->ui->rotationDial->value());
+  this->ui->tvDisplay->setHorizontalFlip(
+        this->ui->flipHorizontalCheck->isChecked());
+  this->ui->tvDisplay->setVerticalFlip(
+        this->ui->flipVerticalCheck->isChecked());
+  this->ui->tvDisplay->setZoom(this->ui->tvZoomSpin->value());
+}

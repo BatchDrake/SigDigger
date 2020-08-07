@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1308</width>
+    <width>1314</width>
     <height>968</height>
    </rect>
   </property>
@@ -1126,68 +1126,8 @@ color: white;</string>
           <attribute name="title">
            <string>Analog TV</string>
           </attribute>
-          <layout class="QGridLayout" name="gridLayout_14">
-           <item row="2" column="1" rowspan="2" colspan="3">
-            <widget class="QFrame" name="tvFrame">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_13">
-              <item row="1" column="0">
-               <widget class="TVDisplay" name="tvDisplay">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>640</width>
-                  <height>480</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <spacer name="horizontalSpacer_4">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton">
-             <property name="text">
-              <string>&amp;Snapshot</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
+          <layout class="QGridLayout" name="gridLayout_13">
+           <item row="0" column="0">
             <widget class="QPushButton" name="enableTvButton">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
@@ -1213,7 +1153,27 @@ color: white;</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="1" colspan="3">
+           <item row="0" column="1">
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>&amp;Snapshot</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="1" column="0" colspan="3">
             <widget class="QTabWidget" name="tvToolTab">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1835,7 +1795,7 @@ color: white;</string>
                <item row="0" column="1">
                 <widget class="QGroupBox" name="groupBox_9">
                  <property name="title">
-                  <string>Time constants</string>
+                  <string>Time constants and triggers</string>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_12">
                   <property name="leftMargin">
@@ -1933,6 +1893,100 @@ color: white;</string>
                     </property>
                     <property name="maximum">
                      <double>1000000.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="0">
+                   <widget class="QLabel" name="label_31">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text">
+                     <string>Hsync error interval</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="0">
+                   <widget class="QLabel" name="label_30">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text">
+                     <string>Fast correction threshold</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="3">
+                   <widget class="QLabel" name="hsyncErrorRangeLabel">
+                    <property name="minimumSize">
+                     <size>
+                      <width>135</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>Monospace</family>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>100.00%-100.00%</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="1" colspan="2">
+                   <widget class="ctkRangeSlider" name="hsyncErrorRange">
+                    <property name="minimum">
+                     <number>-800</number>
+                    </property>
+                    <property name="maximum">
+                     <number>0</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="tickPosition">
+                     <enum>QSlider::NoTicks</enum>
+                    </property>
+                    <property name="minimumValue" stdset="0">
+                     <number>-800</number>
+                    </property>
+                    <property name="maximumValue" stdset="0">
+                     <number>0</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="1" colspan="2">
+                   <widget class="QSlider" name="hugeErrorSlider">
+                    <property name="minimum">
+                     <number>-800</number>
+                    </property>
+                    <property name="maximum">
+                     <number>0</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="tickPosition">
+                     <enum>QSlider::NoTicks</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="3">
+                   <widget class="QLabel" name="hugeErrorLabel">
+                    <property name="font">
+                     <font>
+                      <family>Monospace</family>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>TextLabel</string>
                     </property>
                    </widget>
                   </item>
@@ -2147,126 +2201,39 @@ color: white;</string>
                  </layout>
                 </widget>
                </item>
-               <item row="1" column="1">
-                <widget class="QGroupBox" name="groupBox_6">
-                 <property name="title">
-                  <string>Error triggers</string>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_21">
-                  <property name="leftMargin">
-                   <number>6</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>3</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>6</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>3</number>
-                  </property>
-                  <property name="spacing">
-                   <number>3</number>
-                  </property>
-                  <item row="3" column="1">
-                   <widget class="QSlider" name="hugeErrorSlider">
-                    <property name="minimum">
-                     <number>-800</number>
-                    </property>
-                    <property name="maximum">
-                     <number>0</number>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="tickPosition">
-                     <enum>QSlider::NoTicks</enum>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_31">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="text">
-                     <string>Hsync error interval</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="2">
-                   <widget class="QLabel" name="hugeErrorLabel">
-                    <property name="font">
-                     <font>
-                      <family>Monospace</family>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>TextLabel</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QLabel" name="label_30">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="text">
-                     <string>Fast correction threshold</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="ctkRangeSlider" name="hsyncErrorRange">
-                    <property name="minimum">
-                     <number>-800</number>
-                    </property>
-                    <property name="maximum">
-                     <number>0</number>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="tickPosition">
-                     <enum>QSlider::NoTicks</enum>
-                    </property>
-                    <property name="minimumValue" stdset="0">
-                     <number>-800</number>
-                    </property>
-                    <property name="maximumValue" stdset="0">
-                     <number>0</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="2">
-                   <widget class="QLabel" name="hsyncErrorRangeLabel">
-                    <property name="minimumSize">
-                     <size>
-                      <width>135</width>
-                      <height>0</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <family>Monospace</family>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>100.00%-100.00%</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
               </layout>
              </widget>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="3" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <widget class="TVDisplay" name="tvDisplay">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="baseSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
             </widget>
            </item>
           </layout>

@@ -220,6 +220,8 @@ namespace SigDigger {
       void onTVContrastChanged(void);
       void onTVBrightnessChanged(void);
 
+      void onTVAspectChanged(void);
+
     signals:
       void configChanged(void);
       void setSpectrumSource(unsigned int index);

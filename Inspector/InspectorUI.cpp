@@ -1496,4 +1496,3 @@ InspectorUI::onPandapterRangeChanged(float min, float max)
 
   this->adjusting = adjusting;
 }
-
