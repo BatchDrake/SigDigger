@@ -1364,7 +1364,7 @@ void
 Application::onAudioVolumeChanged(float)
 {
   if (this->playBack != nullptr)
-    this->playBack->setVolume(this->ui.audioPanel->getMuteableVolume() / 100.f);
+    this->playBack->setVolume(this->ui.audioPanel->getMuteableVolume());
 }
 
 void
