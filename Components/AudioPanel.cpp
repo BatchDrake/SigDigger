@@ -271,7 +271,7 @@ AudioPanel::setVolume(SUFLOAT volume)
   this->panelConfig->volume = volume;
   this->ui->volumeSlider->setValue(static_cast<int>(volume));
   this->ui->volumeLabel->setText(
-        QString::number(this->ui->volumeSlider->value()) + "%");
+        QString::number(this->ui->volumeSlider->value()) + " dB");
 }
 
 void

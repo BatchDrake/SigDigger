@@ -181,8 +181,11 @@
       </item>
       <item row="3" column="1" colspan="2">
        <widget class="QSlider" name="volumeSlider">
+        <property name="minimum">
+         <number>-60</number>
+        </property>
         <property name="maximum">
-         <number>100</number>
+         <number>30</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -317,8 +320,6 @@
   </layout>
  </widget>
  <resources>
-  <include location="../icons/Icons.qrc"/>
-  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>
  <connections/>

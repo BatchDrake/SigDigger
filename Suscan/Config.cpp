@@ -41,7 +41,7 @@ void
 Config::populate(void)
 {
   if (instance != nullptr)
-    for (int i = 0; i < instance->desc->field_count; ++i)
+    for (unsigned int i = 0; i < instance->desc->field_count; ++i)
       this->fields.push_back(FieldValue(instance->values[i]));
 }
 

@@ -374,13 +374,15 @@ AudioPlayback::getVolume(void) const
 void
 AudioPlayback::setVolume(float vol)
 {
-  if (vol < 0)
-    vol = 0;
-  else if (vol > 1)
-    vol = 1;
+  SUFLOAT gain;
+
+  if (vol < -60)
+    gain = 0;
+  else
+    gain = SU_MAG_RAW(vol);
 
   this->volume = vol;
-  this->worker->setGain(2 * (exp(vol) - 1));
+  this->worker->setGain(gain);
 }
 
 void
