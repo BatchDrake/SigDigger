@@ -35,7 +35,7 @@ namespace SigDigger {
     std::string savePath;
     unsigned int rate = 44100;
     SUFLOAT cutOff = 15000;
-    SUFLOAT volume = 50;
+    SUFLOAT volume = -6;
 
     // Overriden methods
     void deserialize(Suscan::Object const &conf) override;
