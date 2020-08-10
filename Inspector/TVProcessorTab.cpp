@@ -1,34 +1,47 @@
-//
-//    TVProcessorUI.cpp: TV Processor UI logic
-//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Lesser General Public License as
-//    published by the Free Software Foundation, either version 3 of the
-//    License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful, but
-//    WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this program.  If not, see
-//    <http://www.gnu.org/licenses/>
-//
-
-#include "InspectorUI.h"
-#include "ui_Inspector.h"
+#include <TVProcessorTab.h>
+#include "ui_TVProcessorTab.h"
 #include <QMessageBox>
 #include <SuWidgetsHelpers.h>
+#include <QThread>
 
 using namespace SigDigger;
 
 #define EP 1e2
 #define EP_INV (1. / (EP))
 
+TVProcessorTab::TVProcessorTab(QWidget *parent, qreal rate) :
+  QWidget(parent),
+  ui(new Ui::TVProcessorTab)
+{
+  ui->setupUi(this);
+
+  this->sampleRate = rate;
+  this->tvThread = new QThread();
+  this->tvWorker = new TVProcessorWorker();
+  this->tvWorker->moveToThread(this->tvThread);
+
+  connect(
+        this->tvThread,
+        &QThread::finished,
+        this->tvWorker,
+        &QObject::deleteLater);
+
+  this->tvThread->start();
+
+  this->connectAll();
+  this->onTVProcessorUiChanged();
+}
+
+TVProcessorTab::~TVProcessorTab()
+{
+  if (this->tvThread != nullptr)
+    this->tvThread->quit();
+
+  delete ui;
+}
+
 void
-InspectorUI::connectTVProcessorUi(void)
+TVProcessorTab::connectAll(void)
 {
   connect(
         this->tvWorker,
@@ -279,14 +292,40 @@ InspectorUI::connectTVProcessorUi(void)
         SLOT(onTVAspectChanged()));
 }
 
-void
-InspectorUI::emitTVProcessorParameters(void)
+SUFLOAT
+TVProcessorTab::getSampleRateFloat(void) const
 {
-  if (this->getBaudRate() > 0) {
+  return static_cast<SUFLOAT>(this->sampleRate);
+}
+
+unsigned int
+TVProcessorTab::getSampleRate(void) const
+{
+  return static_cast<unsigned int>(this->sampleRate);
+}
+
+void
+TVProcessorTab::setSampleRate(qreal sampleRate)
+{
+  this->sampleRate = sampleRate;
+  this->refreshUiState();
+  this->emitParameters();
+}
+
+void
+TVProcessorTab::setDecisionMode(Decider::DecisionMode mode)
+{
+  this->decisionMode = mode;
+}
+
+void
+TVProcessorTab::emitParameters(void)
+{
+  if (this->getSampleRate() > 0) {
     struct sigutils_tv_processor_params params;
 
-    this->refreshTVProcessorParametersUiState();
-    this->parseTVProcessorParametersUi(params);
+    this->refreshUiState();
+    this->parseUi(params);
 
     emit tvProcessorParams(params);
     if (this->tvProcessing)
@@ -307,14 +346,14 @@ InspectorUI::emitTVProcessorParameters(void)
 }
 
 void
-InspectorUI::refreshTVProcessorParametersUiState(void)
+TVProcessorTab::refreshUiState(void)
 {
   bool customParamsEnabled = this->ui->customRadio->isChecked();
 
-  if (this->getBaudRate() > 0) {
-    this->ui->linePeriodSpin->setSampleRate(this->getBaudRate());
-    this->ui->hsyncSpin->setSampleRate(this->getBaudRate());
-    this->ui->vsyncSpin->setSampleRate(this->getBaudRate());
+  if (this->getSampleRate() > 0) {
+    this->ui->linePeriodSpin->setSampleRate(this->getSampleRate());
+    this->ui->hsyncSpin->setSampleRate(this->getSampleRate());
+    this->ui->vsyncSpin->setSampleRate(this->getSampleRate());
   }
 
   this->ui->geometryGroup->setEnabled(customParamsEnabled);
@@ -373,7 +412,7 @@ InspectorUI::refreshTVProcessorParametersUiState(void)
 }
 
 void
-InspectorUI::refreshTVProcessorParametersUi(
+TVProcessorTab::refreshUi(
     struct sigutils_tv_processor_params const &params)
 {
   bool oldState = this->editingTVProcessorParams;
@@ -393,7 +432,7 @@ InspectorUI::refreshTVProcessorParametersUi(
     this->ui->fieldTwoRadio->setChecked(true);
   }
 
-  refreshTVProcessorParametersUiState();
+  refreshUiState();
 
   this->ui->linesSpin->setValue(static_cast<int>(params.frame_lines));
   this->ui->hsyncSpin->setSamplesValue(
@@ -436,7 +475,7 @@ InspectorUI::refreshTVProcessorParametersUi(
 }
 
 bool
-InspectorUI::parseTVProcessorParametersUi(
+TVProcessorTab::parseUi(
     struct sigutils_tv_processor_params &params)
 {
   params.enable_sync  = this->ui->enableSyncCheck->isChecked();
@@ -485,27 +524,50 @@ InspectorUI::parseTVProcessorParametersUi(
 }
 
 void
-InspectorUI::onTVProcessorUiChanged(void)
+TVProcessorTab::feed(const SUCOMPLEX *data, unsigned int size)
+{
+  SUFLOAT k = this->ui->invertSyncCheck->isChecked() ? -1 : 1;
+  SUFLOAT dc = static_cast<SUFLOAT>(this->ui->dcSpin->value()) / 100;
+
+  this->floatBuffer.resize(size);
+
+  if (this->decisionMode == Decider::MODULUS) {
+    for (unsigned i = 0; i < size; ++i)
+      this->floatBuffer[i] = k * SU_C_ABS(data[i]) + dc;
+  } else {
+    for (unsigned i = 0; i < size; ++i)
+      this->floatBuffer[i] = k * SU_C_ARG(data[i]) / PI + dc;
+  }
+
+  this->tvWorker->pushData(this->floatBuffer);
+
+  emit tvProcessorData();
+}
+
+
+////////////////////////////////// Slots ///////////////////////////////////////
+void
+TVProcessorTab::onTVProcessorUiChanged(void)
 {
   if (!this->editingTVProcessorParams) {
     if (this->ui->ntscRadio->isChecked()) {
       struct sigutils_tv_processor_params params;
-      su_tv_processor_params_ntsc(&params, this->getBaudRateFloat());
-      refreshTVProcessorParametersUi(params);
+      su_tv_processor_params_ntsc(&params, this->getSampleRateFloat());
+      this->refreshUi(params);
     } else if (this->ui->palRadio->isChecked()) {
       struct sigutils_tv_processor_params params;
-      su_tv_processor_params_pal(&params, this->getBaudRateFloat());
-      refreshTVProcessorParametersUi(params);
+      su_tv_processor_params_pal(&params, this->getSampleRateFloat());
+      this->refreshUi(params);
     }
 
-    this->emitTVProcessorParameters();
+    this->emitParameters();
   }
 
-  this->refreshTVProcessorParametersUiState();
+  this->refreshUiState();
 }
 
 void
-InspectorUI::onToggleTVProcessor(void)
+TVProcessorTab::onToggleTVProcessor(void)
 {
   this->tvProcessing = this->ui->enableTvButton->isChecked();
 
@@ -516,7 +578,7 @@ InspectorUI::onToggleTVProcessor(void)
 }
 
 void
-InspectorUI::onTVProcessorFrame(struct sigutils_tv_frame_buffer *frame)
+TVProcessorTab::onTVProcessorFrame(struct sigutils_tv_frame_buffer *frame)
 {
   this->tvWorker->acknowledgeFrame();
   this->ui->tvDisplay->putFrame(frame);
@@ -525,32 +587,33 @@ InspectorUI::onTVProcessorFrame(struct sigutils_tv_frame_buffer *frame)
 }
 
 void
-InspectorUI::onTVProcessorParamsChanged(
+TVProcessorTab::onTVProcessorParamsChanged(
     struct sigutils_tv_processor_params params)
 {
-  this->refreshTVProcessorParametersUi(params);
+  this->refreshUi(params);
 }
 
 void
-InspectorUI::onTVProcessorError(QString error)
+TVProcessorTab::onTVProcessorError(QString error)
 {
   QMessageBox::critical(this->ui->tvDisplay, "TV Processor error", error);
+  this->ui->enableTvButton->setChecked(false);
 }
 
 void
-InspectorUI::onTVContrastChanged(void)
+TVProcessorTab::onTVContrastChanged(void)
 {
   this->ui->tvDisplay->setContrast(this->ui->contrastDial->value() / 100.);
 }
 
 void
-InspectorUI::onTVBrightnessChanged(void)
+TVProcessorTab::onTVBrightnessChanged(void)
 {
   this->ui->tvDisplay->setBrightness(this->ui->brightnessDial->value() / 100.);
 }
 
 void
-InspectorUI::onTVAspectChanged(void)
+TVProcessorTab::onTVAspectChanged(void)
 {
   this->ui->tvDisplay->setRotation(this->ui->rotationDial->value());
   this->ui->tvDisplay->setHorizontalFlip(
@@ -559,3 +622,4 @@ InspectorUI::onTVAspectChanged(void)
         this->ui->flipVerticalCheck->isChecked());
   this->ui->tvDisplay->setZoom(this->ui->tvZoomSpin->value());
 }
+

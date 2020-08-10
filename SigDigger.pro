@@ -81,7 +81,6 @@ SOURCES += \
     Components/TimeWindow.cpp \
     Inspector/Inspector.cpp \
     Inspector/InspectorUI.cpp \
-    Inspector/TVProcessorUI.cpp \
     Inspector/TVProcessorWorker.cpp \
     InspectorCtl/AfcControl.cpp \
     InspectorCtl/AskControl.cpp \
@@ -139,7 +138,8 @@ SOURCES += \
     Components/RMSViewer.cpp \
     Components/RMSViewTab.cpp \
     Components/RMSViewerSettingsDialog.cpp \
-    Components/LogDialog.cpp
+    Components/LogDialog.cpp \
+    Inspector/TVProcessorTab.cpp
 
 
 HEADERS += \
@@ -228,7 +228,8 @@ HEADERS += \
     include/RMSViewer.h \
     include/RMSViewTab.h \
     include/RMSViewerSettingsDialog.h \
-    include/LogDialog.h
+    include/LogDialog.h \
+    include/TVProcessorTab.h
 
 
 FORMS += \
@@ -263,7 +264,8 @@ FORMS += \
     ui/RMSViewer.ui \
     ui/RMSViewTab.ui \
     ui/RMSViewerSettingsDialog.ui \
-    ui/LogDialog.ui
+    ui/LogDialog.ui \
+    ui/TVProcessorTab.ui
 
 !isEmpty(target.path): INSTALLS += target
 

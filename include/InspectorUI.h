@@ -40,8 +40,8 @@
 #include "FileDataSaver.h"
 #include "EstimatorControl.h"
 #include "NetForwarderUI.h"
-#include "TVProcessorWorker.h"
 
+#include "TVProcessorTab.h"
 namespace Ui {
   class Inspector;
 }
@@ -67,10 +67,10 @@ namespace SigDigger {
     bool demodulating = false;
     bool recording = false;
     bool forwarding = false;
-    bool tvProcessing = false;
     bool adjusting = false;
 
     unsigned int recordingRate = 0;
+
     // Inspector config
     Suscan::Config *config; // Weak
     QWidget *owner;
@@ -79,18 +79,16 @@ namespace SigDigger {
     unsigned int bps = 0;
     Decider decider;
     SNREstimator estimator;
+
     bool estimating = false;
     struct timeval last_estimator_update;
     std::vector<SUCOMPLEX> buffer;
-
-    TVProcessorWorker *tvWorker = nullptr;
-    QThread *tvThread = nullptr;
-    std::vector<SUFLOAT> floatBuffer;
 
     // UI objects
     std::vector<Suscan::Estimator> estimators;
     std::vector<Suscan::SpectrumSource> spectsrcs;
     std::map<Suscan::EstimatorId, EstimatorControl *> estimatorCtls;
+    TVProcessorTab *tvTab = nullptr;
 
     ThrottleControl throttle;
     Ui::Inspector *ui = nullptr;
@@ -108,7 +106,6 @@ namespace SigDigger {
     void pushControl(InspectorCtl *ctl);
     void setBps(unsigned int bps);
     void connectAll(void);
-    void connectTVProcessorUi(void);
 
     void initUi(void);
     unsigned int getBps(void) const;
@@ -124,11 +121,6 @@ namespace SigDigger {
     unsigned int getHScrollOffset(void) const;
     void refreshVScrollBar(void) const;
     void refreshHScrollBar(void) const;
-
-    void refreshTVProcessorParametersUiState(void);
-    void refreshTVProcessorParametersUi(struct sigutils_tv_processor_params const &);
-    bool parseTVProcessorParametersUi(struct sigutils_tv_processor_params &);
-    void emitTVProcessorParameters(void);
 
     int fd = -1;
 
@@ -195,7 +187,6 @@ namespace SigDigger {
       void onToggleEstimator(Suscan::EstimatorId, bool);
       void onApplyEstimation(QString, float);
       void onZoomReset(void);
-      void onToggleTVProcessor(void);
 
       // DataSaver slots
       void onSaveError(void);
@@ -210,18 +201,6 @@ namespace SigDigger {
       void onNetRate(qreal rate);
       void onNetCommit(void);
 
-      // TV Processor worker slots
-      void onTVProcessorFrame(struct sigutils_tv_frame_buffer *);
-      void onTVProcessorParamsChanged(struct sigutils_tv_processor_params);
-      void onTVProcessorError(QString error);
-
-      // TV Processor UI slots
-      void onTVProcessorUiChanged(void);
-      void onTVContrastChanged(void);
-      void onTVBrightnessChanged(void);
-
-      void onTVAspectChanged(void);
-
     signals:
       void configChanged(void);
       void setSpectrumSource(unsigned int index);
@@ -229,11 +208,6 @@ namespace SigDigger {
       void bandwidthChanged(void);
       void toggleEstimator(Suscan::EstimatorId, bool);
       void applyEstimation(QString, float);
-      void startTVProcessor(void);
-      void stopTVProcessor(void);
-      void tvProcessorDisposeFrame(struct sigutils_tv_frame_buffer *);
-      void tvProcessorData();
-      void tvProcessorParams(struct sigutils_tv_processor_params);
   };
 }
 

@@ -51,9 +51,13 @@ InspectorUI::InspectorUI(
   this->owner  = owner;
 
   this->ui->setupUi(owner);
+  this->tvTab = new TVProcessorTab(this->ui->toolTab, this->getBaudRateFloat());
+  this->tvTab->setSampleRate(this->getBaudRateFloat());
 
+  this->ui->toolTab->addTab(this->tvTab, "Analog TV");
   if (this->config->hasPrefix("ask")) {
     this->decider.setDecisionMode(Decider::MODULUS);
+    this->tvTab->setDecisionMode(Decider::MODULUS);
     this->decider.setMinimum(0);
     this->decider.setMaximum(1);
 
@@ -62,6 +66,7 @@ InspectorUI::InspectorUI(
     this->ui->histogram->overrideDataRange(1);
   } else if (this->config->hasPrefix("afc")) {
     this->decider.setDecisionMode(Decider::ARGUMENT);
+    this->tvTab->setDecisionMode(Decider::ARGUMENT);
     this->decider.setMinimum(-PI);
     this->decider.setMaximum(PI);
 
@@ -70,6 +75,7 @@ InspectorUI::InspectorUI(
     this->ui->histogram->overrideUnits("º");
   } else if (this->config->hasPrefix("fsk")) {
     this->decider.setDecisionMode(Decider::ARGUMENT);
+    this->tvTab->setDecisionMode(Decider::ARGUMENT);
     this->decider.setMinimum(-PI);
     this->decider.setMaximum(PI);
 
@@ -77,22 +83,8 @@ InspectorUI::InspectorUI(
     this->ui->histogram->overrideUnits("Hz");
   }
 
-  this->tvThread = new QThread();
-  this->tvWorker = new TVProcessorWorker();
-  this->tvWorker->moveToThread(this->tvThread);
-
-  connect(
-        this->tvThread,
-        &QThread::finished,
-        this->tvWorker,
-        &QObject::deleteLater);
-
-  this->tvThread->start();
-
   this->initUi();
-
   this->connectAll();
-  this->connectTVProcessorUi();
 
   // Refresh UI
   this->refreshUi();
@@ -111,9 +103,6 @@ InspectorUI::~InspectorUI()
 
   if (this->socketForwarder != nullptr)
     delete this->socketForwarder;
-
-  if (this->tvThread != nullptr)
-    this->tvThread->quit();
 }
 
 void
@@ -147,9 +136,6 @@ InspectorUI::initUi(void)
   // just get rid of it for the sake of clarity.
   this->ui->recordButton->setStyleSheet("");
 #endif // __APPLE__
-
-  // Initialize TV UI
-  this->onTVProcessorUiChanged();
 }
 
 void
@@ -773,22 +759,8 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
     }
   }
 
-  if (this->tvProcessing) {
-    this->floatBuffer.resize(size);
-    SUFLOAT k = this->ui->invertSyncCheck->isChecked() ? -1 : 1;
-    SUFLOAT dc = static_cast<SUFLOAT>(this->ui->dcSpin->value()) / 100;
-    if (this->decider.getDecisionMode() == Decider::MODULUS) {
-      for (unsigned i = 0; i < size; ++i)
-        this->floatBuffer[i] = k * SU_C_ABS(data[i]) + dc;
-    } else {
-      for (unsigned i = 0; i < size; ++i)
-        this->floatBuffer[i] = k * SU_C_ARG(data[i]) / PI + dc;
-    }
-
-    this->tvWorker->pushData(this->floatBuffer);
-
-    emit tvProcessorData();
-  }
+  if (this->tvTab->isEnabled())
+    this->tvTab->feed(data, size);
 
   if (this->recording || this->forwarding) {
     if (this->decider.getDecisionMode() == Decider::MODULUS) {
@@ -1017,31 +989,34 @@ InspectorUI::onInspectorControlChanged(void)
   unsigned int oldRate = this->recordingRate;
   // Changing the newRate has a set of implications
 
-  if (this->recording && newRate != oldRate) {
-    this->recording = false;
-    if (newRate == 0) {
-      this->uninstallDataSaver();
-    } else if (newRate != this->recordingRate) {
-      this->uninstallDataSaver();
-      this->recording = this->installDataSaver();
+  if (newRate != oldRate) {
+    this->tvTab->setSampleRate(this->getBaudRateFloat());
+
+    if (this->recording) {
+      this->recording = false;
+      if (newRate == 0) {
+        this->uninstallDataSaver();
+      } else if (newRate != this->recordingRate) {
+        this->uninstallDataSaver();
+        this->recording = this->installDataSaver();
+      }
+
+      this->saverUI->setRecordState(this->recording);
     }
 
-    this->saverUI->setRecordState(this->recording);
-  }
+    if (this->forwarding) {
+      this->forwarding = false;
+      if (newRate == 0) {
+        this->uninstallNetForwarder();
+      } else if (newRate != this->recordingRate) {
+        this->uninstallNetForwarder();
+        this->forwarding = this->installNetForwarder();
+      }
 
-  if (this->forwarding && newRate != oldRate) {
-    this->forwarding = false;
-    if (newRate == 0) {
-      this->uninstallNetForwarder();
-    } else if (newRate != this->recordingRate) {
-      this->uninstallNetForwarder();
-      this->forwarding = this->installNetForwarder();
+      this->saverUI->setRecordState(this->recording);
     }
-
-    this->saverUI->setRecordState(this->recording);
   }
 
-  this->emitTVProcessorParameters();
   this->saverUI->setEnabled(newRate != 0);
   this->netForwarderUI->setEnabled(newRate != 0);
 
