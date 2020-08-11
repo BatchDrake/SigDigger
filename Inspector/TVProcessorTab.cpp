@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include <SuWidgetsHelpers.h>
 #include <QThread>
+#include <QFileDialog>
 
 using namespace SigDigger;
 
@@ -85,6 +86,12 @@ TVProcessorTab::connectAll(void)
         SIGNAL(clicked(bool)),
         this,
         SLOT(onToggleTVProcessor(void)));
+
+  connect(
+        this->ui->snapshotButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onSaveSnapshot(void)));
 
   connect(
         this,
@@ -658,5 +665,39 @@ TVProcessorTab::onTVAspectChanged(void)
   this->ui->tvDisplay->setVerticalFlip(
         this->ui->flipVerticalCheck->isChecked());
   this->ui->tvDisplay->setZoom(this->ui->tvZoomSpin->value());
+}
+
+void
+TVProcessorTab::onSaveSnapshot(void)
+{
+  QFileDialog dialog(this);
+  QStringList filters;
+
+  filters << "Microsoft Windows Bitmap (*.bmp)"
+          << "PNG Image (*.png)"
+          << "JPEG Image (*.jpg)"
+          << "Portable Pixel Map (*.ppm)";
+
+  dialog.setFileMode(QFileDialog::AnyFile);
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+  dialog.setWindowTitle(QString("Save current symbol capture as..."));
+  dialog.setNameFilters(filters);
+
+  if (dialog.exec()) {
+    QString path = dialog.selectedFiles().first();
+    QString filter = dialog.selectedNameFilter();
+    QFileInfo fi(path);
+
+    if (fi.suffix().size() == 0)
+      path += "." + SuWidgetsHelpers::extractFilterExtension(filter);
+
+    if (!this->ui->tvDisplay->saveToFile(path))
+      QMessageBox::critical(
+            this,
+            "Failed to take snapshot",
+            "Cannot save snapshot to the specified file. Please verify if "
+            "permission and disk space allow this operation.",
+            QMessageBox::Close);
+  }
 }
 

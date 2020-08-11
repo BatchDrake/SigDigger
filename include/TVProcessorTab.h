@@ -75,6 +75,7 @@ namespace SigDigger {
     void tvProcessorParams(struct sigutils_tv_processor_params);
 
   public slots:
+    void onSaveSnapshot(void);
     void onTVProcessorUiChanged(void);
     void onToggleTVProcessor(void);
     void onTVProcessorFrame(struct sigutils_tv_frame_buffer *frame);

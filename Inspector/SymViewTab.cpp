@@ -370,7 +370,7 @@ SymViewTab::onSaveSymView(void)
     QString filter = dialog.selectedNameFilter();
     QString path = dialog.selectedFiles().first();
     QFileInfo fi(path);
-    QString ext = fi.size() > 0
+    QString ext = fi.suffix().size() > 0
         ? fi.suffix()
         : SuWidgetsHelpers::extractFilterExtension(filter);
 
@@ -397,7 +397,8 @@ SymViewTab::onSaveSymView(void)
       (void) QMessageBox::critical(
             this->ui->symView,
             "Save symbol file",
-            "Failed to save file in the specified location. Please try again.",
+            "Failed to save file in the specified location. Please verify if "
+            "permission and disk space allow this operation.",
             QMessageBox::Close);
     }
   }

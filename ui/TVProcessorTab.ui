@@ -41,7 +41,7 @@ color: white;</string>
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="snapshotButton">
      <property name="text">
       <string>&amp;Snapshot</string>
      </property>
@@ -60,7 +60,38 @@ color: white;</string>
      </property>
     </spacer>
    </item>
-   <item row="1" column="0" colspan="4">
+   <item row="1" column="0" colspan="3" alignment="Qt::AlignHCenter">
+    <widget class="TVDisplay" name="tvDisplay">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="baseSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="3">
     <widget class="QTabWidget" name="tvToolTab">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -69,7 +100,7 @@ color: white;</string>
       </sizepolicy>
      </property>
      <property name="tabPosition">
-      <enum>QTabWidget::South</enum>
+      <enum>QTabWidget::North</enum>
      </property>
      <property name="tabShape">
       <enum>QTabWidget::Rounded</enum>
@@ -1093,37 +1124,6 @@ color: white;</string>
        </item>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item row="2" column="3">
-    <widget class="TVDisplay" name="tvDisplay">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="baseSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
     </widget>
    </item>
   </layout>
