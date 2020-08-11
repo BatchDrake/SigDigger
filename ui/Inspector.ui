@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1125</width>
-    <height>802</height>
+    <width>1317</width>
+    <height>968</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,8 +67,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>198</width>
-         <height>692</height>
+         <width>240</width>
+         <height>838</height>
         </rect>
        </property>
        <attribute name="label">
@@ -203,8 +203,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>198</width>
-         <height>692</height>
+         <width>240</width>
+         <height>838</height>
         </rect>
        </property>
        <attribute name="label">
@@ -242,8 +242,8 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>198</width>
-             <height>692</height>
+             <width>240</width>
+             <height>838</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="estimatorsGrid">
@@ -276,8 +276,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>198</width>
-         <height>692</height>
+         <width>240</width>
+         <height>838</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -339,8 +339,8 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>198</width>
-             <height>692</height>
+             <width>240</width>
+             <height>838</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -398,8 +398,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>198</width>
-         <height>692</height>
+         <width>240</width>
+         <height>838</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -477,6 +477,81 @@ QToolBox::tab:hover {
           <property name="spacing">
            <number>3</number>
           </property>
+          <item row="3" column="3">
+           <widget class="QLabel" name="snrLabel">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">font-weight: bold;
+background-color: black;
+color: rgb(255, 255, 0);
+font-family: Monospace;</string>
+            </property>
+            <property name="text">
+             <string>N / A</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="5" rowspan="3">
+           <widget class="Histogram" name="histogram">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="orderHint">
+             <UInt>1</UInt>
+            </property>
+            <property name="foregroundColor">
+             <color>
+              <red>255</red>
+              <green>255</green>
+              <blue>0</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2" rowspan="3">
+           <widget class="Transition" name="transition">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>100</height>
+             </size>
+            </property>
+            <property name="foregroundColor">
+             <color>
+              <red>255</red>
+              <green>255</green>
+              <blue>0</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="resetFpsButton">
+            <property name="text">
+             <string>Reset</string>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="0">
            <widget class="QPushButton" name="burnCPUButton">
             <property name="text">
@@ -513,29 +588,6 @@ QToolBox::tab:hover {
             </property>
            </widget>
           </item>
-          <item row="1" column="2" rowspan="3">
-           <widget class="Transition" name="transition">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>100</height>
-             </size>
-            </property>
-            <property name="foregroundColor">
-             <color>
-              <red>255</red>
-              <green>255</green>
-              <blue>0</blue>
-             </color>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="3">
            <widget class="QPushButton" name="snrButton">
             <property name="text">
@@ -543,32 +595,6 @@ QToolBox::tab:hover {
             </property>
             <property name="checkable">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="5" rowspan="3">
-           <widget class="Histogram" name="histogram">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="orderHint">
-             <UInt>1</UInt>
-            </property>
-            <property name="foregroundColor">
-             <color>
-              <red>255</red>
-              <green>255</green>
-              <blue>0</blue>
-             </color>
             </property>
            </widget>
           </item>
@@ -595,39 +621,13 @@ QToolBox::tab:hover {
             </property>
            </widget>
           </item>
-          <item row="3" column="3">
-           <widget class="QLabel" name="snrLabel">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">font-weight: bold;
-background-color: black;
-color: rgb(255, 255, 0);
-font-family: Monospace;</string>
-            </property>
-            <property name="text">
-             <string>N / A</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QPushButton" name="resetFpsButton">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QTabWidget" name="tabWidget">
+        <widget class="QTabWidget" name="toolTab">
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="documentMode">
           <bool>true</bool>
@@ -817,311 +817,6 @@ font-family: Monospace;</string>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab_2">
-          <attribute name="title">
-           <string>Symbol stream</string>
-          </attribute>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="1" column="0">
-            <widget class="QFrame" name="frame_4">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_5">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <item row="0" column="0">
-               <widget class="SymView" name="symView">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QScrollBar" name="symViewScrollBar">
-                <property name="minimum">
-                 <number>0</number>
-                </property>
-                <property name="maximum">
-                 <number>0</number>
-                </property>
-                <property name="singleStep">
-                 <number>1</number>
-                </property>
-                <property name="pageStep">
-                 <number>0</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="invertedControls">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QScrollBar" name="symViewHScrollBar">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QFrame" name="frame_2">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_7">
-              <property name="leftMargin">
-               <number>3</number>
-              </property>
-              <property name="topMargin">
-               <number>3</number>
-              </property>
-              <property name="rightMargin">
-               <number>3</number>
-              </property>
-              <property name="bottomMargin">
-               <number>3</number>
-              </property>
-              <property name="spacing">
-               <number>1</number>
-              </property>
-              <item row="3" column="8">
-               <widget class="QLabel" name="label_6">
-                <property name="text">
-                 <string>Offset</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="16">
-               <spacer name="horizontalSpacer_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="3" column="15">
-               <widget class="QLabel" name="dataSizeLabel">
-                <property name="font">
-                 <font>
-                  <family>Monospace</family>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Data size: 0 bits</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="15">
-               <widget class="QLabel" name="sizeLabel">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>Monospace</family>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Capture size: 0 sym</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QPushButton" name="recordButton">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <weight>75</weight>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: #960000;
-color: white;</string>
-                </property>
-                <property name="text">
-                 <string>Record</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QPushButton" name="clearButton">
-                <property name="text">
-                 <string>Clear</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="QPushButton" name="reverseButton">
-                <property name="text">
-                 <string>Reverse</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="9">
-               <widget class="QSpinBox" name="offsetSpin">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>2000000000</number>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="4">
-               <widget class="QPushButton" name="autoFitButton">
-                <property name="text">
-                 <string>Fit to window</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="12" rowspan="3">
-               <widget class="Line" name="line">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QPushButton" name="saveButton">
-                <property name="text">
-                 <string>Save</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="8">
-               <widget class="QLabel" name="label_5">
-                <property name="text">
-                 <string>Width</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="4">
-               <widget class="QPushButton" name="autoScrollButton">
-                <property name="text">
-                 <string>Autoscroll</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="9">
-               <widget class="QSpinBox" name="widthSpin">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>2000000000</number>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="10">
-               <widget class="QLabel" name="label_9">
-                <property name="text">
-                 <string>Zoom</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="11">
-               <widget class="QSpinBox" name="zoomSpin">
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>50</number>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="10" colspan="2">
-               <widget class="QPushButton" name="resetZoomButton">
-                <property name="text">
-                 <string>Reset zoom</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
         </widget>
        </item>
       </layout>
@@ -1135,31 +830,31 @@ color: white;</string>
    <class>Constellation</class>
    <extends>QFrame</extends>
    <header>Constellation.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>Transition</class>
    <extends>QFrame</extends>
    <header>Transition.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>Histogram</class>
    <extends>QFrame</extends>
    <header>Histogram.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>LCD</class>
    <extends>QFrame</extends>
    <header>LCD.h</header>
-  </customwidget>
-  <customwidget>
-   <class>SymView</class>
-   <extends>QFrame</extends>
-   <header>SymView.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>Waterfall</class>
    <extends>QFrame</extends>
    <header>Waterfall.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>ctkRangeSlider</class>

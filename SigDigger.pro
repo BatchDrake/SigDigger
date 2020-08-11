@@ -81,6 +81,7 @@ SOURCES += \
     Components/TimeWindow.cpp \
     Inspector/Inspector.cpp \
     Inspector/InspectorUI.cpp \
+    Inspector/TVProcessorWorker.cpp \
     InspectorCtl/AfcControl.cpp \
     InspectorCtl/AskControl.cpp \
     InspectorCtl/ClockRecovery.cpp \
@@ -137,7 +138,9 @@ SOURCES += \
     Components/RMSViewer.cpp \
     Components/RMSViewTab.cpp \
     Components/RMSViewerSettingsDialog.cpp \
-    Components/LogDialog.cpp
+    Components/LogDialog.cpp \
+    Inspector/TVProcessorTab.cpp \
+    Inspector/SymViewTab.cpp
 
 
 HEADERS += \
@@ -208,6 +211,7 @@ HEADERS += \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
     include/SourcePanel.h \
+    include/TVProcessorWorker.h \
     include/TimeWindow.h \
     include/ToneControl.h \
     include/UIMediator.h \
@@ -225,7 +229,9 @@ HEADERS += \
     include/RMSViewer.h \
     include/RMSViewTab.h \
     include/RMSViewerSettingsDialog.h \
-    include/LogDialog.h
+    include/LogDialog.h \
+    include/TVProcessorTab.h \
+    include/SymViewTab.h
 
 
 FORMS += \
@@ -260,7 +266,9 @@ FORMS += \
     ui/RMSViewer.ui \
     ui/RMSViewTab.ui \
     ui/RMSViewerSettingsDialog.ui \
-    ui/LogDialog.ui
+    ui/LogDialog.ui \
+    ui/TVProcessorTab.ui \
+    ui/SymViewTab.ui
 
 !isEmpty(target.path): INSTALLS += target
 

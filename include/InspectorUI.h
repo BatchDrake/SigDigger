@@ -21,6 +21,8 @@
 #define INSPECTORUI_H
 
 #include <QWidget>
+#include <QVector>
+#include <QThread>
 #include <memory>
 #include <map>
 #include <InspectorCtl.h>
@@ -38,6 +40,9 @@
 #include "FileDataSaver.h"
 #include "EstimatorControl.h"
 #include "NetForwarderUI.h"
+
+#include "SymViewTab.h"
+#include "TVProcessorTab.h"
 
 namespace Ui {
   class Inspector;
@@ -60,13 +65,12 @@ namespace SigDigger {
     unsigned int basebandSampleRate;
     float sampleRate;
 
-    bool scrolling = false;
-    bool demodulating = false;
     bool recording = false;
     bool forwarding = false;
     bool adjusting = false;
 
     unsigned int recordingRate = 0;
+
     // Inspector config
     Suscan::Config *config; // Weak
     QWidget *owner;
@@ -75,6 +79,7 @@ namespace SigDigger {
     unsigned int bps = 0;
     Decider decider;
     SNREstimator estimator;
+
     bool estimating = false;
     struct timeval last_estimator_update;
     std::vector<SUCOMPLEX> buffer;
@@ -92,16 +97,22 @@ namespace SigDigger {
     FileDataSaver *dataSaver = nullptr;
     SocketForwarder *socketForwarder = nullptr;
 
+    TVProcessorTab *tvTab = nullptr;
+    SymViewTab *symViewTab = nullptr;
+
     State state = DETACHED;
     SUSCOUNT lastLen = 0;
     SUSCOUNT lastRate = 0;
+    bool editingTVProcessorParams = false;
 
     void pushControl(InspectorCtl *ctl);
     void setBps(unsigned int bps);
     void connectAll(void);
+
     void initUi(void);
     unsigned int getBps(void) const;
     unsigned int getBaudRate(void) const;
+    SUFLOAT getBaudRateFloat(void) const;
     std::string getClassName(void) const;
     void populate(void);
     void connectDataSaver(void);
@@ -112,6 +123,7 @@ namespace SigDigger {
     unsigned int getHScrollOffset(void) const;
     void refreshVScrollBar(void) const;
     void refreshHScrollBar(void) const;
+
     int fd = -1;
 
     public:
@@ -130,10 +142,13 @@ namespace SigDigger {
       void addSpectrumSource(Suscan::SpectrumSource const &src);
       void addEstimator(Suscan::Estimator const &estimator);
       void setAppConfig(AppConfig const &cfg);
+
       bool installDataSaver(void);
       void uninstallDataSaver(void);
+
       bool installNetForwarder(void);
       void uninstallNetForwarder(void);
+
       void setBasebandRate(unsigned int);
       void setSampleRate(float rate);
       void setBandwidth(unsigned int bw);
@@ -147,21 +162,11 @@ namespace SigDigger {
 
     public slots:
       void onInspectorControlChanged();
-      void onOffsetChanged(unsigned int);
-      void onHOffsetChanged(int);
-      void onStrideChanged(unsigned int);
       void onAspectSliderChanged(int);
       void onPandapterRangeChanged(float, float);
-      void onZoomChanged(void);
-      void onSymViewZoomChanged(unsigned int);
-      void onScrollBarChanged(int val);
-      void onHScrollBarChanged(int offset);
       void onCPUBurnClicked(void);
       void onFPSReset(void);
       void onFPSChanged(void);
-      void onSymViewControlsChanged(void);
-      void onSaveSymView(void);
-      void onClearSymView(void);
       void onSpectrumConfigChanged(void);
       void onSpectrumSourceChanged(void);
       void onRangeChanged(void);
@@ -173,7 +178,6 @@ namespace SigDigger {
       void onChangeBandwidth(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
       void onApplyEstimation(QString, float);
-      void onZoomReset(void);
 
       // DataSaver slots
       void onSaveError(void);
