@@ -51,10 +51,14 @@ InspectorUI::InspectorUI(
   this->owner  = owner;
 
   this->ui->setupUi(owner);
+
+  this->symViewTab = new SymViewTab(this->ui->toolTab);
+  this->ui->toolTab->addTab(this->symViewTab, "Symbol stream");
+
   this->tvTab = new TVProcessorTab(this->ui->toolTab, this->getBaudRateFloat());
   this->tvTab->setSampleRate(this->getBaudRateFloat());
-
   this->ui->toolTab->addTab(this->tvTab, "Analog TV");
+
   if (this->config->hasPrefix("ask")) {
     this->decider.setDecisionMode(Decider::MODULUS);
     this->tvTab->setDecisionMode(Decider::MODULUS);
@@ -119,7 +123,7 @@ InspectorUI::initUi(void)
   // Configure throttleable widgets
   this->throttle.setCpuBurn(false);
   this->ui->constellation->setThrottleControl(&this->throttle);
-  this->ui->symView->setThrottleControl(&this->throttle);
+  this->symViewTab->setThrottleControl(&this->throttle);
   this->ui->transition->setThrottleControl(&this->throttle);
   this->ui->histogram->setThrottleControl(&this->throttle);
   this->ui->histogram->setDecider(&this->decider);
@@ -130,12 +134,6 @@ InspectorUI::initUi(void)
 
   // Refresh Bps
   this->setBps(1);
-
-#ifdef __APPLE__
-  // Qt for MacOS X does not now how to handle proper button styling. We
-  // just get rid of it for the sake of clarity.
-  this->ui->recordButton->setStyleSheet("");
-#endif // __APPLE__
 }
 
 void
@@ -262,42 +260,6 @@ InspectorUI::connectAll()
 {
 
   connect(
-        this->ui->symView,
-        SIGNAL(zoomChanged(unsigned int)),
-        this,
-        SLOT(onSymViewZoomChanged(unsigned int)));
-
-  connect(
-        this->ui->symView,
-        SIGNAL(offsetChanged(unsigned int)),
-        this,
-        SLOT(onOffsetChanged(unsigned int)));
-
-  connect(
-        this->ui->symView,
-        SIGNAL(hOffsetChanged(int)),
-        this,
-        SLOT(onHOffsetChanged(int)));
-
-  connect(
-        this->ui->symView,
-        SIGNAL(strideChanged(unsigned int)),
-        this,
-        SLOT(onStrideChanged(unsigned int)));
-
-  connect(
-        this->ui->symViewScrollBar,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onScrollBarChanged(int)));
-
-  connect(
-        this->ui->symViewHScrollBar,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onHScrollBarChanged(int)));
-
-  connect(
         this->ui->fpsSpin,
         SIGNAL(valueChanged(int)),
         this,
@@ -315,71 +277,6 @@ InspectorUI::connectAll()
         this,
         SLOT(onFPSReset()));
 
-  connect(
-        this->ui->recordButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->reverseButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->recordButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->autoScrollButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->autoFitButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->widthSpin,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->offsetSpin,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->zoomSpin,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onZoomChanged()));
-
-  connect(
-        this->ui->resetZoomButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onZoomReset()));
-
-  connect(
-        this->ui->saveButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSaveSymView()));
-
-  connect(
-        this->ui->clearButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onClearSymView()));
 
   connect(
         this->ui->paletteCombo,
@@ -633,98 +530,6 @@ InspectorUI::onResetSNR(void)
 
 }
 
-unsigned int
-InspectorUI::getVScrollPageSize(void) const
-{
-  return
-      (this->ui->symView->getStride()
-       * static_cast<unsigned>(this->ui->symView->height()))
-      / this->ui->symView->getZoom();
-}
-
-unsigned int
-InspectorUI::getHScrollOffset(void) const
-{
-  return static_cast<unsigned>(this->ui->symViewHScrollBar->value());
-}
-
-void
-InspectorUI::refreshHScrollBar(void) const
-{
-  unsigned int visible =
-      static_cast<unsigned>(this->ui->symView->width()) /
-      this->ui->symView->getZoom();
-
-  if (visible < this->ui->symView->getStride()) {
-    unsigned int max = this->ui->symView->getStride() - visible;
-    this->ui->symViewHScrollBar->setPageStep(static_cast<int>(visible));
-    this->ui->symViewHScrollBar->setMaximum(static_cast<int>(max));
-    this->ui->symViewHScrollBar->setVisible(true);
-  } else {
-    this->ui->symViewHScrollBar->setPageStep(static_cast<int>(0));
-    this->ui->symViewHScrollBar->setMaximum(static_cast<int>(0));
-    this->ui->symViewHScrollBar->setVisible(false);
-  }
-
-  if (!this->ui->autoFitButton->isChecked())
-    this->ui->symViewHScrollBar->setEnabled(
-          this->ui->symView->getLength() >= visible);
-  else
-    this->ui->symViewHScrollBar->setEnabled(false);
-}
-
-void
-InspectorUI::refreshVScrollBar(void) const
-{
-  unsigned int pageSize = this->getVScrollPageSize();
-  unsigned long lines =
-      (this->ui->symView->getLength() + this->ui->symView->getStride() - 1) /
-      this->ui->symView->getStride();
-  unsigned long max = lines * this->ui->symView->getStride();
-
-  if (max > pageSize) {
-    this->ui->symViewScrollBar->setPageStep(static_cast<int>(pageSize));
-    this->ui->symViewScrollBar->setMaximum(static_cast<int>(max - pageSize));
-    this->ui->symViewScrollBar->setVisible(true);
-  } else {
-    this->ui->symViewScrollBar->setPageStep(0);
-    this->ui->symViewScrollBar->setMaximum(0);
-    this->ui->symViewScrollBar->setVisible(false);
-  }
-
-  this->ui->symViewScrollBar->setSingleStep(
-        static_cast<int>(this->ui->symView->getStride()));
-
-  if (!this->ui->autoScrollButton->isChecked())
-    this->ui->symViewScrollBar->setEnabled(
-          this->ui->symView->getLength() >= pageSize);
-  else
-    this->ui->symViewScrollBar->setEnabled(false);
-}
-
-void
-InspectorUI::refreshSizes(void)
-{
-  this->ui->sizeLabel->setText(
-        "Capture size: " +
-        SuWidgetsHelpers::formatQuantity(
-          this->ui->symView->getLength(),
-          "sym"));
-
-  this->ui->dataSizeLabel->setText(
-        "Data size: " +
-        SuWidgetsHelpers::formatQuantity(
-          this->ui->symView->getLength() * this->decider.getBps(),
-          "bits")
-        + " (" +
-        SuWidgetsHelpers::formatBinaryQuantity(
-          this->ui->symView->getLength() * this->decider.getBps() >> 3,
-          "B") + ")");
-
-  this->ui->saveButton->setEnabled(this->ui->symView->getLength() > 0);
-
-  this->refreshVScrollBar();
-}
 
 void
 InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
@@ -749,13 +554,13 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
     }
   }
 
-  if (this->demodulating) {
+  // Decision happens here.
+  if (this->symViewTab->isRecording()) {
     if (this->decider.getBps() > 0) {
       this->decider.feed(data, size);
-      this->ui->symView->feed(this->decider.get());
-      this->ui->transition->feed(this->decider.get());
 
-      this->refreshSizes();
+      this->symViewTab->feed(this->decider.get());
+      this->ui->transition->feed(this->decider.get());
     }
   }
 
@@ -908,21 +713,20 @@ InspectorUI::refreshUi(void)
   this->ui->spectrumSourceCombo->setEnabled(enabled);
   this->ui->snrButton->setEnabled(enabled);
   this->ui->snrResetButton->setEnabled(enabled);
-  this->ui->recordButton->setEnabled(enabled);
+  this->symViewTab->setEnabled(enabled);
   this->ui->loLcd->setEnabled(enabled);
   this->ui->bwLcd->setEnabled(enabled);
   this->saverUI->setEnabled(enabled && this->recordingRate != 0);
   this->netForwarderUI->setEnabled(enabled && this->recordingRate != 0);
 }
 
-//////////////////////////////////// Slots ////////////////////////////////////
 void
 InspectorUI::setBps(unsigned int bps)
 {
   if (this->bps != bps) {
     this->decider.setBps(bps);
     this->estimator.setBps(bps);
-    this->ui->symView->setBitsPerSymbol(bps);
+    this->symViewTab->setBitsPerSymbol(bps);
     this->ui->constellation->setOrderHint(bps);
     this->ui->transition->setOrderHint(bps);
     this->ui->histogram->setDecider(&this->decider);
@@ -982,6 +786,7 @@ InspectorUI::getBps(void) const
   return bps;
 }
 
+//////////////////////////////////// Slots ////////////////////////////////////
 void
 InspectorUI::onInspectorControlChanged(void)
 {
@@ -1027,52 +832,6 @@ InspectorUI::onInspectorControlChanged(void)
   emit configChanged();
 }
 
-void
-InspectorUI::onScrollBarChanged(int offset)
-{
-  int relStart = this->ui->symView->getOffset() % this->ui->symView->getStride();
-  int alignedOffset = this->ui->symView->getStride() * (
-        offset / this->ui->symView->getStride());
-
-  this->scrolling = true;
-
-  this->ui->symView->setOffset(
-        static_cast<unsigned int>(alignedOffset + relStart));
-
-  this->scrolling = false;
-}
-
-void
-InspectorUI::onHScrollBarChanged(int offset)
-{
-  this->scrolling = true;
-
-  this->ui->symView->setHOffset(offset);
-  this->scrolling = false;
-}
-
-void
-InspectorUI::onOffsetChanged(unsigned int offset)
-{
-  if (!this->scrolling)
-    this->ui->symViewScrollBar->setValue(static_cast<int>(offset));
-
-  this->ui->offsetSpin->setValue(static_cast<int>(offset));
-}
-
-void
-InspectorUI::onHOffsetChanged(int offset)
-{
-  if (!this->scrolling)
-    this->ui->symViewHScrollBar->setValue(offset);
-}
-
-void
-InspectorUI::onStrideChanged(unsigned int stride)
-{
-  this->ui->widthSpin->setValue(static_cast<int>(stride));
-  this->refreshHScrollBar();
-}
 
 void
 InspectorUI::onCPUBurnClicked(void)
@@ -1081,33 +840,6 @@ InspectorUI::onCPUBurnClicked(void)
 
   this->throttle.setCpuBurn(burn);
   this->ui->fpsSpin->setEnabled(!burn);
-}
-
-void
-InspectorUI::onSymViewControlsChanged(void)
-{
-  bool autoStride = this->ui->autoFitButton->isChecked();
-  bool autoScroll = this->ui->autoScrollButton->isChecked();
-
-  this->demodulating = this->ui->recordButton->isChecked();
-
-  this->ui->symView->setAutoStride(autoStride);
-  this->ui->symView->setAutoScroll(autoScroll);
-  this->ui->widthSpin->setEnabled(!autoStride);
-  this->ui->offsetSpin->setEnabled(!autoScroll);
-
-  this->refreshVScrollBar();
-  this->refreshHScrollBar();
-
-  if (!autoStride)
-    this->ui->symView->setStride(
-        static_cast<unsigned int>(this->ui->widthSpin->value()));
-
-  if (!autoScroll)
-    this->ui->symView->setOffset(
-        static_cast<unsigned int>(this->ui->offsetSpin->value()));
-
-  this->ui->symView->setReverse(this->ui->reverseButton->isChecked());
 }
 
 void
@@ -1168,73 +900,6 @@ InspectorUI::onFPSChanged(void)
 }
 
 void
-InspectorUI::onSaveSymView(void)
-{
-  QFileDialog dialog(this->ui->symView);
-  QStringList filters;
-  enum SymView::FileFormat fmt = SymView::FILE_FORMAT_TEXT;
-
-  filters << "Text file (*.txt)"
-          << "Binary file (*.bin)"
-          << "C source file (*.c)"
-          << "Microsoft Windows Bitmap (*.bmp)"
-          << "PNG Image (*.png)"
-          << "JPEG Image (*.jpg)"
-          << "Portable Pixel Map (*.ppm)";
-
-  dialog.setFileMode(QFileDialog::AnyFile);
-  dialog.setAcceptMode(QFileDialog::AcceptSave);
-  dialog.setWindowTitle(QString("Save current symbol capture as..."));
-  dialog.setNameFilters(filters);
-
-  if (dialog.exec()) {
-    // This sucks
-    QString filter = dialog.selectedNameFilter();
-    QString path = dialog.selectedFiles().first();
-    QFileInfo fi(path);
-    QString ext = fi.size() > 0
-        ? fi.suffix()
-        : SuWidgetsHelpers::extractFilterExtension(filter);
-
-    if (ext == "txt")
-      fmt = SymView::FILE_FORMAT_TEXT;
-    else if (ext == "bin")
-      fmt = SymView::FILE_FORMAT_RAW;
-    else if (ext == "c" || ext == "h" || ext == "cpp")
-      fmt = SymView::FILE_FORMAT_C_ARRAY;
-    else if (ext == "bmp")
-      fmt = SymView::FILE_FORMAT_BMP;
-    else if (ext == "png")
-      fmt = SymView::FILE_FORMAT_PNG;
-    else if (ext == "jpg" || ext == "jpeg")
-      fmt = SymView::FILE_FORMAT_JPEG;
-    else if (ext == "ppm")
-      fmt = SymView::FILE_FORMAT_PPM;
-
-    try {
-      this->ui->symView->save(
-            SuWidgetsHelpers::ensureExtension(path, ext),
-            fmt);
-    } catch (std::ios_base::failure const &) {
-      (void) QMessageBox::critical(
-            this->ui->symView,
-            "Save symbol file",
-            "Failed to save file in the specified location. Please try again.",
-            QMessageBox::Close);
-    }
-  }
-}
-
-void
-InspectorUI::onClearSymView(void)
-{
-  this->ui->symView->clear();
-  this->onOffsetChanged(0);
-  this->refreshVScrollBar();
-  this->refreshSizes();
-}
-
-void
 InspectorUI::onSpectrumConfigChanged(void)
 {
   int index = this->ui->paletteCombo->currentIndex();
@@ -1265,6 +930,50 @@ InspectorUI::onRangeChanged(void)
           this->ui->rangeSlider->minimumValue(),
           this->ui->rangeSlider->maximumValue());
   }
+}
+
+void
+InspectorUI::onChangeLo(void)
+{
+  emit loChanged();
+}
+
+void
+InspectorUI::onChangeBandwidth(void)
+{
+  emit bandwidthChanged();
+}
+
+void
+InspectorUI::onToggleEstimator(Suscan::EstimatorId id, bool enabled)
+{
+  emit toggleEstimator(id, enabled);
+}
+
+void
+InspectorUI::onApplyEstimation(QString name, float value)
+{
+  emit applyEstimation(name, value);
+}
+
+void
+InspectorUI::onAspectSliderChanged(int ratio)
+{
+  this->ui->wfSpectrum->setPercent2DScreen(ratio);
+}
+
+void
+InspectorUI::onPandapterRangeChanged(float min, float max)
+{
+  bool adjusting = this->adjusting;
+  this->adjusting = true;
+
+  this->ui->rangeSlider->setMinimumPosition(static_cast<int>(min));
+  this->ui->rangeSlider->setMaximumPosition(static_cast<int>(max));
+
+  this->ui->wfSpectrum->setWaterfallRange(min, max);
+
+  this->adjusting = adjusting;
 }
 
 // Datasaver
@@ -1330,6 +1039,7 @@ InspectorUI::onCommit(void)
 {
   this->saverUI->setCaptureSize(this->dataSaver->getSize());
 }
+
 
 // Net Forwarder
 void
@@ -1402,72 +1112,3 @@ InspectorUI::onNetCommit(void)
   this->netForwarderUI->setCaptureSize(this->socketForwarder->getSize());
 }
 
-void
-InspectorUI::onChangeLo(void)
-{
-  emit loChanged();
-}
-
-void
-InspectorUI::onChangeBandwidth(void)
-{
-  emit bandwidthChanged();
-}
-
-void
-InspectorUI::onToggleEstimator(Suscan::EstimatorId id, bool enabled)
-{
-  emit toggleEstimator(id, enabled);
-}
-
-void
-InspectorUI::onApplyEstimation(QString name, float value)
-{
-  emit applyEstimation(name, value);
-}
-
-void
-InspectorUI::onZoomChanged(void)
-{
-  this->ui->symView->setZoom(
-        static_cast<unsigned int>(this->ui->zoomSpin->value()));
-  this->refreshVScrollBar();
-  this->refreshHScrollBar();
-}
-
-void
-InspectorUI::onZoomReset(void)
-{
-  this->ui->zoomSpin->setValue(1);
-  this->ui->symView->setZoom(1);
-  this->refreshVScrollBar();
-  this->refreshHScrollBar();
-}
-
-void
-InspectorUI::onSymViewZoomChanged(unsigned int zoom)
-{
-  this->ui->zoomSpin->setValue(static_cast<int>(zoom));
-  this->refreshVScrollBar();
-  this->refreshHScrollBar();
-}
-
-void
-InspectorUI::onAspectSliderChanged(int ratio)
-{
-  this->ui->wfSpectrum->setPercent2DScreen(ratio);
-}
-
-void
-InspectorUI::onPandapterRangeChanged(float min, float max)
-{
-  bool adjusting = this->adjusting;
-  this->adjusting = true;
-
-  this->ui->rangeSlider->setMinimumPosition(static_cast<int>(min));
-  this->ui->rangeSlider->setMaximumPosition(static_cast<int>(max));
-
-  this->ui->wfSpectrum->setWaterfallRange(min, max);
-
-  this->adjusting = adjusting;
-}

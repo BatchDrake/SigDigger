@@ -139,7 +139,8 @@ SOURCES += \
     Components/RMSViewTab.cpp \
     Components/RMSViewerSettingsDialog.cpp \
     Components/LogDialog.cpp \
-    Inspector/TVProcessorTab.cpp
+    Inspector/TVProcessorTab.cpp \
+    Inspector/SymViewTab.cpp
 
 
 HEADERS += \
@@ -229,7 +230,8 @@ HEADERS += \
     include/RMSViewTab.h \
     include/RMSViewerSettingsDialog.h \
     include/LogDialog.h \
-    include/TVProcessorTab.h
+    include/TVProcessorTab.h \
+    include/SymViewTab.h
 
 
 FORMS += \
@@ -265,7 +267,8 @@ FORMS += \
     ui/RMSViewTab.ui \
     ui/RMSViewerSettingsDialog.ui \
     ui/LogDialog.ui \
-    ui/TVProcessorTab.ui
+    ui/TVProcessorTab.ui \
+    ui/SymViewTab.ui
 
 !isEmpty(target.path): INSTALLS += target
 

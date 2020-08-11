@@ -41,7 +41,9 @@
 #include "EstimatorControl.h"
 #include "NetForwarderUI.h"
 
+#include "SymViewTab.h"
 #include "TVProcessorTab.h"
+
 namespace Ui {
   class Inspector;
 }
@@ -63,8 +65,6 @@ namespace SigDigger {
     unsigned int basebandSampleRate;
     float sampleRate;
 
-    bool scrolling = false;
-    bool demodulating = false;
     bool recording = false;
     bool forwarding = false;
     bool adjusting = false;
@@ -88,7 +88,6 @@ namespace SigDigger {
     std::vector<Suscan::Estimator> estimators;
     std::vector<Suscan::SpectrumSource> spectsrcs;
     std::map<Suscan::EstimatorId, EstimatorControl *> estimatorCtls;
-    TVProcessorTab *tvTab = nullptr;
 
     ThrottleControl throttle;
     Ui::Inspector *ui = nullptr;
@@ -97,6 +96,9 @@ namespace SigDigger {
     NetForwarderUI *netForwarderUI = nullptr;
     FileDataSaver *dataSaver = nullptr;
     SocketForwarder *socketForwarder = nullptr;
+
+    TVProcessorTab *tvTab = nullptr;
+    SymViewTab *symViewTab = nullptr;
 
     State state = DETACHED;
     SUSCOUNT lastLen = 0;
@@ -160,21 +162,11 @@ namespace SigDigger {
 
     public slots:
       void onInspectorControlChanged();
-      void onOffsetChanged(unsigned int);
-      void onHOffsetChanged(int);
-      void onStrideChanged(unsigned int);
       void onAspectSliderChanged(int);
       void onPandapterRangeChanged(float, float);
-      void onZoomChanged(void);
-      void onSymViewZoomChanged(unsigned int);
-      void onScrollBarChanged(int val);
-      void onHScrollBarChanged(int offset);
       void onCPUBurnClicked(void);
       void onFPSReset(void);
       void onFPSChanged(void);
-      void onSymViewControlsChanged(void);
-      void onSaveSymView(void);
-      void onClearSymView(void);
       void onSpectrumConfigChanged(void);
       void onSpectrumSourceChanged(void);
       void onRangeChanged(void);
@@ -186,7 +178,6 @@ namespace SigDigger {
       void onChangeBandwidth(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
       void onApplyEstimation(QString, float);
-      void onZoomReset(void);
 
       // DataSaver slots
       void onSaveError(void);
