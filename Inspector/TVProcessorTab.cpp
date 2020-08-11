@@ -285,6 +285,13 @@ TVProcessorTab::connectAll(void)
         this,
         SLOT(onTVContrastChanged()));
 
+
+  connect(
+        this->ui->gammaDial,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onTVGammaChanged()));
+
   connect(
         this->ui->rotationDial,
         SIGNAL(valueChanged(int)),
@@ -629,6 +636,17 @@ void
 TVProcessorTab::onTVBrightnessChanged(void)
 {
   this->ui->tvDisplay->setBrightness(this->ui->brightnessDial->value() / 100.);
+}
+
+void
+TVProcessorTab::onTVGammaChanged(void)
+{
+  qreal gamma = this->ui->gammaDial->value() / 25. + 1;
+
+  if (gamma < 1)
+    gamma = -1. / (gamma - 2);
+
+  this->ui->tvDisplay->setGamma(gamma);
 }
 
 void

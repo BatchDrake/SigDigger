@@ -83,6 +83,7 @@ namespace SigDigger {
     void onTVProcessorError(QString error);
     void onTVContrastChanged(void);
     void onTVBrightnessChanged(void);
+    void onTVGammaChanged(void);
     void onTVAspectChanged(void);
 
   private:
