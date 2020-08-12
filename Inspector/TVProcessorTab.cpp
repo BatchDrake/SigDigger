@@ -687,11 +687,12 @@ TVProcessorTab::onSaveSnapshot(void)
     QString path = dialog.selectedFiles().first();
     QString filter = dialog.selectedNameFilter();
     QFileInfo fi(path);
+    QString ext = fi.suffix().size() > 0
+        ? fi.suffix()
+        : SuWidgetsHelpers::extractFilterExtension(filter);
 
-    if (fi.suffix().size() == 0)
-      path += "." + SuWidgetsHelpers::extractFilterExtension(filter);
-
-    if (!this->ui->tvDisplay->saveToFile(path))
+    if (!this->ui->tvDisplay->saveToFile(
+          SuWidgetsHelpers::ensureExtension(path, ext)))
       QMessageBox::critical(
             this,
             "Failed to take snapshot",
