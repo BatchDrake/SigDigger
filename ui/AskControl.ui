@@ -124,6 +124,9 @@
         <property name="suffix">
          <string> Hz</string>
         </property>
+        <property name="maximum">
+         <double>9999999.990000000223517</double>
+        </property>
        </widget>
       </item>
       <item row="5" column="2">

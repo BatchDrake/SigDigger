@@ -345,7 +345,7 @@ color: white;</string>
                 <string> Hz</string>
                </property>
                <property name="maximum">
-                <double>120.000000000000000</double>
+                <double>12000.000000000000000</double>
                </property>
               </widget>
              </item>
@@ -875,10 +875,10 @@ color: white;</string>
             <property name="tickPosition">
              <enum>QSlider::NoTicks</enum>
             </property>
-            <property name="minimumValue">
+            <property name="minimumValue" stdset="0">
              <number>-800</number>
             </property>
-            <property name="maximumValue">
+            <property name="maximumValue" stdset="0">
              <number>0</number>
             </property>
            </widget>
