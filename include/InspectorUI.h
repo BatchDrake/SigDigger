@@ -43,6 +43,7 @@
 
 #include "SymViewTab.h"
 #include "TVProcessorTab.h"
+#include "WaveformTab.h"
 
 namespace Ui {
   class Inspector;
@@ -98,6 +99,7 @@ namespace SigDigger {
     SocketForwarder *socketForwarder = nullptr;
 
     TVProcessorTab *tvTab = nullptr;
+    WaveformTab *wfTab = nullptr;
     SymViewTab *symViewTab = nullptr;
 
     State state = DETACHED;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1037</width>
-    <height>791</height>
+    <width>1039</width>
+    <height>793</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -218,8 +218,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>269</width>
-          <height>730</height>
+          <width>223</width>
+          <height>739</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -466,8 +466,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>263</width>
-              <height>521</height>
+              <width>217</width>
+              <height>508</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -1265,7 +1265,7 @@
               </widget>
              </item>
              <item row="9" column="0" colspan="3">
-              <widget class="FrequencySpinBox" name="refFreqSpin" native="true"/>
+              <widget class="FrequencySpinBox" name="refFreqSpin"/>
              </item>
              <item row="10" column="0" colspan="3">
               <widget class="QPushButton" name="dopplerButton">
@@ -1281,8 +1281,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>263</width>
-              <height>459</height>
+              <width>217</width>
+              <height>508</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1369,8 +1369,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>263</width>
-              <height>459</height>
+              <width>243</width>
+              <height>494</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1543,7 +1543,7 @@
               </widget>
              </item>
              <item row="0" column="1" colspan="3">
-              <widget class="FrequencySpinBox" name="syncFreqSpin" native="true"/>
+              <widget class="FrequencySpinBox" name="syncFreqSpin"/>
              </item>
             </layout>
            </widget>
@@ -1552,8 +1552,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>276</width>
-              <height>445</height>
+              <width>267</width>
+              <height>494</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1714,7 +1714,7 @@
                     <number>1</number>
                    </property>
                    <item row="0" column="1">
-                    <widget class="FrequencySpinBox" name="baudSpin" native="true">
+                    <widget class="FrequencySpinBox" name="baudSpin">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                        <horstretch>0</horstretch>
@@ -2093,14 +2093,14 @@
    <header>Waveform.h</header>
   </customwidget>
   <customwidget>
-   <class>FrequencySpinBox</class>
-   <extends>QWidget</extends>
-   <header>FrequencySpinBox.h</header>
-  </customwidget>
-  <customwidget>
    <class>QVerticalLabel</class>
    <extends>QLabel</extends>
    <header>QVerticalLabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FrequencySpinBox</class>
+   <extends>QWidget</extends>
+   <header>FrequencySpinBox.h</header>
   </customwidget>
  </customwidgets>
  <resources>
@@ -2109,7 +2109,7 @@
  <connections/>
  <buttongroups>
   <buttongroup name="spaceButtonGrp"/>
-  <buttongroup name="clckSourceBtnGrp"/>
   <buttongroup name="intervalButtonGrp"/>
+  <buttongroup name="clckSourceBtnGrp"/>
  </buttongroups>
 </ui>
