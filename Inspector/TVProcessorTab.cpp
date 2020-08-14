@@ -631,6 +631,7 @@ TVProcessorTab::onTVProcessorError(QString error)
 {
   QMessageBox::critical(this->ui->tvDisplay, "TV Processor error", error);
   this->ui->enableTvButton->setChecked(false);
+  this->onToggleTVProcessor();
 }
 
 void
