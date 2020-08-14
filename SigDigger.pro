@@ -21,6 +21,7 @@ equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
 
 CONFIG(release, debug|release): QMAKE_CXXFLAGS+=-D__FILENAME__=\\\"SigDigger\\\"
 CONFIG(debug, debug|release):   QMAKE_CXXFLAGS+=-D__FILENAME__=__FILE__
+CONFIG(release, debug|release): QMAKE_LFLAGS+=-s
 
 isEmpty(SUWIDGETS_PREFIX) {
   SUWIDGETS_INSTALL_LIBS=$$[QT_INSTALL_LIBS]
