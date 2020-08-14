@@ -397,14 +397,14 @@ color: white;</string>
              <height>54</height>
             </size>
            </property>
-           <property name="backgroundColor">
+           <property name="backgroundColor" stdset="0">
             <color>
              <red>29</red>
              <green>29</green>
              <blue>31</blue>
             </color>
            </property>
-           <property name="foregroundColor">
+           <property name="foregroundColor" stdset="0">
             <color>
              <red>255</red>
              <green>255</green>
@@ -467,7 +467,7 @@ color: white;</string>
         </property>
         <property name="maximumSize">
          <size>
-          <width>250</width>
+          <width>280</width>
           <height>16777215</height>
          </size>
         </property>
@@ -1094,11 +1094,13 @@ color: white;</string>
    <class>Constellation</class>
    <extends>QFrame</extends>
    <header>Constellation.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>Waveform</class>
    <extends>QFrame</extends>
    <header>Waveform.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>QVerticalLabel</class>
