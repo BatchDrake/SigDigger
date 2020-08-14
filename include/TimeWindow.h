@@ -77,24 +77,9 @@ namespace SigDigger {
     void connectFineTuneSelWidgets(void);
     void connectAll(void);
 
-    static void kahanMeanAndRms(
-        SUCOMPLEX *mean,
-        SUFLOAT *rms,
-        const SUCOMPLEX *data,
-        int length);
-
-    static void calcLimits(
-        SUCOMPLEX *oMin,
-        SUCOMPLEX *oMax,
-        const SUCOMPLEX *data,
-        int length);
-
-    bool exportToMatlab(QString const &path, int start, int end);
-    bool exportToWav(QString const &path, int start, int end);
     void recalcLimits(void);
     void refreshMeasures(void);
     void refreshUi(void);
-    void saveSamples(int start, int end);
 
     void notifyTaskRunning(bool);
 

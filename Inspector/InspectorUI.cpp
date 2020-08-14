@@ -55,8 +55,10 @@ InspectorUI::InspectorUI(
   this->symViewTab = new SymViewTab(this->ui->toolTab);
   this->ui->toolTab->addTab(this->symViewTab, "Symbol stream");
 
+  this->wfTab = new WaveformTab(this->ui->toolTab);
+  this->ui->toolTab->addTab(this->wfTab, "Waveform");
+
   this->tvTab = new TVProcessorTab(this->ui->toolTab, this->getBaudRateFloat());
-  this->tvTab->setSampleRate(this->getBaudRateFloat());
   this->ui->toolTab->addTab(this->tvTab, "Analog TV");
 
   if (this->config->hasPrefix("ask")) {
@@ -124,6 +126,7 @@ InspectorUI::initUi(void)
   this->throttle.setCpuBurn(false);
   this->ui->constellation->setThrottleControl(&this->throttle);
   this->symViewTab->setThrottleControl(&this->throttle);
+  this->wfTab->setThrottleControl(&this->throttle);
   this->ui->transition->setThrottleControl(&this->throttle);
   this->ui->histogram->setThrottleControl(&this->throttle);
   this->ui->histogram->setDecider(&this->decider);
@@ -567,6 +570,9 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
   if (this->tvTab->isEnabled())
     this->tvTab->feed(data, size);
 
+  if (this->wfTab->isRecording())
+    this->wfTab->feed(data, size);
+
   if (this->recording || this->forwarding) {
     if (this->decider.getDecisionMode() == Decider::MODULUS) {
       if (this->recording)
@@ -796,6 +802,7 @@ InspectorUI::onInspectorControlChanged(void)
 
   if (newRate != oldRate) {
     this->tvTab->setSampleRate(this->getBaudRateFloat());
+    this->wfTab->setSampleRate(this->getBaudRateFloat());
 
     if (this->recording) {
       this->recording = false;
@@ -846,10 +853,11 @@ void
 InspectorUI::setAppConfig(AppConfig const &cfg)
 {
   ColorConfig const &colors = cfg.colors;
-
+  InspectorPanelConfig panelConfig;
   FftPanelConfig fftConfig;
 
   fftConfig.deserialize(cfg.fftConfig->serialize());
+  panelConfig.deserialize(cfg.inspectorConfig->serialize());
 
   // Set colors according to application config
   this->ui->constellation->setForegroundColor(colors.constellationForeground);
@@ -878,8 +886,13 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   this->ui->wfSpectrum->setFftTextColor(colors.spectrumText);
   this->ui->wfSpectrum->setFilterBoxColor(colors.filterBox);
 
+  // Set Waveform colors
+  this->wfTab->setColorConfig(colors);
+  this->wfTab->setPalette(panelConfig.palette);
+  this->wfTab->setPaletteOffset(panelConfig.paletteOffset);
+  this->wfTab->setPaletteContrast(panelConfig.paletteContrast);
+
   // Set palette
-  fftConfig.deserialize(cfg.fftConfig->serialize());
   (void) this->setPalette(fftConfig.palette);
 }
 

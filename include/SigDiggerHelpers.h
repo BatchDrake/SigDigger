@@ -43,6 +43,42 @@ namespace SigDigger {
     static QString version(void);
     static QString pkgversion(void);
 
+    static void kahanMeanAndRms(
+        SUCOMPLEX *mean,
+        SUFLOAT *rms,
+        const SUCOMPLEX *data,
+        int length);
+
+    static void calcLimits(
+        SUCOMPLEX *oMin,
+        SUCOMPLEX *oMax,
+        const SUCOMPLEX *data,
+        int length);
+
+    static bool exportToMatlab(
+        QString const &path,
+        const SUCOMPLEX *data,
+        int length,
+        qreal fs,
+        int start,
+        int end);
+
+    static bool exportToWav(
+        QString const &path,
+        const SUCOMPLEX *data,
+        int length,
+        qreal fs,
+        int start,
+        int end);
+
+    static void openSaveSamplesDialog(
+        QWidget *root,
+        const SUCOMPLEX *data,
+        size_t len,
+        qreal fs,
+        int start,
+        int end);
+
     static SigDiggerHelpers *instance(void);
     int getPaletteIndex(std::string const &) const;
     const Palette *getPalette(std::string const &) const;
