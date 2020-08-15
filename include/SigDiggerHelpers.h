@@ -55,6 +55,14 @@ namespace SigDigger {
         const SUCOMPLEX *data,
         int length);
 
+    static bool exportToMat5(
+        QString const &path,
+        const SUCOMPLEX *data,
+        int length,
+        qreal fs,
+        int start,
+        int end);
+
     static bool exportToMatlab(
         QString const &path,
         const SUCOMPLEX *data,

@@ -26,6 +26,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <SuWidgets/SuWidgetsHelpers.h>
+#include <sigutils/matfile.h>
 
 #ifndef SIGDIGGER_PKGVERSION
 #  define SIGDIGGER_PKGVERSION \
@@ -96,6 +97,54 @@ SigDiggerHelpers::exportToMatlab(
 }
 
 bool
+SigDiggerHelpers::exportToMat5(
+    QString const &path,
+    const SUCOMPLEX *data,
+    int length,
+    qreal fs,
+    int start,
+    int end)
+{
+  su_mat_file_t *mf = nullptr;
+  su_mat_matrix_t *mtx = nullptr;
+  bool ok = false;
+
+  if (start < 0)
+    start = 0;
+  if (end >= length)
+    end = length - 1;
+
+  SU_TRYCATCH(mf = su_mat_file_new(), goto done);
+
+  SU_TRYCATCH(mtx = su_mat_file_make_matrix(mf, "sampleRate", 1, 1), goto done);
+  SU_TRYCATCH(su_mat_matrix_write_col(mtx, fs), goto done);
+
+  SU_TRYCATCH(mtx = su_mat_file_make_matrix(mf, "deltaT", 1, 1), goto done);
+  SU_TRYCATCH(su_mat_matrix_write_col(mtx, 1 / fs), goto done);
+
+  SU_TRYCATCH(
+        mtx = su_mat_file_make_matrix(mf, "X", 2, end - start + 1),
+        goto done);
+
+  for (int i = start; i <= end; ++i)
+    SU_TRYCATCH(
+          su_mat_matrix_write_col_array(
+            mtx,
+            reinterpret_cast<const SUFLOAT *>(data + i)),
+          goto done);
+
+  SU_TRYCATCH(su_mat_file_dump(mf, path.toStdString().c_str()), goto done);
+
+  ok = true;
+
+done:
+  if (mf != nullptr)
+    su_mat_file_destroy(mf);
+
+  return ok;
+}
+
+bool
 SigDiggerHelpers::exportToWav(
     QString const &path,
     const SUCOMPLEX *data,
@@ -153,7 +202,8 @@ SigDiggerHelpers::openSaveSamplesDialog(
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setWindowTitle(QString("Save capture"));
 
-    filters << "MATLAB/Octave file (*.m)"
+    filters << "MATLAB/Octave script (*.m)"
+            << "MATLAB 5.0 MAT-file (*.mat)"
             << "Audio file (*.wav)";
 
     dialog.setNameFilters(filters);
@@ -163,12 +213,21 @@ SigDiggerHelpers::openSaveSamplesDialog(
       QString filter = dialog.selectedNameFilter();
       bool result;
 
-      if (strstr(filter.toStdString().c_str(), ".m") != nullptr)  {
+      if (strstr(filter.toStdString().c_str(), ".mat") != nullptr)  {
+        path = SuWidgetsHelpers::ensureExtension(path, "mat");
+        result = SigDiggerHelpers::exportToMat5(
+              path,
+              data,
+              static_cast<int>(len),
+              fs,
+              start,
+              end);
+      } else if (strstr(filter.toStdString().c_str(), ".m") != nullptr)  {
         path = SuWidgetsHelpers::ensureExtension(path, "m");
         result = SigDiggerHelpers::exportToMatlab(
               path,
               data,
-              len,
+              static_cast<int>(len),
               fs,
               start,
               end);
@@ -177,7 +236,7 @@ SigDiggerHelpers::openSaveSamplesDialog(
         result = SigDiggerHelpers::exportToWav(
               path,
               data,
-              len,
+              static_cast<int>(len),
               fs,
               start,
               end);
