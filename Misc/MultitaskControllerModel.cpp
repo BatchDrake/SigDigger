@@ -17,6 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include "include/MultitaskControllerModel.h"
+#include <cmath>
 
 using namespace SigDigger;
 
@@ -100,7 +101,7 @@ MultitaskControllerModel::data(const QModelIndex &index, int role) const
         return ctx->progressMessage();
 
       case 2:
-        return ctx->progressValue();
+        return QString::number(std::round(ctx->progressValue() * 100)) + "%";
 
       case 3:
         return QString("Cancel");
@@ -142,5 +143,5 @@ MultitaskControllerModel::onProgress(int index, qreal, QString)
 {
   emit dataChanged(
         createIndex(index, 0, nullptr),
-        createIndex(index, 5, nullptr));
+        createIndex(index, 3, nullptr));
 }

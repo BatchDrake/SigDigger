@@ -37,6 +37,12 @@
 using namespace SigDigger;
 
 void
+TimeWindow::setMultitaskController(MultitaskController *mt)
+{
+  this->mtController = mt;
+}
+
+void
 TimeWindow::connectFineTuneSelWidgets(void)
 {
   connect(
@@ -1079,7 +1085,8 @@ TimeWindow::onSaveAll(void)
         this->getDisplayDataLength(),
         this->fs,
         0,
-        static_cast<int>(this->getDisplayDataLength()));
+        static_cast<int>(this->getDisplayDataLength()),
+        this->mtController);
 }
 
 void
@@ -1091,7 +1098,8 @@ TimeWindow::onSaveSelection(void)
         this->getDisplayDataLength(),
         this->fs,
         static_cast<int>(this->ui->realWaveform->getHorizontalSelectionStart()),
-        static_cast<int>(this->ui->realWaveform->getHorizontalSelectionEnd()));
+        static_cast<int>(this->ui->realWaveform->getHorizontalSelectionEnd()),
+        this->mtController);
 }
 
 void

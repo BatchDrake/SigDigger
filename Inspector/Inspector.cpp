@@ -119,6 +119,12 @@ Inspector::showEvent(QShowEvent *)
 }
 
 void
+Inspector::setMultitaskController(MultitaskController *mt)
+{
+  this->ui->setMultitaskController(mt);
+}
+
+void
 Inspector::updateEstimator(Suscan::EstimatorId id, float val)
 {
   this->ui->updateEstimator(id, val);

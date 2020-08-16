@@ -21,7 +21,6 @@
 #include <fcntl.h>
 
 #include "Application.h"
-#include "MultitaskController.h"
 
 #include <QMessageBox>
 
@@ -52,9 +51,6 @@ Application::Application(QWidget *parent) : QMainWindow(parent), ui(this)
   this->deviceDetectWorker = new DeviceDetectWorker();
   this->deviceDetectWorker->moveToThread(this->deviceDetectThread);
   this->deviceDetectThread->start();
-
-  this->mtController = new MultitaskController;
-  this->ui.backgroundTasksDialog->setController(this->mtController);
 }
 
 Suscan::Object &&
@@ -980,8 +976,6 @@ Application::~Application()
 
   if (this->scanner != nullptr)
     delete this->scanner;
-
-  delete this->mtController;
 
   this->playBack = nullptr;
   this->analyzer = nullptr;

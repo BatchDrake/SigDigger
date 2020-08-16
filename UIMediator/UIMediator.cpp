@@ -23,6 +23,7 @@
 #include <SuWidgetsHelpers.h>
 
 #include "UIMediator.h"
+#include "MultitaskController.h"
 
 #include <QGuiApplication>
 #include <QDockWidget>
@@ -299,6 +300,11 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   // Configure main spectrum
   this->ui->spectrum->setPaletteGradient(
         this->ui->fftPanel->getPaletteGradient());
+
+  // Create background task controller
+  this->mtController = new MultitaskController;
+  this->ui->backgroundTasksDialog->setController(this->mtController);
+  this->ui->inspectorPanel->setMultitaskController(this->mtController);
 
   this->connectMainWindow();
   this->connectSpectrum();
@@ -590,8 +596,11 @@ UIMediator::addInspectorTab(
         this->ui->main->mainTab,
         msg,
         *this->appConfig);
+
   oId = this->ui->lastId++;
+
   insp->setId(oId);
+  insp->setMultitaskController(this->mtController);
 
   index = this->ui->main->mainTab->addTab(
         insp,
@@ -770,7 +779,7 @@ UIMediator::applyConfig(void)
 
 UIMediator::~UIMediator()
 {
-
+  delete this->mtController;
 }
 
 /////////////////////////////// Slots //////////////////////////////////////////

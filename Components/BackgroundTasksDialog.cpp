@@ -44,13 +44,7 @@ BackgroundTasksDialog::connectAll(void)
 {
   connect(
         this->ui->cancelAllButton,
-        SIGNAL(triggered(QAction *)),
-        this,
-        SLOT(onCancelAll(void)));
-
-  connect(
-        this->ui->cancelAllButton,
-        SIGNAL(triggered(QAction *)),
+        SIGNAL(clicked(bool)),
         this,
         SLOT(onCancelAll(void)));
 }
@@ -63,6 +57,22 @@ BackgroundTasksDialog::setController(MultitaskController *controller)
   this->proxy = new QSortFilterProxyModel(this);
   this->proxy->setSourceModel(this->model);
   this->ui->tableView->setModel(this->proxy);
+
+  connect(
+        this->model,
+        SIGNAL(layoutChanged(void)),
+        this,
+        SLOT(onLayoutChanged(void)));
+
+  connect(
+        this->model,
+        SIGNAL(
+          dataChanged(
+            const QModelIndex &,
+            const QModelIndex &,
+            const QVector<int> &)),
+        this,
+        SLOT(onLayoutChanged(void)));
 }
 
 /////////////////////////////////// Slots //////////////////////////////////////
@@ -77,4 +87,17 @@ BackgroundTasksDialog::onCancelAll(void)
 {
   if (this->controller != nullptr)
     this->controller->cancelAll();
+}
+
+void
+BackgroundTasksDialog::onLayoutChanged(void)
+{
+  int rows = this->model->rowCount(QModelIndex());
+
+  if (rows > this->prevRows)
+    this->ui->tableView->resizeColumnsToContents();
+
+  this->prevRows = rows;
+
+  this->ui->cancelAllButton->setEnabled(rows > 0);
 }

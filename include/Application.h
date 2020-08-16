@@ -64,8 +64,6 @@ namespace SigDigger {
     unsigned int currSampleRate;
     bool filterInstalled = false;
 
-    MultitaskController *mtController = nullptr;
-
     // UI
     AppUI ui;
     UIMediator *mediator = nullptr;

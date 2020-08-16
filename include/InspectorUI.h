@@ -51,6 +51,7 @@ namespace Ui {
 
 namespace SigDigger {
   class AppConfig;
+  class MultitaskController;
 
   class InspectorUI : public QObject {
     Q_OBJECT
@@ -138,6 +139,7 @@ namespace SigDigger {
       void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
       void updateEstimator(Suscan::EstimatorId id, float val);
 
+      void setMultitaskController(MultitaskController *mt);
       void setState(enum State state);
       void refreshUi(void);
       bool setPalette(std::string const &str);

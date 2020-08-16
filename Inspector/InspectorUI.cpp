@@ -140,6 +140,12 @@ InspectorUI::initUi(void)
 }
 
 void
+InspectorUI::setMultitaskController(MultitaskController *mt)
+{
+  this->wfTab->setMultitaskController(mt);
+}
+
+void
 InspectorUI::adjustSizes(void)
 {
   QList<int> sizes;

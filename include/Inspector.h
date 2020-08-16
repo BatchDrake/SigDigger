@@ -9,6 +9,8 @@
 
 namespace SigDigger {
   class AppConfig;
+  class MultitaskController;
+
   class Inspector : public QWidget
   {
       Q_OBJECT
@@ -55,6 +57,7 @@ namespace SigDigger {
       void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
       void updateEstimator(Suscan::EstimatorId id, float val);
       void showEvent(QShowEvent *event);
+      void setMultitaskController(MultitaskController *);
 
       explicit Inspector(
           QWidget *parent,

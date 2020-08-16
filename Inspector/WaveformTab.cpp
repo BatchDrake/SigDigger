@@ -187,6 +187,12 @@ WaveformTab::setThrottleControl(ThrottleControl *ctl)
 }
 
 void
+WaveformTab::setMultitaskController(MultitaskController *mt)
+{
+  this->mtController = mt;
+}
+
+void
 WaveformTab::connectFineTuneSelWidgets(void)
 {
   connect(
@@ -721,7 +727,8 @@ WaveformTab::onSaveAll(void)
         this->getDisplayDataLength(),
         this->fs,
         0,
-        static_cast<int>(this->getDisplayDataLength()));
+        static_cast<int>(this->getDisplayDataLength()),
+        this->mtController);
 }
 
 void
@@ -733,7 +740,8 @@ WaveformTab::onSaveSelection(void)
         this->getDisplayDataLength(),
         this->fs,
         static_cast<int>(this->ui->realWaveform->getHorizontalSelectionStart()),
-        static_cast<int>(this->ui->realWaveform->getHorizontalSelectionEnd()));
+        static_cast<int>(this->ui->realWaveform->getHorizontalSelectionEnd()),
+        this->mtController);
 }
 
 void

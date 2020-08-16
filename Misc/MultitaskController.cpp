@@ -153,6 +153,12 @@ MultitaskController::connectNewTask(CancellableTask *task)
         SIGNAL(error(QString)),
         this,
         SLOT(onError(QString)));
+
+  connect(
+        this,
+        SIGNAL(cancel(void)),
+        task,
+        SLOT(onCancelRequested(void)));
 }
 
 CancellableTaskContext *

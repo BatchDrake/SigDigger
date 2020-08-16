@@ -145,7 +145,8 @@ SOURCES += \
     Inspector/WaveformTab.cpp \
     Misc/MultitaskController.cpp \
     Misc/MultitaskControllerModel.cpp \
-    Components/BackgroundTasksDialog.cpp
+    Components/BackgroundTasksDialog.cpp \
+    Tasks/ExportSamplesTask.cpp
 
 
 HEADERS += \
@@ -240,7 +241,8 @@ HEADERS += \
     include/WaveformTab.h \
     include/MultitaskController.h \
     include/MultitaskControllerModel.h \
-    include/BackgroundTasksDialog.h
+    include/BackgroundTasksDialog.h \
+    include/ExportSamplesTask.h
 
 
 FORMS += \

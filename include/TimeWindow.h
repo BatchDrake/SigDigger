@@ -41,6 +41,8 @@ namespace Ui {
 }
 
 namespace SigDigger {
+  class MultitaskController;
+
   class TimeWindow : public QMainWindow
   {
     Q_OBJECT
@@ -55,6 +57,8 @@ namespace SigDigger {
     bool hadSelectionBefore = true; // Yep. This must be true.
     bool adjusting = false;
     bool firstShow = true;
+
+    MultitaskController *mtController = nullptr;
 
     qreal     fs;
 
@@ -112,6 +116,7 @@ namespace SigDigger {
 
     void setCenterFreq(SUFREQ center);
     void setData(std::vector<SUCOMPLEX> const &data, qreal fs);
+    void setMultitaskController(MultitaskController *);
     void setPalette(std::string const &);
     void setPaletteOffset(unsigned int);
     void setPaletteContrast(int);

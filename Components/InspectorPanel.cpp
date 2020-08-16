@@ -166,6 +166,7 @@ void
 InspectorPanel::postLoadInit(void)
 {
   this->timeWindow = new TimeWindow(this);
+  this->timeWindow->setMultitaskController(this->mtController);
 }
 
 void
@@ -179,6 +180,12 @@ void
 InspectorPanel::setColorConfig(ColorConfig const &config)
 {
   this->timeWindow->setColorConfig(config);
+}
+
+void
+InspectorPanel::setMultitaskController(MultitaskController *mt)
+{
+  this->mtController = mt;
 }
 
 void

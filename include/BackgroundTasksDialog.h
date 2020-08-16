@@ -38,7 +38,7 @@ namespace SigDigger {
       MultitaskController *controller = nullptr;
       MultitaskControllerModel *model = nullptr;
       QSortFilterProxyModel *proxy = nullptr;
-
+      int prevRows = 0;
       void connectAll(void);
 
     public:
@@ -53,6 +53,7 @@ namespace SigDigger {
     public slots:
       void onClose(void);
       void onCancelAll(void);
+      void onLayoutChanged(void);
   };
 }
 

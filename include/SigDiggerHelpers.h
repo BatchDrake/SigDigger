@@ -27,6 +27,8 @@
 class QComboBox;
 
 namespace SigDigger {
+  class MultitaskController;
+
   class SigDiggerHelpers
   {
     std::vector<Palette> palettes;
@@ -55,37 +57,14 @@ namespace SigDigger {
         const SUCOMPLEX *data,
         int length);
 
-    static bool exportToMat5(
-        QString const &path,
-        const SUCOMPLEX *data,
-        int length,
-        qreal fs,
-        int start,
-        int end);
-
-    static bool exportToMatlab(
-        QString const &path,
-        const SUCOMPLEX *data,
-        int length,
-        qreal fs,
-        int start,
-        int end);
-
-    static bool exportToWav(
-        QString const &path,
-        const SUCOMPLEX *data,
-        int length,
-        qreal fs,
-        int start,
-        int end);
-
     static void openSaveSamplesDialog(
         QWidget *root,
         const SUCOMPLEX *data,
         size_t len,
         qreal fs,
         int start,
-        int end);
+        int end,
+        MultitaskController *);
 
     static SigDiggerHelpers *instance(void);
     int getPaletteIndex(std::string const &) const;
