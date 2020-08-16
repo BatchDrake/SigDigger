@@ -254,6 +254,12 @@ UIMediator::connectMainWindow(void)
         SIGNAL(triggered(bool)),
         this,
         SLOT(onTriggerLogMessages(void)));
+
+  connect(
+        this->ui->main->action_Background_tasks,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onTriggerBackgroundTasks(void)));
 }
 
 UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
@@ -1044,4 +1050,10 @@ void
 UIMediator::onTriggerLogMessages(void)
 {
   this->ui->logDialog->show();
+}
+
+void
+UIMediator::onTriggerBackgroundTasks(void)
+{
+  this->ui->backgroundTasksDialog->show();
 }

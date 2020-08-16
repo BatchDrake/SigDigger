@@ -32,6 +32,8 @@
 #include "Scanner.h"
 
 namespace SigDigger {
+  class MultitaskController;
+
   class DeviceDetectWorker : public QObject {
       Q_OBJECT
 
@@ -61,6 +63,8 @@ namespace SigDigger {
     bool profileSelected = false;
     unsigned int currSampleRate;
     bool filterInstalled = false;
+
+    MultitaskController *mtController = nullptr;
 
     // UI
     AppUI ui;

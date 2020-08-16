@@ -142,7 +142,10 @@ SOURCES += \
     Components/LogDialog.cpp \
     Inspector/TVProcessorTab.cpp \
     Inspector/SymViewTab.cpp \
-    Inspector/WaveformTab.cpp
+    Inspector/WaveformTab.cpp \
+    Misc/MultitaskController.cpp \
+    Misc/MultitaskControllerModel.cpp \
+    Components/BackgroundTasksDialog.cpp
 
 
 HEADERS += \
@@ -234,7 +237,10 @@ HEADERS += \
     include/LogDialog.h \
     include/TVProcessorTab.h \
     include/SymViewTab.h \
-    include/WaveformTab.h
+    include/WaveformTab.h \
+    include/MultitaskController.h \
+    include/MultitaskControllerModel.h \
+    include/BackgroundTasksDialog.h
 
 
 FORMS += \
@@ -272,7 +278,8 @@ FORMS += \
     ui/LogDialog.ui \
     ui/TVProcessorTab.ui \
     ui/SymViewTab.ui \
-    ui/WaveformTab.ui
+    ui/WaveformTab.ui \
+    ui/BackgroundTasksDialog.ui
 
 !isEmpty(target.path): INSTALLS += target
 

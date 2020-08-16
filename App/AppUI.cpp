@@ -44,6 +44,7 @@ AppUI::AppUI(QMainWindow *owner)
   this->deviceDialog = new DeviceDialog(owner);
   this->panoramicDialog = new PanoramicDialog(owner);
   this->logDialog = new LogDialog(owner);
+  this->backgroundTasksDialog = new BackgroundTasksDialog(owner);
 }
 
 void

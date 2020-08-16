@@ -53,6 +53,8 @@ namespace SigDigger {
       return prog;
     }
 
+    static void assertTypeRegistration(void);
+
   public slots:
     void onWorkRequested(void);
     void onCancelRequested(void);

@@ -103,6 +103,7 @@
     <addaction name="actionPanoramicSpectrum"/>
     <addaction name="separator"/>
     <addaction name="actionLogMessages"/>
+    <addaction name="action_Background_tasks"/>
     <addaction name="actionOptions"/>
    </widget>
    <addaction name="menuFile"/>
@@ -285,6 +286,11 @@
   <action name="actionLogMessages">
    <property name="text">
     <string>&amp;Log messages</string>
+   </property>
+  </action>
+  <action name="action_Background_tasks">
+   <property name="text">
+    <string>&amp;Background tasks</string>
    </property>
   </action>
  </widget>

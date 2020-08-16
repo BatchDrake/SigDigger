@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1223</width>
+    <width>1238</width>
     <height>658</height>
    </rect>
   </property>
@@ -332,6 +332,24 @@ color: white;</string>
              </item>
              <item row="0" column="2">
               <widget class="QDoubleSpinBox" name="frameRateSpin">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                 <pointsize>9</pointsize>
+                </font>
+               </property>
+               <property name="frame">
+                <bool>true</bool>
+               </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
@@ -341,11 +359,14 @@ color: white;</string>
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::NoButtons</enum>
                </property>
+               <property name="keyboardTracking">
+                <bool>false</bool>
+               </property>
                <property name="suffix">
                 <string> Hz</string>
                </property>
                <property name="maximum">
-                <double>12000.000000000000000</double>
+                <double>1000.000000000000000</double>
                </property>
               </widget>
              </item>
@@ -366,6 +387,13 @@ color: white;</string>
                </property>
                <property name="checkable">
                 <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2">
+              <widget class="QCheckBox" name="agcCheck">
+               <property name="text">
+                <string>AGC</string>
                </property>
               </widget>
              </item>
@@ -628,13 +656,6 @@ color: white;</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="2">
-              <widget class="QCheckBox" name="agcCheck">
-               <property name="text">
-                <string>AGC</string>
-               </property>
-              </widget>
-             </item>
              <item row="0" column="0">
               <widget class="QLabel" name="label_15">
                <property name="text">
@@ -644,19 +665,6 @@ color: white;</string>
              </item>
             </layout>
            </widget>
-          </item>
-          <item row="1" column="8">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
           <item row="0" column="3" rowspan="2">
            <widget class="QGroupBox" name="groupBox_7">

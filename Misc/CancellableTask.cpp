@@ -20,10 +20,13 @@
 
 using namespace SigDigger;
 
+Q_DECLARE_METATYPE(SigDigger::CancellableTask *);
+static bool typesRegistered = false;
+
 ////////////////////////////// CancellableTask /////////////////////////////////
 CancellableTask::CancellableTask(QObject *parent) : QObject(parent)
 {
-
+  assertTypeRegistration();
 }
 
 CancellableTask::~CancellableTask(void)
@@ -31,6 +34,14 @@ CancellableTask::~CancellableTask(void)
 
 }
 
+void
+CancellableTask::assertTypeRegistration(void)
+{
+  if (!typesRegistered) {
+    qRegisterMetaType<SigDigger::CancellableTask *>();
+    typesRegistered = true;
+  }
+}
 void
 CancellableTask::setProgress(qreal progress)
 {
