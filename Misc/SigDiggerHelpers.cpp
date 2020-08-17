@@ -91,6 +91,7 @@ SigDiggerHelpers::openSaveSamplesDialog(
       QString path = dialog.selectedFiles().first();
       QString filter = dialog.selectedNameFilter();
       ExportSamplesTask *task;
+      QFileInfo info(path);
 
       if (strstr(filter.toStdString().c_str(), ".mat") != nullptr)
         format = "mat";
@@ -111,7 +112,7 @@ SigDiggerHelpers::openSaveSamplesDialog(
         // TODO: Decide whether to send to multitask controller or to
         // run in the current thread according to data size.
 
-        mt->pushTask(task, "Save samples to " + path);
+        mt->pushTask(task, "Save samples to " + info.fileName());
         done = true;
       }
     } else {

@@ -20,7 +20,8 @@
 #define BACKGROUNDTASKSDIALOG_H
 
 #include <QDialog>
-
+#include <QStyledItemDelegate>
+#include <QItemDelegate>
 namespace Ui {
   class BackgroundTasksDialog;
 }
@@ -30,6 +31,40 @@ class QSortFilterProxyModel;
 namespace SigDigger {
   class MultitaskController;
   class MultitaskControllerModel;
+
+  class ProgressBarDelegate : public QStyledItemDelegate
+  {
+      Q_OBJECT
+
+  public:
+      ProgressBarDelegate(QObject *parent = nullptr);
+      void paint(QPainter *painter, const QStyleOptionViewItem &option,
+                 const QModelIndex &index) const;
+  };
+
+  class ButtonDelegate : public QItemDelegate
+  {
+      Q_OBJECT
+
+      QString text;
+      bool pressed = false;
+
+  public:
+      ButtonDelegate(QObject *parent, QString);
+      void paint(
+          QPainter *painter,
+          const QStyleOptionViewItem &option,
+          const QModelIndex &index) const;
+
+      bool editorEvent(
+          QEvent *event,
+          QAbstractItemModel *model,
+          const QStyleOptionViewItem &option,
+          const QModelIndex &index);
+
+    signals:
+      void clicked(QModelIndex);
+  };
 
   class BackgroundTasksDialog : public QDialog
   {
@@ -54,6 +89,8 @@ namespace SigDigger {
       void onClose(void);
       void onCancelAll(void);
       void onLayoutChanged(void);
+      void onCancelClicked(QModelIndex);
+      void onError(QString title, QString err);
   };
 }
 

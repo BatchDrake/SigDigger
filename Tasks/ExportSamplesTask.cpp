@@ -22,6 +22,7 @@
 using namespace SigDigger;
 
 #define SIGDIGGER_EXPORT_SAMPLES_BREATHE_INTERVAL_MS 100
+#define SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE  0x10000
 
 void
 ExportSamplesTask::breathe(quint64 i)
@@ -58,7 +59,8 @@ ExportSamplesTask::exportToMatlab(void)
        << SU_C_REAL(this->data[i]) << " + "
        << SU_C_IMAG(this->data[i]) << "i, ";
 
-    this->breathe(i);
+    if (i % SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE == 0)
+      this->breathe(i);
   }
 
   of << "];\n";
@@ -80,7 +82,7 @@ ExportSamplesTask::exportToMat5(void)
             SU_C_IMAG(this->data[i])),
           goto done);
 
-    if ((i & 0xffff) == 0) {
+    if (i % SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE == 0) {
       SU_TRYCATCH(su_mat_file_flush(mf), goto done);
       this->breathe(i);
     }
@@ -105,16 +107,32 @@ ExportSamplesTask::exportToWav(void)
 {
   size_t size = this->data.size();
   bool ok = false;
+  size_t i = 0;
 
-  for (size_t i = 0; !this->cancelFlag && i < size; ++i) {
+  for (
+       i = 0;
+       !this->cancelFlag
+         && i < size - SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE;
+       i += SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE) {
     if (sf_write_float(
           this->sfp,
           reinterpret_cast<const SUFLOAT *>(this->data.data() + i),
-          2) != 2)
+          2 * SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE)
+        != 2 * static_cast<sf_count_t>(
+          SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE))
         goto done;
+
+    goto done;
 
     this->breathe(i);
   }
+
+  if (i < size)
+    if (sf_write_float(
+        this->sfp,
+        reinterpret_cast<const SUFLOAT *>(this->data.data() + i),
+        static_cast<sf_count_t>(size - i) << 1) != 2)
+      goto done;
 
   ok = true;
 
@@ -265,6 +283,8 @@ ExportSamplesTask::~ExportSamplesTask(void)
 
   if (this->mf != nullptr)
     su_mat_file_destroy(this->mf);
+
+  printf("Destroyed!\n");
 }
 
 ExportSamplesTask::ExportSamplesTask(
@@ -289,4 +309,5 @@ ExportSamplesTask::ExportSamplesTask(
 
   this->data.resize(static_cast<unsigned>(end - start));
   this->data.assign(data + start, data + end);
+  this->setDataSize(this->data.size());
 }

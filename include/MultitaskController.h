@@ -25,6 +25,7 @@
 #include <QMap>
 #include <QVector>
 #include <QThread>
+#include <QDateTime>
 
 namespace SigDigger {
   //
@@ -35,6 +36,9 @@ namespace SigDigger {
   class CancellableTaskContext {
       QThread *mThread = nullptr;
       CancellableTask *mTask = nullptr;
+      QDateTime mCreationTime;
+      QDateTime mLastUpdate;
+      qreal mRate = 0; // Processing rate
       QString mTitle;
       QString mLastProgressMessage;
       qreal mLastProgressValue = 0;
@@ -56,6 +60,8 @@ namespace SigDigger {
       void setProgress(qreal, QString);
       QString progressMessage(void) const;
       qreal progressValue(void) const;
+      QDateTime creationTime(void) const;
+      qreal processingRate(void) const;
   };
 
   class MultitaskController : public QObject
@@ -82,7 +88,7 @@ namespace SigDigger {
           QString const &);
       void getTaskVector(QVector<CancellableTaskContext *> &) const;
       void cancelAll(void);
-
+      void cancelByIndex(int);
       void cleanup(void);
 
     signals:

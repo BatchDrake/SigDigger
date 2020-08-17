@@ -29,8 +29,10 @@ namespace SigDigger {
 
     qreal prog;
     QString status;
+    quint64 dataSize = 0;
 
   protected:
+    void setDataSize(quint64);
     void setProgress(qreal progress);
     void setStatus(QString status);
 
@@ -51,6 +53,12 @@ namespace SigDigger {
     getProgress(void) const
     {
       return prog;
+    }
+
+    quint64
+    getDataSize(void) const
+    {
+      return this->dataSize;
     }
 
     static void assertTypeRegistration(void);

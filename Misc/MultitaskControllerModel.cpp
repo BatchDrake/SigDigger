@@ -16,7 +16,8 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include "include/MultitaskControllerModel.h"
+#include <MultitaskControllerModel.h>
+#include <SuWidgetsHelpers.h>
 #include <cmath>
 
 using namespace SigDigger;
@@ -56,12 +57,6 @@ MultitaskControllerModel::connectAll(void)
         this->controller,
         SIGNAL(taskError(int, QString)),
         this,
-        SLOT(onListChanged(void)));
-
-  connect(
-        this->controller,
-        SIGNAL(taskError(int, QString)),
-        this,
         SLOT(onError(int, QString)));
 
   connect(
@@ -80,7 +75,7 @@ MultitaskControllerModel::rowCount(const QModelIndex &) const
 int
 MultitaskControllerModel::columnCount(const QModelIndex &) const
 {
-  return 4;
+  return 6;
 }
 
 QVariant
@@ -98,12 +93,23 @@ MultitaskControllerModel::data(const QModelIndex &index, int role) const
         return ctx->title();
 
       case 1:
-        return ctx->progressMessage();
+        return ctx->creationTime().toString();
 
       case 2:
-        return QString::number(std::round(ctx->progressValue() * 100)) + "%";
+        return ctx->progressMessage();
 
       case 3:
+        return ctx->processingRate() > 0.
+            ? SuWidgetsHelpers::formatQuantityNearest(
+                ctx->processingRate(),
+                2,
+                "sp/s")
+            : "N/A";
+
+      case 4:
+        return ctx->progressValue();
+
+      case 5:
         return QString("Cancel");
     }
   }
@@ -115,9 +121,15 @@ QVariant
 MultitaskControllerModel::headerData(int s, Qt::Orientation hor, int role) const
 {
   if (hor == Qt::Horizontal && role == Qt::DisplayRole) {
-    const char *headers[] = {"Title", "Status", "Progress", "Actions"};
+    const char *headers[] = {
+      "Description",
+      "Creation time",
+      "Status",
+      "Rate",
+      "Progress",
+      "Actions"};
 
-    if (s >= 0 && s < 4)
+    if (s >= 0 && s < 6)
       return headers[s];
   }
 
@@ -129,6 +141,7 @@ void
 MultitaskControllerModel::onListChanged(void)
 {
   this->controller->getTaskVector(this->taskVec);
+  this->controller->cleanup();
   emit layoutChanged();
 }
 
@@ -136,6 +149,8 @@ void
 MultitaskControllerModel::onError(int index, QString message)
 {
   emit taskError(taskVec[index]->title(), message);
+  this->controller->getTaskVector(this->taskVec);
+  emit layoutChanged();
 }
 
 void

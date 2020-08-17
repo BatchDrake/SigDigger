@@ -49,6 +49,12 @@ CancellableTask::setProgress(qreal progress)
 }
 
 void
+CancellableTask::setDataSize(quint64 size)
+{
+  this->dataSize = size;
+}
+
+void
 CancellableTask::setStatus(QString status)
 {
   this->status = status;

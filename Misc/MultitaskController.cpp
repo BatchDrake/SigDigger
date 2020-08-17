@@ -27,7 +27,8 @@ CancellableTaskContext::CancellableTaskContext(
   this->mThread = new QThread;
   this->mTask  = task;
   this->mTitle = title;
-
+  this->mCreationTime = QDateTime::currentDateTime();
+  this->mLastUpdate = this->mCreationTime;
   this->connectAll();
 
   task->moveToThread(this->mThread);
@@ -87,11 +88,29 @@ CancellableTaskContext::task(void) const
   return this->mTask;
 }
 
+QDateTime
+CancellableTaskContext::creationTime(void) const
+{
+  return this->mCreationTime;
+}
+
+qreal
+CancellableTaskContext::processingRate(void) const
+{
+  return this->mRate;
+}
+
 void
 CancellableTaskContext::setProgress(qreal value, QString message)
 {
+  QDateTime now = QDateTime::currentDateTime();
+  qint64 elapsed = this->mLastUpdate.msecsTo(now);
+  qreal delta = value - this->mLastProgressValue;
+
+  this->mLastUpdate          = now;
   this->mLastProgressValue   = value;
   this->mLastProgressMessage = message;
+  this->mRate = 1e3 * this->mTask->getDataSize() * (delta / elapsed);
 }
 
 QString
@@ -220,6 +239,13 @@ void
 MultitaskController::cancelAll(void)
 {
   emit cancel();
+}
+
+void
+MultitaskController::cancelByIndex(int index)
+{
+  if (index >= 0 && index < this->taskVec.size())
+    this->taskVec[index]->task()->cancel();
 }
 
 void
