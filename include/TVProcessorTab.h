@@ -86,6 +86,7 @@ namespace SigDigger {
     void onTVBrightnessChanged(void);
     void onTVGammaChanged(void);
     void onTVAspectChanged(void);
+    void onAccumChanged(void);
 
   private:
     Ui::TVProcessorTab *ui;

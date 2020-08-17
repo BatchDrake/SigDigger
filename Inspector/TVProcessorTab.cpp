@@ -88,6 +88,12 @@ TVProcessorTab::connectAll(void)
         SLOT(onToggleTVProcessor(void)));
 
   connect(
+        this->ui->accumButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onAccumChanged(void)));
+
+  connect(
         this->ui->snapshotButton,
         SIGNAL(clicked(bool)),
         this,
@@ -703,3 +709,8 @@ TVProcessorTab::onSaveSnapshot(void)
   }
 }
 
+void
+TVProcessorTab::onAccumChanged(void)
+{
+  this->ui->tvDisplay->setAccumulate(this->ui->accumButton->isChecked());
+}
