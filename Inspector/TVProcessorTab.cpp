@@ -94,6 +94,18 @@ TVProcessorTab::connectAll(void)
         SLOT(onAccumChanged(void)));
 
   connect(
+        this->ui->lpfButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onEnableLPFChanged(void)));
+
+  connect(
+        this->ui->accumSpinBox,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onAccumSpinChanged(void)));
+
+  connect(
         this->ui->snapshotButton,
         SIGNAL(clicked(bool)),
         this,
@@ -713,4 +725,23 @@ void
 TVProcessorTab::onAccumChanged(void)
 {
   this->ui->tvDisplay->setAccumulate(this->ui->accumButton->isChecked());
+  this->ui->lpfButton->setEnabled(this->ui->accumButton->isChecked());
+  this->onEnableLPFChanged();
 }
+
+void
+TVProcessorTab::onEnableLPFChanged(void)
+{
+  this->ui->tvDisplay->setEnableSPLPF(this->ui->lpfButton->isChecked());
+  this->ui->accumSpinBox->setEnabled(
+        this->ui->lpfButton->isChecked() && this->ui->accumButton->isChecked());
+  this->onAccumSpinChanged();
+}
+
+void
+TVProcessorTab::onAccumSpinChanged(void)
+{
+  this->ui->tvDisplay->setAccumAlpha(
+          SU_SPLPF_ALPHA(this->ui->accumSpinBox->value() / 5.f));
+}
+

@@ -694,7 +694,7 @@ color: white;</string>
               <widget class="QWidget" name="widget" native="true">
                <layout class="QGridLayout" name="gridLayout_2">
                 <property name="leftMargin">
-                 <number>0</number>
+                 <number>1</number>
                 </property>
                 <property name="topMargin">
                  <number>0</number>
@@ -708,7 +708,7 @@ color: white;</string>
                 <property name="spacing">
                  <number>0</number>
                 </property>
-                <item row="0" column="0">
+                <item row="1" column="0">
                  <widget class="QPushButton" name="combFilterCheck">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -727,7 +727,23 @@ color: white;</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="2">
+                <item row="2" column="0">
+                 <widget class="QPushButton" name="swapCombFilterButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>&amp;Y/C</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
                  <widget class="QPushButton" name="accumButton">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -759,16 +775,41 @@ color: white;</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="0">
-                 <widget class="QPushButton" name="swapCombFilterButton">
+                <item row="1" column="3">
+                 <widget class="QSpinBox" name="accumSpinBox">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="suffix">
+                   <string> f</string>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="3">
+                 <widget class="QPushButton" name="lpfButton">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>&amp;Y/C</string>
+                   <string>&amp;LPF</string>
                   </property>
                   <property name="checkable">
                    <bool>true</bool>
