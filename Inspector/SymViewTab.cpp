@@ -238,6 +238,7 @@ void
 SymViewTab::setBitsPerSymbol(unsigned int bps)
 {
   this->bps = bps;
+  this->ui->symView->setBitsPerSymbol(bps);
 }
 
 void

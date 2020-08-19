@@ -73,6 +73,7 @@ InspectorPanel::applyConfig(void)
   this->timeWindow->setPaletteOffset(this->panelConfig->paletteOffset);
   this->timeWindow->setPaletteContrast(this->panelConfig->paletteContrast);
   this->ui->frequencySpinBox->setEditable(false);
+  this->ui->frequencySpinBox->setMinimum(-18e9);
   this->ui->triggerSpin->setValue(
         static_cast<qreal>(this->panelConfig->autoSquelchTriggerSNR));
 
