@@ -29,7 +29,7 @@ DISTROOT="$PWD"
 BRANCH=develop
 OSTYPE=`uname -s`
 ARCH=`uname -m`
-RELEASE="0.1.1"
+RELEASE="0.2.0"
 DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
 
 if [ "$OSTYPE" == "Linux" ]; then
@@ -104,11 +104,13 @@ function locate_sdk()
   try "Locating sndfile... " pkg-config sndfile
   try "Locating libxml2..." pkg-config libxml-2.0
   try "Locating FFTW3..." pkg-config fftw3
-  if [ "$OSTYPE" == "Darwin" ]; then
+
+  if ! pkg-config alsa; then
       try "Locating PortAudio..." pkg-config portaudio-2.0
   fi
+
   try "Locating SoapySDR..." pkg-config SoapySDR
-  
+
   if ! pkg-config volk; then
     notice '*** Volk development files not found ***'
     notice '  Although the build will not be stopped because of this, it is extremely'

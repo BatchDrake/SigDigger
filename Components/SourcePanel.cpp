@@ -161,7 +161,7 @@ SourcePanel::connectAll(void)
 QString
 SourcePanel::formatSampleRate(unsigned int rate)
 {
-  return SuWidgetsHelpers::formatQuantityNearest(rate, 3, "sps");
+  return SuWidgetsHelpers::formatQuantityNearest(rate, 3, "sp/s");
 }
 
 void
