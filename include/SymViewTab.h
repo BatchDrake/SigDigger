@@ -21,7 +21,7 @@
 #define SYMVIEWTAB_H
 
 #include <QWidget>
-#include <SuWidgets/Decider.h>
+#include <Decider.h>
 
 namespace Ui {
   class SymViewTab;

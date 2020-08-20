@@ -24,7 +24,7 @@
 #include <fstream>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <SuWidgets/SuWidgetsHelpers.h>
+#include <SuWidgetsHelpers.h>
 #include <MultitaskController.h>
 #include <ExportSamplesTask.h>
 

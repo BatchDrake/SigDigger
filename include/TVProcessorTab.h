@@ -22,7 +22,7 @@
 
 #include <QWidget>
 #include "TVProcessorWorker.h"
-#include <SuWidgets/Decider.h>
+#include <Decider.h>
 
 namespace Ui {
   class TVProcessorTab;

@@ -17,8 +17,8 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include <SuWidgets/ThrottleableWidget.h>
-#include <SuWidgets/SuWidgetsHelpers.h>
+#include <ThrottleableWidget.h>
+#include <SuWidgetsHelpers.h>
 #include <QMessageBox>
 #include <QFileDialog>
 
