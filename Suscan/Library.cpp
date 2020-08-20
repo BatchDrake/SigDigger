@@ -18,6 +18,7 @@
 //
 
 #include <Suscan/Library.h>
+#include <Suscan/MultitaskController.h>
 #include <analyzer/version.h>
 
 using namespace Suscan;
@@ -34,12 +35,14 @@ Singleton::Singleton()
   this->spectrum_sources_initd = false;
   this->inspectors_initd = false;
 
+  this->backgroundTaskController = new MultitaskController;
+
   this->logger = Logger::getInstance();
 }
 
 Singleton::~Singleton()
 {
-
+  this->killBackgroundTaskController();
 }
 
 Singleton *
@@ -327,6 +330,15 @@ Singleton::syncUI(void)
 }
 
 void
+Singleton::killBackgroundTaskController(void)
+{
+  if (this->backgroundTaskController != nullptr) {
+    delete this->backgroundTaskController;
+    this->backgroundTaskController = nullptr;
+  }
+}
+
+void
 Singleton::sync(void)
 {
   this->syncRecent();
@@ -343,6 +355,12 @@ Singleton::registerSourceConfig(suscan_source_config_t *config)
     label = "(Null profile)";
 
   this->profiles[label] = Suscan::Source::Config(config);
+}
+
+MultitaskController *
+Singleton::getBackgroundTaskController(void) const
+{
+  return this->backgroundTaskController;
 }
 
 ConfigMap::const_iterator

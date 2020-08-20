@@ -16,11 +16,11 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include <CancellableTask.h>
+#include <Suscan/CancellableTask.h>
 
-using namespace SigDigger;
+using namespace Suscan;
 
-Q_DECLARE_METATYPE(SigDigger::CancellableTask *);
+Q_DECLARE_METATYPE(Suscan::CancellableTask *);
 static bool typesRegistered = false;
 
 ////////////////////////////// CancellableTask /////////////////////////////////
@@ -38,7 +38,7 @@ void
 CancellableTask::assertTypeRegistration(void)
 {
   if (!typesRegistered) {
-    qRegisterMetaType<SigDigger::CancellableTask *>();
+    qRegisterMetaType<Suscan::CancellableTask *>();
     typesRegistered = true;
   }
 }

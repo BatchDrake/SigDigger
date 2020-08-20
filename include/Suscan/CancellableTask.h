@@ -22,7 +22,7 @@
 #include <QObject>
 #include <QThread>
 
-namespace SigDigger {
+namespace Suscan {
   class CancellableTask : public QObject
   {
     Q_OBJECT

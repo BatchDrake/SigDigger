@@ -19,11 +19,11 @@
 #ifndef DopplerCalculator_H
 #define DopplerCalculator_H
 
-#include "CancellableTask.h"
+#include <Suscan/CancellableTask.h>
 #include <sigutils/types.h>
 
 namespace SigDigger {
-  class DopplerCalculator : public CancellableTask {
+  class DopplerCalculator : public Suscan::CancellableTask {
     Q_OBJECT
 
     enum State {

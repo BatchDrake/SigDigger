@@ -13,15 +13,12 @@ namespace Ui {
 }
 
 namespace SigDigger {
-  class MultitaskController;
-
   class WaveformTab : public QWidget
   {
     Q_OBJECT
 
     qreal fs = 1;
     std::vector<SUCOMPLEX> buffer;
-    MultitaskController *mtController = nullptr;
 
     bool recording = false;
 
@@ -53,8 +50,7 @@ namespace SigDigger {
     explicit WaveformTab(QWidget *parent = 0);
     ~WaveformTab();
 
-    void setThrottleControl(ThrottleControl *);    
-    void setMultitaskController(MultitaskController *);
+    void setThrottleControl(ThrottleControl *);
     void setSampleRate(qreal);
     void setColorConfig(ColorConfig const &cfg);
     void setPalette(std::string const &name);

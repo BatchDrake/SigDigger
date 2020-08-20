@@ -19,11 +19,11 @@
 #ifndef CARRIERDETECTOR_H
 #define CARRIERDETECTOR_H
 
-#include "CancellableTask.h"
+#include <Suscan/CancellableTask.h>
 #include <sigutils/types.h>
 
 namespace SigDigger {
-  class CarrierDetector : public CancellableTask {
+  class CarrierDetector : public Suscan::CancellableTask {
     Q_OBJECT
 
     enum State {

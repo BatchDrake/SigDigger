@@ -54,6 +54,8 @@ runSigDigger(QApplication &app)
 
   ret = app.exec();
 
+  Suscan::Singleton::get_instance()->killBackgroundTaskController();
+
   std::cout << "Saving config..." << std::endl;
 
   loader.saveConfig();

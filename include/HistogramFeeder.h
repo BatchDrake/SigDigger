@@ -19,13 +19,13 @@
 #ifndef HISTOGRAMFEEDER_H
 #define HISTOGRAMFEEDER_H
 
-#include "CancellableTask.h"
+#include <Suscan/CancellableTask.h>
 #include "SamplingProperties.h"
 
 #define SIGDIGGER_HISTOGRAM_FEEDER_BLOCK_LENGTH 4096
 
 namespace SigDigger {
-  class HistogramFeeder : public CancellableTask {
+  class HistogramFeeder : public Suscan::CancellableTask {
     Q_OBJECT
 
     SamplingProperties properties;

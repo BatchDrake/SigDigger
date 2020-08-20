@@ -63,8 +63,6 @@ namespace SigDigger {
 
     // UI objects
     Ui::InspectorPanel *ui = nullptr;
-    MultitaskController *mtController = nullptr;
-
     // TODO: Allow multiple TimeWindows
     TimeWindow *timeWindow = nullptr;
     qreal timeWindowFs = 1;
@@ -105,7 +103,6 @@ namespace SigDigger {
     void postLoadInit(void);
     ~InspectorPanel() override;
 
-    void setMultitaskController(MultitaskController *);
     void setColorConfig(ColorConfig const &);
     void setDemodFrequency(qint64);
     void setBandwidthLimits(unsigned int min, unsigned int max);

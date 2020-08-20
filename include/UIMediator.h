@@ -64,9 +64,6 @@ namespace SigDigger {
     State state = HALTED;
     bool settingRanges = false;
 
-    // Background tasks
-    MultitaskController *mtController = nullptr;
-
     // Private methods
     void connectMainWindow(void);
     void connectSpectrum(void);

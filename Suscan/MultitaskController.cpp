@@ -16,9 +16,9 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include <MultitaskController.h>
+#include <Suscan/MultitaskController.h>
 
-using namespace SigDigger;
+using namespace Suscan;
 
 CancellableTaskContext::CancellableTaskContext(
     CancellableTask *task,

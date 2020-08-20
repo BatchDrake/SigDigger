@@ -24,7 +24,7 @@ using namespace SigDigger;
 
 MultitaskControllerModel::MultitaskControllerModel(
     QObject *parent,
-    MultitaskController *ctl) : QAbstractTableModel(parent)
+    Suscan::MultitaskController *ctl) : QAbstractTableModel(parent)
 {
   this->controller = ctl;
   ctl->getTaskVector(this->taskVec);
@@ -82,7 +82,7 @@ QVariant
 MultitaskControllerModel::data(const QModelIndex &index, int role) const
 {
   if (role == Qt::DisplayRole) {
-    CancellableTaskContext *ctx;
+    Suscan::CancellableTaskContext *ctx;
     if (index.row() < 0 || index.row() >= this->taskVec.size())
       return QVariant();
 

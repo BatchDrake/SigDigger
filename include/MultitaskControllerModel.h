@@ -20,20 +20,22 @@
 #define MULTITASKCONTROLLERMODEL_H
 
 #include <QAbstractTableModel>
-#include <MultitaskController.h>
+#include <Suscan/MultitaskController.h>
 
 namespace SigDigger {
   class MultitaskControllerModel : public QAbstractTableModel
   {
       Q_OBJECT
 
-      MultitaskController *controller;
-      QVector<CancellableTaskContext *> taskVec;
+      Suscan::MultitaskController *controller;
+      QVector<Suscan::CancellableTaskContext *> taskVec;
 
       void connectAll(void);
 
     public:
-      MultitaskControllerModel(QObject *parent, MultitaskController *ctl);
+      MultitaskControllerModel(
+          QObject *parent,
+          Suscan::MultitaskController *ctl);
 
       int rowCount(const QModelIndex &) const override;
       int columnCount(const QModelIndex &) const override;
