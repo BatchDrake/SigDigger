@@ -43,6 +43,7 @@ FftPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(zoom);
   LOAD(rangeLock);
   LOAD(timeSpan);
+  LOAD(timeStamps);
 }
 
 Suscan::Object &&
@@ -64,6 +65,7 @@ FftPanelConfig::serialize(void)
   STORE(zoom);
   STORE(rangeLock);
   STORE(timeSpan);
+  STORE(timeStamps);
 
   return this->persist(obj);
 }
@@ -92,6 +94,7 @@ FftPanel::applyConfig(void)
   this->setPeakDetect(savedConfig.peakDetect);
   this->setRangeLock(savedConfig.rangeLock);
   this->setTimeSpan(savedConfig.timeSpan);
+  this->setTimeStamps(savedConfig.timeStamps);
 }
 
 void
@@ -169,6 +172,12 @@ FftPanel::connectAll(void)
         SIGNAL(clicked(bool)),
         this,
         SLOT(onPeakChanged(void)));
+
+  connect(
+        this->ui->timeStampsButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onTimeStampsChanged(void)));
 
   connect(
         this->ui->windowCombo,
@@ -443,6 +452,12 @@ FftPanel::getRangeLock(void) const
   return this->ui->lockButton->isChecked();
 }
 
+bool
+FftPanel::getTimeStamps(void) const
+{
+  return this->ui->timeStampsButton->isChecked();
+}
+
 enum Suscan::AnalyzerParams::WindowFunction
 FftPanel::getWindowFunction(void) const
 {
@@ -574,6 +589,13 @@ FftPanel::setPeakDetect(bool detect)
 {
   this->ui->detectPeakButton->setChecked(detect);
   this->panelConfig->peakDetect = detect;
+}
+
+void
+FftPanel::setTimeStamps(bool value)
+{
+  this->ui->timeStampsButton->setChecked(value);
+  this->panelConfig->timeStamps = value;
 }
 
 void
@@ -711,4 +733,11 @@ void
 FftPanel::onWindowFunctionChanged(void)
 {
   emit windowFunctionChanged();
+}
+
+void
+FftPanel::onTimeStampsChanged(void)
+{
+  this->setTimeStamps(this->getTimeStamps());
+  emit timeStampsChanged();
 }

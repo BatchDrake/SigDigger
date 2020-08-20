@@ -253,6 +253,7 @@ namespace SigDigger {
     void onWindowFunctionChanged(void);
     void onRefreshRateChanged(void);
     void onTimeSpanChanged(void);
+    void onTimeStampsChanged(void);
 
     // Audio panel
     void onAudioChanged(void);

@@ -775,6 +775,7 @@ UIMediator::applyConfig(void)
   this->onAveragerChanged();
   this->onThrottleConfigChanged();
   this->onTimeSpanChanged();
+  this->onTimeStampsChanged();
 }
 
 UIMediator::~UIMediator()
