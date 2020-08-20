@@ -47,6 +47,18 @@ InspectorCtl::getConfig(void) const
 }
 
 void
+InspectorCtl::setSampleRate(float rate)
+{
+  this->mSampleRate = rate;
+}
+
+float
+InspectorCtl::sampleRate(void) const
+{
+  return this->mSampleRate;
+}
+
+void
 InspectorCtl::refreshEntry(std::string const &name, qreal val)
 {
   const Suscan::FieldValue *fv;

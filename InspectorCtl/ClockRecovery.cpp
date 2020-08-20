@@ -53,6 +53,9 @@ ClockRecovery::applicable(QString const &key)
 void
 ClockRecovery::refreshUi(void)
 {
+  if (this->sampleRate() > 0)
+    this->ui->baudRateSpin->setMaximum(this->sampleRate());
+
   this->ui->baudRateSpin->setValue(this->getFloat("clock.baud"));
   this->ui->startButton->setChecked(this->getBoolean("clock.running"));
   this->ui->gainSpin->setValue(this->getFloat("clock.gain"));

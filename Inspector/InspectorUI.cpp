@@ -172,16 +172,16 @@ InspectorUI::setSampleRate(float rate)
   this->sampleRate = rate;
   this->ui->sampleRateLabel->setText(
         "Sample rate: "
-        + QString::number(static_cast<qreal>(rate))
-        + " sps");
+        + SuWidgetsHelpers::formatQuantityNearest(rate, 3, "sp/s"));
   this->ui->bwLcd->setMin(0);
   this->ui->bwLcd->setMax(static_cast<qint64>(rate));
 
   if (this->config->hasPrefix("fsk"))
     this->ui->histogram->overrideDisplayRange(static_cast<qreal>(rate));
+
+  for (auto p : this->controls)
+    p->setSampleRate(rate);
 }
-
-
 
 void
 InspectorUI::setBandwidth(unsigned int bandwidth)
@@ -199,8 +199,8 @@ InspectorUI::setLo(int lo)
 void
 InspectorUI::refreshInspectorCtls(void)
 {
-  for (auto p = this->controls.begin(); p != this->controls.end(); ++p)
-    (*p)->refreshUi();
+  for (auto p : this->controls)
+    p->refreshUi();
 }
 
 unsigned int
