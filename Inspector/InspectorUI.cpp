@@ -166,7 +166,10 @@ InspectorUI::setSampleRate(float rate)
   this->sampleRate = rate;
   this->ui->sampleRateLabel->setText(
         "Sample rate: "
-        + SuWidgetsHelpers::formatQuantityNearest(rate, 3, "sp/s"));
+        + SuWidgetsHelpers::formatQuantity(
+            static_cast<qreal>(rate),
+            4,
+            "sp/s"));
   this->ui->bwLcd->setMin(0);
   this->ui->bwLcd->setMax(static_cast<qint64>(rate));
 
