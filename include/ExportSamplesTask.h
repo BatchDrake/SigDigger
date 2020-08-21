@@ -19,7 +19,7 @@
 #ifndef EXPORTSAMPLESTASK_H
 #define EXPORTSAMPLESTASK_H
 
-#include <CancellableTask.h>
+#include <Suscan/CancellableTask.h>
 #include <QElapsedTimer>
 #include <sigutils/matfile.h>
 #include <iomanip>
@@ -27,7 +27,7 @@
 #include "SigDiggerHelpers.h"
 
 namespace SigDigger {
-  class ExportSamplesTask : public CancellableTask
+  class ExportSamplesTask : public Suscan::CancellableTask
   {
       Q_OBJECT
 

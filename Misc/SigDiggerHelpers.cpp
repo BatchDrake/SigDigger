@@ -24,8 +24,8 @@
 #include <fstream>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <SuWidgets/SuWidgetsHelpers.h>
-#include <MultitaskController.h>
+#include <SuWidgetsHelpers.h>
+#include <Suscan/MultitaskController.h>
 #include <ExportSamplesTask.h>
 
 #ifndef SIGDIGGER_PKGVERSION
@@ -68,7 +68,7 @@ SigDiggerHelpers::openSaveSamplesDialog(
     qreal fs,
     int start,
     int end,
-    MultitaskController *mt)
+    Suscan::MultitaskController *mt)
 {
   bool done = false;
 
@@ -91,7 +91,6 @@ SigDiggerHelpers::openSaveSamplesDialog(
       QString path = dialog.selectedFiles().first();
       QString filter = dialog.selectedNameFilter();
       ExportSamplesTask *task;
-      QFileInfo info(path);
 
       if (strstr(filter.toStdString().c_str(), ".mat") != nullptr)
         format = "mat";
@@ -99,6 +98,8 @@ SigDiggerHelpers::openSaveSamplesDialog(
         format = "m";
       else
         format = "wav";
+
+      path = SuWidgetsHelpers::ensureExtension(path, format);
 
       task = new ExportSamplesTask(path, format, data, length, fs, start, end);
 
@@ -109,6 +110,8 @@ SigDiggerHelpers::openSaveSamplesDialog(
               "Save samples to file");
         delete task;
       } else {
+        QFileInfo info(path);
+
         // TODO: Decide whether to send to multitask controller or to
         // run in the current thread according to data size.
 

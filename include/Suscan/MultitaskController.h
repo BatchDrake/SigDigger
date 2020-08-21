@@ -20,14 +20,14 @@
 #define MULTITASKCONTROLLER_H
 
 #include <QObject>
-#include "CancellableTask.h"
+#include <Suscan/CancellableTask.h>
 #include <list>
 #include <QMap>
 #include <QVector>
 #include <QThread>
 #include <QDateTime>
 
-namespace SigDigger {
+namespace Suscan {
   //
   // CancellableTaskContext acquires ownership on
   // CancellableTask and the thread in which runs

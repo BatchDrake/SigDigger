@@ -283,8 +283,6 @@ ExportSamplesTask::~ExportSamplesTask(void)
 
   if (this->mf != nullptr)
     su_mat_file_destroy(this->mf);
-
-  printf("Destroyed!\n");
 }
 
 ExportSamplesTask::ExportSamplesTask(

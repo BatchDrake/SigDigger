@@ -19,14 +19,15 @@
 #ifndef CARRIERXLATOR_H
 #define CARRIERXLATOR_H
 
-#include "CancellableTask.h"
+#include <Suscan/CancellableTask.h>
+
 #include <sigutils/types.h>
 #include <sigutils/ncqo.h>
 
 #define SIGDIGGER_CARRIER_XLATOR_BLOCK_LENGTH 4096
 
 namespace SigDigger {
-  class CarrierXlator : public CancellableTask {
+  class CarrierXlator : public Suscan::CancellableTask {
     Q_OBJECT
 
     const SUCOMPLEX *origin = nullptr;

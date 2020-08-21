@@ -37,11 +37,16 @@
 #include <list>
 
 namespace Suscan {
+  class MultitaskController;
+
   typedef std::map<std::string, Source::Config> ConfigMap;
 
   class Singleton {
     static Singleton *instance;
     static Logger *logger;
+
+    // Background tasks
+    MultitaskController *backgroundTaskController = nullptr;
 
     std::vector<Source::Device> devices;
     ConfigMap profiles;
@@ -81,10 +86,13 @@ namespace Suscan {
 
     void sync(void);
 
+    void killBackgroundTaskController(void);
+
     void registerSourceConfig(suscan_source_config_t *config);
 
     void registerSourceDevice(const suscan_source_device_t *dev);
 
+    MultitaskController *getBackgroundTaskController(void) const;
 
     ConfigMap::const_iterator getFirstProfile(void) const;
     ConfigMap::const_iterator getLastProfile(void) const;

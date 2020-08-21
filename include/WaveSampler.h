@@ -19,7 +19,7 @@
 #ifndef WAVESAMPLER_H
 #define WAVESAMPLER_H
 
-#include "CancellableTask.h"
+#include <Suscan/CancellableTask.h>
 #include "SamplingProperties.h"
 #include "Decider.h"
 #include <sigutils/clock.h>
@@ -36,7 +36,7 @@ namespace SigDigger {
     size_t len;
   };
 
-  class WaveSampler : public CancellableTask {
+  class WaveSampler : public Suscan::CancellableTask {
     Q_OBJECT
 
     const Decider *decider;

@@ -22,7 +22,7 @@
 #include <QMainWindow>
 
 #include "SamplingProperties.h"
-#include "CancellableTask.h"
+#include <Suscan/CancellableTask.h>
 #include "ColorConfig.h"
 #include "Palette.h"
 #include "HistogramDialog.h"
@@ -41,8 +41,6 @@ namespace Ui {
 }
 
 namespace SigDigger {
-  class MultitaskController;
-
   class TimeWindow : public QMainWindow
   {
     Q_OBJECT
@@ -58,8 +56,6 @@ namespace SigDigger {
     bool adjusting = false;
     bool firstShow = true;
 
-    MultitaskController *mtController = nullptr;
-
     qreal     fs;
 
     std::vector<SUCOMPLEX> const *data;
@@ -74,7 +70,7 @@ namespace SigDigger {
     SUFREQ    centerFreq;
     SUFLOAT   rms;
 
-    CancellableController taskController;
+    Suscan::CancellableController taskController;
 
     int getPeriodicDivision(void) const;
 
@@ -116,7 +112,6 @@ namespace SigDigger {
 
     void setCenterFreq(SUFREQ center);
     void setData(std::vector<SUCOMPLEX> const &data, qreal fs);
-    void setMultitaskController(MultitaskController *);
     void setPalette(std::string const &);
     void setPaletteOffset(unsigned int);
     void setPaletteContrast(int);

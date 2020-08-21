@@ -22,14 +22,18 @@
 #include <QDialog>
 #include <QStyledItemDelegate>
 #include <QItemDelegate>
+
 namespace Ui {
   class BackgroundTasksDialog;
+}
+
+namespace Suscan {
+  class MultitaskController;
 }
 
 class QSortFilterProxyModel;
 
 namespace SigDigger {
-  class MultitaskController;
   class MultitaskControllerModel;
 
   class ProgressBarDelegate : public QStyledItemDelegate
@@ -70,7 +74,7 @@ namespace SigDigger {
   {
       Q_OBJECT
 
-      MultitaskController *controller = nullptr;
+      Suscan::MultitaskController *controller = nullptr;
       MultitaskControllerModel *model = nullptr;
       QSortFilterProxyModel *proxy = nullptr;
       int prevRows = 0;
@@ -80,7 +84,7 @@ namespace SigDigger {
       explicit BackgroundTasksDialog(QWidget *parent = nullptr);
       ~BackgroundTasksDialog();
 
-      void setController(MultitaskController *);
+      void setController(Suscan::MultitaskController *);
 
     private:
       Ui::BackgroundTasksDialog *ui;

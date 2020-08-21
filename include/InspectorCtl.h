@@ -30,12 +30,18 @@ namespace SigDigger {
 
       bool refreshing = false;
       bool dirty = false;
+      float mSampleRate = 0;
       Suscan::Config *config = nullptr;
+
+    protected:
 
     public:
       Suscan::Config *getConfig(void) const;
       void registerWidget(const QWidget *widget, const char *signal);
       InspectorCtl(QWidget *parent, Suscan::Config *config);
+
+      void setSampleRate(float);
+      float sampleRate(void) const;
 
       void refreshEntry(std::string const &, qreal);
       void refreshEntry(std::string const &, bool);

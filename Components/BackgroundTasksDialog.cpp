@@ -158,7 +158,7 @@ BackgroundTasksDialog::connectAll(void)
 }
 
 void
-BackgroundTasksDialog::setController(MultitaskController *controller)
+BackgroundTasksDialog::setController(Suscan::MultitaskController *controller)
 {
   ButtonDelegate *delegate = new ButtonDelegate(this, "&Cancel");
 

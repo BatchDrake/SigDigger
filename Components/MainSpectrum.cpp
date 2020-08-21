@@ -278,6 +278,12 @@ MainSpectrum::setExpectedRate(int rate)
 }
 
 void
+MainSpectrum::setTimeStamps(bool enabled)
+{
+  this->ui->mainSpectrum->setTimeStampsEnabled(enabled);
+}
+
+void
 MainSpectrum::setColorConfig(ColorConfig const &cfg)
 {
   QString styleSheet =

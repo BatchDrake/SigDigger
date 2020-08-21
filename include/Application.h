@@ -32,8 +32,6 @@
 #include "Scanner.h"
 
 namespace SigDigger {
-  class MultitaskController;
-
   class DeviceDetectWorker : public QObject {
       Q_OBJECT
 

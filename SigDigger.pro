@@ -93,10 +93,10 @@ SOURCES += \
     InspectorCtl/ToneControl.cpp \
     Misc/AutoGain.cpp \
     Misc/Averager.cpp \
-    Misc/CancellableTask.cpp \
     Misc/Palette.cpp \
     Misc/SNREstimator.cpp \
     Misc/SigDiggerHelpers.cpp \
+    Suscan/CancellableTask.cpp \
     Suscan/Messages/ChannelMessage.cpp \
     Suscan/Messages/GenericMessage.cpp \
     Suscan/Messages/InspectorMessage.cpp \
@@ -110,6 +110,7 @@ SOURCES += \
     Suscan/Logger.cpp \
     Suscan/Message.cpp \
     Suscan/MQ.cpp \
+    Suscan/MultitaskController.cpp \
     Suscan/Object.cpp \
     Suscan/Serializable.cpp \
     Suscan/Source.cpp \
@@ -143,7 +144,6 @@ SOURCES += \
     Inspector/TVProcessorTab.cpp \
     Inspector/SymViewTab.cpp \
     Inspector/WaveformTab.cpp \
-    Misc/MultitaskController.cpp \
     Misc/MultitaskControllerModel.cpp \
     Components/BackgroundTasksDialog.cpp \
     Tasks/ExportSamplesTask.cpp
@@ -152,7 +152,6 @@ SOURCES += \
 HEADERS += \
     include/AlsaPlayer.h \
     include/AudioFileSaver.h \
-    include/CancellableTask.h \
     include/CarrierDetector.h \
     include/CarrierXlator.h \
     include/DopplerCalculator.h \
@@ -165,6 +164,7 @@ HEADERS += \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
     include/SigDiggerHelpers.h \
+    include/Suscan/CancellableTask.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \
     include/Suscan/Messages/InspectorMessage.h \
@@ -180,6 +180,7 @@ HEADERS += \
     include/Suscan/Logger.h \
     include/Suscan/Message.h \
     include/Suscan/MQ.h \
+    include/Suscan/MultitaskController.h \
     include/Suscan/Object.h \
     include/Suscan/Serializable.h \
     include/Suscan/Source.h \
@@ -239,7 +240,6 @@ HEADERS += \
     include/TVProcessorTab.h \
     include/SymViewTab.h \
     include/WaveformTab.h \
-    include/MultitaskController.h \
     include/MultitaskControllerModel.h \
     include/BackgroundTasksDialog.h \
     include/ExportSamplesTask.h

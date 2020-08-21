@@ -65,6 +65,12 @@ UIMediator::connectFftPanel(void)
         SIGNAL(windowFunctionChanged(void)),
         this,
         SLOT(onWindowFunctionChanged(void)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(timeStampsChanged(void)),
+        this,
+        SLOT(onTimeStampsChanged(void)));
 }
 
 void
@@ -122,6 +128,12 @@ void
 UIMediator::onTimeSpanChanged(void)
 {
   this->ui->spectrum->setTimeSpan(this->ui->fftPanel->getTimeSpan());
+}
+
+void
+UIMediator::onTimeStampsChanged(void)
+{
+  this->ui->spectrum->setTimeStamps(this->ui->fftPanel->getTimeStamps());
 }
 
 void

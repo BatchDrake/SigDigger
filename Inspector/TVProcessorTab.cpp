@@ -412,6 +412,11 @@ TVProcessorTab::refreshUiState(void)
   this->ui->syncTab->setEnabled(customParamsEnabled);
   this->ui->invertImageCheck->setEnabled(customParamsEnabled);
 
+  this->ui->nonInterlacedRadio->setEnabled(customParamsEnabled);
+  this->ui->fieldOneRadio->setEnabled(customParamsEnabled);
+  this->ui->fieldTwoRadio->setEnabled(customParamsEnabled);
+
+
   if (!customParamsEnabled)
     this->ui->invertImageCheck->setChecked(
         this->ui->invertSyncCheck->isChecked());

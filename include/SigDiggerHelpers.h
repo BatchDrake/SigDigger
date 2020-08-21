@@ -64,7 +64,7 @@ namespace SigDigger {
         qreal fs,
         int start,
         int end,
-        MultitaskController *);
+        Suscan::MultitaskController *);
 
     static SigDiggerHelpers *instance(void);
     int getPaletteIndex(std::string const &) const;
