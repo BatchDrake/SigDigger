@@ -92,9 +92,9 @@ DopplerDialog::setDominantVelocity(qreal vel)
   this->vDom = vel;
 
   this->ui->fDomLabel->setText(
-        SuWidgetsHelpers::formatQuantityNearest(
+        SuWidgetsHelpers::formatQuantityFromDelta(
           vel,
-          2,
+          this->sigmaV > 0 ? this->sigmaV : 5,
           "m/s"));
 
 }
@@ -104,10 +104,7 @@ DopplerDialog::setSigmaV(qreal vel)
   this->sigmaV = vel;
 
   this->ui->sigmaFLabel->setText(
-        SuWidgetsHelpers::formatQuantityNearest(
-          vel,
-          2,
-          "m/s"));
+        SuWidgetsHelpers::formatQuantity(vel, 3, "m/s"));
 }
 
 void
@@ -116,10 +113,7 @@ DopplerDialog::setCenterFreq(qreal freq)
   this->f0 = freq;
 
   this->ui->fcLabel->setText(
-        SuWidgetsHelpers::formatQuantityNearest(
-          freq,
-          2,
-          "Hz"));
+        SuWidgetsHelpers::formatQuantity(freq, 6, "Hz"));
 }
 
 void

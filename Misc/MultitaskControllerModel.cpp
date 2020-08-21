@@ -100,9 +100,9 @@ MultitaskControllerModel::data(const QModelIndex &index, int role) const
 
       case 3:
         return ctx->processingRate() > 0.
-            ? SuWidgetsHelpers::formatQuantityNearest(
+            ? SuWidgetsHelpers::formatQuantity(
                 ctx->processingRate(),
-                2,
+                3,
                 "sp/s")
             : "N/A";
 

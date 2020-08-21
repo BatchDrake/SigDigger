@@ -728,17 +728,17 @@ PanoramicDialog::redrawMeasures(void)
         .5 * (this->freqStart + this->freqEnd));
 
   this->ui->centerLabel->setText(
-        SuWidgetsHelpers::formatQuantityNearest(
+        SuWidgetsHelpers::formatQuantity(
           static_cast<qreal>(
             this->ui->waterfall->getFilterOffset() +
             .5 * (this->freqStart + this->freqEnd)),
-          3,
+          6,
           "Hz"));
 
   this->ui->bwLabel->setText(
-        SuWidgetsHelpers::formatQuantityNearest(
+        SuWidgetsHelpers::formatQuantity(
           static_cast<qreal>(this->ui->waterfall->getFilterBw()),
-          3,
+          6,
           "Hz"));
 
   this->ui->framesLabel->setText(QString::number(this->frames));

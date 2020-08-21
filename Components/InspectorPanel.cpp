@@ -270,7 +270,7 @@ InspectorPanel::resetRawInspector(qreal fs)
   this->ui->hangTimeSpin->setMinimum(std::ceil(1e3 / fs));
   this->data.resize(0);
   this->ui->sampleRateLabel->setText(
-        SuWidgetsHelpers::formatQuantity(fs, "sps"));
+        SuWidgetsHelpers::formatQuantity(fs, "sp/s"));
   this->ui->durationLabel->setText(
         SuWidgetsHelpers::formatQuantity(0, "s"));
   this->ui->memoryLabel->setText(
@@ -281,8 +281,9 @@ void
 InspectorPanel::refreshCaptureInfo(void)
 {
   this->ui->durationLabel->setText(
-        SuWidgetsHelpers::formatQuantity(
+        SuWidgetsHelpers::formatQuantityFromDelta(
           this->data.size() / this->timeWindowFs,
+          1 / this->timeWindowFs,
           "s"));
   this->ui->memoryLabel->setText(
         SuWidgetsHelpers::formatBinaryQuantity(
@@ -431,7 +432,7 @@ InspectorPanel::openTimeWindow(void)
   this->timeWindow->onFit();
 
   this->ui->sampleRateLabel->setText(
-        SuWidgetsHelpers::formatQuantity(0, "sps"));
+        SuWidgetsHelpers::formatQuantity(0, "sp/s"));
   this->ui->durationLabel->setText(
         SuWidgetsHelpers::formatQuantity(0, "s"));
   this->ui->memoryLabel->setText(

@@ -623,7 +623,8 @@ TimeWindow::refreshUi(void)
 
   this->ui->sampleRateLabel->setText(
         QString::number(static_cast<int>(
-          this->ui->realWaveform->getSampleRate())));
+          this->ui->realWaveform->getSampleRate())) +
+        QStringLiteral(" sp/s"));
 
   this->ui->clkRateFrame->setEnabled(
         this->ui->clkManualButton->isChecked()
@@ -656,7 +657,7 @@ TimeWindow::startSampling(void)
 
   this->samplerDialog->show();
   this->notifyTaskRunning(true);
-  this->taskController.process("triggerSampler", ws);
+  this->taskController.process(QStringLiteral("triggerSampler"), ws);
 }
 
 void
@@ -701,21 +702,29 @@ TimeWindow::refreshMeasures(void)
           static_cast<int>(selEnd - selStart));
 
     this->ui->periodLabel->setText(
-          SuWidgetsHelpers::formatQuantity(period, "s"));
+          SuWidgetsHelpers::formatQuantityFromDelta(
+            period,
+            deltaT,
+            "s"));
     this->ui->baudLabel->setText(SuWidgetsHelpers::formatReal(baud));
     this->ui->selStartLabel->setText(
-          SuWidgetsHelpers::formatQuantity(
+          SuWidgetsHelpers::formatQuantityFromDelta(
             this->ui->realWaveform->samp2t(selStart),
-            "s")
+            deltaT,
+            "s",
+            true)
           + " (" + SuWidgetsHelpers::formatReal(selStart) + ")");
     this->ui->selEndLabel->setText(
-          SuWidgetsHelpers::formatQuantity(
+          SuWidgetsHelpers::formatQuantityFromDelta(
             this->ui->realWaveform->samp2t(selEnd),
-            "s")
+            deltaT,
+            "s",
+            true)
           + " (" + SuWidgetsHelpers::formatReal(selEnd) + ")");
     this->ui->selLengthLabel->setText(
-          SuWidgetsHelpers::formatQuantity(
+          SuWidgetsHelpers::formatQuantityFromDelta(
             (selEnd - selStart) * deltaT,
+            deltaT,
             "s")
           + " (" + SuWidgetsHelpers::formatReal(selEnd - selStart) + ")");
   } else {
@@ -733,7 +742,10 @@ TimeWindow::refreshMeasures(void)
   this->ui->lengthLabel->setText(QString::number(length) + " samples");
 
   this->ui->durationLabel->setText(
-        SuWidgetsHelpers::formatQuantity(length * deltaT, "s"));
+        SuWidgetsHelpers::formatQuantityFromDelta(
+          length * deltaT,
+          deltaT,
+          "s"));
 
   this->ui->minILabel->setText(
         SuWidgetsHelpers::formatScientific(SU_C_REAL(min)));
@@ -824,12 +836,12 @@ TimeWindow::TimeWindow(QWidget *parent) :
   this->ui->notchWidthLabel->setFixedWidth(
         SuWidgetsHelpers::getWidgetTextWidth(
           this->ui->notchWidthLabel,
-          "XXXX.XX XHz"));
+          QStringLiteral("XXXX.XX XHz")));
 
   this->ui->averagerSpanLabel->setFixedWidth(
         SuWidgetsHelpers::getWidgetTextWidth(
           this->ui->averagerSpanLabel,
-          "XXXX.XX XHz"));
+          QStringLiteral("XXXX.XX XHz")));
 
   this->ui->realWaveform->setRealComponent(true);
   this->ui->imagWaveform->setRealComponent(false);
@@ -997,7 +1009,11 @@ TimeWindow::onHoverTime(qreal time)
   }
 
   this->ui->positionLabel->setText(
-        SuWidgetsHelpers::formatQuantity(time, "s")
+        SuWidgetsHelpers::formatQuantityFromDelta(
+          time,
+          1 / this->fs,
+          "s",
+          true)
         + " (" + SuWidgetsHelpers::formatReal(samp) + ")");
   this->ui->iLabel->setText(SuWidgetsHelpers::formatScientific(SU_C_REAL(val)));
   this->ui->qLabel->setText(SuWidgetsHelpers::formatScientific(SU_C_IMAG(val)));
@@ -1038,12 +1054,20 @@ TimeWindow::onHoverTime(qreal time)
     SUFREQ ifFreq = this->ui->refFreqSpin->value() - this->centerFreq;
     SUFREQ doppler = -TIME_WINDOW_SPEED_OF_LIGHT / this->centerFreq * (freq - ifFreq);
     this->ui->freqShiftLabel->setText(
-          SuWidgetsHelpers::formatQuantityNearest(freq, 2, "Hz"));
+          SuWidgetsHelpers::formatQuantity(
+            freq,
+            6,
+            QStringLiteral("Hz"),
+            true));
     this->ui->dopplerShiftLabel->setText(
-          SuWidgetsHelpers::formatQuantityNearest(doppler, 2, "m/s"));
+          SuWidgetsHelpers::formatQuantity(
+            doppler,
+            5,
+            QStringLiteral("m/s"),
+            true));
   } else {
-    this->ui->freqShiftLabel->setText("N/A");
-    this->ui->dopplerShiftLabel->setText("N/A");
+    this->ui->freqShiftLabel->setText(QStringLiteral("N/A"));
+    this->ui->dopplerShiftLabel->setText(QStringLiteral("N/A"));
   }
 }
 
@@ -1410,15 +1434,15 @@ TimeWindow::onCarrierSlidersChanged(void)
       / static_cast<qreal>(this->ui->averagerSlider->maximum());
 
   this->ui->notchWidthLabel->setText(
-        SuWidgetsHelpers::formatQuantityNearest(
+        SuWidgetsHelpers::formatQuantity(
           this->fs * notchRelBw,
-          2,
+          6,
           "Hz"));
 
   this->ui->averagerSpanLabel->setText(
-        SuWidgetsHelpers::formatQuantityNearest(
+        SuWidgetsHelpers::formatQuantity(
           this->fs * avgRelBw,
-          2,
+          6,
           "Hz"));
 }
 

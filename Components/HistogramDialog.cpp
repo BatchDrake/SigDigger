@@ -137,14 +137,14 @@ HistogramDialog::refreshUi(void)
       this->ui->histogram->overrideUnits("Hz");
 
       this->ui->rangeLabel->setText(
-            SuWidgetsHelpers::formatQuantityNearest(
+            SuWidgetsHelpers::formatQuantity(
               .5 * this->dummyDecider.getMinimum() / M_PI * this->properties.fs,
-              2,
+              6,
               "Hz")
             + " to "
-            + SuWidgetsHelpers::formatQuantityNearest(
+            + SuWidgetsHelpers::formatQuantity(
               .5 * this->dummyDecider.getMaximum() / M_PI * this->properties.fs,
-              2,
+              6,
               "Hz"));
       break;
   }
@@ -174,20 +174,20 @@ HistogramDialog::refreshUi(void)
     }
 
     this->ui->selRangeLabel->setText(
-          SuWidgetsHelpers::formatQuantityNearest(
+          SuWidgetsHelpers::formatQuantity(
             min,
-            2,
+            5,
             units)
           + " to "
-          + SuWidgetsHelpers::formatQuantityNearest(
+          + SuWidgetsHelpers::formatQuantity(
             max,
-            2,
+            5,
             units));
 
     this->ui->selRangeWidth->setText(
-          SuWidgetsHelpers::formatQuantityNearest(
+          SuWidgetsHelpers::formatQuantity(
             max - min,
-            2,
+            5,
             units));
 
   } else {
