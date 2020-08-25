@@ -430,16 +430,19 @@ TVProcessorTab::refreshUiState(void)
   this->ui->levelTolLabel->setText(
         SuWidgetsHelpers::formatQuantity(
           100 * std::pow(10., this->ui->levelTolSlider->value() / 100.),
+          3,
           ""));
 
   this->ui->timeTolLabel->setText(
         SuWidgetsHelpers::formatQuantity(
           100 * std::pow(10., this->ui->timeTolSlider->value() / 100.),
+          3,
           ""));
 
   this->ui->geomTolLabel->setText(
         SuWidgetsHelpers::formatQuantity(
           100 * std::pow(10., this->ui->geomTolSlider->value() / 100.),
+          3,
           ""));
 
   this->ui->hsyncErrorRangeLabel->setText(

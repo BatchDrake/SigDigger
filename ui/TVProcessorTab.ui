@@ -681,7 +681,7 @@ color: white;</string>
               </widget>
              </item>
              <item row="1" column="1" colspan="3">
-              <widget class="TimeSpinBox" name="linePeriodSpin">
+              <widget class="TimeSpinBox" name="linePeriodSpin" native="true">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -781,7 +781,7 @@ color: white;</string>
                    <bool>false</bool>
                   </property>
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -994,10 +994,10 @@ color: white;</string>
             <property name="tickPosition">
              <enum>QSlider::NoTicks</enum>
             </property>
-            <property name="minimumValue">
+            <property name="minimumValue" stdset="0">
              <number>-800</number>
             </property>
-            <property name="maximumValue">
+            <property name="maximumValue" stdset="0">
              <number>0</number>
             </property>
            </widget>
@@ -1079,7 +1079,7 @@ color: white;</string>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="TimeSpinBox" name="hsyncSpin">
+           <widget class="TimeSpinBox" name="hsyncSpin" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1109,7 +1109,7 @@ color: white;</string>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="TimeSpinBox" name="vsyncSpin">
+           <widget class="TimeSpinBox" name="vsyncSpin" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
