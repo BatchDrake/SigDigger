@@ -476,21 +476,24 @@ WaveformTab::refreshMeasures(void)
     qreal baud = 1 / period;
 
     this->ui->periodLabel->setText(
-          SuWidgetsHelpers::formatQuantity(period, "s"));
+          SuWidgetsHelpers::formatQuantity(period, 4, "s"));
     this->ui->baudLabel->setText(SuWidgetsHelpers::formatReal(baud));
     this->ui->selStartLabel->setText(
           SuWidgetsHelpers::formatQuantity(
             this->ui->realWaveform->samp2t(selStart),
+            4,
             "s")
           + " (" + SuWidgetsHelpers::formatReal(selStart) + ")");
     this->ui->selEndLabel->setText(
           SuWidgetsHelpers::formatQuantity(
             this->ui->realWaveform->samp2t(selEnd),
+            4,
             "s")
           + " (" + SuWidgetsHelpers::formatReal(selEnd) + ")");
     this->ui->selLengthLabel->setText(
           SuWidgetsHelpers::formatQuantity(
             (selEnd - selStart) * deltaT,
+            4,
             "s")
           + " (" + SuWidgetsHelpers::formatReal(selEnd - selStart) + ")");
   } else {
@@ -587,7 +590,7 @@ WaveformTab::onHoverTime(qreal time)
   int length = static_cast<int>(this->getDisplayDataLength());
   qreal samp = this->ui->realWaveform->t2samp(time);
   this->ui->positionLabel->setText(
-        SuWidgetsHelpers::formatQuantity(time, "s")
+        SuWidgetsHelpers::formatQuantity(time, 4, "s")
         + " (" + SuWidgetsHelpers::formatReal(samp) + ")");
 
   if (length > 0) {

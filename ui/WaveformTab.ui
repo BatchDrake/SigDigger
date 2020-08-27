@@ -399,14 +399,14 @@ color: white;</string>
              <height>54</height>
             </size>
            </property>
-           <property name="backgroundColor" stdset="0">
+           <property name="backgroundColor">
             <color>
              <red>29</red>
              <green>29</green>
              <blue>31</blue>
             </color>
            </property>
-           <property name="foregroundColor" stdset="0">
+           <property name="foregroundColor">
             <color>
              <red>255</red>
              <green>255</green>
@@ -928,6 +928,7 @@ color: white;</string>
            <property name="font">
             <font>
              <family>Monospace</family>
+             <pointsize>10</pointsize>
              <weight>50</weight>
              <bold>false</bold>
             </font>
