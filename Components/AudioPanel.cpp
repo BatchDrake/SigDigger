@@ -459,7 +459,7 @@ AudioPanel::getVolume(void) const
 SUFLOAT
 AudioPanel::getMuteableVolume(void) const
 {
-  return this->isMuted() ? 0 : this->getVolume();
+  return this->isMuted() ? -120 : this->getVolume();
 }
 
 bool
@@ -572,7 +572,7 @@ AudioPanel::onMuteToggled(bool)
           ? ":/icons/audio-volume-muted-panel.png"
           : ":/icons/audio-volume-medium-panel.png"));
 
-  emit volumeChanged(this->isMuted());
+  emit volumeChanged(this->getMuteableVolume());
 }
 
 void
