@@ -195,7 +195,9 @@ void
 Application::setAudioInspectorParams(
     unsigned int rate,
     SUFLOAT cutOff,
-    unsigned int demod)
+    unsigned int demod,
+    bool squelch,
+    SUFLOAT squelchLevel)
 {
   if (this->audioConfigured) {
     Suscan::Config cfg(this->audioCfgTemplate);
@@ -203,12 +205,16 @@ Application::setAudioInspectorParams(
     cfg.set("audio.volume", 1.f);
     cfg.set("audio.sample-rate", static_cast<uint64_t>(rate));
     cfg.set("audio.demodulator", static_cast<uint64_t>(demod));
+    cfg.set("audio.squelch", squelch);
+    cfg.set("audio.squelch-level", squelchLevel);
     this->analyzer->setInspectorConfig(this->audioInspHandle, cfg, 0);
     this->assertAudioInspectorLo();
   } else {
-    this->delayedRate    = rate;
-    this->delayedCutOff  = cutOff;
-    this->delayedDemod   = demod;
+    this->delayedRate      = rate;
+    this->delayedCutOff    = cutOff;
+    this->delayedDemod     = demod;
+    this->delayedEnableSql = squelch;
+    this->delayedSqlLevel  = squelchLevel;
   }
 }
 
@@ -287,7 +293,9 @@ Application::openAudio(unsigned int rate)
         this->setAudioInspectorParams(
               this->audioSampleRate,
               this->ui.audioPanel->getCutOff(),
-              this->ui.audioPanel->getDemod() + 1);
+              this->ui.audioPanel->getDemod() + 1,
+              this->ui.audioPanel->getSquelchEnabled(),
+              this->ui.audioPanel->getSquelchLevel());
         opened = true;
       } catch (Suscan::Exception const &e) {
         QMessageBox::critical(
@@ -886,7 +894,9 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
           this->setAudioInspectorParams(
                 this->audioSampleRate,
                 this->delayedCutOff,
-                this->delayedDemod);
+                this->delayedDemod,
+                this->delayedEnableSql,
+                this->delayedSqlLevel);
           break;
 
         case SIGDIGGER_RAW_INSPECTOR_REQID:
@@ -1351,7 +1361,9 @@ Application::onAudioChanged(void)
        this->setAudioInspectorParams(
              this->audioSampleRate,
              this->ui.audioPanel->getCutOff(),
-             this->ui.audioPanel->getDemod() + 1);
+             this->ui.audioPanel->getDemod() + 1,
+             this->ui.audioPanel->getSquelchEnabled(),
+             this->ui.audioPanel->getSquelchLevel());
      } else {
        // Disable audio
        closeAudio();

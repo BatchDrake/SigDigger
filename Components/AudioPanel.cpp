@@ -44,6 +44,9 @@ AudioPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(cutOff);
   LOAD(volume);
   LOAD(savePath);
+  LOAD(squelch);
+  LOAD(amSquelch);
+  LOAD(ssbSquelch);
 }
 
 Suscan::Object &&
@@ -59,6 +62,9 @@ AudioPanelConfig::serialize(void)
   STORE(cutOff);
   STORE(volume);
   STORE(savePath);
+  STORE(squelch);
+  STORE(amSquelch);
+  STORE(ssbSquelch);
 
   return this->persist(obj);
 }
@@ -149,6 +155,18 @@ AudioPanel::connectAll(void)
         SIGNAL(clicked(bool)),
         this,
         SLOT(onRecordStartStop(void)));
+
+  connect(
+        this->ui->sqlButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onToggleSquelch(void)));
+
+  connect(
+        this->ui->sqlLevelSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onSquelchLevelChanged(void)));
 }
 
 void
@@ -170,22 +188,48 @@ AudioPanel::populateRates(void)
 void
 AudioPanel::refreshUi(void)
 {
-  if (this->bandwidth < supportedRates[0]) {
-    this->ui->audioPreviewCheck->setChecked(false);
-    this->ui->audioPreviewCheck->setEnabled(false);
-    this->ui->demodCombo->setEnabled(false);
-    this->ui->sampleRateCombo->setEnabled(false);
-    this->ui->cutoffSlider->setEnabled(false);
-    this->ui->recordStartStopButton->setEnabled(false);
-  } else {
-    bool enabled = this->getEnabled();
-    this->ui->audioPreviewCheck->setEnabled(true);
-    this->ui->demodCombo->setEnabled(enabled);
-    this->ui->sampleRateCombo->setEnabled(enabled);
-    this->ui->cutoffSlider->setEnabled(enabled);
-    this->ui->recordStartStopButton->setEnabled(enabled);
+  bool enabled = this->getEnabled();
+  bool validRate = this->bandwidth >= supportedRates[0];
+
+  this->ui->audioPreviewCheck->setEnabled(validRate);
+  this->ui->demodCombo->setEnabled(enabled && validRate);
+  this->ui->sampleRateCombo->setEnabled(enabled && validRate);
+  this->ui->cutoffSlider->setEnabled(enabled && validRate);
+  this->ui->recordStartStopButton->setEnabled(enabled && validRate);
+
+  this->ui->sqlButton->setEnabled(enabled && validRate);
+  this->ui->sqlLevelSpin->setEnabled(
+        enabled && validRate && this->getDemod() != AudioDemod::FM);
+
+  if (validRate) {
     this->setCutOff(this->panelConfig->cutOff);
     this->setVolume(this->panelConfig->volume);
+  }
+
+  switch (this->getDemod()) {
+    case AudioDemod::AM:
+      this->ui->sqlLevelSpin->setSuffix(" %");
+      this->ui->sqlLevelSpin->setMinimum(0);
+      this->ui->sqlLevelSpin->setMaximum(100);
+      this->ui->sqlLevelSpin->setValue(
+            static_cast<qreal>(this->panelConfig->amSquelch * 100));
+      break;
+
+    case AudioDemod::FM:
+      this->ui->sqlLevelSpin->setSuffix("");
+      this->ui->sqlLevelSpin->setMinimum(0);
+      this->ui->sqlLevelSpin->setMaximum(0);
+      break;
+
+    case AudioDemod::USB:
+    case AudioDemod::LSB:
+      this->ui->sqlLevelSpin->setSuffix(" dB");
+      this->ui->sqlLevelSpin->setMinimum(-120);
+      this->ui->sqlLevelSpin->setMaximum(10);
+      this->ui->sqlLevelSpin->setValue(
+            static_cast<qreal>(
+              SU_POWER_DB(this->panelConfig->ssbSquelch)));
+      break;
   }
 }
 
@@ -229,6 +273,7 @@ AudioPanel::setDemod(enum AudioDemod demod)
 {
   this->panelConfig->demod = AudioPanel::demodToStr(demod);
   this->ui->demodCombo->setCurrentIndex(static_cast<int>(demod));
+  this->refreshUi();
 }
 
 void
@@ -278,6 +323,34 @@ void
 AudioPanel::setMuted(bool muted)
 {
   this->ui->muteButton->setChecked(muted);
+}
+
+void
+AudioPanel::setSquelchEnabled(bool enabled)
+{
+  this->panelConfig->squelch = enabled;
+  this->ui->sqlButton->setChecked(enabled);
+  this->refreshUi();
+}
+
+void
+AudioPanel::setSquelchLevel(SUFLOAT val)
+{
+  switch (this->getDemod()) {
+    case AudioDemod::AM:
+      this->panelConfig->amSquelch = val;
+      break;
+
+    case AudioDemod::USB:
+    case AudioDemod::LSB:
+      this->panelConfig->ssbSquelch = val;
+      break;
+
+    default:
+      break;
+  }
+
+  this->refreshUi();
 }
 
 // Overriden setters
@@ -395,6 +468,31 @@ AudioPanel::isMuted(void) const
   return this->ui->muteButton->isChecked();
 }
 
+bool
+AudioPanel::getSquelchEnabled(void) const
+{
+  return this->ui->sqlButton->isChecked();
+}
+
+SUFLOAT
+AudioPanel::getSquelchLevel(void) const
+{
+  switch (this->getDemod()) {
+    case AudioDemod::AM:
+      return SU_ASFLOAT(this->ui->sqlLevelSpin->value() * 1e-2);
+
+    case AudioDemod::USB:
+    case AudioDemod::LSB:
+      return SU_POWER_MAG(SU_ASFLOAT(this->ui->sqlLevelSpin->value()));
+
+    default:
+      break;
+  }
+
+  return 0;
+}
+
+
 // Overriden getters
 bool
 AudioPanel::getRecordState(void) const
@@ -423,6 +521,7 @@ AudioPanel::applyConfig(void)
   this->setVolume(this->panelConfig->volume);
   this->setDemod(strToDemod(this->panelConfig->demod));
   this->setEnabled(this->panelConfig->enabled);
+  this->setSquelchEnabled(this->panelConfig->squelch);
 
   if (this->panelConfig->savePath.size() > 0)
     this->setRecordSavePath(this->panelConfig->savePath);
@@ -460,7 +559,6 @@ AudioPanel::onVolumeChanged(void)
 
   emit volumeChanged(this->getMuteableVolume());
 }
-
 
 void
 AudioPanel::onMuteToggled(bool)
@@ -512,4 +610,20 @@ AudioPanel::onRecordStartStop(void)
         : "Record");
 
   emit recordStateChanged(this->ui->recordStartStopButton->isChecked());
+}
+
+void
+AudioPanel::onToggleSquelch(void)
+{
+  this->setSquelchEnabled(this->getSquelchEnabled());
+
+  emit changed();
+}
+
+void
+AudioPanel::onSquelchLevelChanged(void)
+{
+  this->setSquelchLevel(this->getSquelchLevel());
+
+  emit changed();
 }

@@ -89,6 +89,8 @@ namespace SigDigger {
     unsigned int delayedRate = 0;
     SUFLOAT delayedCutOff = 0;
     unsigned int delayedDemod = 0;
+    SUFLOAT delayedSqlLevel = 0;
+    bool delayedEnableSql = false;
 
     // Rediscover devices
     QThread *deviceDetectThread;
@@ -112,7 +114,9 @@ namespace SigDigger {
     void setAudioInspectorParams(
         unsigned int rate,
         SUFLOAT cutOff,
-        unsigned int demod);
+        unsigned int demod,
+        bool squelch,
+        SUFLOAT squelchLevel);
     SUFREQ getAudioInspectorLo(void) const;
     SUFREQ getAudioInspectorBandwidth(void) const;
     void   assertAudioInspectorLo(void);

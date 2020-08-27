@@ -37,6 +37,10 @@ namespace SigDigger {
     SUFLOAT cutOff = 15000;
     SUFLOAT volume = -6;
 
+    bool squelch = false;
+    SUFLOAT amSquelch = .1f;
+    SUFLOAT ssbSquelch = 1e-3f;
+
     // Overriden methods
     void deserialize(Suscan::Object const &conf) override;
     Suscan::Object &&serialize(void) override;
@@ -76,6 +80,9 @@ namespace SigDigger {
     void setVolume(SUFLOAT);
     void setMuted(bool);
 
+    void setSquelchEnabled(bool);
+    void setSquelchLevel(SUFLOAT);
+
     // Overriden setters
     void setRecordSavePath(std::string const &) override;
     void setSaveEnabled(bool enabled) override;
@@ -92,6 +99,9 @@ namespace SigDigger {
     SUFLOAT getVolume(void) const;
     bool    isMuted(void) const;
     SUFLOAT getMuteableVolume(void) const;
+
+    bool getSquelchEnabled(void) const;
+    SUFLOAT getSquelchLevel(void) const;
 
     // Overriden getters
     bool getRecordState(void) const override;
@@ -111,6 +121,8 @@ namespace SigDigger {
 
     void onChangeSavePath(void);
     void onRecordStartStop(void);
+    void onToggleSquelch(void);
+    void onSquelchLevelChanged(void);
 
   signals:
     void changed(void);
