@@ -23,8 +23,8 @@
 #include <sigutils/version.h>
 
 #define SIGDIGGER_VERSION_MAJOR 0
-#define SIGDIGGER_VERSION_MINOR 1
-#define SIGDIGGER_VERSION_PATCH 1
+#define SIGDIGGER_VERSION_MINOR 2
+#define SIGDIGGER_VERSION_PATCH 0
 
 // This number is incremented every time a new incompatible iteration of
 // the config file is added.
