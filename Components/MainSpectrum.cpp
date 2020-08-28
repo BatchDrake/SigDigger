@@ -23,6 +23,46 @@
 
 using namespace SigDigger;
 
+namespace SigDigger {
+  class SuscanBookmarkSource : public BookmarkSource {
+    public:
+      virtual QList<BookmarkInfo> getBookmarksInRange(qint64, qint64) override;
+  };
+}
+
+QList<BookmarkInfo>
+SuscanBookmarkSource::getBookmarksInRange(qint64 start, qint64 end)
+{
+  QList<BookmarkInfo> list;
+
+  auto p = Suscan::Singleton::get_instance()->getBookmarkFrom(start);
+
+  while (p != Suscan::Singleton::get_instance()->getLastBookmark()) {
+    try {
+      std::string frequency = p->second.getField("frequency").value();
+      qreal freq;
+
+      // It would not be here if frequency was not valid
+      (void) sscanf(frequency.c_str(), "%lg", &freq);
+
+      if (freq <= end) {
+        BookmarkInfo info;
+        info.name = QString::fromStdString(p->second.getField("name").value());
+        info.frequency = static_cast<qint64>(freq);
+        info.color = QColor(
+              QString::fromStdString(
+                p->second.getField("color").value())).rgb();
+
+        list.push_back(info);
+      }
+
+    } catch (Suscan::Exception const &) { }
+    ++p;
+  }
+
+  return list;
+}
+
 MainSpectrum::MainSpectrum(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::MainSpectrum)
@@ -31,12 +71,19 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   this->connectAll();
   this->setFreqs(0, 0);
   this->setShowFATs(true);
+
+  this->bookmarkSource = new SuscanBookmarkSource();
+
+  this->ui->mainSpectrum->setBookmarkSource(this->bookmarkSource);
+  this->ui->mainSpectrum->setBookmarksEnabled(true);
 }
 
 MainSpectrum::~MainSpectrum()
 {  
   for (auto p : this->FATs)
     delete p;
+
+  delete this->bookmarkSource;
 
   delete ui;
 }
@@ -310,6 +357,12 @@ MainSpectrum::setColorConfig(ColorConfig const &cfg)
   this->ui->mainSpectrum->setFftBgColor(cfg.spectrumBackground);
   this->ui->mainSpectrum->setFftTextColor(cfg.spectrumText);
   this->ui->mainSpectrum->setFilterBoxColor(cfg.filterBox);
+}
+
+void
+MainSpectrum::updateOverlay(void)
+{
+  this->ui->mainSpectrum->updateOverlay();
 }
 
 void

@@ -135,6 +135,9 @@
    <addaction name="actionRun"/>
    <addaction name="separator"/>
    <addaction name="actionSetup"/>
+   <addaction name="actionAddBookmark"/>
+   <addaction name="actionManageBookmarks"/>
+   <addaction name="separator"/>
    <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -291,6 +294,30 @@
   <action name="action_Background_tasks">
    <property name="text">
     <string>&amp;Background tasks</string>
+   </property>
+  </action>
+  <action name="actionAddBookmark">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/bookmark-new.png</normaloff>:/icons/bookmark-new.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add &amp;bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="actionManageBookmarks">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/stock_bookmark.png</normaloff>:/icons/stock_bookmark.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Manage bookmarks</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
    </property>
   </action>
  </widget>

@@ -248,6 +248,30 @@ Singleton::init_fats(void)
 }
 
 void
+Singleton::init_bookmarks(void)
+{
+  unsigned int i, count;
+  ConfigContext ctx("bookmarks");
+  Object list = ctx.listObject();
+  qreal freq;
+
+  ctx.setSave(true);
+
+  count = list.length();
+
+  for (i = 0; i < count; ++i) {
+    try {
+      std::string frequency = list[i].getField("frequency").value();
+      std::string name = list[i].getField("name").value();
+      std::string color = list[i].getField("color").value();
+
+      if (sscanf(frequency.c_str(), "%lg", &freq) == 1 && name.size() > 0)
+        this->bookmarks[static_cast<qint64>(freq)] = list[i];
+    } catch (Suscan::Exception const &) { }
+  }
+}
+
+void
 Singleton::detect_devices(void)
 {
   suscan_source_detect_devices();
@@ -330,6 +354,23 @@ Singleton::syncUI(void)
 }
 
 void
+Singleton::syncBookmarks(void)
+{
+  ConfigContext ctx("bookmarks");
+  Object list = ctx.listObject();
+
+  // Sync all modified configurations
+  for (auto p : this->bookmarks) {
+    if (!this->bookmarks[p.first].isBorrowed()) {
+      try {
+        list.append(this->bookmarks[p.first]);
+      } catch (Suscan::Exception const &) {
+      }
+    }
+  }
+}
+
+void
 Singleton::killBackgroundTaskController(void)
 {
   if (this->backgroundTaskController != nullptr) {
@@ -343,6 +384,7 @@ Singleton::sync(void)
 {
   this->syncRecent();
   this->syncUI();
+  this->syncBookmarks();
 }
 
 // Singleton methods
@@ -392,6 +434,21 @@ Singleton::saveProfile(Suscan::Source::Config const &profile)
   SU_ATTEMPT(
         suscan_source_config_register(
           this->profiles[profile.label()].instance));
+}
+
+void
+Singleton::registerBookmark(
+    std::string const &name,
+    qint64 freq,
+    std::string const &color)
+{
+  Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+
+  obj.set("name", name);
+  obj.set("frequency", static_cast<double>(freq));
+  obj.set("color", color);
+
+  this->bookmarks[freq] = std::move(obj);
 }
 
 void
@@ -488,6 +545,24 @@ std::list<std::string>::const_iterator
 Singleton::getLastRecent(void) const
 {
   return this->recentProfiles.cend();
+}
+
+std::map<qint64,Object>::const_iterator
+Singleton::getFirstBookmark(void) const
+{
+  return this->bookmarks.cbegin();
+}
+
+std::map<qint64,Object>::const_iterator
+Singleton::getLastBookmark(void) const
+{
+  return this->bookmarks.cend();
+}
+
+std::map<qint64,Object>::const_iterator
+Singleton::getBookmarkFrom(qint64 freq) const
+{
+  return this->bookmarks.lower_bound(freq);
 }
 
 bool

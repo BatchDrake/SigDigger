@@ -163,6 +163,7 @@ namespace SigDigger {
     void captureEnd(void);
     void profileChanged();
     void colorsChanged(ColorConfig config);
+    void bookmarkAdded(QString, qint64, QColor);
 
     void frequencyChanged(qint64, qint64);
     void loChanged(qint64);
@@ -223,6 +224,8 @@ namespace SigDigger {
     void onTriggerBandPlan(void);
     void onTriggerLogMessages(void);
     void onTriggerBackgroundTasks(void);
+    void onAddBookmark(void);
+    void onBookmarkAccepted(void);
 
     // Spectrum slots
     void onSpectrumBandwidthChanged(void);

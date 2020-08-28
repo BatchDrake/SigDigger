@@ -146,7 +146,8 @@ SOURCES += \
     Inspector/WaveformTab.cpp \
     Misc/MultitaskControllerModel.cpp \
     Components/BackgroundTasksDialog.cpp \
-    Tasks/ExportSamplesTask.cpp
+    Tasks/ExportSamplesTask.cpp \
+    Components/AddBookmarkDialog.cpp
 
 
 HEADERS += \
@@ -242,7 +243,8 @@ HEADERS += \
     include/WaveformTab.h \
     include/MultitaskControllerModel.h \
     include/BackgroundTasksDialog.h \
-    include/ExportSamplesTask.h
+    include/ExportSamplesTask.h \
+    include/AddBookmarkDialog.h
 
 
 FORMS += \
@@ -281,7 +283,8 @@ FORMS += \
     ui/TVProcessorTab.ui \
     ui/SymViewTab.ui \
     ui/WaveformTab.ui \
-    ui/BackgroundTasksDialog.ui
+    ui/BackgroundTasksDialog.ui \
+    ui/AddBookmarkDialog.ui
 
 !isEmpty(target.path): INSTALLS += target
 

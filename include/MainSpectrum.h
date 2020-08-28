@@ -31,6 +31,7 @@ namespace Ui {
 
 // Does it make sense to turn this into a PersistentWidget, anyways?
 namespace SigDigger {
+  class SuscanBookmarkSource;
   class MainSpectrum : public QWidget
   {
     Q_OBJECT
@@ -52,6 +53,7 @@ namespace SigDigger {
     // UI Objects
     Ui::MainSpectrum *ui = nullptr;
     std::vector<FrequencyAllocationTable *> FATs;
+    SuscanBookmarkSource *bookmarkSource = nullptr;
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
@@ -110,6 +112,7 @@ namespace SigDigger {
     void removeFAT(QString const &name);
     void notifyHalt(void);
     void setFilterSkewness(enum Skewness); // TODO: Return *actual* bw
+    void updateOverlay(void);
 
     // Getters
     bool getThrottling(void) const;

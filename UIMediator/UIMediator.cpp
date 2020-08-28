@@ -260,6 +260,18 @@ UIMediator::connectMainWindow(void)
         SIGNAL(triggered(bool)),
         this,
         SLOT(onTriggerBackgroundTasks(void)));
+
+  connect(
+        this->ui->main->actionAddBookmark,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onAddBookmark(void)));
+
+  connect(
+        this->ui->addBookmarkDialog,
+        SIGNAL(accepted(void)),
+        this,
+        SLOT(onBookmarkAccepted(void)));
 }
 
 UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
@@ -1063,4 +1075,31 @@ void
 UIMediator::onTriggerBackgroundTasks(void)
 {
   this->ui->backgroundTasksDialog->show();
+}
+
+void
+UIMediator::onAddBookmark(void)
+{
+  this->ui->addBookmarkDialog->setFrequencyHint(
+        this->ui->spectrum->getLoFreq() + this->ui->spectrum->getCenterFreq());
+
+  this->ui->addBookmarkDialog->setNameHint(
+        QString::asprintf(
+          "%s signal @ %s",
+          AudioPanel::demodToStr(this->ui->audioPanel->getDemod()).c_str(),
+          SuWidgetsHelpers::formatQuantity(
+            this->ui->spectrum->getLoFreq() + this->ui->spectrum->getCenterFreq(),
+            4,
+            "Hz").toStdString().c_str()));
+
+  this->ui->addBookmarkDialog->show();
+}
+
+void
+UIMediator::onBookmarkAccepted(void)
+{
+  emit bookmarkAdded(
+        this->ui->addBookmarkDialog->name(),
+        this->ui->addBookmarkDialog->frequency(),
+        this->ui->addBookmarkDialog->color());
 }

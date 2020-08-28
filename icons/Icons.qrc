@@ -44,6 +44,8 @@
         <file>dialog-warning.png</file>
         <file>dialog-information.png</file>
         <file>dialog-error.png</file>
+        <file>bookmark-new.png</file>
+        <file>stock_bookmark.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

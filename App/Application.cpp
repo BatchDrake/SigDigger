@@ -565,6 +565,12 @@ Application::connectUI(void)
         SIGNAL(panSpectrumGainChanged(QString, float)),
         this,
         SLOT(onPanSpectrumGainChanged(QString, float)));
+
+  connect(
+        this->mediator,
+        SIGNAL(bookmarkAdded(QString, qint64, QColor)),
+        this,
+        SLOT(onAddBookmark(QString, qint64, QColor)));
 }
 
 void
@@ -1616,3 +1622,13 @@ Application::onScannerUpdated(void)
         SIGDIGGER_SCANNER_SPECTRUM_SIZE);
 }
 
+void
+Application::onAddBookmark(QString name, qint64 frequency, QColor color)
+{
+  Suscan::Singleton::get_instance()->registerBookmark(
+        name.toStdString(),
+        frequency,
+        color.name().toStdString());
+
+  this->ui.spectrum->updateOverlay();
+}

@@ -61,13 +61,13 @@ namespace SigDigger {
     void populateRates(void);
     void refreshUi(void);
 
-    static AudioDemod strToDemod(std::string const &str);
-    static std::string demodToStr(AudioDemod);
-
   protected:
       void setDiskUsage(qreal) override;
 
   public:
+    static AudioDemod strToDemod(std::string const &str);
+    static std::string demodToStr(AudioDemod);
+
     explicit AudioPanel(QWidget *parent = nullptr);
     ~AudioPanel() override;
 

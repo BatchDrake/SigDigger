@@ -45,6 +45,7 @@ AppUI::AppUI(QMainWindow *owner)
   this->panoramicDialog = new PanoramicDialog(owner);
   this->logDialog = new LogDialog(owner);
   this->backgroundTasksDialog = new BackgroundTasksDialog(owner);
+  this->addBookmarkDialog = new AddBookmarkDialog(owner);
 }
 
 void

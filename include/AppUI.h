@@ -37,6 +37,7 @@
 #include "PanoramicDialog.h"
 #include "LogDialog.h"
 #include "BackgroundTasksDialog.h"
+#include "AddBookmarkDialog.h"
 
 namespace SigDigger {
   struct AppUI {
@@ -53,6 +54,7 @@ namespace SigDigger {
     DataSaverUI *dataSaverUI = nullptr;
     LogDialog *logDialog = nullptr;
     BackgroundTasksDialog *backgroundTasksDialog = nullptr;
+    AddBookmarkDialog *addBookmarkDialog = nullptr;
 
     std::map<Suscan::InspectorId, Inspector *> inspectorTable;
     Suscan::InspectorId lastId = 0;

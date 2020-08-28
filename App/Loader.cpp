@@ -51,6 +51,8 @@ InitThread::run()
     sing->init_palettes();
     emit change("Loading frequency tables");
     sing->init_fats();
+    emit change("Loading bookmarks");
+    sing->init_bookmarks();
     emit change("Loading auto gains");
     sing->init_autogains();
     emit change("Loading UI config");

@@ -54,7 +54,9 @@ namespace Suscan {
     std::vector<Object> autoGains;
     std::vector<Object> uiConfig;
     std::vector<Object> FATs;
-    std::list<std::string> recentProfiles;
+
+    std::map<qint64, Object> bookmarks;
+    std::list<std::string>   recentProfiles;
 
     bool codecs_initd;
     bool sources_initd;
@@ -70,6 +72,7 @@ namespace Suscan {
     bool haveFAT(std::string const &name);
     void syncUI(void);
     void syncRecent(void);
+    void syncBookmarks(void);
 
   public:
     void init_codecs(void);
@@ -82,6 +85,7 @@ namespace Suscan {
     void init_autogains(void);
     void init_ui_config(void);
     void init_recent_list(void);
+    void init_bookmarks(void);
     void detect_devices(void);
 
     void sync(void);
@@ -98,6 +102,7 @@ namespace Suscan {
     ConfigMap::const_iterator getLastProfile(void) const;
     Suscan::Source::Config *getProfile(std::string const &name);
     void saveProfile(Suscan::Source::Config const &name);
+    void registerBookmark(std::string const &, qint64 freq, std::string const &);
 
     std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
     std::vector<Source::Device>::const_iterator getLastDevice(void) const;
@@ -116,6 +121,10 @@ namespace Suscan {
 
     std::list<std::string>::const_iterator getFirstRecent(void) const;
     std::list<std::string>::const_iterator getLastRecent(void) const;
+
+    std::map<qint64,Object>::const_iterator getFirstBookmark(void) const;
+    std::map<qint64,Object>::const_iterator getLastBookmark(void) const;
+    std::map<qint64,Object>::const_iterator getBookmarkFrom(qint64 bm) const;
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);
