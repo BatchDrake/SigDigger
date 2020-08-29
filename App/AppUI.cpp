@@ -46,6 +46,7 @@ AppUI::AppUI(QMainWindow *owner)
   this->logDialog = new LogDialog(owner);
   this->backgroundTasksDialog = new BackgroundTasksDialog(owner);
   this->addBookmarkDialog = new AddBookmarkDialog(owner);
+  this->bookmarkManagerDialog = new BookmarkManagerDialog(owner);
 }
 
 void

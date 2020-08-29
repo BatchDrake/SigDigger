@@ -39,7 +39,7 @@ SuscanBookmarkSource::getBookmarksInRange(qint64 start, qint64 end)
 
   while (p != Suscan::Singleton::get_instance()->getLastBookmark()) {
     try {
-      std::string frequency = p->second.getField("frequency").value();
+      std::string frequency = p->getField("frequency").value();
       qreal freq;
 
       // It would not be here if frequency was not valid
@@ -47,11 +47,10 @@ SuscanBookmarkSource::getBookmarksInRange(qint64 start, qint64 end)
 
       if (freq <= end) {
         BookmarkInfo info;
-        info.name = QString::fromStdString(p->second.getField("name").value());
+        info.name = QString::fromStdString(p->getField("name").value());
         info.frequency = static_cast<qint64>(freq);
         info.color = QColor(
-              QString::fromStdString(
-                p->second.getField("color").value())).rgb();
+              QString::fromStdString(p->getField("color").value())).rgb();
 
         list.push_back(info);
       }

@@ -46,30 +46,6 @@ namespace SigDigger {
                  const QModelIndex &index) const;
   };
 
-  class ButtonDelegate : public QItemDelegate
-  {
-      Q_OBJECT
-
-      QString text;
-      bool pressed = false;
-
-  public:
-      ButtonDelegate(QObject *parent, QString);
-      void paint(
-          QPainter *painter,
-          const QStyleOptionViewItem &option,
-          const QModelIndex &index) const;
-
-      bool editorEvent(
-          QEvent *event,
-          QAbstractItemModel *model,
-          const QStyleOptionViewItem &option,
-          const QModelIndex &index);
-
-    signals:
-      void clicked(QModelIndex);
-  };
-
   class BackgroundTasksDialog : public QDialog
   {
       Q_OBJECT

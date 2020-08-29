@@ -226,6 +226,9 @@ namespace SigDigger {
     void onTriggerBackgroundTasks(void);
     void onAddBookmark(void);
     void onBookmarkAccepted(void);
+    void onOpenBookmarkManager(void);
+    void onJumpToBookmark(qint64);
+    void onBookmarkChanged(void);
 
     // Spectrum slots
     void onSpectrumBandwidthChanged(void);

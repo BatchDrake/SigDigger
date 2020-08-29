@@ -35,6 +35,7 @@
 
 #include <map>
 #include <list>
+#include <QMap>
 
 namespace Suscan {
   class MultitaskController;
@@ -55,7 +56,7 @@ namespace Suscan {
     std::vector<Object> uiConfig;
     std::vector<Object> FATs;
 
-    std::map<qint64, Object> bookmarks;
+    QMap<qint64, Object> bookmarks;
     std::list<std::string>   recentProfiles;
 
     bool codecs_initd;
@@ -122,9 +123,10 @@ namespace Suscan {
     std::list<std::string>::const_iterator getFirstRecent(void) const;
     std::list<std::string>::const_iterator getLastRecent(void) const;
 
-    std::map<qint64,Object>::const_iterator getFirstBookmark(void) const;
-    std::map<qint64,Object>::const_iterator getLastBookmark(void) const;
-    std::map<qint64,Object>::const_iterator getBookmarkFrom(qint64 bm) const;
+    QMap<qint64,Object> const &getBookmarkMap(void) const;
+    QMap<qint64,Object>::const_iterator getFirstBookmark(void) const;
+    QMap<qint64,Object>::const_iterator getLastBookmark(void) const;
+    QMap<qint64,Object>::const_iterator getBookmarkFrom(qint64 bm) const;
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);

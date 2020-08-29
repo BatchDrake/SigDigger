@@ -272,6 +272,24 @@ UIMediator::connectMainWindow(void)
         SIGNAL(accepted(void)),
         this,
         SLOT(onBookmarkAccepted(void)));
+
+  connect(
+        this->ui->main->actionManageBookmarks,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onOpenBookmarkManager(void)));
+
+  connect(
+        this->ui->bookmarkManagerDialog,
+        SIGNAL(frequencySelected(qint64)),
+        this,
+        SLOT(onJumpToBookmark(qint64)));
+
+  connect(
+        this->ui->bookmarkManagerDialog,
+        SIGNAL(bookmarkChanged(void)),
+        this,
+        SLOT(onBookmarkChanged(void)));
 }
 
 UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
@@ -1103,3 +1121,25 @@ UIMediator::onBookmarkAccepted(void)
         this->ui->addBookmarkDialog->frequency(),
         this->ui->addBookmarkDialog->color());
 }
+
+void
+UIMediator::onOpenBookmarkManager(void)
+{
+  this->ui->bookmarkManagerDialog->show();
+}
+
+void
+UIMediator::onJumpToBookmark(qint64 frequency)
+{
+  this->ui->spectrum->setCenterFreq(frequency);
+  this->ui->spectrum->setLoFreq(0);
+
+  this->onFrequencyChanged(frequency);
+}
+
+void
+UIMediator::onBookmarkChanged(void)
+{
+  this->ui->spectrum->updateOverlay();
+}
+

@@ -287,8 +287,7 @@ Application::openAudio(unsigned int rate)
               ch,
               SIGDIGGER_AUDIO_INSPECTOR_REQID);
 
-        this->playBack->setVolume(
-              this->ui.audioPanel->getMuteableVolume() / 100.f);
+        this->playBack->setVolume(this->ui.audioPanel->getMuteableVolume());
 
         this->setAudioInspectorParams(
               this->audioSampleRate,

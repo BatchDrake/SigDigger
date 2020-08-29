@@ -23,12 +23,13 @@
 #include <vector>
 #include <Suscan/Library.h>
 #include <Palette.h>
+#include <QStyledItemDelegate>
+#include <QItemDelegate>
 
 class QComboBox;
 
 namespace SigDigger {
   class MultitaskController;
-
   class SigDiggerHelpers
   {
     std::vector<Palette> palettes;

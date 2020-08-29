@@ -17,9 +17,11 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include "include/AddBookmarkDialog.h"
+#include <AddBookmarkDialog.h>
 #include "ui_AddBookmarkDialog.h"
 #include <QTimer>
+
+using namespace SigDigger;
 
 AddBookmarkDialog::AddBookmarkDialog(QWidget *parent) :
   QDialog(parent),

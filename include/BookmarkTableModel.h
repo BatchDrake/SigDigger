@@ -16,40 +16,39 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef MULTITASKCONTROLLERMODEL_H
-#define MULTITASKCONTROLLERMODEL_H
+#ifndef BOOKMARKTABLEMODEL_H
+#define BOOKMARKTABLEMODEL_H
 
 #include <QAbstractTableModel>
-#include <Suscan/MultitaskController.h>
+#include <Suscan/Library.h>
+#include <QColor>
 
 namespace SigDigger {
-  class MultitaskControllerModel : public QAbstractTableModel
-  {
+  class BookmarkTableModel : public QAbstractTableModel {
       Q_OBJECT
 
-      Suscan::MultitaskController *controller;
-      QVector<Suscan::CancellableTaskContext *> taskVec;
-
-      void connectAll(void);
+      const QMap<qint64,Suscan::Object> *bookmarkPtr;
 
     public:
-      MultitaskControllerModel(
+      BookmarkTableModel(
           QObject *parent,
-          Suscan::MultitaskController *ctl);
+          const QMap<qint64,Suscan::Object> *);
 
       int rowCount(const QModelIndex &) const override;
       int columnCount(const QModelIndex &) const override;
       QVariant data(const QModelIndex &, int) const override;
+      bool setData(
+          const QModelIndex &index,
+          const QVariant &value,
+          int role = Qt::EditRole) override;
+
       QVariant headerData(int, Qt::Orientation, int) const override;
+      void notifyChanged(void);
 
     signals:
-      void taskError(QString, QString);
-
-    public slots:
-      void onListChanged(void);
-      void onError(int, QString);
-      void onProgress(int, qreal, QString);
+      void bookmarkEdited(QString, qint64, QColor);
+      void bookmarkRemoved(qint64);
   };
 }
 
-#endif // MULTITASKCONTROLLERMODEL_H
+#endif // BOOKMARKTABLEMODEL_H

@@ -147,7 +147,10 @@ SOURCES += \
     Misc/MultitaskControllerModel.cpp \
     Components/BackgroundTasksDialog.cpp \
     Tasks/ExportSamplesTask.cpp \
-    Components/AddBookmarkDialog.cpp
+    Components/AddBookmarkDialog.cpp \
+    Misc/BookmarkTableModel.cpp \
+    Components/BookmarkManagerDialog.cpp \
+    Misc/TableDelegates.cpp
 
 
 HEADERS += \
@@ -244,7 +247,10 @@ HEADERS += \
     include/MultitaskControllerModel.h \
     include/BackgroundTasksDialog.h \
     include/ExportSamplesTask.h \
-    include/AddBookmarkDialog.h
+    include/AddBookmarkDialog.h \
+    include/BookmarkTableModel.h \
+    include/BookmarkManagerDialog.h \
+    include/TableDelegates.h
 
 
 FORMS += \
@@ -284,7 +290,8 @@ FORMS += \
     ui/SymViewTab.ui \
     ui/WaveformTab.ui \
     ui/BackgroundTasksDialog.ui \
-    ui/AddBookmarkDialog.ui
+    ui/AddBookmarkDialog.ui \
+    ui/BookmarkManagerDialog.ui
 
 !isEmpty(target.path): INSTALLS += target
 

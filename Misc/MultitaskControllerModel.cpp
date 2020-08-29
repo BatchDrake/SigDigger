@@ -1,5 +1,5 @@
 //
-//    Misc/MultitaskControllerModel.cpp: Table model for Multitask controller
+//    MultitaskControllerModel.cpp: Table model for Multitask controller
 //    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify

@@ -1,5 +1,5 @@
 //
-//    AddBookmarkDialog.h: Description
+//    include/TableDelegates.h: Description
 //    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,37 +16,43 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef ADDBOOKMARKDIALOG_H
-#define ADDBOOKMARKDIALOG_H
+#ifndef TABLEDELEGATES_H
+#define TABLEDELEGATES_H
 
-#include <QDialog>
-
-namespace Ui {
-  class AddBookmarkDialog;
-}
+#include <QStyledItemDelegate>
+#include <QItemDelegate>
 
 namespace SigDigger {
-  class AddBookmarkDialog : public QDialog
+  class ButtonDelegate : public QItemDelegate
   {
       Q_OBJECT
 
-    public:
-      explicit AddBookmarkDialog(QWidget *parent = nullptr);
-      virtual ~AddBookmarkDialog() override;
+      QString text;
+      bool pressed = false;
+      int buttonWidth = 0;
 
-      void setFrequencyHint(qint64 val);
-      void setNameHint(QString const &name);
-      void setColorHint(QColor const &);
+  public:
+      int
+      width(void) const
+      {
+        return this->buttonWidth;
+      }
 
-      qint64 frequency(void) const;
-      QString name(void) const;
-      QColor color(void) const;
+      ButtonDelegate(QObject *parent, QString);
+      void paint(
+          QPainter *painter,
+          const QStyleOptionViewItem &option,
+          const QModelIndex &index) const;
 
-      virtual void showEvent(QShowEvent *event) override;
+      bool editorEvent(
+          QEvent *event,
+          QAbstractItemModel *model,
+          const QStyleOptionViewItem &option,
+          const QModelIndex &index);
 
-    private:
-      Ui::AddBookmarkDialog *ui;
+    signals:
+      void clicked(QModelIndex);
   };
 }
 
-#endif // ADDBOOKMARKDIALOG_H
+#endif // TABLEDELEGATES_H

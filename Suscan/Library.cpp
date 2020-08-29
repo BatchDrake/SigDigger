@@ -361,9 +361,9 @@ Singleton::syncBookmarks(void)
 
   // Sync all modified configurations
   for (auto p : this->bookmarks) {
-    if (!this->bookmarks[p.first].isBorrowed()) {
+    if (!p.isBorrowed()) {
       try {
-        list.append(this->bookmarks[p.first]);
+        list.append(p);
       } catch (Suscan::Exception const &) {
       }
     }
@@ -547,22 +547,28 @@ Singleton::getLastRecent(void) const
   return this->recentProfiles.cend();
 }
 
-std::map<qint64,Object>::const_iterator
+QMap<qint64,Object> const &
+Singleton::getBookmarkMap(void) const
+{
+  return this->bookmarks;
+}
+
+QMap<qint64,Object>::const_iterator
 Singleton::getFirstBookmark(void) const
 {
   return this->bookmarks.cbegin();
 }
 
-std::map<qint64,Object>::const_iterator
+QMap<qint64,Object>::const_iterator
 Singleton::getLastBookmark(void) const
 {
   return this->bookmarks.cend();
 }
 
-std::map<qint64,Object>::const_iterator
+QMap<qint64,Object>::const_iterator
 Singleton::getBookmarkFrom(qint64 freq) const
 {
-  return this->bookmarks.lower_bound(freq);
+  return this->bookmarks.lowerBound(freq);
 }
 
 bool

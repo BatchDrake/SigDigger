@@ -1,5 +1,5 @@
 //
-//    BackgroundTasksDialog.cpp: Description
+//    BackgroundTasksDialog.cpp: Background task manager
 //    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,6 +16,7 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+
 #include <BackgroundTasksDialog.h>
 #include "ui_BackgroundTasksDialog.h"
 
@@ -23,6 +24,7 @@
 #include <QSortFilterProxyModel>
 #include <QMouseEvent>
 #include <QMessageBox>
+#include "TableDelegates.h"
 
 using namespace SigDigger;
 
@@ -57,74 +59,6 @@ ProgressBarDelegate::paint(
             painter);
     }
 }
-
-ButtonDelegate::ButtonDelegate(QObject *parent, QString text)
-    : QItemDelegate(parent)
-{
-  this->text = text;
-}
-
-
-void
-ButtonDelegate::paint(
-    QPainter *painter,
-    const QStyleOptionViewItem &option,
-    const QModelIndex &) const
-{
-  QStyleOptionButton button;
-  QRect r = option.rect; //getting the rect of the cell
-  int x, y, w, h;
-
-  x = r.left(); //the X coordinate
-  y = r.top(); //the Y coordinate
-  w = 70; //button width
-  h = r.height(); //button height
-
-  button.rect = QRect(x, y, w, h);
-  button.text = text;
-  button.state = this->pressed
-      ? QStyle::State_Sunken
-      : QStyle::State_Enabled;
-
-  QApplication::style()->drawControl(
-        QStyle::CE_PushButton,
-        &button,
-        painter);
-}
-
-bool
-ButtonDelegate::editorEvent(
-    QEvent *event,
-    QAbstractItemModel *,
-    const QStyleOptionViewItem &option,
-    const QModelIndex &index)
-{
-  if (event->type() == QEvent::MouseButtonPress) {
-    this->pressed = true;
-  } else if (event->type() == QEvent::FocusOut) {
-    this->pressed = false;
-  } else if (event->type() == QEvent::MouseButtonRelease) {
-    QMouseEvent * e = static_cast<QMouseEvent *>(event);
-    int clickX = e->x();
-    int clickY = e->y();
-
-    QRect r = option.rect; //getting the rect of the cell
-    int x, y, w, h;
-
-    this->pressed = false;
-
-    x = r.left();
-    y = r.top();
-    w = 70;
-    h = r.height();
-
-    if (clickX > x && clickX < x + w && clickY > y && clickY < y + h)
-      emit clicked(index);
-  }
-
-  return true;
-}
-
 
 BackgroundTasksDialog::BackgroundTasksDialog(QWidget *parent) :
   QDialog(parent),
