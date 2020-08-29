@@ -39,18 +39,11 @@ SuscanBookmarkSource::getBookmarksInRange(qint64 start, qint64 end)
 
   while (p != Suscan::Singleton::get_instance()->getLastBookmark()) {
     try {
-      std::string frequency = p->getField("frequency").value();
-      qreal freq;
-
-      // It would not be here if frequency was not valid
-      (void) sscanf(frequency.c_str(), "%lg", &freq);
-
-      if (freq <= end) {
+      if (p->frequency <= end) {
         BookmarkInfo info;
-        info.name = QString::fromStdString(p->getField("name").value());
-        info.frequency = static_cast<qint64>(freq);
-        info.color = QColor(
-              QString::fromStdString(p->getField("color").value())).rgb();
+        info.name = QString::fromStdString(p->name);
+        info.frequency = p->frequency;
+        info.color = QColor(QString::fromStdString(p->color)).rgb();
 
         list.push_back(info);
       }
@@ -74,7 +67,6 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   this->bookmarkSource = new SuscanBookmarkSource();
 
   this->ui->mainSpectrum->setBookmarkSource(this->bookmarkSource);
-  this->ui->mainSpectrum->setBookmarksEnabled(true);
 }
 
 MainSpectrum::~MainSpectrum()
@@ -327,6 +319,14 @@ void
 MainSpectrum::setTimeStamps(bool enabled)
 {
   this->ui->mainSpectrum->setTimeStampsEnabled(enabled);
+  this->ui->mainSpectrum->updateOverlay();
+}
+
+void
+MainSpectrum::setBookmarks(bool enabled)
+{
+  this->ui->mainSpectrum->setBookmarksEnabled(enabled);
+  this->ui->mainSpectrum->updateOverlay();
 }
 
 void

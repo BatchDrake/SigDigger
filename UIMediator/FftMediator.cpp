@@ -71,6 +71,12 @@ UIMediator::connectFftPanel(void)
         SIGNAL(timeStampsChanged(void)),
         this,
         SLOT(onTimeStampsChanged(void)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(bookmarksChanged(void)),
+        this,
+        SLOT(onBookmarksButtonChanged(void)));
 }
 
 void
@@ -134,6 +140,12 @@ void
 UIMediator::onTimeStampsChanged(void)
 {
   this->ui->spectrum->setTimeStamps(this->ui->fftPanel->getTimeStamps());
+}
+
+void
+UIMediator::onBookmarksButtonChanged(void)
+{
+  this->ui->spectrum->setBookmarks(this->ui->fftPanel->getBookmarks());
 }
 
 void

@@ -803,6 +803,7 @@ UIMediator::applyConfig(void)
   this->onThrottleConfigChanged();
   this->onTimeSpanChanged();
   this->onTimeStampsChanged();
+  this->onBookmarksButtonChanged();
 }
 
 UIMediator::~UIMediator()

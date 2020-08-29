@@ -57,7 +57,7 @@ BookmarkManagerDialog::BookmarkManagerDialog(QWidget *parent) :
 
   QHeaderView *headerView = this->ui->bookmarkView->horizontalHeader();
   headerView->setStretchLastSection(false);
-  headerView->setSectionResizeMode(1, QHeaderView::Stretch);
+  headerView->setSectionResizeMode(2, QHeaderView::Stretch);
 
   this->connectAll();
 }
@@ -114,9 +114,16 @@ BookmarkManagerDialog::notifyChanged(void)
 }
 
 void
-BookmarkManagerDialog::onRemoveBookmark(QModelIndex)
+BookmarkManagerDialog::onRemoveBookmark(QModelIndex index)
 {
+  int row = index.row();
+  auto map = &Suscan::Singleton::get_instance()->getBookmarkMap();
 
+  if (row >= 0 && row < map->count()) {
+    Suscan::Bookmark bm = (*map)[map->keys().at(row)];
+    Suscan::Singleton::get_instance()->removeBookmark(bm.frequency);
+    this->notifyChanged();
+  }
 }
 
 void
@@ -127,12 +134,19 @@ BookmarkManagerDialog::onEditAccepted(void)
   QColor newColor = this->editDialog->color();
 
   if (this->editingFrequency == newFrequency) {
+    Suscan::Singleton::get_instance()->replaceBookmark(
+          newName.toStdString(),
+          newFrequency,
+          newColor.name().toStdString());
+  } else {
+    Suscan::Singleton::get_instance()->removeBookmark(this->editingFrequency);
     Suscan::Singleton::get_instance()->registerBookmark(
           newName.toStdString(),
           newFrequency,
           newColor.name().toStdString());
-    this->notifyChanged();
   }
+
+  this->notifyChanged();
 }
 
 void
@@ -142,20 +156,13 @@ BookmarkManagerDialog::onEditBookmark(QModelIndex index)
   int row = index.row();
 
   if (row >= 0 && row < map->count()) {
-    qreal frequency = 0;
-    Suscan::Object object = (*map)[map->keys().at(row)];
+    Suscan::Bookmark bm = (*map)[map->keys().at(row)];
 
-    sscanf(object.getField("frequency").value().c_str(), "%lg", &frequency);
+    this->editingFrequency = bm.frequency;
 
-    this->editingFrequency = static_cast<qint64>(frequency);
-
+    this->editDialog->setNameHint(QString::fromStdString(bm.name));
     this->editDialog->setFrequencyHint(this->editingFrequency);
-    this->editDialog->setColorHint(
-          QColor(
-            QString::fromStdString(object.getField("color").value())));
-    this->editDialog->setNameHint(
-          QString::fromStdString(object.getField("name").value()));
-
+    this->editDialog->setColorHint(QColor(QString::fromStdString(bm.color)));
 
     this->editDialog->show();
   }
@@ -168,12 +175,8 @@ BookmarkManagerDialog::onCellActivated(QModelIndex const &index)
   auto map = &Suscan::Singleton::get_instance()->getBookmarkMap();
 
   if (row >= 0 && row < map->count()) {
-    qreal frequency = 0;
-    Suscan::Object object = (*map)[map->keys().at(row)];
-
-    sscanf(object.getField("frequency").value().c_str(), "%lg", &frequency);
-
-    emit frequencySelected(static_cast<qint64>(frequency));
+    Suscan::Bookmark bm = (*map)[map->keys().at(row)];
+    emit frequencySelected(static_cast<qint64>(bm.frequency));
   }
 }
 

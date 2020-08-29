@@ -261,12 +261,16 @@ Singleton::init_bookmarks(void)
 
   for (i = 0; i < count; ++i) {
     try {
+      Bookmark bm;
       std::string frequency = list[i].getField("frequency").value();
-      std::string name = list[i].getField("name").value();
-      std::string color = list[i].getField("color").value();
+      bm.name = list[i].getField("name").value();
+      bm.color = list[i].getField("color").value();
 
-      if (sscanf(frequency.c_str(), "%lg", &freq) == 1 && name.size() > 0)
-        this->bookmarks[static_cast<qint64>(freq)] = list[i];
+      if (sscanf(frequency.c_str(), "%lg", &freq) == 1 && bm.name.size() > 0) {
+        bm.frequency = static_cast<qint64>(freq);
+        bm.entry = static_cast<int>(i);
+        this->bookmarks[bm.frequency] = bm;
+      }
     } catch (Suscan::Exception const &) { }
   }
 }
@@ -361,9 +365,15 @@ Singleton::syncBookmarks(void)
 
   // Sync all modified configurations
   for (auto p : this->bookmarks.keys()) {
-    if (!this->bookmarks[p].isBorrowed()) {
+    if (this->bookmarks[p].entry == -1) {
       try {
-        list.append(this->bookmarks[p]);
+        Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+
+        obj.set("name", this->bookmarks[p].name);
+        obj.set("frequency", static_cast<double>(this->bookmarks[p].frequency));
+        obj.set("color", this->bookmarks[p].color);
+
+        list.append(std::move(obj));
       } catch (Suscan::Exception const &) {
       }
     }
@@ -437,48 +447,54 @@ Singleton::saveProfile(Suscan::Source::Config const &profile)
 }
 
 void
-Singleton::removeBookmark(qint64 requested)
+Singleton::removeBookmark(qint64 freq)
 {
-  if (this->bookmarks.find(requested) != this->bookmarks.end()) {
-    unsigned int i, count;
-    ConfigContext ctx("bookmarks");
-    Object list = ctx.listObject();
-    qreal freq;
+  if (this->bookmarks.find(freq) != this->bookmarks.end()) {
+    Bookmark bm = this->bookmarks[freq];
+    this->bookmarks.remove(freq);
 
-    ctx.setSave(true);
-
-    count = list.length();
-
-    for (i = 0; i < count; ++i) {
-      try {
-        std::string frequency = list[i].getField("frequency").value();
-        std::string name = list[i].getField("name").value();
-        std::string color = list[i].getField("color").value();
-
-        if (sscanf(frequency.c_str(), "%lg", &freq) == 1)
-          if (static_cast<qint64>(freq) == requested)
-            list.remove(i);
-      } catch (Suscan::Exception const &) { }
+    if (bm.entry != -1) {
+      ConfigContext ctx("bookmarks");
+      Object list = ctx.listObject();
+      list.remove(static_cast<unsigned>(bm.entry));
     }
-
-    this->bookmarks.remove(requested);
   }
 }
 
 void
+Singleton::replaceBookmark(
+    std::string const &name,
+    qint64 freq,
+    std::string const &color)
+{
+  Bookmark bm;
+
+  bm.name      = name;
+  bm.frequency = freq;
+  bm.color     = color;
+
+  this->removeBookmark(freq);
+  this->bookmarks[freq] = bm;
+}
+
+bool
 Singleton::registerBookmark(
     std::string const &name,
     qint64 freq,
     std::string const &color)
 {
-  Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+  if (this->bookmarks.find(freq) != this->bookmarks.end())
+    return false;
 
-  obj.set("name", name);
-  obj.set("frequency", static_cast<double>(freq));
-  obj.set("color", color);
+  Bookmark bm;
 
-  this->removeBookmark(freq);
-  this->bookmarks[freq] = std::move(obj);
+  bm.name      = name;
+  bm.frequency = freq;
+  bm.color     = color;
+
+  this->bookmarks[freq] = bm;
+
+  return true;
 }
 
 void
@@ -577,25 +593,25 @@ Singleton::getLastRecent(void) const
   return this->recentProfiles.cend();
 }
 
-QMap<qint64,Object> const &
+QMap<qint64,Bookmark> const &
 Singleton::getBookmarkMap(void) const
 {
   return this->bookmarks;
 }
 
-QMap<qint64,Object>::const_iterator
+QMap<qint64,Bookmark>::const_iterator
 Singleton::getFirstBookmark(void) const
 {
   return this->bookmarks.cbegin();
 }
 
-QMap<qint64,Object>::const_iterator
+QMap<qint64,Bookmark>::const_iterator
 Singleton::getLastBookmark(void) const
 {
   return this->bookmarks.cend();
 }
 
-QMap<qint64,Object>::const_iterator
+QMap<qint64,Bookmark>::const_iterator
 Singleton::getBookmarkFrom(qint64 freq) const
 {
   return this->bookmarks.lowerBound(freq);

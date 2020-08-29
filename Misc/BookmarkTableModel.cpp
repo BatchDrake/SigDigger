@@ -25,7 +25,7 @@ using namespace SigDigger;
 
 BookmarkTableModel::BookmarkTableModel(
     QObject *parent,
-    const QMap<qint64,Suscan::Object> *map) : QAbstractTableModel(parent)
+    const QMap<qint64,Suscan::Bookmark> *map) : QAbstractTableModel(parent)
 {
   this->bookmarkPtr = map;
 }
@@ -47,57 +47,43 @@ BookmarkTableModel::columnCount(const QModelIndex &) const
 QVariant
 BookmarkTableModel::data(const QModelIndex &index, int role) const
 {
-  qreal frequency = 0;
-
   if (index.row() < 0 || index.row() >= this->bookmarkPtr->count())
     return QVariant();
 
-  Suscan::Object object =
+  Suscan::Bookmark bookmark =
       (*this->bookmarkPtr)[this->bookmarkPtr->keys().at(index.row())];
-
-  sscanf(object.getField("frequency").value().c_str(), "%lg", &frequency);
 
   if (role == Qt::DisplayRole) {
     switch (index.column()) {
       case 0:
-        return static_cast<qint64>(frequency);
+        return SuWidgetsHelpers::formatQuantity(bookmark.frequency, "Hz");
 
       case 1:
-        return QString::fromStdString(object.getField("name").value());
+        return "";
 
       case 2:
-        return "";
+        return QString::fromStdString(bookmark.name);
 
       case 3:
       case 4:
         return QVariant();
     }
   } else if (role == Qt::BackgroundColorRole) {
-    if (index.column() == 2)
-      return QColor(QString::fromStdString(object.getField("color").value()));
+    if (index.column() == 1)
+      return QColor(QString::fromStdString(bookmark.color));
   }
 
   return QVariant();
 }
-
-bool
-BookmarkTableModel::setData(
-    const QModelIndex &index,
-    const QVariant &value,
-    int role)
-{
-  return true;
-}
-
 
 QVariant
 BookmarkTableModel::headerData(int s, Qt::Orientation hor, int role) const
 {
   if (hor == Qt::Horizontal && role == Qt::DisplayRole) {
     const char *headers[] = {
-      "Frequency (Hz)",
-      "Name",
+      "Frequency",
       "Color",
+      "Name",
       "",
     ""};
 

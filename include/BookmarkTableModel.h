@@ -27,21 +27,16 @@ namespace SigDigger {
   class BookmarkTableModel : public QAbstractTableModel {
       Q_OBJECT
 
-      const QMap<qint64,Suscan::Object> *bookmarkPtr;
+      const QMap<qint64,Suscan::Bookmark> *bookmarkPtr;
 
     public:
       BookmarkTableModel(
           QObject *parent,
-          const QMap<qint64,Suscan::Object> *);
+          const QMap<qint64,Suscan::Bookmark> *);
 
       int rowCount(const QModelIndex &) const override;
       int columnCount(const QModelIndex &) const override;
       QVariant data(const QModelIndex &, int) const override;
-      bool setData(
-          const QModelIndex &index,
-          const QVariant &value,
-          int role = Qt::EditRole) override;
-
       QVariant headerData(int, Qt::Orientation, int) const override;
       void notifyChanged(void);
 

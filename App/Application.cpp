@@ -23,6 +23,7 @@
 #include "Application.h"
 
 #include <QMessageBox>
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -1624,10 +1625,21 @@ Application::onScannerUpdated(void)
 void
 Application::onAddBookmark(QString name, qint64 frequency, QColor color)
 {
-  Suscan::Singleton::get_instance()->registerBookmark(
+  if (!Suscan::Singleton::get_instance()->registerBookmark(
         name.toStdString(),
         frequency,
-        color.name().toStdString());
+        color.name().toStdString())) {
+    QMessageBox *mb = new QMessageBox(
+          QMessageBox::Warning,
+          "Cannot create bookmark",
+          "A bookmark already exists for frequency "
+          + SuWidgetsHelpers::formatQuantity(frequency, "Hz. If you wish to "
+          "edit this bookmark use the bookmark manager instead."),
+          QMessageBox::Ok,
+          this);
+    mb->setAttribute(Qt::WA_DeleteOnClose);
+    mb->show();
+  }
 
   this->ui.spectrum->updateOverlay();
 }

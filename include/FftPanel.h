@@ -47,6 +47,7 @@ namespace SigDigger {
 
     bool rangeLock = true;
     bool timeStamps = false;
+    bool bookmarks = true;
 
     std::string palette = "Magma (Feely)";
 
@@ -113,6 +114,7 @@ namespace SigDigger {
     bool getPeakDetect(void) const;
     bool getRangeLock(void) const;
     bool getTimeStamps(void) const;
+    bool getBookmarks(void) const;
 
     enum Suscan::AnalyzerParams::WindowFunction getWindowFunction(void) const;
 
@@ -134,6 +136,8 @@ namespace SigDigger {
     void setRefreshRate(unsigned int);
     void setTimeSpan(unsigned int);
     void setTimeStamps(bool);
+    void setBookmarks(bool);
+
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
 
@@ -155,6 +159,7 @@ namespace SigDigger {
     void onPeakChanged(void);
     void onWindowFunctionChanged(void);
     void onTimeStampsChanged(void);
+    void onBookmarksChanged(void);
 
   signals:
     void paletteChanged(void);
@@ -165,6 +170,7 @@ namespace SigDigger {
     void refreshRateChanged(void);
     void timeSpanChanged(void);
     void timeStampsChanged(void);
+    void bookmarksChanged(void);
   };
 }
 

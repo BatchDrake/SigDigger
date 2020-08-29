@@ -44,6 +44,7 @@ FftPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(rangeLock);
   LOAD(timeSpan);
   LOAD(timeStamps);
+  LOAD(bookmarks);
 }
 
 Suscan::Object &&
@@ -66,6 +67,7 @@ FftPanelConfig::serialize(void)
   STORE(rangeLock);
   STORE(timeSpan);
   STORE(timeStamps);
+  STORE(bookmarks);
 
   return this->persist(obj);
 }
@@ -95,6 +97,7 @@ FftPanel::applyConfig(void)
   this->setRangeLock(savedConfig.rangeLock);
   this->setTimeSpan(savedConfig.timeSpan);
   this->setTimeStamps(savedConfig.timeStamps);
+  this->setBookmarks(savedConfig.bookmarks);
 }
 
 void
@@ -184,6 +187,12 @@ FftPanel::connectAll(void)
         SIGNAL(activated(int)),
         this,
         SLOT(onWindowFunctionChanged(void)));
+
+  connect(
+        this->ui->bookmarksButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onBookmarksChanged(void)));
 }
 
 FftPanel::FftPanel(QWidget *parent) :
@@ -458,6 +467,12 @@ FftPanel::getTimeStamps(void) const
   return this->ui->timeStampsButton->isChecked();
 }
 
+bool
+FftPanel::getBookmarks(void) const
+{
+  return this->ui->bookmarksButton->isChecked();
+}
+
 enum Suscan::AnalyzerParams::WindowFunction
 FftPanel::getWindowFunction(void) const
 {
@@ -596,6 +611,13 @@ FftPanel::setTimeStamps(bool value)
 {
   this->ui->timeStampsButton->setChecked(value);
   this->panelConfig->timeStamps = value;
+}
+
+void
+FftPanel::setBookmarks(bool value)
+{
+  this->ui->bookmarksButton->setChecked(value);
+  this->panelConfig->bookmarks = value;
 }
 
 void
@@ -740,4 +762,11 @@ FftPanel::onTimeStampsChanged(void)
 {
   this->setTimeStamps(this->getTimeStamps());
   emit timeStampsChanged();
+}
+
+void
+FftPanel::onBookmarksChanged(void)
+{
+  this->setBookmarks(this->getBookmarks());
+  emit bookmarksChanged();
 }

@@ -42,6 +42,14 @@ namespace Suscan {
 
   typedef std::map<std::string, Source::Config> ConfigMap;
 
+  struct Bookmark {
+    std::string name;
+    qint64 frequency;
+    std::string color;
+
+    int entry = -1;
+  };
+
   class Singleton {
     static Singleton *instance;
     static Logger *logger;
@@ -56,8 +64,8 @@ namespace Suscan {
     std::vector<Object> uiConfig;
     std::vector<Object> FATs;
 
-    QMap<qint64, Object> bookmarks;
-    std::list<std::string>   recentProfiles;
+    QMap<qint64, Bookmark> bookmarks;
+    std::list<std::string> recentProfiles;
 
     bool codecs_initd;
     bool sources_initd;
@@ -103,7 +111,9 @@ namespace Suscan {
     ConfigMap::const_iterator getLastProfile(void) const;
     Suscan::Source::Config *getProfile(std::string const &name);
     void saveProfile(Suscan::Source::Config const &name);
-    void registerBookmark(std::string const &, qint64 freq, std::string const &);
+    bool registerBookmark(std::string const &, qint64 freq, std::string const &);
+    void replaceBookmark(std::string const &, qint64 freq, std::string const &);
+
     void removeBookmark(qint64);
 
     std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
@@ -124,10 +134,10 @@ namespace Suscan {
     std::list<std::string>::const_iterator getFirstRecent(void) const;
     std::list<std::string>::const_iterator getLastRecent(void) const;
 
-    QMap<qint64,Object> const &getBookmarkMap(void) const;
-    QMap<qint64,Object>::const_iterator getFirstBookmark(void) const;
-    QMap<qint64,Object>::const_iterator getLastBookmark(void) const;
-    QMap<qint64,Object>::const_iterator getBookmarkFrom(qint64 bm) const;
+    QMap<qint64,Bookmark> const &getBookmarkMap(void) const;
+    QMap<qint64,Bookmark>::const_iterator getFirstBookmark(void) const;
+    QMap<qint64,Bookmark>::const_iterator getLastBookmark(void) const;
+    QMap<qint64,Bookmark>::const_iterator getBookmarkFrom(qint64 bm) const;
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);
