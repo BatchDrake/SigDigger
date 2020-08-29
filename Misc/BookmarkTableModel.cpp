@@ -99,3 +99,16 @@ BookmarkTableModel::notifyChanged(void)
 {
   emit layoutChanged();
 }
+
+void
+BookmarkTableModel::notifyRemovalStart(int row)
+{
+  beginRemoveRows(QModelIndex(), row, row);
+}
+
+
+void
+BookmarkTableModel::notifyRemovalFinish(void)
+{
+  endRemoveRows();
+}

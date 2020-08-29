@@ -39,10 +39,11 @@ namespace SigDigger {
       QVariant data(const QModelIndex &, int) const override;
       QVariant headerData(int, Qt::Orientation, int) const override;
       void notifyChanged(void);
+      void notifyRemovalStart(int);
+      void notifyRemovalFinish(void);
 
     signals:
       void bookmarkEdited(QString, qint64, QColor);
-      void bookmarkRemoved(qint64);
   };
 }
 

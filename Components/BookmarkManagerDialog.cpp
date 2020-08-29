@@ -116,13 +116,18 @@ BookmarkManagerDialog::notifyChanged(void)
 void
 BookmarkManagerDialog::onRemoveBookmark(QModelIndex index)
 {
-  int row = index.row();
   auto map = &Suscan::Singleton::get_instance()->getBookmarkMap();
+
+  if (this->ui->bookmarkView->model() == this->proxy)
+    index = this->proxy->mapToSource(index);
+
+  int row = index.row();
 
   if (row >= 0 && row < map->count()) {
     Suscan::Bookmark bm = (*map)[map->keys().at(row)];
+    this->model->notifyRemovalStart(row);
     Suscan::Singleton::get_instance()->removeBookmark(bm.frequency);
-    this->notifyChanged();
+    this->model->notifyRemovalFinish();
   }
 }
 
@@ -153,6 +158,10 @@ void
 BookmarkManagerDialog::onEditBookmark(QModelIndex index)
 {
   auto map = &Suscan::Singleton::get_instance()->getBookmarkMap();
+
+  if (this->ui->bookmarkView->model() == this->proxy)
+    index = this->proxy->mapToSource(index);
+
   int row = index.row();
 
   if (row >= 0 && row < map->count()) {
@@ -171,8 +180,14 @@ BookmarkManagerDialog::onEditBookmark(QModelIndex index)
 void
 BookmarkManagerDialog::onCellActivated(QModelIndex const &index)
 {
-  int row = index.row();
+  QModelIndex copy = index;
+
   auto map = &Suscan::Singleton::get_instance()->getBookmarkMap();
+
+  if (this->ui->bookmarkView->model() == this->proxy)
+    copy = this->proxy->mapToSource(copy);
+
+  int row = copy.row();
 
   if (row >= 0 && row < map->count()) {
     Suscan::Bookmark bm = (*map)[map->keys().at(row)];
