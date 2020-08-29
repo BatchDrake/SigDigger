@@ -360,10 +360,10 @@ Singleton::syncBookmarks(void)
   Object list = ctx.listObject();
 
   // Sync all modified configurations
-  for (auto p : this->bookmarks) {
-    if (!p.isBorrowed()) {
+  for (auto p : this->bookmarks.keys()) {
+    if (!this->bookmarks[p].isBorrowed()) {
       try {
-        list.append(p);
+        list.append(this->bookmarks[p]);
       } catch (Suscan::Exception const &) {
       }
     }
@@ -437,6 +437,35 @@ Singleton::saveProfile(Suscan::Source::Config const &profile)
 }
 
 void
+Singleton::removeBookmark(qint64 requested)
+{
+  if (this->bookmarks.find(requested) != this->bookmarks.end()) {
+    unsigned int i, count;
+    ConfigContext ctx("bookmarks");
+    Object list = ctx.listObject();
+    qreal freq;
+
+    ctx.setSave(true);
+
+    count = list.length();
+
+    for (i = 0; i < count; ++i) {
+      try {
+        std::string frequency = list[i].getField("frequency").value();
+        std::string name = list[i].getField("name").value();
+        std::string color = list[i].getField("color").value();
+
+        if (sscanf(frequency.c_str(), "%lg", &freq) == 1)
+          if (static_cast<qint64>(freq) == requested)
+            list.remove(i);
+      } catch (Suscan::Exception const &) { }
+    }
+
+    this->bookmarks.remove(requested);
+  }
+}
+
+void
 Singleton::registerBookmark(
     std::string const &name,
     qint64 freq,
@@ -448,6 +477,7 @@ Singleton::registerBookmark(
   obj.set("frequency", static_cast<double>(freq));
   obj.set("color", color);
 
+  this->removeBookmark(freq);
   this->bookmarks[freq] = std::move(obj);
 }
 

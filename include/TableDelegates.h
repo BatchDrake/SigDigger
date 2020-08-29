@@ -30,6 +30,7 @@ namespace SigDigger {
       QString text;
       bool pressed = false;
       int buttonWidth = 0;
+      int rowPressed = -1;
 
   public:
       int

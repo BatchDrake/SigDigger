@@ -44,7 +44,7 @@ void
 ButtonDelegate::paint(
     QPainter *painter,
     const QStyleOptionViewItem &option,
-    const QModelIndex &) const
+    const QModelIndex &index) const
 {
   QStyleOptionButton button;
   QRect r = option.rect; //getting the rect of the cell
@@ -56,7 +56,7 @@ ButtonDelegate::paint(
 
   button.rect = QRect(x, y, w, h);
   button.text = text;
-  button.state = this->pressed
+  button.state = this->pressed && index.row() == this->rowPressed
       ? QStyle::State_Sunken
       : QStyle::State_Enabled;
 
@@ -75,6 +75,7 @@ ButtonDelegate::editorEvent(
 {
   if (event->type() == QEvent::MouseButtonPress) {
     this->pressed = true;
+    this->rowPressed = index.row();
   } else if (event->type() == QEvent::FocusOut) {
     this->pressed = false;
   } else if (event->type() == QEvent::MouseButtonRelease) {

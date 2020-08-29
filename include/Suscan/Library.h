@@ -104,6 +104,7 @@ namespace Suscan {
     Suscan::Source::Config *getProfile(std::string const &name);
     void saveProfile(Suscan::Source::Config const &name);
     void registerBookmark(std::string const &, qint64 freq, std::string const &);
+    void removeBookmark(qint64);
 
     std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
     std::vector<Source::Device>::const_iterator getLastDevice(void) const;
