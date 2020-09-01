@@ -700,7 +700,11 @@ TimeWindow::refreshMeasures(void)
             period,
             deltaT,
             "s"));
-    this->ui->baudLabel->setText(SuWidgetsHelpers::formatReal(baud));
+    this->ui->baudLabel->setText(
+      SuWidgetsHelpers::formatQuantity(
+        baud,
+        4,
+        "Hz"));
     this->ui->selStartLabel->setText(
           SuWidgetsHelpers::formatQuantityFromDelta(
             this->ui->realWaveform->samp2t(selStart),
