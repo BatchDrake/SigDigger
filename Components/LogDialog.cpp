@@ -61,9 +61,9 @@ LogDialog::saveLog(QString path)
   for (int i = 0; i < this->msgVec.size(); ++i) {
     fprintf(
           fp,
-          "%ld.%ld,%s,%s,%s:%d,%s",
+          "%ld.%d,%s,%s,%s:%d,%s",
           this->msgVec[i].time.tv_sec,
-          this->msgVec[i].time.tv_usec,
+          static_cast<int>(this->msgVec[i].time.tv_usec),
           su_log_severity_to_string(this->msgVec[i].severity),
           this->msgVec[i].domain.c_str(),
           this->msgVec[i].function.c_str(),
