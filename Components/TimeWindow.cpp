@@ -784,8 +784,14 @@ TimeWindow::setDisplayData(
 {
   this->displayData = displayData;
 
-  this->ui->realWaveform->setData(displayData, keepView);
-  this->ui->imagWaveform->setData(displayData, keepView);
+  if (displayData->size() == 0) {
+    this->ui->realWaveform->setData(nullptr, false);
+    this->ui->imagWaveform->setData(nullptr, false);
+  } else {
+    this->ui->realWaveform->setData(displayData, keepView);
+    this->ui->imagWaveform->setData(displayData, keepView);
+  }
+
 
   this->recalcLimits();
 

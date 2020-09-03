@@ -262,6 +262,7 @@ InspectorPanel::resetRawInspector(qreal fs)
   this->maxSamples = this->ui->maxMemSpin->value() * (1 << 20) / sizeof(SUCOMPLEX);
   this->ui->hangTimeSpin->setMinimum(std::ceil(1e3 / fs));
   this->data.resize(0);
+  this->timeWindow->setData(this->data, this->timeWindowFs);
   this->ui->sampleRateLabel->setText(
         SuWidgetsHelpers::formatQuantity(fs, "sp/s"));
   this->ui->durationLabel->setText(
