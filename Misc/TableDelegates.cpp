@@ -36,7 +36,7 @@ ButtonDelegate::ButtonDelegate(QObject *parent, QString text)
 
   this->text = text;
 
-  this->buttonWidth = fm.width(" " + text + " ");
+  this->buttonWidth = fm.horizontalAdvance(" " + text + " ");
 }
 
 

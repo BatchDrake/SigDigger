@@ -130,7 +130,7 @@ TVProcessorWorker::work(const SUFLOAT *samples, SUSCOUNT size)
     while (size-- > 0) {
       if (su_tv_processor_feed(this->processor, *samples++)) {
         if (!frameSent) {
-          currAck = this->frameAck.load();
+          currAck = this->frameAck.loadRelaxed();
           if (currAck > this->frameCount)
             this->frameCount = currAck;
 
