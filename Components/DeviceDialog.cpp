@@ -39,10 +39,17 @@ DeviceDialog::~DeviceDialog()
 QPixmap
 DeviceDialog::getDeviceIcon(Suscan::Source::Device const &dev)
 {
-  if (!dev.isAvailable())
-    return QPixmap(QString::fromUtf8(":/icons/devices-unavail.png"));
+  QString iconPath = ":/icons/";
+
+  if (dev.isRemote())
+    iconPath += "network-device";
   else
-    return QPixmap(QString::fromUtf8(":/icons/devices.png"));
+    iconPath += "devices";
+
+  if (!dev.isAvailable())
+    iconPath += "-unavail";
+
+  return QPixmap(iconPath + ".png");
 }
 
 void

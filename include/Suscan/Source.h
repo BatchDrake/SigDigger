@@ -174,6 +174,15 @@ namespace Suscan {
     }
 
     bool
+    isRemote(void) const
+    {
+      if (this->instance == nullptr)
+        return false;
+
+      return suscan_source_device_is_remote(this->instance);
+    }
+
+    bool
     isAvailable(void) const
     {
       if (this->instance == nullptr)
