@@ -140,6 +140,7 @@ namespace SigDigger {
     unsigned int getFftSize(void) const;
 
     // Mediated setters
+    void setStatusMessage(QString const &);
     void setRecordState(bool state);
     void setAudioRecordState(bool);
     void setAudioRecordSize(quint64 size);

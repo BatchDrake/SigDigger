@@ -80,10 +80,15 @@ Application::updateRecent(void)
 void
 Application::run(Suscan::Object const &config)
 {
+  Suscan::Singleton *sing = Suscan::Singleton::get_instance();
   this->ui.postLoadInit(this);
 
   this->mediator->loadSerializedConfig(config);
   this->mediator->setState(UIMediator::HALTED);
+
+  // New devices may have been discovered after config deserialization
+  sing->refreshDevices();
+  this->mediator->refreshDevicesDone();
 
   this->connectUI();
   this->connectDeviceDetect();
@@ -602,6 +607,12 @@ Application::connectAnalyzer(void)
 
   connect(
         this->analyzer.get(),
+        SIGNAL(status_message(const Suscan::StatusMessage &)),
+        this,
+        SLOT(onStatusMessage(const Suscan::StatusMessage &)));
+
+  connect(
+        this->analyzer.get(),
         SIGNAL(inspector_message(const Suscan::InspectorMessage &)),
         this,
         SLOT(onInspectorMessage(const Suscan::InspectorMessage &)));
@@ -862,6 +873,11 @@ Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
   }
 }
 
+void
+Application::onStatusMessage(const Suscan::StatusMessage &message)
+{
+  this->mediator->setStatusMessage(message.getMessage());
+}
 
 void
 Application::onInspectorMessage(const Suscan::InspectorMessage &msg)

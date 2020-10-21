@@ -651,6 +651,12 @@ UIMediator::detachAllInspectors()
 }
 
 void
+UIMediator::setStatusMessage(QString const &message)
+{
+  this->ui->main->statusBar->showMessage(message);
+}
+
+void
 UIMediator::setRecordState(bool state)
 {
   this->ui->sourcePanel->setRecordState(state);

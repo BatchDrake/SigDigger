@@ -34,6 +34,7 @@
 #include <Suscan/Messages/InspectorMessage.h>
 #include <Suscan/Messages/PSDMessage.h>
 #include <Suscan/Messages/SamplesMessage.h>
+#include <Suscan/Messages/StatusMessage.h>
 #include <Suscan/Messages/GenericMessage.h>
 
 #include <analyzer/analyzer.h>
@@ -68,6 +69,7 @@ namespace Suscan {
     void psd_message(const Suscan::PSDMessage &message);
     void inspector_message(const Suscan::InspectorMessage &message);
     void samples_message(const Suscan::SamplesMessage &message);
+    void status_message(const Suscan::StatusMessage &message);
     void read_error(void);
     void eos(void);
     void halted(void);

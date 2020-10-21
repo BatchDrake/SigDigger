@@ -115,6 +115,7 @@ namespace Suscan {
     void replaceBookmark(std::string const &, qint64 freq, std::string const &);
 
     void removeBookmark(qint64);
+    void refreshDevices(void);
 
     std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
     std::vector<Source::Device>::const_iterator getLastDevice(void) const;
