@@ -130,7 +130,11 @@ TVProcessorWorker::work(const SUFLOAT *samples, SUSCOUNT size)
     while (size-- > 0) {
       if (su_tv_processor_feed(this->processor, *samples++)) {
         if (!frameSent) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
           currAck = this->frameAck.loadRelaxed();
+#else
+          currAck = this->frameAck.load();
+#endif // QT_VERSION
           if (currAck > this->frameCount)
             this->frameCount = currAck;
 
