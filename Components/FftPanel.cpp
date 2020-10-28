@@ -20,6 +20,7 @@
 #include "FftPanel.h"
 #include "ui_FftPanel.h"
 #include "SigDiggerHelpers.h"
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -353,8 +354,13 @@ FftPanel::updateRbw(void)
   if (this->rate == 0 || this->fftSize == 0) {
     this->ui->rbwLabel->setText("RBW: N/A");
   } else {
-    unsigned int rbw = this->rate / this->fftSize;
-    this->ui->rbwLabel->setText("RBW: " + QString::number(rbw) + " Hz");
+    qreal rbw = static_cast<qreal>(this->rate) / this->fftSize;
+    QString rbwString = SuWidgetsHelpers::formatQuantity(
+          rbw,
+          3,
+          QStringLiteral("Hz"));
+
+    this->ui->rbwLabel->setText("RBW: " + rbwString);
   }
 }
 
