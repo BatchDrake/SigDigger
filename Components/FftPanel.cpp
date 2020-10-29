@@ -357,7 +357,7 @@ FftPanel::updateRbw(void)
     qreal rbw = static_cast<qreal>(this->rate) / this->fftSize;
     QString rbwString = SuWidgetsHelpers::formatQuantity(
           rbw,
-          3,
+          2,
           QStringLiteral("Hz"));
 
     this->ui->rbwLabel->setText("RBW: " + rbwString);
