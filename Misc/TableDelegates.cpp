@@ -35,8 +35,11 @@ ButtonDelegate::ButtonDelegate(QObject *parent, QString text)
   QFontMetrics fm(font);
 
   this->text = text;
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
   this->buttonWidth = fm.horizontalAdvance(" " + text + " ");
+#else
+  this->buttonWidth = fm.width(" " + text + " ");
+#endif // QT_VERSION_CHECK
 }
 
 
