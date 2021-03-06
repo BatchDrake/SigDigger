@@ -34,14 +34,134 @@
 #include <Suscan/Messages/InspectorMessage.h>
 #include <Suscan/Messages/PSDMessage.h>
 #include <Suscan/Messages/SamplesMessage.h>
+#include <Suscan/Messages/SourceInfoMessage.h>
 #include <Suscan/Messages/StatusMessage.h>
 #include <Suscan/Messages/GenericMessage.h>
 
 #include <analyzer/analyzer.h>
 
 namespace Suscan {
-  class Analyzer: public QObject
-  {
+  struct GainInfo {
+    std::string name;
+    SUFLOAT value;
+    SUFLOAT max;
+    GainInfo()
+    {
+
+    }
+
+    GainInfo(const struct suscan_analyzer_gain_info *info)
+    {
+      this->name = info->name;
+      this->value = info->value;
+      this->max = info->max;
+    }
+  };
+
+  struct AnalyzerSourceInfo {
+    bool loan = false;
+    struct suscan_analyzer_source_info local_info;
+    struct suscan_analyzer_source_info *c_info = nullptr;
+
+    AnalyzerSourceInfo()
+    {
+      suscan_analyzer_source_info_init(&this->local_info);
+    }
+
+    ~AnalyzerSourceInfo()
+    {
+      if (!this->loan)
+        suscan_analyzer_source_info_finalize(&this->local_info);
+    }
+
+    AnalyzerSourceInfo(struct suscan_analyzer_source_info *ptr, bool loan = false)
+    {
+      this->loan = loan;
+
+      if (loan) {
+        suscan_analyzer_source_info_init(&this->local_info);
+        this->c_info = ptr;
+      } else {
+        SU_ATTEMPT(
+              suscan_analyzer_source_info_init_copy(&this->local_info, ptr));
+        this->c_info = &this->local_info;
+      }
+    }
+
+    inline SUSCOUNT
+    getSampleRate(void) const
+    {
+      return this->c_info->source_samp_rate;
+    }
+
+    inline SUSCOUNT
+    getEffectiveSampleRate(void) const
+    {
+      return this->c_info->effective_samp_rate;
+    }
+
+    inline SUFLOAT
+    getMeasuredSampleRate(void) const
+    {
+      return this->c_info->measured_samp_rate;
+    }
+
+    inline SUFREQ
+    getFrequency(void) const
+    {
+      return this->c_info->frequency;
+    }
+
+    inline SUFREQ
+    getLnbFrequency(void) const
+    {
+      return this->c_info->lnb;
+    }
+
+    inline SUFLOAT
+    getBandwidth(void) const
+    {
+      return this->c_info->bandwidth;
+    }
+
+    inline std::string
+    getAntenna(void) const
+    {
+      return this->c_info->antenna == nullptr
+          ? "N/A"
+          : std::string(this->c_info->antenna);
+    }
+
+    inline bool
+    getDCRemove(void) const
+    {
+      return this->c_info->dc_remove != SU_FALSE;
+    }
+
+    inline bool
+    getIQReverse(void) const
+    {
+      return this->c_info->iq_reverse != SU_FALSE;
+    }
+
+    inline bool
+    getAGC(void) const
+    {
+      return this->c_info->agc != SU_FALSE;
+    }
+
+    inline void
+    getGainInfo(std::vector<GainInfo> &vec)
+    {
+      unsigned int i;
+      vec.clear();
+
+      for (i = 0; i < this->c_info->gain_count; ++i)
+        vec.push_back(GainInfo(this->c_info->gain_list[i]));
+    }
+  };
+
+  class Analyzer: public QObject {
     Q_OBJECT
 
     class AsyncThread;
@@ -70,6 +190,7 @@ namespace Suscan {
     void inspector_message(const Suscan::InspectorMessage &message);
     void samples_message(const Suscan::SamplesMessage &message);
     void status_message(const Suscan::StatusMessage &message);
+    void source_info_message(const Suscan::SourceInfoMessage &message);
     void read_error(void);
     void eos(void);
     void halted(void);

@@ -607,6 +607,12 @@ Application::connectAnalyzer(void)
 
   connect(
         this->analyzer.get(),
+        SIGNAL(source_info_message(const Suscan::SourceInfoMessage &)),
+        this,
+        SLOT(onSourceInfoMessage(const Suscan::SourceInfoMessage &)));
+
+  connect(
+        this->analyzer.get(),
         SIGNAL(status_message(const Suscan::StatusMessage &)),
         this,
         SLOT(onStatusMessage(const Suscan::StatusMessage &)));
@@ -847,6 +853,13 @@ Application::onPSDMessage(const Suscan::PSDMessage &msg)
   this->mediator->setProcessRate(
         static_cast<unsigned int>(this->analyzer->getMeasuredSampleRate()));
   this->mediator->feedPSD(msg);
+}
+
+void
+Application::onSourceInfoMessage(const Suscan::SourceInfoMessage &msg)
+{
+  // TODO: Inform GUI
+  printf("Source info: %g Hz\n", msg.info()->getFrequency());
 }
 
 void
