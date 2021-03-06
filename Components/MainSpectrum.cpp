@@ -330,12 +330,6 @@ MainSpectrum::setBookmarks(bool enabled)
 }
 
 void
-MainSpectrum::setUseLBMdrag(bool enabled)
-{
-  this->ui->mainSpectrum->setUseLBMdrag(enabled);
-}
-
-void
 MainSpectrum::setColorConfig(ColorConfig const &cfg)
 {
   QString styleSheet =
@@ -362,6 +356,12 @@ MainSpectrum::setColorConfig(ColorConfig const &cfg)
   this->ui->mainSpectrum->setFftBgColor(cfg.spectrumBackground);
   this->ui->mainSpectrum->setFftTextColor(cfg.spectrumText);
   this->ui->mainSpectrum->setFilterBoxColor(cfg.filterBox);
+}
+
+void
+MainSpectrum::setGuiConfig(GuiConfig const &cfg)
+{
+  this->ui->mainSpectrum->setUseLBMdrag(cfg.useLMBdrag);
 }
 
 void
