@@ -813,10 +813,13 @@ ConfigDialog::onBandwidthChanged(double)
 void
 ConfigDialog::onAccepted(void)
 {
+  this->saveGuiConfigUi();
   this->saveColors();
   this->saveAnalyzerParams();
+
+  // warning: it will trigger reconfiguring device
+  // and gui refresh from stored variables
   this->saveProfile();
-  this->saveGuiConfigUi();
   this->accepted = true;
 }
 

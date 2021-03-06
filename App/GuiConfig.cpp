@@ -38,12 +38,6 @@ GuiConfig::loadDefaults(void)
 }
 
 #define STRINGFY(x) #x
-#define CCSTORE(field) \
-  obj.set(STRINGFY(field), this->field.name().toStdString())
-#define CCLOAD(field)           \
-  this->field = QColor(         \
-      QString::fromStdString(   \
-        conf.get(STRINGFY(field), this->field.name().toStdString())))
 
 Suscan::Object &&
 GuiConfig::serialize(void)

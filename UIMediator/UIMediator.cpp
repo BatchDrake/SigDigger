@@ -759,6 +759,7 @@ UIMediator::applyConfig(void)
   // The following controls reflect elements of the configuration that are
   // not owned by them. We need to set them manually.
   this->ui->configDialog->setColors(this->appConfig->colors);
+  this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
   this->ui->spectrum->setExpectedRate(
