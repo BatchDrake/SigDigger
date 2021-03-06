@@ -70,7 +70,7 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
 }
 
 MainSpectrum::~MainSpectrum()
-{  
+{
   for (auto p : this->FATs)
     delete p;
 
@@ -327,6 +327,12 @@ MainSpectrum::setBookmarks(bool enabled)
 {
   this->ui->mainSpectrum->setBookmarksEnabled(enabled);
   this->ui->mainSpectrum->updateOverlay();
+}
+
+void
+MainSpectrum::setUseLBMdrag(bool enabled)
+{
+  this->ui->mainSpectrum->setUseLBMdrag(enabled);
 }
 
 void

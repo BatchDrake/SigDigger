@@ -103,7 +103,7 @@ namespace SigDigger {
     void setExpectedRate(int);
     void setTimeStamps(bool);
     void setBookmarks(bool);
-
+    void setUseLBMdrag(bool enabled); ///< use left mouse btn to drag center freq
     void setZoom(unsigned int zoom);
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);

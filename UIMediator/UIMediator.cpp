@@ -762,6 +762,7 @@ UIMediator::applyConfig(void)
   this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
+  this->ui->spectrum->setUseLBMdrag(this->appConfig->guiConfig.useLMBdrag);
   this->ui->spectrum->setExpectedRate(
         static_cast<int>(1.f / this->appConfig->analyzerParams.psdUpdateInterval));
   this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
