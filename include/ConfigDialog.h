@@ -24,6 +24,7 @@
 #include <Suscan/AnalyzerParams.h>
 #include <Suscan/Source.h>
 #include <ColorConfig.h>
+#include <GuiConfig.h>
 #include <SaveProfileDialog.h>
 
 #define SIGDIGGER_MIN_RADIO_FREQ  -3e11
@@ -38,6 +39,7 @@ namespace SigDigger {
     Suscan::Source::Config profile;
     Suscan::AnalyzerParams analyzerParams;
     ColorConfig colors;
+    GuiConfig guiConfig;
 
     bool accepted;
     bool refreshing = false;
@@ -51,6 +53,7 @@ namespace SigDigger {
     void refreshAntennas(void);
     void refreshSampRates(void);
     void refreshColorUi(void);
+    void refreshGuiConfigUi();
     void refreshAnalyzerParamsUi(void);
     void refreshProfileUi(void);
     void refreshFrequencyLimits(void);
@@ -61,6 +64,7 @@ namespace SigDigger {
     void loadProfile(Suscan::Source::Config &config);
     void saveAnalyzerParams(void);
     void saveColors(void);
+    void saveGuiConfigUi(void);
     void guessParamsFromFileName(void);
     unsigned int getSelectedSampleRate(void) const;
     void setSelectedSampleRate(unsigned int);
@@ -72,6 +76,7 @@ namespace SigDigger {
     void setProfile(const Suscan::Source::Config &profile);
     void setAnalyzerParams(const Suscan::AnalyzerParams &params);
     void setColors(const ColorConfig &config);
+    void setGuiConfig(const GuiConfig &config);
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
     void notifySingletonChanges(void);
@@ -79,6 +84,7 @@ namespace SigDigger {
     float getGain(std::string const &name);
     Suscan::Source::Config getProfile(void);
     ColorConfig getColors(void);
+    GuiConfig getGuiConfig();
     Suscan::AnalyzerParams getAnalyzerParams(void);
 
     bool run(void);

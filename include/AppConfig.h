@@ -42,12 +42,13 @@
 
 #define SIGDIGGER_PROFILE_FILE_MAX_SIZE       (1 << 20)
 
-namespace SigDigger {  
+namespace SigDigger {
   class AppConfig : public Suscan::Serializable {
     public:
       Suscan::Source::Config profile;
       Suscan::AnalyzerParams analyzerParams;
       ColorConfig colors;
+      GuiConfig guiConfig;
       Suscan::Serializable *sourceConfig = nullptr;
       Suscan::Serializable *fftConfig = nullptr;
       Suscan::Serializable *inspectorConfig = nullptr;

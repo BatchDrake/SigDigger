@@ -230,7 +230,7 @@ UIMediator::connectMainWindow(void)
         this,
         SLOT(onToggleFullScreen(bool)));
 #endif // __APLE__
-  
+
   connect(
         this->ui->main->actionAbout,
         SIGNAL(triggered(bool)),
@@ -759,13 +759,15 @@ UIMediator::applyConfig(void)
   // The following controls reflect elements of the configuration that are
   // not owned by them. We need to set them manually.
   this->ui->configDialog->setColors(this->appConfig->colors);
+  this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
+  this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
   this->ui->spectrum->setExpectedRate(
         static_cast<int>(1.f / this->appConfig->analyzerParams.psdUpdateInterval));
   this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
   this->ui->fftPanel->setWindowFunction(this->appConfig->analyzerParams.windowFunction);
-  this->ui->fftPanel->setFftSize(this->appConfig->analyzerParams.windowSize);  
+  this->ui->fftPanel->setFftSize(this->appConfig->analyzerParams.windowSize);
   this->ui->fftPanel->setRefreshRate(
         static_cast<unsigned int>(1.f / this->appConfig->analyzerParams.psdUpdateInterval));
   this->ui->fftPanel->setDefaultFftSize(SIGDIGGER_FFT_WINDOW_SIZE);
@@ -822,7 +824,9 @@ UIMediator::onTriggerSetup(bool)
     this->appConfig->analyzerParams = this->ui->configDialog->getAnalyzerParams();
     this->ui->fftPanel->setFftSize(this->getFftSize());
     this->appConfig->colors = this->ui->configDialog->getColors();
+    this->appConfig->guiConfig = this->ui->configDialog->getGuiConfig();
     this->ui->spectrum->setColorConfig(this->appConfig->colors);
+    this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
     this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
     this->setProfile(this->ui->configDialog->getProfile());
   }
@@ -1143,4 +1147,3 @@ UIMediator::onBookmarkChanged(void)
 {
   this->ui->spectrum->updateOverlay();
 }
-

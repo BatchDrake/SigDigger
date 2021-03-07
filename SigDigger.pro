@@ -58,6 +58,7 @@ SOURCES += \
     App/Application.cpp \
     App/AppUI.cpp \
     App/ColorConfig.cpp \
+    App/GuiConfig.cpp \
     App/Loader.cpp \
     Audio/AudioFileSaver.cpp \
     Audio/AudioPlayback.cpp \

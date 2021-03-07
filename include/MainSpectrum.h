@@ -22,6 +22,7 @@
 #include <PersistentWidget.h>
 #include <Suscan/Messages/PSDMessage.h>
 #include <ColorConfig.h>
+#include <GuiConfig.h>
 #include <Waterfall.h>
 #include <Palette.h>
 
@@ -98,12 +99,12 @@ namespace SigDigger {
     void setWfRange(float min, float max);
     void setPanWfRatio(float ratio);
     void setColorConfig(ColorConfig const &cfg);
+    void setGuiConfig(GuiConfig const &cfg);
     void setPeakHold(bool);
     void setPeakDetect(bool);
     void setExpectedRate(int);
     void setTimeStamps(bool);
     void setBookmarks(bool);
-
     void setZoom(unsigned int zoom);
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
