@@ -1,6 +1,6 @@
 //
 //    GuiConfig.cpp: Gui configuration object
-//    Copyright (C) 2019 Gonzalo José Carracedo Carballal
+//    Copyright (C) 2021 Jaroslav Šafka
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -38,6 +38,8 @@ GuiConfig::loadDefaults(void)
 }
 
 #define STRINGFY(x) #x
+#define STORE(field) obj.set(STRINGFY(field), this->field)
+#define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
 
 Suscan::Object &&
 GuiConfig::serialize(void)
@@ -45,7 +47,7 @@ GuiConfig::serialize(void)
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
   obj.setClass("guicfg");
-  obj.set("useLMBdrag", this->useLMBdrag);
+  STORE(useLMBdrag);
 
   return this->persist(obj);
 }
@@ -53,5 +55,5 @@ GuiConfig::serialize(void)
 void
 GuiConfig::deserialize(Suscan::Object const &conf)
 {
-  this->useLMBdrag = conf.get("useLMBdrag", this->useLMBdrag);
+  LOAD(useLMBdrag);
 }

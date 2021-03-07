@@ -48,7 +48,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <property name="tabBarAutoHide">
       <bool>false</bool>
@@ -1111,7 +1111,7 @@
        <item row="0" column="0">
         <widget class="QCheckBox" name="reverseDragBehaviorCheck">
          <property name="text">
-          <string>Use Left mouse button to drag and change center frequency</string>
+          <string>Use &amp;left mouse button to drag and change center frequency</string>
          </property>
         </widget>
        </item>
