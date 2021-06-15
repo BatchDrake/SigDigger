@@ -28,6 +28,10 @@
 #define SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ 0
 #define SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ 6000000000
 
+namespace Suscan {
+  struct AnalyzerSourceInfo;
+};
+
 namespace SigDigger {
 
   class UIMediator : public PersistentWidget {
@@ -88,6 +92,7 @@ namespace SigDigger {
     // UI State
     void setState(enum State);
     State getState(void) const;
+    void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
 
     // Recent list handling
     void clearRecent(void);
@@ -113,6 +118,8 @@ namespace SigDigger {
         QString const &label,
         unsigned int,
         unsigned int);
+
+    void notifyStartupErrors(void);
 
     // Inspector handling
     Inspector *lookupInspector(Suscan::InspectorId id) const;

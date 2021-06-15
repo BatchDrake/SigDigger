@@ -245,6 +245,18 @@ ConfigDialog::refreshColorUi(void)
   CCREFRESH(filterBoxColor, filterBox);
 }
 
+void
+ConfigDialog::saveGuiConfigUi()
+{
+  this->guiConfig.useLMBdrag = this->ui->reverseDragBehaviorCheck->isChecked();
+}
+
+void
+ConfigDialog::refreshGuiConfigUi()
+{
+  this->ui->reverseDragBehaviorCheck->setChecked(this->guiConfig.useLMBdrag);
+}
+
 QString
 ConfigDialog::getSampRateString(qreal trueRate)
 {
@@ -363,6 +375,7 @@ ConfigDialog::refreshUi(void)
 
   this->refreshColorUi();
   this->refreshProfileUi();
+  this->refreshGuiConfigUi();
 
   this->refreshing = false;
 }
@@ -459,6 +472,13 @@ ConfigDialog::connectAll(void)
         SLOT(onCheckButtonsToggled(bool)));
 
   connect(
+        this->ui->reverseDragBehaviorCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onCheckButtonsToggled(bool)));
+
+
+  connect(
         this->ui->bandwidthSpinBox,
         SIGNAL(valueChanged(double)),
         this,
@@ -551,6 +571,19 @@ ColorConfig
 ConfigDialog::getColors(void)
 {
   return this->colors;
+}
+
+void
+ConfigDialog::setGuiConfig(GuiConfig const &config)
+{
+  this->guiConfig = config;
+  this->refreshUi();
+}
+
+GuiConfig
+ConfigDialog::getGuiConfig()
+{
+  return this->guiConfig;
 }
 
 ConfigDialog::ConfigDialog(QWidget *parent) :
@@ -780,8 +813,12 @@ ConfigDialog::onBandwidthChanged(double)
 void
 ConfigDialog::onAccepted(void)
 {
+  this->saveGuiConfigUi();
   this->saveColors();
   this->saveAnalyzerParams();
+
+  // warning: it will trigger reconfiguring device
+  // and gui refresh from stored variables
   this->saveProfile();
   this->accepted = true;
 }

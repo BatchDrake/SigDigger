@@ -95,6 +95,8 @@ Application::run(Suscan::Object const &config)
   this->updateRecent();
 
   this->show();
+
+  this->mediator->notifyStartupErrors();
 }
 
 FileDataSaver *
@@ -783,7 +785,7 @@ Application::startCapture(void)
           this,
           "SigDigger error",
           "Failed to start capture due to errors:<p /><pre>"
-          + getLogText()
+          + getLogText().toHtmlEscaped()
           + "</pre>",
           QMessageBox::Ok);
     this->mediator->setState(UIMediator::HALTED);
@@ -850,16 +852,13 @@ Application::onAnalyzerEos(void)
 void
 Application::onPSDMessage(const Suscan::PSDMessage &msg)
 {
-  this->mediator->setProcessRate(
-        static_cast<unsigned int>(this->analyzer->getMeasuredSampleRate()));
   this->mediator->feedPSD(msg);
 }
 
 void
 Application::onSourceInfoMessage(const Suscan::SourceInfoMessage &msg)
 {
-  // TODO: Inform GUI
-  printf("Source info: %g Hz\n", msg.info()->getFrequency());
+  this->mediator->notifySourceInfo(*msg.info());
 }
 
 void

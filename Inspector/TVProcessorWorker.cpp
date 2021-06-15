@@ -135,6 +135,7 @@ TVProcessorWorker::work(const SUFLOAT *samples, SUSCOUNT size)
 #else
           currAck = this->frameAck.load();
 #endif // QT_VERSION
+
           if (currAck > this->frameCount)
             this->frameCount = currAck;
 

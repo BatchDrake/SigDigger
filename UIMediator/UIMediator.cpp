@@ -230,7 +230,7 @@ UIMediator::connectMainWindow(void)
         this,
         SLOT(onToggleFullScreen(bool)));
 #endif // __APLE__
-  
+
   connect(
         this->ui->main->actionAbout,
         SIGNAL(triggered(bool)),
@@ -412,6 +412,20 @@ UIMediator::getState(void) const
 }
 
 void
+UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
+{
+  this->ui->spectrum->setFrequencyLimits(
+        static_cast<qint64>(info.getFrequency()),
+        static_cast<qint64>(info.getFrequency()));
+
+  this->ui->spectrum->setFreqs(
+        static_cast<qint64>(info.getFrequency()),
+        static_cast<qint64>(info.getLnbFrequency()));
+
+  this->setBandwidth(static_cast<unsigned>(info.getBandwidth()));
+}
+
+void
 UIMediator::setPanSpectrumRunning(bool running)
 {
   this->ui->panoramicDialog->setRunning(running);
@@ -496,9 +510,28 @@ UIMediator::shouldReduceRate(
 }
 
 void
+UIMediator::notifyStartupErrors(void)
+{
+  if (this->ui->logDialog->haveErrorMessages()) {
+      QMessageBox msgbox(this->owner);
+      msgbox.setTextFormat(Qt::RichText);
+      msgbox.setText(
+            "Errors occurred during startup:" +
+            this->ui->logDialog->getErrorHtml());
+      msgbox.setWindowTitle("SigDigger startup");
+      msgbox.setIcon(QMessageBox::Icon::Warning);
+      msgbox.addButton(QMessageBox::Ok);
+      msgbox.setDefaultButton(QMessageBox::Ok);
+
+      msgbox.exec();
+  }
+}
+
+void
 UIMediator::feedPSD(const Suscan::PSDMessage &msg)
 {
   this->setSampleRate(msg.getSampleRate());
+  this->setProcessRate(msg.getMeasuredSampleRate());
   this->averager.feed(msg);
   this->ui->spectrum->feed(
         this->averager.get(),
@@ -765,13 +798,15 @@ UIMediator::applyConfig(void)
   // The following controls reflect elements of the configuration that are
   // not owned by them. We need to set them manually.
   this->ui->configDialog->setColors(this->appConfig->colors);
+  this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
+  this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
   this->ui->spectrum->setExpectedRate(
         static_cast<int>(1.f / this->appConfig->analyzerParams.psdUpdateInterval));
   this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
   this->ui->fftPanel->setWindowFunction(this->appConfig->analyzerParams.windowFunction);
-  this->ui->fftPanel->setFftSize(this->appConfig->analyzerParams.windowSize);  
+  this->ui->fftPanel->setFftSize(this->appConfig->analyzerParams.windowSize);
   this->ui->fftPanel->setRefreshRate(
         static_cast<unsigned int>(1.f / this->appConfig->analyzerParams.psdUpdateInterval));
   this->ui->fftPanel->setDefaultFftSize(SIGDIGGER_FFT_WINDOW_SIZE);
@@ -828,7 +863,9 @@ UIMediator::onTriggerSetup(bool)
     this->appConfig->analyzerParams = this->ui->configDialog->getAnalyzerParams();
     this->ui->fftPanel->setFftSize(this->getFftSize());
     this->appConfig->colors = this->ui->configDialog->getColors();
+    this->appConfig->guiConfig = this->ui->configDialog->getGuiConfig();
     this->ui->spectrum->setColorConfig(this->appConfig->colors);
+    this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
     this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
     this->setProfile(this->ui->configDialog->getProfile());
   }
@@ -1149,4 +1186,3 @@ UIMediator::onBookmarkChanged(void)
 {
   this->ui->spectrum->updateOverlay();
 }
-

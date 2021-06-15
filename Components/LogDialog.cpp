@@ -125,6 +125,20 @@ LogDialog::makeSeverityItem(enum sigutils_log_severity severity)
   return new QTableWidgetItem("?");
 }
 
+QString
+LogDialog::getErrorHtml(void) const
+{
+  QString errText = "<ul>";
+
+  for (auto &p: this->msgVec) {
+    if (p.severity == SU_LOG_SEVERITY_CRITICAL ||
+        p.severity == SU_LOG_SEVERITY_ERROR)
+      errText += "<li>" + QString::fromStdString(p.message).trimmed() + "</li>";
+  }
+
+  return errText + "</ul>";
+}
+
 void
 LogDialog::onMessage(Suscan::LoggerMessage msg)
 {
@@ -153,7 +167,7 @@ LogDialog::onMessage(Suscan::LoggerMessage msg)
   this->ui->logTableWidget->setItem(
         newRow,
         2,
-        new QTableWidgetItem(QString::fromStdString(msg.message)));
+        new QTableWidgetItem(QString::fromStdString(msg.message).trimmed()));
 
   this->ui->logTableWidget->setItem(
         newRow,
@@ -169,6 +183,10 @@ LogDialog::onMessage(Suscan::LoggerMessage msg)
 
   if (this->ui->autoScrollButton->isChecked())
     this->ui->logTableWidget->scrollToBottom();
+
+  if (msg.severity == SU_LOG_SEVERITY_CRITICAL ||
+      msg.severity == SU_LOG_SEVERITY_ERROR)
+    this->errorFound = true;
 }
 
 void
