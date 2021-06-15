@@ -35,6 +35,7 @@ namespace SigDigger {
       Q_OBJECT
 
       QVector<Suscan::LoggerMessage> msgVec;
+      bool errorFound = false;
       Suscan::Logger *logger;
       void connectAll(void);
       void saveLog(QString path);
@@ -42,6 +43,13 @@ namespace SigDigger {
           enum sigutils_log_severity);
 
     public:
+      bool haveErrorMessages(void) const
+      {
+        return this->errorFound;
+      }
+
+      QString getErrorHtml(void) const;
+
       explicit LogDialog(QWidget *parent = nullptr);
       ~LogDialog();
 

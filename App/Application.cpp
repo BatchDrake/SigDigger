@@ -90,6 +90,8 @@ Application::run(Suscan::Object const &config)
   this->updateRecent();
 
   this->show();
+
+  this->mediator->notifyStartupErrors();
 }
 
 FileDataSaver *
@@ -766,7 +768,7 @@ Application::startCapture(void)
           this,
           "SigDigger error",
           "Failed to start capture due to errors:<p /><pre>"
-          + getLogText()
+          + getLogText().toHtmlEscaped()
           + "</pre>",
           QMessageBox::Ok);
     this->mediator->setState(UIMediator::HALTED);

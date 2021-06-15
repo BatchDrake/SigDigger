@@ -114,6 +114,8 @@ namespace SigDigger {
         unsigned int,
         unsigned int);
 
+    void notifyStartupErrors(void);
+
     // Inspector handling
     Inspector *lookupInspector(Suscan::InspectorId id) const;
     Inspector *addInspectorTab(

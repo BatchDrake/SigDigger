@@ -496,6 +496,24 @@ UIMediator::shouldReduceRate(
 }
 
 void
+UIMediator::notifyStartupErrors(void)
+{
+  if (this->ui->logDialog->haveErrorMessages()) {
+      QMessageBox msgbox(this->owner);
+      msgbox.setTextFormat(Qt::RichText);
+      msgbox.setText(
+            "Errors occurred during startup:" +
+            this->ui->logDialog->getErrorHtml());
+      msgbox.setWindowTitle("SigDigger startup");
+      msgbox.setIcon(QMessageBox::Icon::Warning);
+      msgbox.addButton(QMessageBox::Ok);
+      msgbox.setDefaultButton(QMessageBox::Ok);
+
+      msgbox.exec();
+  }
+}
+
+void
 UIMediator::feedPSD(const Suscan::PSDMessage &msg)
 {
   this->setSampleRate(msg.getSampleRate());
