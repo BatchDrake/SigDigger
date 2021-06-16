@@ -155,7 +155,7 @@ namespace SigDigger {
       void setProfile(Suscan::Source::Config *);
       void setSampleRate(unsigned int rate);
       void setProcessRate(unsigned int rate);
-
+      void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
       void setGain(std::string const &name, SUFLOAT val);
 
       void setCaptureSize(quint64);

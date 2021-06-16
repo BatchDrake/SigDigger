@@ -145,15 +145,15 @@ MainSpectrum::updateLimits(void)
   qint64 maxLcd = this->maxFreq + this->getLnbFreq();
 
   // Center frequency LCD limits
-  this->ui->fcLcd->setMin(minLcd);
-  this->ui->fcLcd->setMax(maxLcd);
+  this->ui->fcLcd->setMinSilent(minLcd);
+  this->ui->fcLcd->setMaxSilent(maxLcd);
 
   // Demod frequency LCD limits
   minLcd = this->ui->fcLcd->getValue() - this->cachedRate / 2;
   maxLcd = this->ui->fcLcd->getValue() + this->cachedRate / 2;
 
-  this->ui->loLcd->setMin(minLcd);
-  this->ui->loLcd->setMax(maxLcd);
+  this->ui->loLcd->setMinSilent(minLcd);
+  this->ui->loLcd->setMaxSilent(maxLcd);
 }
 
 void
@@ -259,12 +259,18 @@ MainSpectrum::setLnbFreq(qint64 lnbFreq)
 }
 
 void
-MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq)
+MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq, bool silent)
 {
   qint64 loFreq = this->getLoFreq();
 
-  this->ui->lnbLcd->setValue(lnbFreq);
-  this->ui->fcLcd->setValue(freq);
+  if (silent) {
+    this->ui->lnbLcd->setValueSilent(lnbFreq);
+    this->ui->fcLcd->setValueSilent(freq);
+  } else {
+    this->ui->lnbLcd->setValue(lnbFreq);
+    this->ui->fcLcd->setValue(freq);
+  }
+
 
   this->ui->mainSpectrum->setCenterFreq(freq);
   this->ui->mainSpectrum->setFreqUnits(getFrequencyUnits(freq));

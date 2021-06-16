@@ -41,23 +41,6 @@
 #include <analyzer/analyzer.h>
 
 namespace Suscan {
-  struct GainInfo {
-    std::string name;
-    SUFLOAT value;
-    SUFLOAT max;
-    GainInfo()
-    {
-
-    }
-
-    GainInfo(const struct suscan_analyzer_gain_info *info)
-    {
-      this->name = info->name;
-      this->value = info->value;
-      this->max = info->max;
-    }
-  };
-
   struct AnalyzerSourceInfo {
     bool loan = false;
     struct suscan_analyzer_source_info local_info;
@@ -113,6 +96,18 @@ namespace Suscan {
     }
 
     inline SUFREQ
+    getMinFrequency(void) const
+    {
+      return this->c_info->freq_min;
+    }
+
+    inline SUFREQ
+    getMaxFrequency(void) const
+    {
+      return this->c_info->freq_max;
+    }
+
+    inline SUFREQ
     getLnbFrequency(void) const
     {
       return this->c_info->lnb;
@@ -151,13 +146,13 @@ namespace Suscan {
     }
 
     inline void
-    getGainInfo(std::vector<GainInfo> &vec)
+    getGainInfo(std::vector<Source::GainDescription> &vec) const
     {
       unsigned int i;
       vec.clear();
 
       for (i = 0; i < this->c_info->gain_count; ++i)
-        vec.push_back(GainInfo(this->c_info->gain_list[i]));
+        vec.push_back(Source::GainDescription(this->c_info->gain_list[i]));
     }
   };
 

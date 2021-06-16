@@ -18,6 +18,7 @@
 //
 
 #include <Suscan/Source.h>
+#include <Suscan/Analyzer.h>
 
 using namespace Suscan;
 
@@ -25,6 +26,15 @@ using namespace Suscan;
 Source::GainDescription::GainDescription(const struct suscan_source_gain_desc *desc)
 {
   this->def  = desc->def;
+  this->max  = desc->max;
+  this->min  = desc->min;
+  this->step = desc->step;
+  this->name = std::string(desc->name);
+}
+
+Source::GainDescription::GainDescription(const struct suscan_analyzer_gain_info *desc)
+{
+  this->def  = desc->value;
   this->max  = desc->max;
   this->min  = desc->min;
   this->step = desc->step;

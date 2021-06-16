@@ -415,14 +415,15 @@ void
 UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
   this->ui->spectrum->setFrequencyLimits(
-        static_cast<qint64>(info.getFrequency()),
-        static_cast<qint64>(info.getFrequency()));
+        static_cast<qint64>(info.getMinFrequency()),
+        static_cast<qint64>(info.getMaxFrequency()));
 
   this->ui->spectrum->setFreqs(
         static_cast<qint64>(info.getFrequency()),
-        static_cast<qint64>(info.getLnbFrequency()));
+        static_cast<qint64>(info.getLnbFrequency()),
+        true); // Silent update (important!)
 
-  this->setBandwidth(static_cast<unsigned>(info.getBandwidth()));
+  this->ui->sourcePanel->applySourceInfo(info);
 }
 
 void
