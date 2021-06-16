@@ -866,22 +866,22 @@ Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
 {
   Inspector *insp;
 
-  switch (msg.getInspectorId()) {
-    case SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID:
-      if (this->playBack != nullptr)
-        this->playBack->write(msg.getSamples(), msg.getCount());
-      if (this->audioFileSaver != nullptr)
-        this->audioFileSaver->write(msg.getSamples(), msg.getCount());
-      break;
+  if (msg.getInspectorId() == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID * getpid()) {
+    if (this->playBack != nullptr)
+      this->playBack->write(msg.getSamples(), msg.getCount());
+    if (this->audioFileSaver != nullptr)
+      this->audioFileSaver->write(msg.getSamples(), msg.getCount());
+  } else {
+    switch (msg.getInspectorId()) {
+      case SIGDIGGER_RAW_INSPECTOR_MAGIC_ID:
+        this->mediator->feedRawInspector(msg.getSamples(), msg.getCount());
+        break;
 
-    case SIGDIGGER_RAW_INSPECTOR_MAGIC_ID:
-      this->mediator->feedRawInspector(msg.getSamples(), msg.getCount());
-      break;
-
-    default:
-      if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
-                   != nullptr)
-          insp->feed(msg.getSamples(), msg.getCount());
+      default:
+        if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
+                     != nullptr)
+            insp->feed(msg.getSamples(), msg.getCount());
+    }
   }
 }
 
@@ -909,7 +909,7 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
           this->audioInspectorOpened = true;
           this->analyzer->setInspectorId(
                 msg.getHandle(),
-                SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID,
+                SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID * getpid(),
                 0);
           this->analyzer->setInspectorWatermark(
                 msg.getHandle(),
