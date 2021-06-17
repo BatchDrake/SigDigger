@@ -903,37 +903,35 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
   switch (msg.getKind()) {
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_OPEN:
       // Audio path: set inspector Id
-      switch (msg.getRequestId()) {
-        case SIGDIGGER_AUDIO_INSPECTOR_REQID:
-          this->audioInspHandle = msg.getHandle();
-          this->audioInspectorOpened = true;
-          this->analyzer->setInspectorId(
-                msg.getHandle(),
-                SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID * getpid(),
-                0);
-          this->analyzer->setInspectorWatermark(
-                msg.getHandle(),
-                SIGDIGGER_AUDIO_BUFFER_SIZE / 2,
-                0);
-          this->analyzer->setInspectorBandwidth(
-                msg.getHandle(),
-                this->getAudioInspectorBandwidth(),
-                0);
-          if (this->audioCfgTemplate == nullptr)
-            SU_ATTEMPT(this->audioCfgTemplate = suscan_config_dup(msg.getCConfig()));
 
-          this->audioConfigured = true;
+      if (msg.getClass() == "audio") {
+        this->audioInspHandle = msg.getHandle();
+        this->audioInspectorOpened = true;
+        this->analyzer->setInspectorId(
+              msg.getHandle(),
+              SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID * getpid(),
+              0);
+        this->analyzer->setInspectorWatermark(
+              msg.getHandle(),
+              SIGDIGGER_AUDIO_BUFFER_SIZE / 2,
+              0);
+        this->analyzer->setInspectorBandwidth(
+              msg.getHandle(),
+              this->getAudioInspectorBandwidth(),
+              0);
+        if (this->audioCfgTemplate == nullptr)
+          SU_ATTEMPT(this->audioCfgTemplate = suscan_config_dup(msg.getCConfig()));
 
-          /* Set params for good */
-          this->setAudioInspectorParams(
-                this->audioSampleRate,
-                this->delayedCutOff,
-                this->delayedDemod,
-                this->delayedEnableSql,
-                this->delayedSqlLevel);
-          break;
+        this->audioConfigured = true;
 
-        case SIGDIGGER_RAW_INSPECTOR_REQID:
+        /* Set params for good */
+        this->setAudioInspectorParams(
+              this->audioSampleRate,
+              this->delayedCutOff,
+              this->delayedDemod,
+              this->delayedEnableSql,
+              this->delayedSqlLevel);
+      } else if (msg.getClass() == "raw") {
           this->rawInspHandle = msg.getHandle();
           this->rawInspectorOpened = true;
 
@@ -944,10 +942,7 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
 
           this->mediator->resetRawInspector(
                 static_cast<qreal>(msg.getEquivSampleRate()));
-
-          break;
-
-        default:
+      } else {
           insp = this->mediator->addInspectorTab(msg, oId);
           insp->setAnalyzer(this->analyzer.get());
           this->analyzer->setInspectorId(msg.getHandle(), oId, 0);
