@@ -866,7 +866,7 @@ Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
 {
   Inspector *insp;
 
-  if (msg.getInspectorId() == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID * getpid()) {
+  if (msg.getInspectorId() == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
     if (this->playBack != nullptr)
       this->playBack->write(msg.getSamples(), msg.getCount());
     if (this->audioFileSaver != nullptr)
@@ -909,7 +909,7 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
         this->audioInspectorOpened = true;
         this->analyzer->setInspectorId(
               msg.getHandle(),
-              SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID * getpid(),
+              SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID,
               0);
         this->analyzer->setInspectorWatermark(
               msg.getHandle(),
