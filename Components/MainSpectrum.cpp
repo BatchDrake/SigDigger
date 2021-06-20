@@ -261,7 +261,7 @@ MainSpectrum::setLnbFreq(qint64 lnbFreq)
 void
 MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq, bool silent)
 {
-  qint64 loFreq = this->getLoFreq();
+  qint64 newLo = this->ui->loLcd->getValue() - freq;
 
   if (silent) {
     this->ui->lnbLcd->setValueSilent(lnbFreq);
@@ -276,7 +276,7 @@ MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq, bool silent)
   this->ui->mainSpectrum->setFreqUnits(getFrequencyUnits(freq));
 
   this->updateLimits();
-  this->setLoFreq(loFreq);
+  this->setLoFreq(newLo);
 }
 
 void
