@@ -88,7 +88,8 @@ namespace Suscan {
   };
 
   class Source::Device {
-    const suscan_source_device_t *instance; // Always borrowed
+    suscan_source_device_t *owned = nullptr; // owned device
+    const suscan_source_device_t *instance;  // Device pointer
     std::vector<std::string> antennas;
     std::vector<Source::GainDescription> gains;
     std::vector<double> rates;
@@ -101,14 +102,27 @@ namespace Suscan {
     Device(); // Dummy constructor because Qt wants it
     Device(const Device &dev);
     Device(Device &&rv);
+    Device(
+        const std::string &name,
+        const std::string &host,
+        uint16_t port,
+        const std::string &user = "",
+        const std::string &password = "");
     Device(const suscan_source_device_t *dev, unsigned int channel);
+
+    ~Device();
     void setDevice(const suscan_source_device_t *dev, unsigned int channel);
 
     Device &
     operator = (const Device &dev)
     {
       if (this != &dev) {
-        this->setDevice(dev.instance, 0);
+        if (dev.owned != nullptr) {
+          SU_ATTEMPT(this->owned = suscan_source_device_dup(dev.owned));
+          this->setDevice(this->owned, 0);
+        } else {
+          this->setDevice(dev.instance, 0);
+        }
       }
 
       return *this;
@@ -119,6 +133,7 @@ namespace Suscan {
     {
       if (this != &dev) {
         std::swap(this->instance, dev.instance);
+        std::swap(this->owned,    dev.owned);
         std::swap(this->antennas, dev.antennas);
         std::swap(this->rates,    dev.rates);
         std::swap(this->gains,    dev.gains);
@@ -265,6 +280,7 @@ namespace Suscan {
     std::string getAntenna(void) const;
     bool getDCRemove(void) const;
     bool getIQBalance(void) const;
+    std::string getInterface(void) const;
     SUFLOAT getBandwidth(void) const;
     SUFLOAT getGain(const std::string &) const;
 
@@ -285,7 +301,8 @@ namespace Suscan {
     void setDecimation(unsigned int);
     void setDevice(const Source::Device &dev);
     void setGain(const std::string &, SUFLOAT);
-    void setAntenna(const std::string &);
+    void setAntenna(const std::string &);    
+    void setInterface(std::string const &interface);
 
     Config& operator=(const Config &);
     Config& operator=(Config &&);

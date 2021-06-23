@@ -49,6 +49,11 @@ Source::Device::setDevice(const suscan_source_device_t *dev, unsigned int channe
   struct suscan_source_device_info info =
       suscan_source_device_info_INITIALIZER;
 
+  if (this->owned != nullptr && this->owned != dev) {
+    suscan_source_device_destroy(this->owned);
+    this->owned = nullptr;
+  }
+
   this->instance = dev;
 
   this->antennas.clear();
@@ -73,14 +78,52 @@ Source::Device::setDevice(const suscan_source_device_t *dev, unsigned int channe
   }
 }
 
+Source::Device::Device(
+    const std::string &name,
+    const std::string &host,
+    uint16_t port,
+    const std::string &user,
+    const std::string &password)
+{
+  SoapySDRKwargs args;
+  std::string label;
+
+  memset(&args, 0, sizeof(SoapySDRKwargs));
+
+  label = name + " on " + host + ":" + std::to_string(port);
+
+  SoapySDRKwargs_set(&args, "label",    label.c_str());
+  SoapySDRKwargs_set(&args, "driver",   "tcp");
+  SoapySDRKwargs_set(&args, "host",     host.c_str());
+  SoapySDRKwargs_set(&args, "port",     std::to_string(port).c_str());
+  SoapySDRKwargs_set(&args, "user",     user.c_str());
+  SoapySDRKwargs_set(&args, "password", password.c_str());
+
+  SU_ATTEMPT(
+        this->owned = suscan_source_device_new(
+          SUSCAN_SOURCE_REMOTE_INTERFACE,
+          &args));
+
+  SoapySDRKwargs_clear(&args);
+
+  this->setDevice(this->owned, 0);
+}
+
 Source::Device::Device(Source::Device &&rv)
 {
-  *this = rv;
+  *this       = rv;
+  rv.owned    = nullptr;
+  rv.instance = nullptr;
 }
 
 Source::Device::Device(const Source::Device &dev)
 {
-  this->setDevice(dev);
+  if (dev.owned != nullptr) {
+    SU_ATTEMPT(this->owned = suscan_source_device_dup(dev.owned));
+    this->setDevice(this->owned, 0);
+  } else {
+    this->setDevice(dev);
+  }
 }
 
 Source::Device::Device(const suscan_source_device_t *dev, unsigned int channel)
@@ -90,7 +133,14 @@ Source::Device::Device(const suscan_source_device_t *dev, unsigned int channel)
 
 Source::Device::Device()
 {
+  this->owned    = nullptr;
   this->instance = nullptr;
+}
+
+Source::Device::~Device()
+{
+  if (this->owned != nullptr)
+    suscan_source_device_destroy(this->owned);
 }
 
 //////////////////////////// Source config wrapper ///////////////////////////
@@ -290,6 +340,15 @@ Source::Config::getIQBalance(void) const
   return suscan_source_config_get_iq_balance(this->instance) != SU_FALSE;
 }
 
+std::string
+Source::Config::getInterface(void) const
+{
+  if (this->instance == nullptr)
+    return SUSCAN_SOURCE_LOCAL_INTERFACE;
+
+  return suscan_source_config_get_interface(this->instance);
+}
+
 SUFLOAT
 Source::Config::getBandwidth(void) const
 {
@@ -388,6 +447,15 @@ Source::Config::setAntenna(const std::string &antenna)
     return;
 
   SU_ATTEMPT(suscan_source_config_set_antenna(this->instance, antenna.c_str()));
+}
+
+void
+Source::Config::setInterface(std::string const &iface)
+{
+  if (this->instance == nullptr)
+    return;
+
+  SU_ATTEMPT(suscan_source_config_set_interface(this->instance, iface.c_str()));
 }
 
 void

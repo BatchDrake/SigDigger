@@ -37,6 +37,7 @@ namespace SigDigger {
 
   private:
     Suscan::Source::Config profile;
+    Suscan::Source::Device remoteDevice;
     Suscan::AnalyzerParams analyzerParams;
     ColorConfig colors;
     GuiConfig guiConfig;
@@ -66,6 +67,7 @@ namespace SigDigger {
     void saveColors(void);
     void saveGuiConfigUi(void);
     void guessParamsFromFileName(void);
+    void updateRemoteDevice(void);
     unsigned int getSelectedSampleRate(void) const;
     void setSelectedSampleRate(unsigned int);
 
@@ -80,6 +82,8 @@ namespace SigDigger {
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
     void notifySingletonChanges(void);
+
+    bool remoteSelected(void) const;
 
     float getGain(std::string const &name);
     Suscan::Source::Config getProfile(void);
@@ -117,12 +121,14 @@ namespace SigDigger {
     void onToggleSourceType(bool);
     void onDeviceChanged(int);
     void onFormatChanged(int);
+    void onAnalyzerTypeChanged(int);
     void onCheckButtonsToggled(bool);
     void onSpinsChanged(void);
     void onBandwidthChanged(double);
     void onBrowseCaptureFile(void);
     void onAccepted(void);
     void onSaveProfile(void);
+    void onRemoteDeviceChanged(void);
   };
 };
 

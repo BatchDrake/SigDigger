@@ -59,13 +59,23 @@ ConfigDialog::populateCombos(void)
 void
 ConfigDialog::refreshUiState(void)
 {
-  if (this->ui->sdrRadio->isChecked()) {
-    this->ui->sdrFrame->setEnabled(true);
-    this->ui->fileFrame->setEnabled(false);
-    this->ui->sampRateStack->setCurrentIndex(0);
+  int analyzerTypeIndex = this->ui->analyzerTypeCombo->currentIndex();
+
+  this->ui->analyzerParamsStackedWidget->setCurrentIndex(analyzerTypeIndex);
+
+  if (!this->remoteSelected()) {
+    /* Local analyzer */
+    if (this->ui->sdrRadio->isChecked()) {
+      this->ui->sdrFrame->setEnabled(true);
+      this->ui->fileFrame->setEnabled(false);
+      this->ui->sampRateStack->setCurrentIndex(0);
+    } else {
+      this->ui->sdrFrame->setEnabled(false);
+      this->ui->fileFrame->setEnabled(true);
+      this->ui->sampRateStack->setCurrentIndex(1);
+    }
   } else {
-    this->ui->sdrFrame->setEnabled(false);
-    this->ui->fileFrame->setEnabled(true);
+    /* Remote analyzer: adjust sample rate manually */
     this->ui->sampRateStack->setCurrentIndex(1);
   }
 
@@ -394,6 +404,7 @@ ConfigDialog::saveProfile()
   this->onCheckButtonsToggled(false);
   this->onSpinsChanged();
   this->onBandwidthChanged(this->ui->bandwidthSpinBox->value());
+  this->onAnalyzerTypeChanged(this->ui->analyzerTypeCombo->currentIndex());
 }
 
 void
@@ -507,6 +518,36 @@ ConfigDialog::connectAll(void)
         SIGNAL(clicked(void)),
         this,
         SLOT(onSaveProfile(void)));
+
+  connect(
+        this->ui->analyzerTypeCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onAnalyzerTypeChanged(int)));
+
+  connect(
+        this->ui->hostEdit,
+        SIGNAL(textEdited(const QString &)),
+        this,
+        SLOT(onRemoteDeviceChanged()));
+
+  connect(
+        this->ui->portEdit,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onRemoteDeviceChanged()));
+
+  connect(
+        this->ui->userEdit,
+        SIGNAL(textEdited(const QString &)),
+        this,
+        SLOT(onRemoteDeviceChanged()));
+
+  connect(
+        this->ui->passEdit,
+        SIGNAL(textEdited(const QString &)),
+        this,
+        SLOT(onRemoteDeviceChanged()));
 }
 
 void
@@ -526,7 +567,7 @@ ConfigDialog::setProfile(const Suscan::Source::Config &profile)
 void
 ConfigDialog::setFrequency(qint64 val)
 {
-  this->profile.setFreq(val);
+  this->profile.setFreq(static_cast<SUFREQ>(val));
 }
 
 void
@@ -534,6 +575,12 @@ ConfigDialog::notifySingletonChanges(void)
 {
   this->populateCombos();
   this->refreshUi();
+}
+
+bool
+ConfigDialog::remoteSelected(void) const
+{
+  return this->ui->analyzerTypeCombo->currentIndex() == 1;
 }
 
 void
@@ -586,10 +633,22 @@ ConfigDialog::getGuiConfig()
   return this->guiConfig;
 }
 
+void
+ConfigDialog::updateRemoteDevice(void)
+{
+  this->remoteDevice = Suscan::Source::Device(
+          "Remote device",
+          this->ui->hostEdit->text().toStdString(),
+          static_cast<uint16_t>(this->ui->portEdit->value()),
+          this->ui->userEdit->text().toStdString(),
+          this->ui->passEdit->text().toStdString());
+}
+
 ConfigDialog::ConfigDialog(QWidget *parent) :
   QDialog(parent),
   profile(SUSCAN_SOURCE_TYPE_FILE, SUSCAN_SOURCE_FORMAT_AUTO)
 {
+
   this->ui = new Ui_Config();
   this->ui->setupUi(this);
   this->setWindowFlags(
@@ -670,7 +729,10 @@ ConfigDialog::onToggleSourceType(bool)
 void
 ConfigDialog::onDeviceChanged(int index)
 {
-  if (!this->refreshing && index != -1) {
+  // Remember: only set device if the analyzer type is local
+  if (!this->refreshing
+      && index != -1
+      && !this->remoteSelected()) {
     Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
     const Suscan::Source::Device *device;
@@ -709,6 +771,35 @@ ConfigDialog::onFormatChanged(int index)
         this->profile.setFormat(SUSCAN_SOURCE_FORMAT_WAV);
         break;
     }
+  }
+}
+
+void
+ConfigDialog::onAnalyzerTypeChanged(int index)
+{
+  if (!this->refreshing) {
+    switch (index) {
+      case 0:
+        this->profile.setInterface(SUSCAN_SOURCE_LOCAL_INTERFACE);
+        this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
+        break;
+
+      case 1:
+        this->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
+        this->onRemoteDeviceChanged();
+        break;
+    }
+
+    this->refreshUiState();
+  }
+}
+
+void
+ConfigDialog::onRemoteDeviceChanged(void)
+{
+  if (this->remoteSelected()) {
+    this->updateRemoteDevice();
+    this->profile.setDevice(this->remoteDevice);
   }
 }
 
