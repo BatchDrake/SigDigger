@@ -719,12 +719,18 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="6" colspan="2">
-            <widget class="QLabel" name="testConnectResultLabel">
-             <property name="text">
-              <string/>
+           <item row="1" column="7">
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
-            </widget>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item row="5" column="2" colspan="4">
             <widget class="QLineEdit" name="passEdit">
@@ -759,18 +765,23 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="7">
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+           <item row="3" column="6" rowspan="3" colspan="2">
+            <widget class="QLabel" name="label_45">
+             <property name="font">
+              <font>
+               <italic>true</italic>
+              </font>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
+             <property name="text">
+              <string>Support for remote analyzers is provided by an experimental application layer protocol that is still under active development and lacks basic security features like proper authentication or transport encryption. Use at your own risk.</string>
              </property>
-            </spacer>
+             <property name="alignment">
+              <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
