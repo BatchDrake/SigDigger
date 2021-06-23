@@ -36,8 +36,10 @@ void
 ConfigDialog::populateCombos(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
   this->ui->profileCombo->clear();
   this->ui->deviceCombo->clear();
+  this->ui->remoteDeviceCombo->clear();
 
   for (auto i = sus->getFirstProfile(); i != sus->getLastProfile(); ++i)
       this->ui->profileCombo->addItem(
@@ -54,6 +56,16 @@ ConfigDialog::populateCombos(void)
   if (this->ui->deviceCombo->currentIndex() == -1)
     this->ui->deviceCombo->setCurrentIndex(0);
 
+  // Network devices are traversed here.
+  for (
+       auto i = sus->getFirstNetworkProfile();
+       i != sus->getLastNetworkProfile();
+       ++i)
+    this->ui->remoteDeviceCombo->addItem(i->label().c_str());
+
+  if (this->ui->remoteDeviceCombo->currentIndex() != -1)
+    this->ui->remoteDeviceCombo->setCurrentIndex(0);
+
   this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
 }
 
@@ -61,6 +73,7 @@ void
 ConfigDialog::refreshUiState(void)
 {
   int analyzerTypeIndex = this->ui->analyzerTypeCombo->currentIndex();
+  bool netProfile = this->ui->useNetworkProfileRadio->isChecked();
 
   this->ui->analyzerParamsStackedWidget->setCurrentIndex(analyzerTypeIndex);
 
@@ -76,8 +89,22 @@ ConfigDialog::refreshUiState(void)
       this->ui->sampRateStack->setCurrentIndex(1);
     }
   } else {
-    /* Remote analyzer: adjust sample rate manually */
+    /* Remote analyzer */
     this->ui->sampRateStack->setCurrentIndex(1);
+
+    if (this->ui->remoteDeviceCombo->count() == 0) {
+      if (netProfile)
+        netProfile = false;
+      this->ui->useNetworkProfileRadio->setChecked(false);
+      this->ui->useHostPortRadio->setChecked(true);
+      this->ui->useNetworkProfileRadio->setEnabled(false);
+    } else {
+      this->ui->useNetworkProfileRadio->setEnabled(true);
+    }
+
+    this->ui->hostEdit->setEnabled(!netProfile);
+    this->ui->portEdit->setEnabled(!netProfile);
+    this->ui->remoteDeviceCombo->setEnabled(netProfile);
   }
 
   this->setSelectedSampleRate(this->profile.getSampleRate());
@@ -309,6 +336,12 @@ ConfigDialog::refreshAnalyzerTypeUi(void)
         this->ui->analyzerTypeCombo->currentIndex());
 }
 
+int
+ConfigDialog::findRemoteProfileIndex(void)
+{
+  return this->ui->remoteDeviceCombo->findText(this->profile.label().c_str());
+}
+
 void
 ConfigDialog::refreshProfileUi(void)
 {
@@ -388,6 +421,7 @@ ConfigDialog::refreshProfileUi(void)
       this->ui->deviceCombo->setCurrentIndex(0);
   } else {
     const char *val;
+    int index;
     const Suscan::Source::Device &dev = this->profile.getDevice();
     // Set remote analyzer interface
     if ((val = dev.getParam("host")) != nullptr)
@@ -407,6 +441,16 @@ ConfigDialog::refreshProfileUi(void)
       this->ui->passEdit->setText(val);
 
     this->ui->deviceCombo->setCurrentIndex(-1);
+
+    index = this->findRemoteProfileIndex();
+    if (index != -1) {
+      this->ui->useNetworkProfileRadio->setChecked(true);
+      this->ui->useHostPortRadio->setChecked(false);
+      this->ui->remoteDeviceCombo->setCurrentIndex(index);
+    } else {
+      this->ui->useHostPortRadio->setChecked(true);
+      this->ui->useNetworkProfileRadio->setChecked(false);
+    }
   }
 
   this->ui->lnbSpinBox->setValue(this->profile.getLnbFreq());
@@ -587,6 +631,30 @@ ConfigDialog::connectAll(void)
         SIGNAL(textEdited(const QString &)),
         this,
         SLOT(onRemoteDeviceChanged()));
+
+  connect(
+        this->ui->useNetworkProfileRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onChangeConnectionType(void)));
+
+  connect(
+        this->ui->useHostPortRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onChangeConnectionType(void)));
+
+  connect(
+        this->ui->remoteDeviceCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onRemoteProfileSelected(void)));
+
+  connect(
+        this->ui->refreshButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onRefreshRemoteDevices(void)));
 }
 
 void
@@ -827,6 +895,7 @@ ConfigDialog::onAnalyzerTypeChanged(int index)
         this->savedLocalDeviceIndex = this->ui->deviceCombo->currentIndex();
         this->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
         this->onRemoteDeviceChanged();
+        this->onRemoteProfileSelected();
         break;
     }
 
@@ -1081,5 +1150,56 @@ ConfigDialog::onSaveProfile(void)
     this->profile.setLabel(candidate);
     sus->saveProfile(this->profile);
     this->populateCombos();
+  }
+}
+
+void
+ConfigDialog::onChangeConnectionType(void)
+{
+  if (this->ui->useNetworkProfileRadio->isChecked()) {
+    this->onRemoteProfileSelected();
+    this->ui->useHostPortRadio->setChecked(false);
+  }
+
+  if (this->ui->useHostPortRadio->isChecked()) {
+    this->onRemoteDeviceChanged();
+    this->ui->useNetworkProfileRadio->setChecked(false);
+  }
+
+  this->refreshUiState();
+}
+
+void
+ConfigDialog::onRefreshRemoteDevices(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  int countBefore = this->ui->remoteDeviceCombo->count();
+  int countAfter;
+
+  sus->refreshNetworkProfiles();
+  this->populateCombos();
+
+  countAfter = this->ui->remoteDeviceCombo->count();
+
+  if (countAfter > countBefore) {
+    this->ui->useNetworkProfileRadio->setChecked(true);
+    this->onChangeConnectionType();
+  } else {
+    this->refreshUiState();
+  }
+}
+
+void
+ConfigDialog::onRemoteProfileSelected(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  if (this->ui->useNetworkProfileRadio->isChecked()) {
+    QHash<QString, Suscan::Source::Config>::const_iterator it;
+
+    it = sus->getNetworkProfileFrom(this->ui->remoteDeviceCombo->currentText());
+
+    if (it != sus->getLastNetworkProfile())
+      this->setProfile(*it);
   }
 }

@@ -195,6 +195,16 @@ Source::Config::~Config()
     suscan_source_config_destroy(this->instance);
 }
 
+Source::Config
+Source::Config::wrap(suscan_source_config_t *config)
+{
+  Source::Config result = Source::Config(config);
+
+  result.borrowed = false;
+
+  return result;
+}
+
 /////////////////////////////// Operators  ///////////////////////////////////
 Source::Config&
 Source::Config::operator=(const Config &rv)

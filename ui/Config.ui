@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>594</width>
-    <height>471</height>
+    <width>650</width>
+    <height>445</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -644,47 +644,17 @@
          </widget>
          <widget class="QWidget" name="page_2">
           <layout class="QGridLayout" name="gridLayout_16">
-           <item row="0" column="9">
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QLabel" name="label_43">
+           <item row="0" column="0" colspan="8">
+            <widget class="QRadioButton" name="useNetworkProfileRadio">
              <property name="text">
-              <string>User</string>
+              <string>Connect to LAN profile</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
-           <item row="0" column="0" colspan="2">
-            <widget class="QLabel" name="label_21">
-             <property name="text">
-              <string>Host</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="5">
-            <spacer name="verticalSpacer_4">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="0" column="2" colspan="3">
+           <item row="3" column="2" colspan="2">
             <widget class="QLineEdit" name="hostEdit">
              <property name="text">
               <string>localhost</string>
@@ -694,7 +664,28 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="6">
+           <item row="5" column="0" colspan="2">
+            <widget class="QLabel" name="label_44">
+             <property name="text">
+              <string>Password</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="2" colspan="4">
+            <widget class="QLineEdit" name="userEdit">
+             <property name="text">
+              <string>anonymous</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLabel" name="label_47">
+             <property name="text">
+              <string>Profile name</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="5">
             <widget class="QSpinBox" name="portEdit">
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -707,42 +698,35 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="7">
-            <widget class="QPushButton" name="testConnectButton">
+           <item row="3" column="0" colspan="2">
+            <widget class="QLabel" name="label_21">
              <property name="text">
-              <string>&amp;Test connectivity</string>
+              <string>Host</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="5">
-            <widget class="QLabel" name="label_22">
+           <item row="1" column="6">
+            <widget class="QPushButton" name="refreshButton">
              <property name="text">
-              <string>Port</string>
+              <string>&amp;Refresh</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QLabel" name="label_44">
+           <item row="4" column="0" colspan="2">
+            <widget class="QLabel" name="label_43">
              <property name="text">
-              <string>Password</string>
+              <string>User</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="7" colspan="3">
+           <item row="4" column="6" colspan="2">
             <widget class="QLabel" name="testConnectResultLabel">
              <property name="text">
               <string/>
              </property>
             </widget>
            </item>
-           <item row="1" column="2" colspan="5">
-            <widget class="QLineEdit" name="userEdit">
-             <property name="text">
-              <string>anonymous</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="2" colspan="5">
+           <item row="5" column="2" colspan="4">
             <widget class="QLineEdit" name="passEdit">
              <property name="echoMode">
               <enum>QLineEdit::Password</enum>
@@ -752,33 +736,41 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="1" colspan="9">
-            <widget class="QLabel" name="label_46">
-             <property name="font">
-              <font>
-               <italic>true</italic>
-              </font>
-             </property>
+           <item row="1" column="2" colspan="4">
+            <widget class="QComboBox" name="remoteDeviceCombo"/>
+           </item>
+           <item row="2" column="0" colspan="8">
+            <widget class="QRadioButton" name="useHostPortRadio">
              <property name="text">
-              <string>Remote analyzers are exposed by a remote instance of Suscan's device server in a computer with network connectivity and sufficiently high bandwidth. Please note this feature is highly experimental and the underlying protocol lacks security features like encryption and proper authentication. Handle with care!</string>
+              <string>Connect manually to host</string>
              </property>
-             <property name="wordWrap">
-              <bool>true</bool>
+             <property name="checked">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_45">
+           <item row="3" column="4">
+            <widget class="QLabel" name="label_22">
              <property name="text">
-              <string/>
-             </property>
-             <property name="pixmap">
-              <pixmap resource="../icons/Icons.qrc">:/icons/warning.png</pixmap>
+              <string>Port</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
+           </item>
+           <item row="1" column="7">
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </widget>
@@ -990,9 +982,6 @@
             <property name="text">
              <string>Rectangular</string>
             </property>
-            <attribute name="buttonGroup">
-             <string notr="true">windowButtonGroup</string>
-            </attribute>
            </widget>
           </item>
           <item row="1" column="0">
@@ -1000,9 +989,6 @@
             <property name="text">
              <string>Hamming</string>
             </property>
-            <attribute name="buttonGroup">
-             <string notr="true">windowButtonGroup</string>
-            </attribute>
            </widget>
           </item>
           <item row="2" column="0">
@@ -1010,9 +996,6 @@
             <property name="text">
              <string>Hann</string>
             </property>
-            <attribute name="buttonGroup">
-             <string notr="true">windowButtonGroup</string>
-            </attribute>
            </widget>
           </item>
           <item row="3" column="0">
@@ -1020,9 +1003,6 @@
             <property name="text">
              <string>Flat top</string>
             </property>
-            <attribute name="buttonGroup">
-             <string notr="true">windowButtonGroup</string>
-            </attribute>
            </widget>
           </item>
           <item row="4" column="0">
@@ -1030,9 +1010,6 @@
             <property name="text">
              <string>Blackmann-Harris</string>
             </property>
-            <attribute name="buttonGroup">
-             <string notr="true">windowButtonGroup</string>
-            </attribute>
            </widget>
           </item>
           <item row="5" column="0">
@@ -1350,9 +1327,7 @@
    <header>FrequencySpinBox.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../icons/Icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
@@ -1387,7 +1362,4 @@
    </hints>
   </connection>
  </connections>
- <buttongroups>
-  <buttongroup name="windowButtonGroup"/>
- </buttongroups>
 </ui>

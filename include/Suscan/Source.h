@@ -141,6 +141,12 @@ namespace Suscan {
       return *this;
     }
 
+    bool
+    operator == (const Device &dev) const
+    {
+      return this->equals(dev);
+    }
+
     const suscan_source_device_t *
     getInstance(void) const
     {
@@ -344,6 +350,8 @@ namespace Suscan {
     Config(Config &&);
     Config(enum suscan_source_type type, enum suscan_source_format format);
     ~Config();
+
+    static Source::Config wrap(suscan_source_config_t *config);
   };
 };
 

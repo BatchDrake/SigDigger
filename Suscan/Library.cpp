@@ -27,6 +27,15 @@ using namespace Suscan;
 Singleton *Singleton::instance = nullptr;
 Logger    *Singleton::logger   = nullptr;
 
+uint
+Suscan::qHash(const Suscan::Source::Device &dev)
+{
+  return
+      ::qHash(dev.getDesc().c_str())
+    ^ ::qHash(dev.getDriver().c_str())
+    ^ ::qHash(dev.isRemote());
+}
+
 Singleton::Singleton()
 {
   this->codecs_initd = false;
@@ -97,6 +106,19 @@ walk_all_devices(const suscan_source_device_t *device, unsigned int, void *privd
   Singleton *instance = static_cast<Singleton *>(privdata);
 
   instance->registerSourceDevice(device);
+
+  return SU_TRUE;
+}
+
+static SUBOOL
+walk_all_remote_devices(
+    void *privdata,
+    const suscan_source_device_t *,
+    const suscan_source_config_t *config)
+{
+  Singleton *instance = static_cast<Singleton *>(privdata);
+
+  instance->registerNetworkProfile(config);
 
   return SU_TRUE;
 }
@@ -283,6 +305,15 @@ Singleton::refreshDevices(void)
 }
 
 void
+Singleton::refreshNetworkProfiles(void)
+{
+  this->networkProfiles.clear();
+  suscan_discovered_remote_device_walk(
+        walk_all_remote_devices,
+        static_cast<void *>(this));
+}
+
+void
 Singleton::detect_devices(void)
 {
   suscan_source_detect_devices();
@@ -413,6 +444,15 @@ Singleton::registerSourceConfig(suscan_source_config_t *config)
     label = "(Null profile)";
 
   this->profiles[label] = Suscan::Source::Config(config);
+}
+
+void
+Singleton::registerNetworkProfile(const suscan_source_config_t *config)
+{
+  QString name = QString(suscan_source_config_get_label(config));
+
+  this->networkProfiles[name] = Suscan::Source::Config::wrap(
+        suscan_source_config_clone(config));
 }
 
 MultitaskController *
@@ -621,6 +661,30 @@ QMap<qint64,Bookmark>::const_iterator
 Singleton::getBookmarkFrom(qint64 freq) const
 {
   return this->bookmarks.lowerBound(freq);
+}
+
+QHash<QString, Source::Config> const &
+Singleton::getNetworkProfileMap(void) const
+{
+  return this->networkProfiles;
+}
+
+QHash<QString, Source::Config>::const_iterator
+Singleton::getFirstNetworkProfile(void) const
+{
+  return this->networkProfiles.cbegin();
+}
+
+QHash<QString, Source::Config>::const_iterator
+Singleton::getLastNetworkProfile(void) const
+{
+  return this->networkProfiles.cend();
+}
+
+QHash<QString, Source::Config>::const_iterator
+Singleton::getNetworkProfileFrom(QString const &name) const
+{
+  return this->networkProfiles.constFind(name);
 }
 
 bool

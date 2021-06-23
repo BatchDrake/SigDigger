@@ -32,12 +32,17 @@
 #include <analyzer/estimator.h>
 #include <analyzer/spectsrc.h>
 #include <analyzer/inspector/inspector.h>
+#include <analyzer/discovery.h>
 
 #include <map>
 #include <list>
 #include <QMap>
 
+#include <QHash>
+
 namespace Suscan {
+  uint qHash(const Suscan::Source::Device &dev);
+
   class MultitaskController;
 
   typedef std::map<std::string, Source::Config> ConfigMap;
@@ -65,6 +70,7 @@ namespace Suscan {
     std::vector<Object> FATs;
 
     QMap<qint64, Bookmark> bookmarks;
+    QHash<QString, Source::Config> networkProfiles;
     std::list<std::string> recentProfiles;
 
     bool codecs_initd;
@@ -102,7 +108,7 @@ namespace Suscan {
     void killBackgroundTaskController(void);
 
     void registerSourceConfig(suscan_source_config_t *config);
-
+    void registerNetworkProfile(const suscan_source_config_t *config);
     void registerSourceDevice(const suscan_source_device_t *dev);
 
     MultitaskController *getBackgroundTaskController(void) const;
@@ -116,6 +122,7 @@ namespace Suscan {
 
     void removeBookmark(qint64);
     void refreshDevices(void);
+    void refreshNetworkProfiles(void);
 
     std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
     std::vector<Source::Device>::const_iterator getLastDevice(void) const;
@@ -140,6 +147,11 @@ namespace Suscan {
     QMap<qint64,Bookmark>::const_iterator getLastBookmark(void) const;
     QMap<qint64,Bookmark>::const_iterator getBookmarkFrom(qint64 bm) const;
 
+    QHash<QString, Source::Config> const &getNetworkProfileMap(void) const;
+    QHash<QString, Source::Config>::const_iterator getFirstNetworkProfile(void) const;
+    QHash<QString, Source::Config>::const_iterator getLastNetworkProfile(void) const;
+    QHash<QString, Source::Config>::const_iterator getNetworkProfileFrom(QString const &) const;
+
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);
     void clearRecent(void);
@@ -154,5 +166,6 @@ namespace Suscan {
     static std::string suscanVersion(void);
   };
 };
+
 
 #endif // CPP_LIBRARY_H
