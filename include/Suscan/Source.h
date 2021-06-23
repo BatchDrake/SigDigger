@@ -159,6 +159,34 @@ namespace Suscan {
       return this->instance == dev.instance;
     }
 
+    bool
+    getParam(std::string const &key, std::string &val) const
+    {
+      const char *result;
+
+      if (this->instance == nullptr)
+        return false;
+
+
+      if ((result = suscan_source_device_get_param(
+             this->instance,
+             key.c_str())) == nullptr)
+        return false;
+
+      val = result;
+
+      return true;
+    }
+
+    const char *
+    getParam(std::string const &key) const
+    {
+      if (this->instance == nullptr)
+        return nullptr;
+
+      return suscan_source_device_get_param(this->instance, key.c_str());
+    }
+
     std::string
     getDriver(void) const
     {

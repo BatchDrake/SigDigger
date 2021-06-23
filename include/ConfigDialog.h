@@ -39,11 +39,14 @@ namespace SigDigger {
     Suscan::Source::Config profile;
     Suscan::Source::Device remoteDevice;
     Suscan::AnalyzerParams analyzerParams;
+
     ColorConfig colors;
     GuiConfig guiConfig;
 
     bool accepted;
     bool refreshing = false;
+
+    int savedLocalDeviceIndex = 0;
 
     // UI elements
     Ui_Config *ui = nullptr;
@@ -59,6 +62,7 @@ namespace SigDigger {
     void refreshProfileUi(void);
     void refreshFrequencyLimits(void);
     void refreshUi(void);
+    void refreshAnalyzerTypeUi(void);
     void saveProfile(void);
     void refreshUiState(void);
     void refreshTrueSampleRate(void);
@@ -68,6 +72,7 @@ namespace SigDigger {
     void saveGuiConfigUi(void);
     void guessParamsFromFileName(void);
     void updateRemoteDevice(void);
+
     unsigned int getSelectedSampleRate(void) const;
     void setSelectedSampleRate(unsigned int);
 

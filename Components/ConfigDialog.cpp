@@ -44,8 +44,9 @@ ConfigDialog::populateCombos(void)
             QString::fromStdString(i->first),
             QVariant::fromValue(i->second));
 
+  // Populate local devices only
   for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i)
-    if (i->isAvailable())
+    if (i->isAvailable() && !i->isRemote())
       this->ui->deviceCombo->addItem(
           QString::fromStdString(i->getDesc()),
           QVariant::fromValue<long>(i - sus->getFirstDevice()));
@@ -296,6 +297,19 @@ ConfigDialog::refreshTrueSampleRate(void)
 }
 
 void
+ConfigDialog::refreshAnalyzerTypeUi(void)
+{
+  if (this->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
+    this->ui->analyzerTypeCombo->setCurrentIndex(0);
+  } else {
+    this->ui->analyzerTypeCombo->setCurrentIndex(1);
+  }
+
+  this->ui->analyzerParamsStackedWidget->setCurrentIndex(
+        this->ui->analyzerTypeCombo->currentIndex());
+}
+
+void
 ConfigDialog::refreshProfileUi(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
@@ -352,23 +366,48 @@ ConfigDialog::refreshProfileUi(void)
 
   this->ui->pathEdit->setText(QString::fromStdString(this->profile.getPath()));
 
-  this->ui->deviceCombo->setCurrentIndex(-1);
+  this->refreshAnalyzerTypeUi();
 
-  for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
-    if (i->equals(this->profile.getDevice())) {
-      int index = this->ui->deviceCombo->findData(
-            QVariant::fromValue(
-              static_cast<long>(i - sus->getFirstDevice())));
+  if (this->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
+    // Set local analyzer interface
+    for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
+      if (i->equals(this->profile.getDevice())) {
+        int index = this->ui->deviceCombo->findData(
+              QVariant::fromValue(
+                static_cast<long>(i - sus->getFirstDevice())));
+        if (index != -1) {
+          this->ui->deviceCombo->setCurrentIndex(index);
+          this->savedLocalDeviceIndex = index;
+        }
 
-      if (index != -1)
-        this->ui->deviceCombo->setCurrentIndex(index);
-
-      break;
+        break;
+      }
     }
-  }
 
-  if (this->ui->deviceCombo->currentIndex() == -1)
-    this->ui->deviceCombo->setCurrentIndex(0);
+    if (this->ui->deviceCombo->currentIndex() == -1)
+      this->ui->deviceCombo->setCurrentIndex(0);
+  } else {
+    const char *val;
+    const Suscan::Source::Device &dev = this->profile.getDevice();
+    // Set remote analyzer interface
+    if ((val = dev.getParam("host")) != nullptr)
+      this->ui->hostEdit->setText(val);
+
+    try {
+      if ((val = dev.getParam("port")) != nullptr)
+        this->ui->portEdit->setValue(std::stoi(dev.getParam("port")));
+    } catch (std::invalid_argument &) {
+      this->ui->portEdit->setValue(28001);
+    }
+
+    if ((val = dev.getParam("user")) != nullptr)
+      this->ui->userEdit->setText(val);
+
+    if ((val = dev.getParam("password")) != nullptr)
+      this->ui->passEdit->setText(val);
+
+    this->ui->deviceCombo->setCurrentIndex(-1);
+  }
 
   this->ui->lnbSpinBox->setValue(this->profile.getLnbFreq());
   this->ui->frequencySpinBox->setValue(this->profile.getFreq());
@@ -781,10 +820,11 @@ ConfigDialog::onAnalyzerTypeChanged(int index)
     switch (index) {
       case 0:
         this->profile.setInterface(SUSCAN_SOURCE_LOCAL_INTERFACE);
-        this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
+        this->onDeviceChanged(this->savedLocalDeviceIndex);
         break;
 
       case 1:
+        this->savedLocalDeviceIndex = this->ui->deviceCombo->currentIndex();
         this->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
         this->onRemoteDeviceChanged();
         break;
