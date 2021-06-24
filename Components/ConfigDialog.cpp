@@ -422,23 +422,23 @@ ConfigDialog::refreshProfileUi(void)
   } else {
     const char *val;
     int index;
-    const Suscan::Source::Device &dev = this->profile.getDevice();
     // Set remote analyzer interface
-    if ((val = dev.getParam("host")) != nullptr)
-      this->ui->hostEdit->setText(val);
+    val = this->profile.getParam("host").c_str();
+    this->ui->hostEdit->setText(val);
 
     try {
-      if ((val = dev.getParam("port")) != nullptr)
-        this->ui->portEdit->setValue(std::stoi(dev.getParam("port")));
+      val = this->profile.getParam("port").c_str();
+      this->ui->portEdit->setValue(std::stoi(val));
     } catch (std::invalid_argument &) {
       this->ui->portEdit->setValue(28001);
     }
 
-    if ((val = dev.getParam("user")) != nullptr)
-      this->ui->userEdit->setText(val);
+    val = this->profile.getParam("user").c_str();
+    this->ui->userEdit->setText(val);
 
-    if ((val = dev.getParam("password")) != nullptr)
-      this->ui->passEdit->setText(val);
+
+    val = this->profile.getParam("password").c_str();
+    this->ui->passEdit->setText(val);
 
     this->ui->deviceCombo->setCurrentIndex(-1);
 
@@ -612,25 +612,25 @@ ConfigDialog::connectAll(void)
         this->ui->hostEdit,
         SIGNAL(textEdited(const QString &)),
         this,
-        SLOT(onRemoteDeviceChanged()));
+        SLOT(onRemoteParamsChanged()));
 
   connect(
         this->ui->portEdit,
         SIGNAL(valueChanged(int)),
         this,
-        SLOT(onRemoteDeviceChanged()));
+        SLOT(onRemoteParamsChanged()));
 
   connect(
         this->ui->userEdit,
         SIGNAL(textEdited(const QString &)),
         this,
-        SLOT(onRemoteDeviceChanged()));
+        SLOT(onRemoteParamsChanged()));
 
   connect(
         this->ui->passEdit,
         SIGNAL(textEdited(const QString &)),
         this,
-        SLOT(onRemoteDeviceChanged()));
+        SLOT(onRemoteParamsChanged()));
 
   connect(
         this->ui->useNetworkProfileRadio,
@@ -741,26 +741,31 @@ ConfigDialog::getGuiConfig()
 }
 
 void
-ConfigDialog::updateRemoteDevice(void)
+ConfigDialog::updateRemoteParams(void)
 {
-  this->remoteDevice = Suscan::Source::Device(
-          "Remote device",
-          this->ui->hostEdit->text().toStdString(),
-          static_cast<uint16_t>(this->ui->portEdit->value()),
-          this->ui->userEdit->text().toStdString(),
-          this->ui->passEdit->text().toStdString());
+  this->profile.setParam("host", this->ui->hostEdit->text().toStdString());
+  this->profile.setParam("port", std::to_string(this->ui->portEdit->value()));
+  this->profile.setParam("user", this->ui->userEdit->text().toStdString());
+  this->profile.setParam("password", this->ui->passEdit->text().toStdString());
 }
 
 ConfigDialog::ConfigDialog(QWidget *parent) :
   QDialog(parent),
   profile(SUSCAN_SOURCE_TYPE_FILE, SUSCAN_SOURCE_FORMAT_AUTO)
 {
-
   this->ui = new Ui_Config();
   this->ui->setupUi(this);
   this->setWindowFlags(
     this->windowFlags() & ~Qt::WindowMaximizeButtonHint);
   this->layout()->setSizeConstraint(QLayout::SetFixedSize);
+
+  // Setup remote device
+  this->remoteDevice = Suscan::Source::Device(
+          "Remote device",
+          "localhost",
+          28001,
+          "anonymous",
+          "");
 
   // Setup sample rate size
   this->ui->trueRateLabel->setFixedWidth(
@@ -894,8 +899,8 @@ ConfigDialog::onAnalyzerTypeChanged(int index)
       case 1:
         this->savedLocalDeviceIndex = this->ui->deviceCombo->currentIndex();
         this->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
-        this->onRemoteDeviceChanged();
-        this->onRemoteProfileSelected();
+        this->onChangeConnectionType();
+        this->onRemoteParamsChanged();
         break;
     }
 
@@ -904,11 +909,11 @@ ConfigDialog::onAnalyzerTypeChanged(int index)
 }
 
 void
-ConfigDialog::onRemoteDeviceChanged(void)
+ConfigDialog::onRemoteParamsChanged(void)
 {
   if (this->remoteSelected()) {
-    this->updateRemoteDevice();
     this->profile.setDevice(this->remoteDevice);
+    this->updateRemoteParams();
   }
 }
 
@@ -1162,7 +1167,7 @@ ConfigDialog::onChangeConnectionType(void)
   }
 
   if (this->ui->useHostPortRadio->isChecked()) {
-    this->onRemoteDeviceChanged();
+    this->onRemoteParamsChanged();
     this->ui->useNetworkProfileRadio->setChecked(false);
   }
 
@@ -1199,7 +1204,13 @@ ConfigDialog::onRemoteProfileSelected(void)
 
     it = sus->getNetworkProfileFrom(this->ui->remoteDeviceCombo->currentText());
 
-    if (it != sus->getLastNetworkProfile())
+    if (it != sus->getLastNetworkProfile()) {
       this->setProfile(*it);
+
+      // Provide a better hint for username if the server announced none
+      if (this->profile.getParam("user").length() == 0)
+        this->ui->userEdit->setText("anonymous");
+      this->updateRemoteParams();
+    }
   }
 }

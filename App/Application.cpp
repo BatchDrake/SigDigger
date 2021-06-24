@@ -888,7 +888,15 @@ Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
 void
 Application::onStatusMessage(const Suscan::StatusMessage &message)
 {
-  this->mediator->setStatusMessage(message.getMessage());
+  if (message.getCode() == SUSCAN_ANALYZER_INIT_FAILURE) {
+    (void)  QMessageBox::critical(
+          this,
+          "Analyzer initialization",
+          "Initialization failed: " + message.getMessage(),
+          QMessageBox::Ok);
+  } else {
+    this->mediator->setStatusMessage(message.getMessage());
+  }
 }
 
 void

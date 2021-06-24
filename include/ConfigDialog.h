@@ -71,7 +71,7 @@ namespace SigDigger {
     void saveColors(void);
     void saveGuiConfigUi(void);
     void guessParamsFromFileName(void);
-    void updateRemoteDevice(void);
+    void updateRemoteParams(void);
     int  findRemoteProfileIndex(void);
     unsigned int getSelectedSampleRate(void) const;
     void setSelectedSampleRate(unsigned int);
@@ -134,7 +134,7 @@ namespace SigDigger {
     void onAccepted(void);
     void onSaveProfile(void);
     void onChangeConnectionType(void);
-    void onRemoteDeviceChanged(void);
+    void onRemoteParamsChanged(void);
     void onRefreshRemoteDevices(void);
     void onRemoteProfileSelected(void);
   };

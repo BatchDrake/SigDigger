@@ -402,6 +402,22 @@ Source::Config::getPath(void) const
   return path;
 }
 
+std::string
+Source::Config::getParam(const std::string &key) const
+{
+  const char *param;
+
+  if (this->instance == nullptr)
+    return "";
+
+  param = suscan_source_config_get_param(this->instance, key.c_str());
+
+  if (param == nullptr)
+    return "";
+
+  return param;
+}
+
 void
 Source::Config::setSampleRate(unsigned int rate)
 {
@@ -466,6 +482,19 @@ Source::Config::setInterface(std::string const &iface)
     return;
 
   SU_ATTEMPT(suscan_source_config_set_interface(this->instance, iface.c_str()));
+}
+
+void
+Source::Config::setParam(std::string const &key, std::string const &val)
+{
+  if (this->instance == nullptr)
+    return;
+
+  SU_ATTEMPT(
+        suscan_source_config_set_param(
+          this->instance,
+          key.c_str(),
+          val.c_str()));
 }
 
 void

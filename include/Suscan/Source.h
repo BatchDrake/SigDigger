@@ -317,6 +317,7 @@ namespace Suscan {
     std::string getInterface(void) const;
     SUFLOAT getBandwidth(void) const;
     SUFLOAT getGain(const std::string &) const;
+    std::string getParam(const std::string &key) const;
 
     const Source::Device &getDevice(void);
     enum suscan_source_format getFormat(void) const;
@@ -337,7 +338,7 @@ namespace Suscan {
     void setGain(const std::string &, SUFLOAT);
     void setAntenna(const std::string &);    
     void setInterface(std::string const &interface);
-
+    void setParam(std::string const &key, std::string const &param);
     Config& operator=(const Config &);
     Config& operator=(Config &&);
 
