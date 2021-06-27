@@ -795,6 +795,7 @@ Application::startCapture(void)
 void
 Application::orderedHalt(void)
 {
+  this->mediator->setState(UIMediator::HALTING);
   this->analyzer = nullptr;
   this->uninstallDataSaver();
   this->mediator->setRecordState(false);
