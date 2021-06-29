@@ -27,6 +27,8 @@ Q_DECLARE_METATYPE(Suscan::ChannelMessage);
 Q_DECLARE_METATYPE(Suscan::InspectorMessage);
 Q_DECLARE_METATYPE(Suscan::PSDMessage);
 Q_DECLARE_METATYPE(Suscan::SamplesMessage);
+Q_DECLARE_METATYPE(Suscan::SourceInfoMessage);
+Q_DECLARE_METATYPE(Suscan::StatusMessage);
 Q_DECLARE_METATYPE(Suscan::GenericMessage);
 Q_DECLARE_METATYPE(Suscan::EstimatorId);
 
@@ -45,9 +47,12 @@ Analyzer::AsyncThread::run()
     data = this->owner->read(type);
 
     switch (type) {
+      case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INFO:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_INSPECTOR:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_PSD:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_SAMPLES:
+      case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INIT:
+      case SUSCAN_ANALYZER_MESSAGE_TYPE_INTERNAL:
         emit message(type, data);
         break;
 
@@ -211,6 +216,10 @@ Analyzer::captureMessage(quint32 type, void *data)
 {
   switch (type) {
     // Data messages
+    case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INFO:
+      emit source_info_message(SourceInfoMessage(static_cast<struct suscan_analyzer_source_info *>(data)));
+      break;
+
     case SUSCAN_ANALYZER_MESSAGE_TYPE_INSPECTOR:
       emit inspector_message(InspectorMessage(static_cast<struct suscan_analyzer_inspector_msg *>(data)));
       break;
@@ -221,6 +230,11 @@ Analyzer::captureMessage(quint32 type, void *data)
 
     case SUSCAN_ANALYZER_MESSAGE_TYPE_SAMPLES:
       emit samples_message(SamplesMessage(static_cast<struct suscan_analyzer_sample_batch_msg *>(data)));
+      break;
+
+    case SUSCAN_ANALYZER_MESSAGE_TYPE_INTERNAL:
+    case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INIT:
+      emit status_message(StatusMessage(static_cast<struct suscan_analyzer_status_msg *>(data)));
       break;
 
     // Exit conditions. These have no data.
@@ -253,6 +267,9 @@ Analyzer::assertTypeRegistration(void)
     qRegisterMetaType<Suscan::PSDMessage>();
     qRegisterMetaType<Suscan::InspectorMessage>();
     qRegisterMetaType<Suscan::SamplesMessage>();
+    qRegisterMetaType<Suscan::SourceInfoMessage>();
+    qRegisterMetaType<Suscan::StatusMessage>();
+
     Analyzer::registered = true;
   }
 }

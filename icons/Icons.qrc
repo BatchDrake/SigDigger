@@ -46,6 +46,8 @@
         <file>dialog-error.png</file>
         <file>bookmark-new.png</file>
         <file>stock_bookmark.png</file>
+        <file>network-device.png</file>
+        <file>network-device-unavail.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

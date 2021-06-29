@@ -408,6 +408,46 @@ SourcePanel::refreshGains(Suscan::Source::Config &config)
 }
 
 void
+SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
+{
+  std::vector<Suscan::Source::GainDescription> gains;
+  DeviceGain *gain = nullptr;
+
+  this->setDCRemove(info.getDCRemove());
+  this->setIQReverse(info.getIQReverse());
+  this->setAGCEnabled(info.getAGC());
+  this->setBandwidth(info.getBandwidth());
+
+  // Create gains
+  this->clearGains();
+
+  info.getGainInfo(gains);
+
+  for (auto p: gains) {
+    gain = new DeviceGain(nullptr, p);
+    this->gainControls.push_back(gain);
+    this->ui->gainGridLayout->addWidget(
+          gain,
+          static_cast<int>(this->gainControls.size() - 1),
+          0,
+          1,
+          1);
+
+    connect(
+          gain,
+          SIGNAL(gainChanged(QString, float)),
+          this,
+          SLOT(onGainChanged(QString, float)));
+    gain->setGain(p.getDefault());
+  }
+
+  if (this->gainControls.size() == 0)
+    this->ui->gainsFrame->hide();
+  else
+    this->ui->gainsFrame->show();
+}
+
+void
 SourcePanel::applyCurrentAutogain(void)
 {
   if (this->currentAutoGain != nullptr) {

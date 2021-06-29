@@ -111,6 +111,8 @@ SOURCES += \
     Suscan/Logger.cpp \
     Suscan/Message.cpp \
     Suscan/MQ.cpp \
+    Suscan/Messages/SourceInfoMessage.cpp \
+    Suscan/Messages/StatusMessage.cpp \
     Suscan/MultitaskController.cpp \
     Suscan/Object.cpp \
     Suscan/Serializable.cpp \
@@ -185,6 +187,8 @@ HEADERS += \
     include/Suscan/Logger.h \
     include/Suscan/Message.h \
     include/Suscan/MQ.h \
+    include/Suscan/Messages/SourceInfoMessage.h \
+    include/Suscan/Messages/StatusMessage.h \
     include/Suscan/MultitaskController.h \
     include/Suscan/Object.h \
     include/Suscan/Serializable.h \

@@ -1,5 +1,5 @@
 //
-//    PSDMessage.h: PSD Message
+//    StatusMessage.cpp: Status message implementation
 //    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,29 +16,30 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef MESSAGES_PSD_MESSAGE_H
-#define MESSAGES_PSD_MESSAGE_H
 
-#include <Suscan/Compat.h>
-#include <Suscan/Message.h>
+#include <Suscan/Messages/StatusMessage.h>
 
-#include <analyzer/analyzer.h>
+using namespace Suscan;
 
-namespace Suscan {
-  class PSDMessage: public Message {
-  private:
-    struct suscan_analyzer_psd_msg *message = nullptr; // Convenience reference
+StatusMessage::StatusMessage() : Message() { }
 
-  public:
-    SUSCOUNT size(void) const;
-    SUFREQ getFrequency(void) const;
-    unsigned int getSampleRate(void) const;
-    unsigned int getMeasuredSampleRate(void) const;
-    const SUFLOAT *get(void) const;
+StatusMessage::StatusMessage(struct suscan_analyzer_status_msg *msg) :
+  Message(SUSCAN_ANALYZER_MESSAGE_TYPE_INTERNAL, msg)
+{
+  this->message = msg;
+}
 
-    PSDMessage();
-    PSDMessage(struct suscan_analyzer_psd_msg *msg);
-  };
-};
+int
+StatusMessage::getCode(void) const
+{
+  return this->message->code;
+}
 
-#endif // MESSAGES_PSD_MESSAGE_H
+QString
+StatusMessage::getMessage(void) const
+{
+  return QString(
+        this->message->err_msg == nullptr
+        ? ""
+        : this->message->err_msg);
+}

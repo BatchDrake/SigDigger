@@ -1,6 +1,6 @@
 //
-//    PSDMessage.h: PSD Message
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    SourceInfoMessage.h: Source Info Message
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,8 +16,9 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef MESSAGES_PSD_MESSAGE_H
-#define MESSAGES_PSD_MESSAGE_H
+
+#ifndef MESSAGES_SOURCE_INFO_MESSAGE_H
+#define MESSAGES_SOURCE_INFO_MESSAGE_H
 
 #include <Suscan/Compat.h>
 #include <Suscan/Message.h>
@@ -25,20 +26,19 @@
 #include <analyzer/analyzer.h>
 
 namespace Suscan {
-  class PSDMessage: public Message {
+  struct AnalyzerSourceInfo;
+  class SourceInfoMessage: public Message {
   private:
-    struct suscan_analyzer_psd_msg *message = nullptr; // Convenience reference
+    struct suscan_analyzer_source_info *message = nullptr;
+    AnalyzerSourceInfo *asInfo = nullptr;
 
   public:
-    SUSCOUNT size(void) const;
-    SUFREQ getFrequency(void) const;
-    unsigned int getSampleRate(void) const;
-    unsigned int getMeasuredSampleRate(void) const;
-    const SUFLOAT *get(void) const;
+    const AnalyzerSourceInfo *info(void) const;
 
-    PSDMessage();
-    PSDMessage(struct suscan_analyzer_psd_msg *msg);
+    SourceInfoMessage();
+    SourceInfoMessage(struct suscan_analyzer_source_info *info);
+    ~SourceInfoMessage();
   };
-};
+}
 
-#endif // MESSAGES_PSD_MESSAGE_H
+#endif // MESSAGES_SOURCE_INFO_MESSAGE_H

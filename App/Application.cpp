@@ -80,10 +80,15 @@ Application::updateRecent(void)
 void
 Application::run(Suscan::Object const &config)
 {
+  Suscan::Singleton *sing = Suscan::Singleton::get_instance();
   this->ui.postLoadInit(this);
 
   this->mediator->loadSerializedConfig(config);
   this->mediator->setState(UIMediator::HALTED);
+
+  // New devices may have been discovered after config deserialization
+  sing->refreshDevices();
+  this->mediator->refreshDevicesDone();
 
   this->connectUI();
   this->connectDeviceDetect();
@@ -604,6 +609,18 @@ Application::connectAnalyzer(void)
 
   connect(
         this->analyzer.get(),
+        SIGNAL(source_info_message(const Suscan::SourceInfoMessage &)),
+        this,
+        SLOT(onSourceInfoMessage(const Suscan::SourceInfoMessage &)));
+
+  connect(
+        this->analyzer.get(),
+        SIGNAL(status_message(const Suscan::StatusMessage &)),
+        this,
+        SLOT(onStatusMessage(const Suscan::StatusMessage &)));
+
+  connect(
+        this->analyzer.get(),
         SIGNAL(inspector_message(const Suscan::InspectorMessage &)),
         this,
         SLOT(onInspectorMessage(const Suscan::InspectorMessage &)));
@@ -778,6 +795,7 @@ Application::startCapture(void)
 void
 Application::orderedHalt(void)
 {
+  this->mediator->setState(UIMediator::HALTING);
   this->analyzer = nullptr;
   this->uninstallDataSaver();
   this->mediator->setRecordState(false);
@@ -835,9 +853,13 @@ Application::onAnalyzerEos(void)
 void
 Application::onPSDMessage(const Suscan::PSDMessage &msg)
 {
-  this->mediator->setProcessRate(
-        static_cast<unsigned int>(this->analyzer->getMeasuredSampleRate()));
   this->mediator->feedPSD(msg);
+}
+
+void
+Application::onSourceInfoMessage(const Suscan::SourceInfoMessage &msg)
+{
+  this->mediator->notifySourceInfo(*msg.info());
 }
 
 void
@@ -845,25 +867,38 @@ Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
 {
   Inspector *insp;
 
-  switch (msg.getInspectorId()) {
-    case SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID:
-      if (this->playBack != nullptr)
-        this->playBack->write(msg.getSamples(), msg.getCount());
-      if (this->audioFileSaver != nullptr)
-        this->audioFileSaver->write(msg.getSamples(), msg.getCount());
-      break;
+  if (msg.getInspectorId() == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
+    if (this->playBack != nullptr)
+      this->playBack->write(msg.getSamples(), msg.getCount());
+    if (this->audioFileSaver != nullptr)
+      this->audioFileSaver->write(msg.getSamples(), msg.getCount());
+  } else {
+    switch (msg.getInspectorId()) {
+      case SIGDIGGER_RAW_INSPECTOR_MAGIC_ID:
+        this->mediator->feedRawInspector(msg.getSamples(), msg.getCount());
+        break;
 
-    case SIGDIGGER_RAW_INSPECTOR_MAGIC_ID:
-      this->mediator->feedRawInspector(msg.getSamples(), msg.getCount());
-      break;
-
-    default:
-      if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
-                   != nullptr)
-          insp->feed(msg.getSamples(), msg.getCount());
+      default:
+        if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
+                     != nullptr)
+            insp->feed(msg.getSamples(), msg.getCount());
+    }
   }
 }
 
+void
+Application::onStatusMessage(const Suscan::StatusMessage &message)
+{
+  if (message.getCode() == SUSCAN_ANALYZER_INIT_FAILURE) {
+    (void)  QMessageBox::critical(
+          this,
+          "Analyzer initialization",
+          "Initialization failed: " + message.getMessage(),
+          QMessageBox::Ok);
+  } else {
+    this->mediator->setStatusMessage(message.getMessage());
+  }
+}
 
 void
 Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
@@ -877,37 +912,35 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
   switch (msg.getKind()) {
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_OPEN:
       // Audio path: set inspector Id
-      switch (msg.getRequestId()) {
-        case SIGDIGGER_AUDIO_INSPECTOR_REQID:
-          this->audioInspHandle = msg.getHandle();
-          this->audioInspectorOpened = true;
-          this->analyzer->setInspectorId(
-                msg.getHandle(),
-                SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID,
-                0);
-          this->analyzer->setInspectorWatermark(
-                msg.getHandle(),
-                SIGDIGGER_AUDIO_BUFFER_SIZE / 2,
-                0);
-          this->analyzer->setInspectorBandwidth(
-                msg.getHandle(),
-                this->getAudioInspectorBandwidth(),
-                0);
-          if (this->audioCfgTemplate == nullptr)
-            SU_ATTEMPT(this->audioCfgTemplate = suscan_config_dup(msg.getCConfig()));
 
-          this->audioConfigured = true;
+      if (msg.getClass() == "audio") {
+        this->audioInspHandle = msg.getHandle();
+        this->audioInspectorOpened = true;
+        this->analyzer->setInspectorId(
+              msg.getHandle(),
+              SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID,
+              0);
+        this->analyzer->setInspectorWatermark(
+              msg.getHandle(),
+              SIGDIGGER_AUDIO_BUFFER_SIZE / 2,
+              0);
+        this->analyzer->setInspectorBandwidth(
+              msg.getHandle(),
+              this->getAudioInspectorBandwidth(),
+              0);
+        if (this->audioCfgTemplate == nullptr)
+          SU_ATTEMPT(this->audioCfgTemplate = suscan_config_dup(msg.getCConfig()));
 
-          /* Set params for good */
-          this->setAudioInspectorParams(
-                this->audioSampleRate,
-                this->delayedCutOff,
-                this->delayedDemod,
-                this->delayedEnableSql,
-                this->delayedSqlLevel);
-          break;
+        this->audioConfigured = true;
 
-        case SIGDIGGER_RAW_INSPECTOR_REQID:
+        /* Set params for good */
+        this->setAudioInspectorParams(
+              this->audioSampleRate,
+              this->delayedCutOff,
+              this->delayedDemod,
+              this->delayedEnableSql,
+              this->delayedSqlLevel);
+      } else if (msg.getClass() == "raw") {
           this->rawInspHandle = msg.getHandle();
           this->rawInspectorOpened = true;
 
@@ -918,10 +951,7 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
 
           this->mediator->resetRawInspector(
                 static_cast<qreal>(msg.getEquivSampleRate()));
-
-          break;
-
-        default:
+      } else {
           insp = this->mediator->addInspectorTab(msg, oId);
           insp->setAnalyzer(this->analyzer.get());
           this->analyzer->setInspectorId(msg.getHandle(), oId, 0);

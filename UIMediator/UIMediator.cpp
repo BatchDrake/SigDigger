@@ -412,6 +412,21 @@ UIMediator::getState(void) const
 }
 
 void
+UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
+{
+  this->ui->spectrum->setFrequencyLimits(
+        static_cast<qint64>(info.getMinFrequency()),
+        static_cast<qint64>(info.getMaxFrequency()));
+
+  this->ui->spectrum->setFreqs(
+        static_cast<qint64>(info.getFrequency()),
+        static_cast<qint64>(info.getLnbFrequency()),
+        true); // Silent update (important!)
+
+  this->ui->sourcePanel->applySourceInfo(info);
+}
+
+void
 UIMediator::setPanSpectrumRunning(bool running)
 {
   this->ui->panoramicDialog->setRunning(running);
@@ -517,6 +532,7 @@ void
 UIMediator::feedPSD(const Suscan::PSDMessage &msg)
 {
   this->setSampleRate(msg.getSampleRate());
+  this->setProcessRate(msg.getMeasuredSampleRate());
   this->averager.feed(msg);
   this->ui->spectrum->feed(
         this->averager.get(),
@@ -666,6 +682,12 @@ UIMediator::detachAllInspectors()
     p->second->setAnalyzer(nullptr);
     p->second = nullptr;
   }
+}
+
+void
+UIMediator::setStatusMessage(QString const &message)
+{
+  this->ui->main->statusBar->showMessage(message);
 }
 
 void

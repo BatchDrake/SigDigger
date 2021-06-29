@@ -183,6 +183,8 @@ namespace SigDigger {
     void onPSDMessage(const Suscan::PSDMessage &);
     void onInspectorMessage(const Suscan::InspectorMessage &);
     void onInspectorSamples(const Suscan::SamplesMessage &);
+    void onSourceInfoMessage(const Suscan::SourceInfoMessage &);
+    void onStatusMessage(const Suscan::StatusMessage &);
 
     // DataSaver slots
     void onSaveError(void);
