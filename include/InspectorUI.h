@@ -116,6 +116,7 @@ namespace SigDigger {
     unsigned int getBaudRate(void) const;
     SUFLOAT getBaudRateFloat(void) const;
     std::string getClassName(void) const;
+    void populateUnits(void);
     void populate(void);
     void connectDataSaver(void);
     void connectNetForwarder(void);
@@ -150,7 +151,6 @@ namespace SigDigger {
 
       bool installNetForwarder(void);
       void uninstallNetForwarder(void);
-
       void setBasebandRate(unsigned int);
       void setSampleRate(float rate);
       void setBandwidth(unsigned int bw);
@@ -180,6 +180,11 @@ namespace SigDigger {
       void onChangeBandwidth(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
       void onApplyEstimation(QString, float);
+
+      // Spectrum slots
+      void onUnitChanged(void);
+      void onZeroPointChanged(void);
+      void onGainChanged(void);
 
       // DataSaver slots
       void onSaveError(void);

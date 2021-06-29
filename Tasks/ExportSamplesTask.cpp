@@ -142,7 +142,7 @@ done:
         "Cannot save data to WAV file "
         + this->path
         + ": "
-        + QString(strerror(errno)));
+        + QString(sf_strerror(this->sfp)));
 
   return ok;
 }

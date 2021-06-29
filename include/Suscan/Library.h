@@ -55,6 +55,12 @@ namespace Suscan {
     int entry = -1;
   };
 
+  struct SpectrumUnit {
+    std::string name;
+    float dBPerUnit;
+    float zeroPoint;
+  };
+
   class Singleton {
     static Singleton *instance;
     static Logger *logger;
@@ -70,6 +76,7 @@ namespace Suscan {
     std::vector<Object> FATs;
 
     QMap<qint64, Bookmark> bookmarks;
+    QMap<std::string, SpectrumUnit> spectrumUnits;
     QHash<QString, Source::Config> networkProfiles;
     std::list<std::string> recentProfiles;
 
@@ -117,10 +124,15 @@ namespace Suscan {
     ConfigMap::const_iterator getLastProfile(void) const;
     Suscan::Source::Config *getProfile(std::string const &name);
     void saveProfile(Suscan::Source::Config const &name);
+
     bool registerBookmark(std::string const &, qint64 freq, std::string const &);
     void replaceBookmark(std::string const &, qint64 freq, std::string const &);
-
     void removeBookmark(qint64);
+
+    bool registerSpectrumUnit(std::string const &, float, float);
+    void replaceSpectrumUnit(std::string const &, float, float);
+    void removeSpectrumUnit(std::string const &);
+
     void refreshDevices(void);
     void refreshNetworkProfiles(void);
 
@@ -142,10 +154,15 @@ namespace Suscan {
     std::list<std::string>::const_iterator getFirstRecent(void) const;
     std::list<std::string>::const_iterator getLastRecent(void) const;
 
-    QMap<qint64,Bookmark> const &getBookmarkMap(void) const;
-    QMap<qint64,Bookmark>::const_iterator getFirstBookmark(void) const;
-    QMap<qint64,Bookmark>::const_iterator getLastBookmark(void) const;
-    QMap<qint64,Bookmark>::const_iterator getBookmarkFrom(qint64 bm) const;
+    QMap<qint64, Bookmark> const &getBookmarkMap(void) const;
+    QMap<qint64, Bookmark>::const_iterator getFirstBookmark(void) const;
+    QMap<qint64, Bookmark>::const_iterator getLastBookmark(void) const;
+    QMap<qint64, Bookmark>::const_iterator getBookmarkFrom(qint64 bm) const;
+
+    QMap<std::string, SpectrumUnit> const &getSpectrumUnitMap(void) const;
+    QMap<std::string, SpectrumUnit>::const_iterator getFirstSpectrumUnit(void) const;
+    QMap<std::string, SpectrumUnit>::const_iterator getLastSpectrumUnit(void) const;
+    QMap<std::string, SpectrumUnit>::const_iterator getSpectrumUnitFrom(std::string const &) const;
 
     QHash<QString, Source::Config> const &getNetworkProfileMap(void) const;
     QHash<QString, Source::Config>::const_iterator getFirstNetworkProfile(void) const;

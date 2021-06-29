@@ -46,6 +46,17 @@ Singleton::Singleton()
 
   this->backgroundTaskController = new MultitaskController;
 
+  // Define some read-only units. We may let the user add customized
+  // units too.
+
+  this->registerSpectrumUnit("dBFS",    1.0, 0.0f);
+  this->registerSpectrumUnit("dBK",     1.0, -228.60f);
+  this->registerSpectrumUnit("dBW/Hz",  1.0, 0.0f);
+  this->registerSpectrumUnit("dBm/Hz",  1.0, -30.0f);
+
+  // Assuming 1 m^2 antenna
+  this->registerSpectrumUnit("dBJy",    1.0, -260.0f);
+
   this->logger = Logger::getInstance();
 }
 
@@ -543,6 +554,51 @@ Singleton::registerBookmark(
   return true;
 }
 
+bool
+Singleton::registerSpectrumUnit(
+    std::string const &name,
+    float dBPerUnit,
+    float zeroPoint)
+{
+  if (this->spectrumUnits.find(name) != this->spectrumUnits.end())
+    return false;
+
+  SpectrumUnit su;
+
+  su.name      = name;
+  su.dBPerUnit = dBPerUnit;
+  su.zeroPoint = zeroPoint;
+
+  this->spectrumUnits[name] = su;
+
+  return true;
+}
+
+void
+Singleton::replaceSpectrumUnit(
+    std::string const &name,
+    float dBPerUnit,
+    float zeroPoint)
+{
+  SpectrumUnit su;
+
+  su.name      = name;
+  su.dBPerUnit = dBPerUnit;
+  su.zeroPoint = zeroPoint;
+
+  this->removeSpectrumUnit(name);
+  this->spectrumUnits[name] = su;
+}
+
+void
+Singleton::removeSpectrumUnit(std::string const &name)
+{
+  if (this->spectrumUnits.find(name) != this->spectrumUnits.end()) {
+    SpectrumUnit bm = this->spectrumUnits[name];
+    this->spectrumUnits.remove(name);
+  }
+}
+
 void
 Singleton::registerSourceDevice(const suscan_source_device_t *dev)
 {
@@ -662,6 +718,31 @@ Singleton::getBookmarkFrom(qint64 freq) const
 {
   return this->bookmarks.lowerBound(freq);
 }
+
+QMap<std::string, SpectrumUnit> const &
+Singleton::getSpectrumUnitMap(void) const
+{
+  return this->spectrumUnits;
+}
+
+QMap<std::string, SpectrumUnit>::const_iterator
+Singleton::getFirstSpectrumUnit(void) const
+{
+  return this->spectrumUnits.cbegin();
+}
+
+QMap<std::string, SpectrumUnit>::const_iterator
+Singleton::getLastSpectrumUnit(void) const
+{
+  return this->spectrumUnits.cend();
+}
+
+QMap<std::string, SpectrumUnit>::const_iterator
+Singleton::getSpectrumUnitFrom(std::string const &name) const
+{
+  return this->spectrumUnits.lowerBound(name);
+}
+
 
 QHash<QString, Source::Config> const &
 Singleton::getNetworkProfileMap(void) const

@@ -67,8 +67,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>240</width>
-         <height>838</height>
+         <width>305</width>
+         <height>858</height>
         </rect>
        </property>
        <attribute name="label">
@@ -203,8 +203,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>240</width>
-         <height>838</height>
+         <width>305</width>
+         <height>858</height>
         </rect>
        </property>
        <attribute name="label">
@@ -242,8 +242,8 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>240</width>
-             <height>838</height>
+             <width>305</width>
+             <height>858</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="estimatorsGrid">
@@ -276,8 +276,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>240</width>
-         <height>838</height>
+         <width>305</width>
+         <height>858</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -339,8 +339,8 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>240</width>
-             <height>838</height>
+             <width>305</width>
+             <height>858</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -398,8 +398,8 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>240</width>
-         <height>838</height>
+         <width>305</width>
+         <height>858</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -695,48 +695,26 @@ font-family: Monospace;</string>
                </widget>
               </item>
               <item row="0" column="3">
-               <widget class="QLabel" name="label_3">
+               <widget class="QLabel" name="label_5">
                 <property name="text">
-                 <string>Spectrum / Waterfall</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label">
-                <property name="text">
-                 <string>Spectrum source</string>
+                 <string>Units</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="1" column="4">
-               <widget class="ctkRangeSlider" name="rangeSlider">
-                <property name="minimum">
-                 <number>-120</number>
-                </property>
-                <property name="maximum">
-                 <number>30</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="minimumValue">
-                 <number>-60</number>
-                </property>
-                <property name="maximumValue">
-                 <number>-10</number>
-                </property>
-                <property name="minimumPosition">
-                 <number>-60</number>
+              <item row="0" column="9">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Spectrum / Waterfall</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_2">
+              <item row="2" column="9">
+               <widget class="QLabel" name="label_4">
                 <property name="text">
-                 <string>Palette</string>
+                 <string>Range</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -753,17 +731,88 @@ font-family: Monospace;</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="3">
-               <widget class="QLabel" name="label_4">
+              <item row="2" column="4">
+               <widget class="QDoubleSpinBox" name="zeroPointSpin">
+                <property name="minimumSize">
+                 <size>
+                  <width>140</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="minimum">
+                 <double>-120.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>120.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="4">
+               <widget class="QComboBox" name="unitsCombo"/>
+              </item>
+              <item row="2" column="1">
+               <widget class="QComboBox" name="paletteCombo">
+                <property name="iconSize">
+                 <size>
+                  <width>64</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_2">
                 <property name="text">
-                 <string>Range</string>
+                 <string>Palette</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="0" column="4">
+              <item row="2" column="10">
+               <widget class="ctkRangeSlider" name="rangeSlider">
+                <property name="minimum">
+                 <number>-150</number>
+                </property>
+                <property name="maximum">
+                 <number>150</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="minimumValue">
+                 <number>-60</number>
+                </property>
+                <property name="maximumValue">
+                 <number>-10</number>
+                </property>
+                <property name="minimumPosition">
+                 <number>-60</number>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>Spectrum source</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Zero point</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="10">
                <widget class="QSlider" name="aspectSlider">
                 <property name="maximum">
                  <number>100</number>
@@ -776,7 +825,33 @@ font-family: Monospace;</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="2">
+              <item row="0" column="7">
+               <widget class="QDoubleSpinBox" name="gainSpinBox">
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="suffix">
+                 <string> dB</string>
+                </property>
+                <property name="minimum">
+                 <double>-300.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>300.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="6">
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>Gain</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
                <widget class="QPushButton" name="peakDetectionButton">
                 <property name="text">
                  <string>Peak detection</string>
@@ -786,17 +861,7 @@ font-family: Monospace;</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="paletteCombo">
-                <property name="iconSize">
-                 <size>
-                  <width>64</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="5">
+              <item row="0" column="11">
                <spacer name="horizontalSpacer_2">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>

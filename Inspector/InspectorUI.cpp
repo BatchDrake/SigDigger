@@ -120,6 +120,7 @@ InspectorUI::initUi(void)
 
   this->setPalette("Suscan");
 
+  this->populateUnits();
   this->populate();
 
   // Configure throttleable widgets
@@ -349,6 +350,24 @@ InspectorUI::connectAll()
         SIGNAL(pandapterRangeChanged(float, float)),
         this,
         SLOT(onPandapterRangeChanged(float, float)));
+
+  connect(
+        this->ui->unitsCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onUnitChanged(void)));
+
+  connect(
+        this->ui->zeroPointSpin,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onZeroPointChanged(void)));
+
+  connect(
+        this->ui->gainSpinBox,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onGainChanged(void)));
 }
 
 void
@@ -664,6 +683,20 @@ InspectorUI::pushControl(InspectorCtl *ctl)
         SIGNAL(changed()),
         this,
         SLOT(onInspectorControlChanged(void)));
+}
+
+void
+InspectorUI::populateUnits(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  this->ui->unitsCombo->clear();
+
+  for (auto p: sus->getSpectrumUnitMap())
+    this->ui->unitsCombo->addItem(QString::fromStdString(p.name));
+
+  this->ui->unitsCombo->setCurrentIndex(0);
+  this->ui->zeroPointSpin->setValue(0.0);
 }
 
 void
@@ -1128,3 +1161,46 @@ InspectorUI::onNetCommit(void)
   this->netForwarderUI->setCaptureSize(this->socketForwarder->getSize());
 }
 
+void
+InspectorUI::onUnitChanged(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
+
+  std::string name = this->ui->unitsCombo->currentText().toStdString();
+  auto it = sus->getSpectrumUnitFrom(name);
+
+  this->ui->zeroPointSpin->setSuffix(" " + QString::fromStdString(name));
+
+  if (it != sus->getLastSpectrumUnit()) {
+    this->ui->wfSpectrum->setUnitName(QString::fromStdString(it->name));
+    this->ui->wfSpectrum->setdBPerUnit(it->dBPerUnit);
+    this->ui->wfSpectrum->setZeroPoint(it->zeroPoint + currZP);
+  } else {
+    this->ui->wfSpectrum->setUnitName("dBFS");
+    this->ui->wfSpectrum->setdBPerUnit(1.);
+    this->ui->wfSpectrum->setZeroPoint(currZP);
+  }
+}
+
+void
+InspectorUI::onZeroPointChanged(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
+
+  std::string name = this->ui->unitsCombo->currentText().toStdString();
+  auto it = sus->getSpectrumUnitFrom(name);
+
+  if (it != sus->getLastSpectrumUnit())
+    this->ui->wfSpectrum->setZeroPoint(it->zeroPoint + currZP);
+  else
+    this->ui->wfSpectrum->setZeroPoint(currZP);
+}
+
+void
+InspectorUI::onGainChanged(void)
+{
+  this->ui->wfSpectrum->setGain(
+        static_cast<float>(this->ui->gainSpinBox->value()));
+}
