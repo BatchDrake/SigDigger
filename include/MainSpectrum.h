@@ -116,6 +116,10 @@ namespace SigDigger {
     void setFilterSkewness(enum Skewness); // TODO: Return *actual* bw
     void updateOverlay(void);
 
+    void setGain(float);
+    void setZeroPoint(float);
+    void setUnits(QString const &, float, float);
+
     // Getters
     bool getThrottling(void) const;
     CaptureMode getCaptureMode(void) const;

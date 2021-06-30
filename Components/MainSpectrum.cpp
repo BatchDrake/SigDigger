@@ -377,6 +377,26 @@ MainSpectrum::updateOverlay(void)
 }
 
 void
+MainSpectrum::setGain(float gain)
+{
+  this->ui->mainSpectrum->setGain(gain);
+}
+
+void
+MainSpectrum::setZeroPoint(float zeroPoint)
+{
+  this->ui->mainSpectrum->setZeroPoint(zeroPoint);
+}
+
+void
+MainSpectrum::setUnits(QString const &name, float dBPerUnit, float zeroPoint)
+{
+  this->ui->mainSpectrum->setUnitName(name);
+  this->ui->mainSpectrum->setdBPerUnit(dBPerUnit);
+  this->ui->mainSpectrum->setZeroPoint(zeroPoint);
+}
+
+void
 MainSpectrum::setFilterBandwidth(unsigned int bw)
 {
   if (this->bandwidth != bw) {

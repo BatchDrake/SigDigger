@@ -51,6 +51,10 @@ namespace SigDigger {
 
     std::string palette = "Magma (Feely)";
 
+    std::string unitName;
+    float zeroPoint;
+    float gain;
+
     int zoom = 1;
 
     // Overriden methods
@@ -89,6 +93,7 @@ namespace SigDigger {
     void updateFftSizes(void);
     void updateTimeSpans(void);
     void connectAll(void);
+    void populateUnits(void);
     void updateRbw(void);
 
   public:
@@ -116,6 +121,12 @@ namespace SigDigger {
     bool getTimeStamps(void) const;
     bool getBookmarks(void) const;
 
+    QString getUnitName(void) const;
+    float getZeroPoint(void) const;
+    float getGain(void) const;
+    float getCompleteZeroPoint(void) const;
+    float getdBPerUnit(void) const;
+
     enum Suscan::AnalyzerParams::WindowFunction getWindowFunction(void) const;
 
     // Setters
@@ -137,6 +148,10 @@ namespace SigDigger {
     void setTimeSpan(unsigned int);
     void setTimeStamps(bool);
     void setBookmarks(bool);
+
+    bool setUnitName(QString);
+    void setZeroPoint(float);
+    void setGain(float);
 
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
@@ -161,6 +176,11 @@ namespace SigDigger {
     void onTimeStampsChanged(void);
     void onBookmarksChanged(void);
 
+    // Unit handling slots
+    void onUnitChanged(void);
+    void onZeroPointChanged(void);
+    void onGainChanged(void);
+
   signals:
     void paletteChanged(void);
     void rangesChanged(void);
@@ -171,6 +191,9 @@ namespace SigDigger {
     void timeSpanChanged(void);
     void timeStampsChanged(void);
     void bookmarksChanged(void);
+    void unitChanged(QString, float, float);
+    void zeroPointChanged(float);
+    void gainChanged(float);
   };
 }
 

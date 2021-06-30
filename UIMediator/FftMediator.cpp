@@ -77,6 +77,24 @@ UIMediator::connectFftPanel(void)
         SIGNAL(bookmarksChanged(void)),
         this,
         SLOT(onBookmarksButtonChanged(void)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(unitChanged(QString, float, float)),
+        this,
+        SLOT(onUnitChanged(QString, float, float)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(zeroPointChanged(float)),
+        this,
+        SLOT(onZeroPointChanged(float)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(gainChanged(float)),
+        this,
+        SLOT(onGainChanged(float)));
 }
 
 void
@@ -155,4 +173,22 @@ UIMediator::onWindowFunctionChanged(void)
       this->ui->fftPanel->getWindowFunction();
 
   emit analyzerParamsChanged();
+}
+
+void
+UIMediator::onUnitChanged(QString name, float dBPerUnit, float zeroPoint)
+{
+  this->ui->spectrum->setUnits(name, dBPerUnit, zeroPoint);
+}
+
+void
+UIMediator::onZeroPointChanged(float zp)
+{
+  this->ui->spectrum->setZeroPoint(zp);
+}
+
+void
+UIMediator::onGainChanged(float gain)
+{
+  this->ui->spectrum->setGain(gain);
 }

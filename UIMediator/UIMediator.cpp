@@ -838,6 +838,13 @@ UIMediator::applyConfig(void)
   if (savedBw > 0)
     this->setBandwidth(savedBw);
 
+  // Configure spectrum
+  this->ui->spectrum->setUnits(
+        this->ui->fftPanel->getUnitName(),
+        this->ui->fftPanel->getdBPerUnit(),
+        this->ui->fftPanel->getCompleteZeroPoint());
+  this->ui->spectrum->setGain(this->ui->fftPanel->getGain());
+
   // Artificially trigger slots to synchronize UI
   this->onPaletteChanged();
   this->onRangesChanged();

@@ -266,6 +266,9 @@ namespace SigDigger {
     void onTimeSpanChanged(void);
     void onTimeStampsChanged(void);
     void onBookmarksButtonChanged(void);
+    void onGainChanged(float);
+    void onZeroPointChanged(float);
+    void onUnitChanged(QString, float, float);
 
     // Audio panel
     void onAudioChanged(void);

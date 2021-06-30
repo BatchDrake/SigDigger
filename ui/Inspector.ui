@@ -808,7 +808,7 @@ font-family: Monospace;</string>
               <item row="2" column="3">
                <widget class="QLabel" name="label_6">
                 <property name="text">
-                 <string>Zero point</string>
+                 <string>Zero adjust</string>
                 </property>
                </widget>
               </item>
