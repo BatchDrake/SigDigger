@@ -153,11 +153,18 @@ UIMediator::refreshUI(void)
         ? InspectorPanel::State::ATTACHED
         : InspectorPanel::State::DETACHED);
 
-  if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {
-    sourceDesc = QString::fromStdString(dev.getDesc());
+  if (config->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
+    QString user = dev.getParam("user");
+    QString host = dev.getParam("host");
+    QString port = dev.getParam("port");
+    sourceDesc = "Remote analyzer on " + user + "@" + host + ":" + port;
   } else {
-    QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
-    sourceDesc = fi.fileName();
+    if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {
+      sourceDesc = QString::fromStdString(dev.getDesc());
+    } else {
+      QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
+      sourceDesc = fi.fileName();
+    }
   }
 
   this->owner->setWindowTitle(
