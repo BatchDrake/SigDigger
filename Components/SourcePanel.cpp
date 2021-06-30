@@ -156,6 +156,12 @@ SourcePanel::connectAll(void)
         SIGNAL(valueChanged(qreal)),
         this,
         SLOT(onBandwidthChanged(void)));
+
+  connect(
+        this->ui->ppmSpinBox,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onPPMChanged(void)));
 }
 
 QString
@@ -167,11 +173,16 @@ SourcePanel::formatSampleRate(unsigned int rate)
 void
 SourcePanel::refreshUi()
 {
-  if (this->profile != nullptr)
+  if (this->profile != nullptr) {
     this->setThrottleable(this->profile->getType() != SUSCAN_SOURCE_TYPE_SDR);
 
-  this->ui->antennaCombo->setEnabled(
-        this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
+    this->ui->antennaCombo->setEnabled(
+          this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
+
+    this->ui->ppmSpinBox->setEnabled(
+          this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR
+          || this->profile->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE);
+  }
 }
 
 void
@@ -253,6 +264,12 @@ SourcePanel::setBandwidth(float bw)
 }
 
 void
+SourcePanel::setPPM(float ppm)
+{
+  this->ui->ppmSpinBox->setValue(static_cast<qreal>(ppm));
+}
+
+void
 SourcePanel::setProfile(Suscan::Source::Config *config)
 {
   SUFLOAT bw;
@@ -275,6 +292,7 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
     bw = config->getDecimatedSampleRate();
 
   this->setBandwidth(bw);
+  this->setPPM(this->profile->getPPM());
 
   this->refreshUi();
 }
@@ -563,6 +581,12 @@ SourcePanel::getBandwidth(void) const
   return static_cast<float>(this->ui->bwSpin->value());
 }
 
+float
+SourcePanel::getPPM(void) const
+{
+  return static_cast<float>(this->ui->ppmSpinBox->value());
+}
+
 ////////////////////////////////// Slots /////////////////////////////////////
 void
 SourcePanel::onGainChanged(QString name, float val)
@@ -598,6 +622,12 @@ void
 SourcePanel::onBandwidthChanged(void)
 {
   emit bandwidthChanged();
+}
+
+void
+SourcePanel::onPPMChanged(void)
+{
+  emit ppmChanged();
 }
 
 void

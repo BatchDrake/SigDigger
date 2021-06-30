@@ -185,6 +185,7 @@ namespace SigDigger {
     void toggleAGCEnabled(void);
     void antennaChanged(QString);
     void bandwidthChanged(void);
+    void ppmChanged(void);
 
     void saveStateChanged(void);
     void requestOpenInspector(void);
@@ -255,6 +256,7 @@ namespace SigDigger {
     void onToggleAGCEnabled(void);
     void onAntennaChanged(QString name);
     void onBandwidthChanged(void);
+    void onPPMChanged(void);
 
     // Fft Panel
     void onPaletteChanged(void);

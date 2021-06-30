@@ -418,6 +418,15 @@ Source::Config::getParam(const std::string &key) const
   return param;
 }
 
+SUFLOAT
+Source::Config::getPPM(void) const
+{
+  if (this->instance == nullptr)
+    return 0.;
+
+  return suscan_source_config_get_ppm(this->instance);
+}
+
 void
 Source::Config::setSampleRate(unsigned int rate)
 {
@@ -495,6 +504,15 @@ Source::Config::setParam(std::string const &key, std::string const &val)
           this->instance,
           key.c_str(),
           val.c_str()));
+}
+
+void
+Source::Config::setPPM(SUFLOAT ppm)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_set_ppm(this->instance, ppm);
 }
 
 void

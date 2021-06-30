@@ -45,8 +45,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>301</width>
-        <height>264</height>
+        <width>287</width>
+        <height>270</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
@@ -65,20 +65,54 @@
        <property name="spacing">
         <number>1</number>
        </property>
-       <item row="3" column="0" colspan="2">
-        <widget class="Line" name="line">
-         <property name="minimumSize">
-          <size>
-           <width>114</width>
-           <height>0</height>
-          </size>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_19">
+         <property name="text">
+          <string>Antenna</string>
          </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="8" column="2">
+        <widget class="FrequencySpinBox" name="bwSpin"/>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Freq. correction</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Effective rate</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="2">
+        <widget class="FrequencySpinBox" name="throttleSpin">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QCheckBox" name="agcEnabledCheck">
+         <property name="text">
+          <string>Hardware AGC</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
         <widget class="QCheckBox" name="throttleCheck">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -91,69 +125,7 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="label_19">
-         <property name="text">
-          <string>Antenna</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QCheckBox" name="agcEnabledCheck">
-         <property name="text">
-          <string>Hardware AGC</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0" colspan="2">
-        <widget class="QFrame" name="dataSaverFrame">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QGridLayout" name="dataSaverGrid">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="sampleRateLabel">
-         <property name="font">
-          <font>
-           <family>Monospace</family>
-          </font>
-         </property>
-         <property name="text">
-          <string>N/A</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0" colspan="2">
+       <item row="10" column="0" colspan="3">
         <widget class="QFrame" name="gainsFrame">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -189,6 +161,41 @@
          </layout>
         </widget>
        </item>
+       <item row="5" column="0">
+        <widget class="QCheckBox" name="dcRemoveCheck">
+         <property name="text">
+          <string>DC remove</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="sampleRateLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>N/A</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Sample rate</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="2">
+        <widget class="QComboBox" name="antennaCombo"/>
+       </item>
        <item row="4" column="0">
         <widget class="QCheckBox" name="swapIQCheck">
          <property name="text">
@@ -196,7 +203,62 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="0" colspan="2">
+       <item row="12" column="0" colspan="3">
+        <widget class="QFrame" name="dataSaverFrame">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="dataSaverGrid">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="processingRateLabel">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>N/A</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Bandwidth</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0" colspan="3">
         <widget class="QFrame" name="autoGainFrame">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -250,24 +312,7 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Processing rate</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Effective rate</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="0">
+       <item row="13" column="0">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -283,7 +328,7 @@
          </property>
         </spacer>
        </item>
-       <item row="2" column="0" colspan="2">
+       <item row="2" column="0" colspan="3">
         <widget class="QFrame" name="frame">
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
@@ -339,58 +384,39 @@
          </layout>
         </widget>
        </item>
-       <item row="7" column="1">
-        <widget class="QComboBox" name="antennaCombo"/>
-       </item>
-       <item row="5" column="0">
-        <widget class="QCheckBox" name="dcRemoveCheck">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>DC remove</string>
+          <string>Processing rate</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="processingRateLabel">
-         <property name="font">
-          <font>
-           <family>Monospace</family>
-          </font>
+       <item row="3" column="0" colspan="3">
+        <widget class="Line" name="line">
+         <property name="minimumSize">
+          <size>
+           <width>114</width>
+           <height>0</height>
+          </size>
          </property>
-         <property name="text">
-          <string>N/A</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Sample rate</string>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Bandwidth</string>
-         </property>
+       <item row="9" column="2">
+        <widget class="QDoubleSpinBox" name="ppmSpinBox">
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
-        <widget class="FrequencySpinBox" name="bwSpin"/>
-       </item>
-       <item row="6" column="1">
-        <widget class="FrequencySpinBox" name="throttleSpin">
-         <property name="enabled">
-          <bool>false</bool>
+         <property name="suffix">
+          <string> ppm</string>
+         </property>
+         <property name="minimum">
+          <double>-100.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>100.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -408,8 +434,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../icons/Icons.qrc"/>
-  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>
  <connections/>

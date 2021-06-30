@@ -205,6 +205,7 @@ namespace Suscan {
     void setSpectrumPartitioning(SpectrumPartitioning);
     void setAntenna(std::string const &name);
     void setBandwidth(SUFLOAT val);
+    void setPPM(SUFLOAT val);
     void setThrottle(unsigned int throttle);
     void setParams(AnalyzerParams &params);
     void setDCRemove(bool remove);

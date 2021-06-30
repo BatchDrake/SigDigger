@@ -170,6 +170,7 @@ namespace SigDigger {
     void onAudioVolumeChanged(float);
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
+    void onPPMChanged(void);
     void onDeviceRefresh(void);
     void onRecentSelected(QString profile);
     void onRecentCleared(void);

@@ -137,6 +137,12 @@ Analyzer::setBandwidth(SUFLOAT value)
 }
 
 void
+Analyzer::setPPM(SUFLOAT value)
+{
+  SU_ATTEMPT(suscan_analyzer_set_ppm(this->instance, value));
+}
+
+void
 Analyzer::setFrequency(SUFREQ freq, SUFREQ lnb)
 {
   SU_ATTEMPT(suscan_analyzer_set_freq(this->instance, freq, lnb));

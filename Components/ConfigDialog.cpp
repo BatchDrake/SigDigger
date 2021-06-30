@@ -83,9 +83,11 @@ ConfigDialog::refreshUiState(void)
       this->ui->sdrFrame->setEnabled(true);
       this->ui->fileFrame->setEnabled(false);
       this->ui->sampRateStack->setCurrentIndex(0);
+      this->ui->ppmSpinBox->setEnabled(true);
     } else {
       this->ui->sdrFrame->setEnabled(false);
       this->ui->fileFrame->setEnabled(true);
+      this->ui->ppmSpinBox->setEnabled(false);
       this->ui->sampRateStack->setCurrentIndex(1);
     }
   } else {
@@ -105,6 +107,7 @@ ConfigDialog::refreshUiState(void)
     this->ui->hostEdit->setEnabled(!netProfile);
     this->ui->portEdit->setEnabled(!netProfile);
     this->ui->remoteDeviceCombo->setEnabled(netProfile);
+    this->ui->ppmSpinBox->setEnabled(true);
   }
 
   this->setSelectedSampleRate(this->profile.getSampleRate());
@@ -376,6 +379,10 @@ ConfigDialog::refreshProfileUi(void)
   this->ui->iqBalanceCheck->setChecked(this->profile.getIQBalance());
   this->ui->removeDCCheck->setChecked(this->profile.getDCRemove());
   this->ui->loopCheck->setChecked(this->profile.getLoop());
+
+  this->ui->ppmSpinBox->setValue(
+        static_cast<double>(this->profile.getPPM()));
+
   this->ui->bandwidthSpinBox->setValue(
         static_cast<double>(this->profile.getBandwidth()));
 
@@ -544,6 +551,12 @@ ConfigDialog::connectAll(void)
   connect(
         this->ui->sampleRateCombo,
         SIGNAL(activated(int)),
+        this,
+        SLOT(onSpinsChanged(void)));
+
+  connect(
+        this->ui->ppmSpinBox,
+        SIGNAL(valueChanged(double)),
         this,
         SLOT(onSpinsChanged(void)));
 
@@ -974,18 +987,21 @@ ConfigDialog::onSpinsChanged(void)
   if (!this->refreshing) {
     SUFREQ freq;
     SUFREQ lnbFreq;
+    SUFLOAT ppm;
     unsigned int sampRate;
 
     lnbFreq = this->ui->lnbSpinBox->value();
     this->refreshFrequencyLimits();
     freq = this->ui->frequencySpinBox->value();
     sampRate = this->getSelectedSampleRate();
+    ppm = static_cast<float>(this->ui->ppmSpinBox->value());
 
     this->profile.setFreq(freq);
     this->profile.setLnbFreq(lnbFreq);
     this->profile.setSampleRate(sampRate);
     this->profile.setDecimation(
           static_cast<unsigned>(this->ui->decimationSpin->value()));
+    this->profile.setPPM(ppm);
 
     if (sender() == static_cast<QObject *>(this->ui->sampleRateCombo)
         || sender() == static_cast<QObject *>(this->ui->sampleRateSpinBox))

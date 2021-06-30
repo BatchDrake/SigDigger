@@ -144,16 +144,6 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="4" colspan="3">
-        <widget class="QCheckBox" name="removeDCCheck">
-         <property name="text">
-          <string>DC remove</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
        <item row="4" column="0">
         <widget class="QLabel" name="label_20">
          <property name="text">
@@ -785,6 +775,39 @@
            </item>
           </layout>
          </widget>
+        </widget>
+       </item>
+       <item row="3" column="5">
+        <widget class="QCheckBox" name="removeDCCheck">
+         <property name="text">
+          <string>DC remove</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="4">
+        <widget class="QLabel" name="label_46">
+         <property name="text">
+          <string>Freq. correction</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="5">
+        <widget class="QDoubleSpinBox" name="ppmSpinBox">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="suffix">
+          <string> ppm</string>
+         </property>
+         <property name="minimum">
+          <double>-100.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>100.000000000000000</double>
+         </property>
         </widget>
        </item>
       </layout>

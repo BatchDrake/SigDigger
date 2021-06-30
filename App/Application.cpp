@@ -497,6 +497,12 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
+        SIGNAL(ppmChanged(void)),
+        this,
+        SLOT(onPPMChanged(void)));
+
+  connect(
+        this->mediator,
         SIGNAL(uiQuit(void)),
         this,
         SLOT(quit(void)));
@@ -1452,6 +1458,14 @@ Application::onBandwidthChanged(void)
   if (this->mediator->getState() == UIMediator::RUNNING) {
     this->analyzer->setBandwidth(this->mediator->getProfile()->getBandwidth());
     this->assertAudioInspectorLo();
+  }
+}
+
+void
+Application::onPPMChanged(void)
+{
+  if (this->mediator->getState() == UIMediator::RUNNING) {
+    this->analyzer->setPPM(this->mediator->getProfile()->getPPM());
   }
 }
 

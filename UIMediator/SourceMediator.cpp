@@ -71,6 +71,13 @@ UIMediator::connectSourcePanel(void)
         SIGNAL(bandwidthChanged(void)),
         this,
         SLOT(onBandwidthChanged(void)));
+
+
+  connect(
+        this->ui->sourcePanel,
+        SIGNAL(ppmChanged(void)),
+        this,
+        SLOT(onPPMChanged(void)));
 }
 
 void
@@ -122,4 +129,11 @@ UIMediator::onBandwidthChanged(void)
 {
   this->appConfig->profile.setBandwidth(this->ui->sourcePanel->getBandwidth());
   emit bandwidthChanged();
+}
+
+void
+UIMediator::onPPMChanged(void)
+{
+  this->appConfig->profile.setPPM(this->ui->sourcePanel->getPPM());
+  emit ppmChanged();
 }
