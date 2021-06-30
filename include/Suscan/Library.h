@@ -56,9 +56,9 @@ namespace Suscan {
   };
 
   struct SpectrumUnit {
-    std::string name;
-    float dBPerUnit;
-    float zeroPoint;
+    std::string name = "dBFS";
+    float dBPerUnit  = 1.0f;
+    float zeroPoint  = 0.0f;
   };
 
   class Singleton {

@@ -49,13 +49,18 @@ Singleton::Singleton()
   // Define some read-only units. We may let the user add customized
   // units too.
 
-  this->registerSpectrumUnit("dBFS",    1.0, 0.0f);
-  this->registerSpectrumUnit("dBK",     1.0, -228.60f);
-  this->registerSpectrumUnit("dBW/Hz",  1.0, 0.0f);
-  this->registerSpectrumUnit("dBm/Hz",  1.0, -30.0f);
+  this->registerSpectrumUnit("dBFS",     1.0, 0.0f);
+  this->registerSpectrumUnit("dBK",      1.0, -228.60f);
+  this->registerSpectrumUnit("dBW/Hz",   1.0, 0.0f);
+  this->registerSpectrumUnit("dBm/Hz",   1.0, -30.0f);
 
-  // Assuming 1 m^2 antenna
-  this->registerSpectrumUnit("dBJy",    1.0, -260.0f);
+  this->registerSpectrumUnit("dBJy",     1.0, 0.0f);
+
+  // The zero point of the AB magnitude scale is at 3631 Jy. This is,
+  // at 35.6 dB above the zero point of the dBJy scale. Since 1 mag = -4 dB,
+  // the zero point of the scale exactly at -8.9 mag w.r.t the zero point of the
+  // dBJy scale.
+  this->registerSpectrumUnit("mag (AB)", -4.0, -2.5f * SU_LOG(3631.f));
 
   this->logger = Logger::getInstance();
 }

@@ -16,7 +16,6 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include <Suscan/Library.h>
 #include "FftPanel.h"
 #include "ui_FftPanel.h"
 #include "SigDiggerHelpers.h"
@@ -899,38 +898,40 @@ void
 FftPanel::onUnitChanged(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
+  float currZPdB = this->zeroPointToDb();
+  float newZp;
   std::string name = this->ui->unitsCombo->currentText().toStdString();
   auto it = sus->getSpectrumUnitFrom(name);
 
   this->ui->zeroPointSpin->setSuffix(" " + QString::fromStdString(name));
 
   if (it != sus->getLastSpectrumUnit()) {
-    this->panelConfig->unitName = name;
-    emit unitChanged(
-          QString::fromStdString(it->name),
-          it->dBPerUnit,
-          it->zeroPoint + currZP);
+    this->currentUnit = *it;
   } else {
-    this->panelConfig->unitName = "dBFS";
-    emit unitChanged("dBFS", 1.f, 0.f);
+    this->currentUnit.name      = "dBFS";
+    this->currentUnit.dBPerUnit = 1.f;
+    this->currentUnit.zeroPoint = 0;
   }
+
+  this->panelConfig->unitName = this->currentUnit.name;
+
+  newZp = this->dbToZeroPoint(currZPdB);
+
+  emit unitChanged(
+        QString::fromStdString(this->currentUnit.name),
+        this->currentUnit.dBPerUnit,
+        this->currentUnit.zeroPoint + newZp);
+
+  this->setZeroPoint(newZp);
 }
 
 void
 FftPanel::onZeroPointChanged(void)
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
-  std::string name = this->ui->unitsCombo->currentText().toStdString();
-  auto it = sus->getSpectrumUnitFrom(name);
 
   this->panelConfig->zeroPoint = currZP;
-
-  if (it != sus->getLastSpectrumUnit())
-    emit zeroPointChanged(it->zeroPoint + currZP);
-  else
-    emit zeroPointChanged(currZP);
+  emit zeroPointChanged(this->currentUnit.zeroPoint + currZP);
 }
 
 void

@@ -22,6 +22,7 @@
 #include <PersistentWidget.h>
 #include <Suscan/AnalyzerParams.h>
 #include <QListWidgetItem>
+#include <Suscan/Library.h>
 
 #include "Palette.h"
 
@@ -83,6 +84,8 @@ namespace SigDigger {
     std::vector<unsigned int> refreshRates;
     std::vector<unsigned int> timeSpans;
 
+    Suscan::SpectrumUnit currentUnit;
+
     const Palette *selected = nullptr;
 
     // Private methods
@@ -95,6 +98,16 @@ namespace SigDigger {
     void connectAll(void);
     void populateUnits(void);
     void updateRbw(void);
+
+    float zeroPointToDb(void) const
+    {
+      return this->getZeroPoint() * this->currentUnit.dBPerUnit;
+    }
+
+    float dbToZeroPoint(float dB) const
+    {
+      return dB / this->currentUnit.dBPerUnit;
+    }
 
   public:
     explicit FftPanel(QWidget *parent = nullptr);
