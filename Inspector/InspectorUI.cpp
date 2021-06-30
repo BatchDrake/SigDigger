@@ -153,6 +153,12 @@ InspectorUI::adjustSizes(void)
   this->ui->splitter->setSizes(sizes);
 }
 
+float
+InspectorUI::getZeroPoint(void) const
+{
+  return static_cast<float>(this->ui->zeroPointSpin->value());
+}
+
 void
 InspectorUI::setBasebandRate(unsigned int rate)
 {
@@ -933,6 +939,13 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
 }
 
 void
+InspectorUI::setZeroPoint(float zp)
+{
+  this->ui->zeroPointSpin->setValue(static_cast<double>(zp));
+  this->ui->wfSpectrum->setZeroPoint(this->currentUnit.zeroPoint + zp);
+}
+
+void
 InspectorUI::onFPSReset(void)
 {
   this->ui->fpsSpin->setValue(THROTTLE_CONTROL_DEFAULT_RATE);
@@ -1165,37 +1178,34 @@ void
 InspectorUI::onUnitChanged(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
-
+  float currZPdB = this->zeroPointToDb();
+  float newZp;
   std::string name = this->ui->unitsCombo->currentText().toStdString();
   auto it = sus->getSpectrumUnitFrom(name);
 
   this->ui->zeroPointSpin->setSuffix(" " + QString::fromStdString(name));
 
   if (it != sus->getLastSpectrumUnit()) {
-    this->ui->wfSpectrum->setUnitName(QString::fromStdString(it->name));
-    this->ui->wfSpectrum->setdBPerUnit(it->dBPerUnit);
-    this->ui->wfSpectrum->setZeroPoint(it->zeroPoint + currZP);
+    this->currentUnit = *it;
   } else {
-    this->ui->wfSpectrum->setUnitName("dBFS");
-    this->ui->wfSpectrum->setdBPerUnit(1.);
-    this->ui->wfSpectrum->setZeroPoint(currZP);
+    this->currentUnit.name      = "dBFS";
+    this->currentUnit.dBPerUnit = 1.f;
+    this->currentUnit.zeroPoint = 0;
   }
+
+  newZp = this->dbToZeroPoint(currZPdB);
+
+  this->ui->wfSpectrum->setUnitName(
+        QString::fromStdString(this->currentUnit.name));
+  this->ui->wfSpectrum->setdBPerUnit(this->currentUnit.dBPerUnit);
+  this->setZeroPoint(newZp);
 }
 
 void
 InspectorUI::onZeroPointChanged(void)
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
-
-  std::string name = this->ui->unitsCombo->currentText().toStdString();
-  auto it = sus->getSpectrumUnitFrom(name);
-
-  if (it != sus->getLastSpectrumUnit())
-    this->ui->wfSpectrum->setZeroPoint(it->zeroPoint + currZP);
-  else
-    this->ui->wfSpectrum->setZeroPoint(currZP);
+  this->ui->wfSpectrum->setZeroPoint(this->currentUnit.zeroPoint + currZP);
 }
 
 void

@@ -27,6 +27,7 @@
 #include <map>
 #include <InspectorCtl.h>
 #include <Suscan/SpectrumSource.h>
+#include <Suscan/Library.h>
 #include <Suscan/Estimator.h>
 #include <SNREstimator.h>
 #include <sys/time.h>
@@ -90,6 +91,8 @@ namespace SigDigger {
     std::vector<Suscan::SpectrumSource> spectsrcs;
     std::map<Suscan::EstimatorId, EstimatorControl *> estimatorCtls;
 
+    Suscan::SpectrumUnit currentUnit;
+
     ThrottleControl throttle;
     Ui::Inspector *ui = nullptr;
     std::vector<InspectorCtl *> controls;
@@ -129,6 +132,16 @@ namespace SigDigger {
 
     int fd = -1;
 
+    float zeroPointToDb(void) const
+    {
+      return this->getZeroPoint() * this->currentUnit.dBPerUnit;
+    }
+
+    float dbToZeroPoint(float dB) const
+    {
+      return dB / this->currentUnit.dBPerUnit;
+    }
+
     public:
       InspectorUI(
           QWidget *owner,
@@ -145,6 +158,7 @@ namespace SigDigger {
       void addSpectrumSource(Suscan::SpectrumSource const &src);
       void addEstimator(Suscan::Estimator const &estimator);
       void setAppConfig(AppConfig const &cfg);
+      void setZeroPoint(float);
 
       bool installDataSaver(void);
       void uninstallDataSaver(void);
@@ -159,7 +173,7 @@ namespace SigDigger {
       unsigned int getBandwidth(void) const;
       int getLo(void) const;
       void adjustSizes(void);
-
+      float getZeroPoint(void) const;
       enum State getState(void) const;
 
     public slots:
