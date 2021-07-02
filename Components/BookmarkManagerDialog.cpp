@@ -197,7 +197,7 @@ BookmarkManagerDialog::onCellActivated(QModelIndex const &index)
       emit bandwidthSelected(bm.info.bandwidth());
     }
     if(!bm.info.modulation.isEmpty()) {
-      emit modulationSelected(bm.info.modulation.toStdString());
+      emit modulationSelected(bm.info.modulation);
     }
   }
 }

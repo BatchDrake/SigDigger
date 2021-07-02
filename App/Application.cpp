@@ -581,9 +581,9 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
-        SIGNAL(bookmarkAdded(BookmarkInfo const&)),
+        SIGNAL(bookmarkAdded(BookmarkInfo)),
         this,
-        SLOT(onAddBookmark(BookmarkInfo const&)));
+        SLOT(onAddBookmark(BookmarkInfo)));
 }
 
 void
@@ -1669,7 +1669,7 @@ Application::onScannerUpdated(void)
 }
 
 void
-Application::onAddBookmark(BookmarkInfo const& info)
+Application::onAddBookmark(BookmarkInfo info)
 {
   if (!Suscan::Singleton::get_instance()->registerBookmark(info)) {
     QMessageBox *mb = new QMessageBox(

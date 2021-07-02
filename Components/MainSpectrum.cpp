@@ -124,6 +124,12 @@ MainSpectrum::connectAll(void)
         SIGNAL(newZoomLevel(float)),
         this,
         SLOT(onNewZoomLevel(float)));
+
+  connect(
+        this->ui->mainSpectrum,
+        SIGNAL(newModulation(QString)),
+        this,
+        SLOT(onNewModulation(QString)));
 }
 
 void
@@ -642,4 +648,10 @@ void
 MainSpectrum::onNewZoomLevel(float level)
 {
   emit zoomChanged(level);
+}
+
+void
+MainSpectrum::onNewModulation(QString modulation)
+{
+  emit modulationChanged(modulation);
 }

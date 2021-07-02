@@ -175,7 +175,7 @@ namespace SigDigger {
     void onDeviceRefresh(void);
     void onRecentSelected(QString profile);
     void onRecentCleared(void);
-    void onAddBookmark(BookmarkInfo const& info);
+    void onAddBookmark(BookmarkInfo info);
     void quit(void);
 
     // Analyzer slots

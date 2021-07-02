@@ -68,7 +68,7 @@ namespace SigDigger {
     signals:
       void frequencySelected(qint64);
       void bandwidthSelected(qint32);
-      void modulationSelected(std::string const&);
+      void modulationSelected(QString);
       void bookmarkChanged(void);
   };
 }

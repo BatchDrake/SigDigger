@@ -297,6 +297,14 @@ UIMediator::connectMainWindow(void)
         SIGNAL(bookmarkChanged(void)),
         this,
         SLOT(onBookmarkChanged(void)));
+
+  connect(
+        this->ui->spectrum,
+        SIGNAL(modulationChanged(QString)),
+        this,
+        SLOT(onModulationChanged(QString)));
+
+
 }
 
 UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
@@ -1208,4 +1216,10 @@ void
 UIMediator::onBookmarkChanged(void)
 {
   this->ui->spectrum->updateOverlay();
+}
+
+void UIMediator::onModulationChanged(QString newModulation)
+{
+  this->ui->audioPanel->setDemod(AudioPanel::strToDemod(newModulation.toStdString()));
+  // TODO emit change?
 }

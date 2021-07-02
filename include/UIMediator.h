@@ -172,7 +172,7 @@ namespace SigDigger {
     void captureEnd(void);
     void profileChanged();
     void colorsChanged(ColorConfig config);
-    void bookmarkAdded(BookmarkInfo const&);
+    void bookmarkAdded(BookmarkInfo);
 
     void frequencyChanged(qint64, qint64);
     void loChanged(qint64);
@@ -247,6 +247,7 @@ namespace SigDigger {
     void onRangeChanged(float, float);
     void onZoomChanged(float);
     void onNewBandPlan(QString);
+    void onModulationChanged(QString);
 
     // Source panel
     void onToggleRecord(void);

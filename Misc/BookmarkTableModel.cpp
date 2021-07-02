@@ -20,6 +20,7 @@
 #include <SuWidgetsHelpers.h>
 #include <cmath>
 #include <QColor>
+#include <QDebug>
 
 using namespace SigDigger;
 
