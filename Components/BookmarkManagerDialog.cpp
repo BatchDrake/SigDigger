@@ -192,12 +192,6 @@ BookmarkManagerDialog::onCellActivated(QModelIndex const &index)
 
   if (row >= 0 && row < map->count()) {
     Suscan::Bookmark bm = (*map)[map->keys().at(row)];
-    emit frequencySelected(static_cast<qint64>(bm.info.frequency));
-    if(bm.info.bandwidth() != 0) {
-      emit bandwidthSelected(bm.info.bandwidth());
-    }
-    if(!bm.info.modulation.isEmpty()) {
-      emit modulationSelected(bm.info.modulation);
-    }
+    emit bookmarkSelected(bm.info);
   }
 }

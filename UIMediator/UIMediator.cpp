@@ -288,9 +288,9 @@ UIMediator::connectMainWindow(void)
 
   connect(
         this->ui->bookmarkManagerDialog,
-        SIGNAL(frequencySelected(qint64)),
+        SIGNAL(bookmarkSelected(BookmarkInfo)),
         this,
-        SLOT(onJumpToBookmark(qint64)));
+        SLOT(onJumpToBookmark(BookmarkInfo)));
 
   connect(
         this->ui->bookmarkManagerDialog,
@@ -1204,12 +1204,20 @@ UIMediator::onOpenBookmarkManager(void)
 }
 
 void
-UIMediator::onJumpToBookmark(qint64 frequency)
+UIMediator::onJumpToBookmark(BookmarkInfo info)
 {
-  this->ui->spectrum->setCenterFreq(frequency);
+  this->ui->spectrum->setCenterFreq(info.frequency);
   this->ui->spectrum->setLoFreq(0);
 
-  this->onFrequencyChanged(frequency);
+  if(!info.modulation.isEmpty()) {
+    this->ui->audioPanel->setDemod(AudioPanel::strToDemod(info.modulation.toStdString()));
+  }
+
+  if(info.bandwidth() != 0) {
+    this->ui->audioPanel->setBandwidth(info.bandwidth());
+  }
+
+  this->onFrequencyChanged(info.frequency);
 }
 
 void

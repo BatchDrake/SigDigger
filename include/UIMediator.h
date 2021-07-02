@@ -237,7 +237,7 @@ namespace SigDigger {
     void onAddBookmark(void);
     void onBookmarkAccepted(void);
     void onOpenBookmarkManager(void);
-    void onJumpToBookmark(qint64);
+    void onJumpToBookmark(BookmarkInfo);
     void onBookmarkChanged(void);
 
     // Spectrum slots
