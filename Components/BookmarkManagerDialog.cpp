@@ -48,16 +48,16 @@ BookmarkManagerDialog::BookmarkManagerDialog(QWidget *parent) :
   this->editDialog->setWindowTitle("Edit bookmark");
 
   this->ui->bookmarkView->setItemDelegateForColumn(
-        3,
+        5,
         this->editDelegate);
 
   this->ui->bookmarkView->setItemDelegateForColumn(
-        4,
+        6,
         this->removeDelegate);
 
   QHeaderView *headerView = this->ui->bookmarkView->horizontalHeader();
   headerView->setStretchLastSection(false);
-  headerView->setSectionResizeMode(2, QHeaderView::Stretch);
+  headerView->setSectionResizeMode(4, QHeaderView::Stretch);
 
   this->connectAll();
 }
@@ -126,7 +126,7 @@ BookmarkManagerDialog::onRemoveBookmark(QModelIndex index)
   if (row >= 0 && row < map->count()) {
     Suscan::Bookmark bm = (*map)[map->keys().at(row)];
     this->model->notifyRemovalStart(row);
-    Suscan::Singleton::get_instance()->removeBookmark(bm.frequency);
+    Suscan::Singleton::get_instance()->removeBookmark(bm.info.frequency);
     this->model->notifyRemovalFinish();
   }
 }
@@ -134,21 +134,20 @@ BookmarkManagerDialog::onRemoveBookmark(QModelIndex index)
 void
 BookmarkManagerDialog::onEditAccepted(void)
 {
-  qint64 newFrequency = this->editDialog->frequency();
-  QString newName = this->editDialog->name();
-  QColor newColor = this->editDialog->color();
+  BookmarkInfo newInfo;
+  newInfo.frequency = this->editDialog->frequency();
+  newInfo.name = this->editDialog->name();
+  newInfo.color = this->editDialog->color();
+  newInfo.lowFreqCut = -this->editDialog->bandwidth() / 2;
+  newInfo.highFreqCut = this->editDialog->bandwidth() / 2;
+  newInfo.modulation = editDialog->modulation();
 
-  if (this->editingFrequency == newFrequency) {
-    Suscan::Singleton::get_instance()->replaceBookmark(
-          newName.toStdString(),
-          newFrequency,
-          newColor.name().toStdString());
+  if (this->editingFrequency == newInfo.frequency) {
+    Suscan::Singleton::get_instance()->replaceBookmark(newInfo);
+
   } else {
     Suscan::Singleton::get_instance()->removeBookmark(this->editingFrequency);
-    Suscan::Singleton::get_instance()->registerBookmark(
-          newName.toStdString(),
-          newFrequency,
-          newColor.name().toStdString());
+    Suscan::Singleton::get_instance()->registerBookmark(newInfo);
   }
 
   this->notifyChanged();
@@ -167,11 +166,13 @@ BookmarkManagerDialog::onEditBookmark(QModelIndex index)
   if (row >= 0 && row < map->count()) {
     Suscan::Bookmark bm = (*map)[map->keys().at(row)];
 
-    this->editingFrequency = bm.frequency;
+    this->editingFrequency = bm.info.frequency;
 
-    this->editDialog->setNameHint(QString::fromStdString(bm.name));
+    this->editDialog->setNameHint(bm.info.name);
     this->editDialog->setFrequencyHint(this->editingFrequency);
-    this->editDialog->setColorHint(QColor(QString::fromStdString(bm.color)));
+    this->editDialog->setColorHint(bm.info.color);
+    this->editDialog->setBandwidthHint(bm.info.bandwidth());
+    this->editDialog->setModulationHint(bm.info.modulation);
 
     this->editDialog->show();
   }
@@ -191,7 +192,12 @@ BookmarkManagerDialog::onCellActivated(QModelIndex const &index)
 
   if (row >= 0 && row < map->count()) {
     Suscan::Bookmark bm = (*map)[map->keys().at(row)];
-    emit frequencySelected(static_cast<qint64>(bm.frequency));
+    emit frequencySelected(static_cast<qint64>(bm.info.frequency));
+    if(bm.info.bandwidth() != 0) {
+      emit bandwidthSelected(bm.info.bandwidth());
+    }
+    if(!bm.info.modulation.isEmpty()) {
+      emit modulationSelected(bm.info.modulation.toStdString());
+    }
   }
 }
-

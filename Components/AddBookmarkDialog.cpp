@@ -20,6 +20,7 @@
 #include <AddBookmarkDialog.h>
 #include "ui_AddBookmarkDialog.h"
 #include <QTimer>
+#include "AudioPanel.h"
 
 using namespace SigDigger;
 
@@ -35,6 +36,10 @@ AddBookmarkDialog::AddBookmarkDialog(QWidget *parent) :
   this->ui->frequencySpinBox->setMaximum(+300e9);
   this->ui->frequencySpinBox->setAutoUnitMultiplierEnabled(true);
 
+  this->ui->bandwidthSpinBox->setMinimum(-300e9); // TODO
+  this->ui->bandwidthSpinBox->setMaximum(+300e9);
+  this->ui->bandwidthSpinBox->setAutoUnitMultiplierEnabled(true);
+
   this->setColorHint(QColor::fromRgb(0xff, 0xff, 0xff));
 }
 
@@ -45,9 +50,21 @@ AddBookmarkDialog::setFrequencyHint(qint64 val)
 }
 
 void
+AddBookmarkDialog::setBandwidthHint(qint32 val)
+{
+  this->ui->bandwidthSpinBox->setValue(static_cast<qreal>(val));
+}
+
+void
 AddBookmarkDialog::setNameHint(QString const &name)
 {
   this->ui->nameEdit->setText(name);
+}
+
+void
+AddBookmarkDialog::setModulationHint(QString const &name)
+{
+  this->ui->demodCombo->setCurrentIndex(static_cast<int>(AudioPanel::strToDemod(name.toStdString())));
 }
 
 void
@@ -72,6 +89,18 @@ QColor
 AddBookmarkDialog::color(void) const
 {
   return this->ui->colorButton->getColor();
+}
+
+qint32
+AddBookmarkDialog::bandwidth(void) const
+{
+  return static_cast<qint32>(this->ui->bandwidthSpinBox->value());
+}
+
+QString
+AddBookmarkDialog::modulation(void) const
+{
+  return QString::fromStdString(AudioPanel::demodToStr(static_cast<enum AudioDemod>(this->ui->demodCombo->currentIndex())));
 }
 
 void

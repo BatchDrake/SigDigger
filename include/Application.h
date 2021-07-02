@@ -30,6 +30,7 @@
 #include "FileDataSaver.h"
 #include "AudioFileSaver.h"
 #include "Scanner.h"
+#include <BookmarkInfo.h>
 
 namespace SigDigger {
   class DeviceDetectWorker : public QObject {
@@ -174,7 +175,7 @@ namespace SigDigger {
     void onDeviceRefresh(void);
     void onRecentSelected(QString profile);
     void onRecentCleared(void);
-    void onAddBookmark(QString, qint64, QColor);
+    void onAddBookmark(BookmarkInfo const& info);
     void quit(void);
 
     // Analyzer slots

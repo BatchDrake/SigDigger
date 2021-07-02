@@ -39,13 +39,8 @@ SuscanBookmarkSource::getBookmarksInRange(qint64 start, qint64 end)
 
   while (p != Suscan::Singleton::get_instance()->getLastBookmark()) {
     try {
-      if (p->frequency <= end) {
-        BookmarkInfo info;
-        info.name = QString::fromStdString(p->name);
-        info.frequency = p->frequency;
-        info.color = QColor(QString::fromStdString(p->color)).rgb();
-
-        list.push_back(info);
+      if (p->info.frequency <= end) {
+        list.push_back(p->info);
       }
 
     } catch (Suscan::Exception const &) { }

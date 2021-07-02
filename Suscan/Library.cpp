@@ -20,6 +20,7 @@
 #include <Suscan/Library.h>
 #include <Suscan/MultitaskController.h>
 #include <analyzer/version.h>
+#include <QtGui>
 
 using namespace Suscan;
 
@@ -301,14 +302,27 @@ Singleton::init_bookmarks(void)
     try {
       Bookmark bm;
       std::string frequency = list[i].getField("frequency").value();
-      bm.name = list[i].getField("name").value();
-      bm.color = list[i].getField("color").value();
 
-      if (sscanf(frequency.c_str(), "%lg", &freq) == 1 && bm.name.size() > 0) {
-        bm.frequency = static_cast<qint64>(freq);
+      bm.info.name = QString::fromStdString(list[i].getField("name").value());
+      bm.info.color = QColor(QString::fromStdString(list[i].getField("color").value()));
+
+      try {
+        // try parse extended informations
+        std::string lowFreqCut = list[i].getField("low_freq_cut").value();
+        std::string highFreqCut = list[i].getField("high_freq_cut").value();
+        bm.info.modulation = QString::fromStdString(list[i].getField("modulation").value());
+
+        (void) sscanf(lowFreqCut.c_str(), "%d", &bm.info.lowFreqCut);
+        (void) sscanf(highFreqCut.c_str(), "%d", &bm.info.highFreqCut);
+
+      } catch (Suscan::Exception const &) { }
+
+      if (sscanf(frequency.c_str(), "%lg", &freq) == 1 && bm.info.name.size() > 0) {
+        bm.info.frequency = static_cast<qint64>(freq);
         bm.entry = static_cast<int>(i);
-        this->bookmarks[bm.frequency] = bm;
+        this->bookmarks[bm.info.frequency] = bm;
       }
+
     } catch (Suscan::Exception const &) { }
   }
 }
@@ -422,9 +436,12 @@ Singleton::syncBookmarks(void)
       try {
         Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
-        obj.set("name", this->bookmarks[p].name);
-        obj.set("frequency", static_cast<double>(this->bookmarks[p].frequency));
-        obj.set("color", this->bookmarks[p].color);
+        obj.set("name", this->bookmarks[p].info.name.toStdString());
+        obj.set("frequency", static_cast<double>(this->bookmarks[p].info.frequency));
+        obj.set("color", this->bookmarks[p].info.color.name().toStdString());
+        obj.set("low_freq_cut", this->bookmarks[p].info.lowFreqCut);
+        obj.set("high_freq_cut", this->bookmarks[p].info.highFreqCut);
+        obj.set("modulation", this->bookmarks[p].info.modulation.toStdString());
 
         list.append(std::move(obj));
       } catch (Suscan::Exception const &) {
@@ -524,37 +541,26 @@ Singleton::removeBookmark(qint64 freq)
 }
 
 void
-Singleton::replaceBookmark(
-    std::string const &name,
-    qint64 freq,
-    std::string const &color)
+Singleton::replaceBookmark(BookmarkInfo const& info)
 {
   Bookmark bm;
 
-  bm.name      = name;
-  bm.frequency = freq;
-  bm.color     = color;
+  bm.info = info;
 
-  this->removeBookmark(freq);
-  this->bookmarks[freq] = bm;
+  this->removeBookmark(info.frequency);
+  this->bookmarks[info.frequency] = bm;
 }
 
 bool
-Singleton::registerBookmark(
-    std::string const &name,
-    qint64 freq,
-    std::string const &color)
+Singleton::registerBookmark(BookmarkInfo const& info)
 {
-  if (this->bookmarks.find(freq) != this->bookmarks.end())
+  if (this->bookmarks.find(info.frequency) != this->bookmarks.end())
     return false;
 
   Bookmark bm;
 
-  bm.name      = name;
-  bm.frequency = freq;
-  bm.color     = color;
-
-  this->bookmarks[freq] = bm;
+  bm.info = info;
+  this->bookmarks[info.frequency] = bm;
 
   return true;
 }

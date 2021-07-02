@@ -40,8 +40,8 @@ BookmarkTableModel::rowCount(const QModelIndex &) const
 int
 BookmarkTableModel::columnCount(const QModelIndex &) const
 {
-  // Frequency, name, color, remove
-  return 5;
+  // Frequency, bandwidth, modulation, name, color, remove
+  return 7;
 }
 
 QVariant
@@ -56,21 +56,27 @@ BookmarkTableModel::data(const QModelIndex &index, int role) const
   if (role == Qt::DisplayRole) {
     switch (index.column()) {
       case 0:
-        return SuWidgetsHelpers::formatQuantity(bookmark.frequency, "Hz");
+        return SuWidgetsHelpers::formatQuantity(bookmark.info.frequency, "Hz");
 
       case 1:
-        return "";
+        return SuWidgetsHelpers::formatQuantity(bookmark.info.bandwidth(), "Hz");
 
       case 2:
-        return QString::fromStdString(bookmark.name);
+        return bookmark.info.modulation;
 
       case 3:
+        return "";
+
       case 4:
+        return bookmark.info.name;
+
+      case 5:
+      case 6:
         return QVariant();
     }
   } else if (role == Qt::BackgroundColorRole) {
-    if (index.column() == 1)
-      return QColor(QString::fromStdString(bookmark.color));
+    if (index.column() == 3)
+      return bookmark.info.color;
   }
 
   return QVariant();
@@ -82,12 +88,14 @@ BookmarkTableModel::headerData(int s, Qt::Orientation hor, int role) const
   if (hor == Qt::Horizontal && role == Qt::DisplayRole) {
     const char *headers[] = {
       "Frequency",
+      "Bandwidth",
+      "Modulation",
       "Color",
       "Name",
       "",
     ""};
 
-    if (s >= 0 && s < 5)
+    if (s >= 0 && s < 7)
       return headers[s];
   }
 

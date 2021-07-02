@@ -1169,16 +1169,24 @@ UIMediator::onAddBookmark(void)
             4,
             "Hz").toStdString().c_str()));
 
+  this->ui->addBookmarkDialog->setBandwidthHint(this->ui->spectrum->getBandwidth());
+  this->ui->addBookmarkDialog->setModulationHint(QString::fromStdString(AudioPanel::demodToStr(this->ui->audioPanel->getDemod())));
+
   this->ui->addBookmarkDialog->show();
 }
 
 void
 UIMediator::onBookmarkAccepted(void)
 {
-  emit bookmarkAdded(
-        this->ui->addBookmarkDialog->name(),
-        this->ui->addBookmarkDialog->frequency(),
-        this->ui->addBookmarkDialog->color());
+  BookmarkInfo info;
+  info.name = this->ui->addBookmarkDialog->name();
+  info.frequency = this->ui->addBookmarkDialog->frequency();
+  info.color = this->ui->addBookmarkDialog->color();
+  info.lowFreqCut = -this->ui->addBookmarkDialog->bandwidth() / 2;
+  info.highFreqCut = this->ui->addBookmarkDialog->bandwidth() / 2;
+  info.modulation = this->ui->addBookmarkDialog->modulation();
+
+  emit bookmarkAdded(info);
 }
 
 void
