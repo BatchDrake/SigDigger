@@ -1214,7 +1214,7 @@ UIMediator::onJumpToBookmark(BookmarkInfo info)
   }
 
   if (info.bandwidth() != 0) {
-    this->ui->spectrum->setFilterBandwidth(info.bandwidth());
+    this->setBandwidth(info.bandwidth());
   }
 
   this->onFrequencyChanged(info.frequency);
