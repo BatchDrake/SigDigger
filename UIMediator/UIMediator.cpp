@@ -1190,8 +1190,8 @@ UIMediator::onBookmarkAccepted(void)
   info.name = this->ui->addBookmarkDialog->name();
   info.frequency = this->ui->addBookmarkDialog->frequency();
   info.color = this->ui->addBookmarkDialog->color();
-  info.lowFreqCut = -this->ui->addBookmarkDialog->bandwidth() / 2;
-  info.highFreqCut = this->ui->addBookmarkDialog->bandwidth() / 2;
+  info.lowFreqCut = this->ui->spectrum->computeLowCutFreq(this->ui->addBookmarkDialog->bandwidth());
+  info.highFreqCut = this->ui->spectrum->computeHighCutFreq(this->ui->addBookmarkDialog->bandwidth());
   info.modulation = this->ui->addBookmarkDialog->modulation();
 
   emit bookmarkAdded(info);

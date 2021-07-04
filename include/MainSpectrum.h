@@ -132,6 +132,8 @@ namespace SigDigger {
 
     static int getFrequencyUnits(qint64 frew);
 
+    qint32 computeLowCutFreq(int bw) const;
+    qint32 computeHighCutFreq(int bw) const;
 
   signals:
     void bandwidthChanged(void);

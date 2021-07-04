@@ -402,14 +402,10 @@ MainSpectrum::setFilterBandwidth(unsigned int bw)
 {
   if (this->bandwidth != bw) {
     int freq = static_cast<int>(bw);
-    bool lowerSideBand =
-        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
-    bool upperSideBand =
-        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
 
     this->ui->mainSpectrum->setHiLowCutFrequencies(
-          lowerSideBand ? -freq / 2 : 0,
-          upperSideBand ? +freq / 2 : 0);
+          computeLowCutFreq(freq),
+          computeHighCutFreq(freq));
     this->bandwidth = bw;
   }
 }
@@ -474,6 +470,20 @@ MainSpectrum::setSampleRate(unsigned int rate)
 
     this->cachedRate = rate;
   }
+}
+
+qint32 MainSpectrum::computeLowCutFreq(int bw) const
+{
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    return lowerSideBand ? -bw / 2 : 0;
+}
+qint32 MainSpectrum::computeHighCutFreq(int bw) const
+{
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
+
+    return upperSideBand ? +bw / 2 : 0;
 }
 
 void
