@@ -1209,12 +1209,12 @@ UIMediator::onJumpToBookmark(BookmarkInfo info)
   this->ui->spectrum->setCenterFreq(info.frequency);
   this->ui->spectrum->setLoFreq(0);
 
-  if(!info.modulation.isEmpty()) {
+  if (!info.modulation.isEmpty()) {
     this->ui->audioPanel->setDemod(AudioPanel::strToDemod(info.modulation.toStdString()));
   }
 
-  if(info.bandwidth() != 0) {
-    this->ui->audioPanel->setBandwidth(info.bandwidth());
+  if (info.bandwidth() != 0) {
+    this->ui->spectrum->setFilterBandwidth(info.bandwidth());
   }
 
   this->onFrequencyChanged(info.frequency);
@@ -1229,5 +1229,4 @@ UIMediator::onBookmarkChanged(void)
 void UIMediator::onModulationChanged(QString newModulation)
 {
   this->ui->audioPanel->setDemod(AudioPanel::strToDemod(newModulation.toStdString()));
-  // TODO emit change?
 }
