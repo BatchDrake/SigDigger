@@ -51,6 +51,10 @@ namespace SigDigger {
           const QStyleOptionViewItem &option,
           const QModelIndex &index);
 
+      QSize sizeHint(
+          const QStyleOptionViewItem &option,
+          const QModelIndex &index) const;
+
     signals:
       void clicked(QModelIndex);
   };

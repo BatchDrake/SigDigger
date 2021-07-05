@@ -31,7 +31,7 @@ BookmarkManagerDialog::BookmarkManagerDialog(QWidget *parent) :
   ui(new Ui::BookmarkManagerDialog)
 {
   this->removeDelegate = new ButtonDelegate(this, "&Remove");
-  this->editDelegate = new ButtonDelegate(this, "&Edit");
+  this->editDelegate   = new ButtonDelegate(this, "&Edit");
 
   ui->setupUi(this);
 

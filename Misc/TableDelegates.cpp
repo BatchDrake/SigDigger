@@ -102,3 +102,16 @@ ButtonDelegate::editorEvent(
 
   return true;
 }
+
+QSize
+ButtonDelegate::sizeHint(
+    const QStyleOptionViewItem &option,
+    const QModelIndex &) const
+{
+  QSize size;
+
+  size.setWidth(this->buttonWidth);
+  size.setHeight(option.rect.width());
+
+  return size;
+}
