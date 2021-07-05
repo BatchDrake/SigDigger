@@ -288,15 +288,23 @@ UIMediator::connectMainWindow(void)
 
   connect(
         this->ui->bookmarkManagerDialog,
-        SIGNAL(frequencySelected(qint64)),
+        SIGNAL(bookmarkSelected(BookmarkInfo)),
         this,
-        SLOT(onJumpToBookmark(qint64)));
+        SLOT(onJumpToBookmark(BookmarkInfo)));
 
   connect(
         this->ui->bookmarkManagerDialog,
         SIGNAL(bookmarkChanged(void)),
         this,
         SLOT(onBookmarkChanged(void)));
+
+  connect(
+        this->ui->spectrum,
+        SIGNAL(modulationChanged(QString)),
+        this,
+        SLOT(onModulationChanged(QString)));
+
+
 }
 
 UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
@@ -1169,16 +1177,24 @@ UIMediator::onAddBookmark(void)
             4,
             "Hz").toStdString().c_str()));
 
+  this->ui->addBookmarkDialog->setBandwidthHint(this->ui->spectrum->getBandwidth());
+  this->ui->addBookmarkDialog->setModulationHint(QString::fromStdString(AudioPanel::demodToStr(this->ui->audioPanel->getDemod())));
+
   this->ui->addBookmarkDialog->show();
 }
 
 void
 UIMediator::onBookmarkAccepted(void)
 {
-  emit bookmarkAdded(
-        this->ui->addBookmarkDialog->name(),
-        this->ui->addBookmarkDialog->frequency(),
-        this->ui->addBookmarkDialog->color());
+  BookmarkInfo info;
+  info.name = this->ui->addBookmarkDialog->name();
+  info.frequency = this->ui->addBookmarkDialog->frequency();
+  info.color = this->ui->addBookmarkDialog->color();
+  info.lowFreqCut = this->ui->spectrum->computeLowCutFreq(this->ui->addBookmarkDialog->bandwidth());
+  info.highFreqCut = this->ui->spectrum->computeHighCutFreq(this->ui->addBookmarkDialog->bandwidth());
+  info.modulation = this->ui->addBookmarkDialog->modulation();
+
+  emit bookmarkAdded(info);
 }
 
 void
@@ -1188,16 +1204,29 @@ UIMediator::onOpenBookmarkManager(void)
 }
 
 void
-UIMediator::onJumpToBookmark(qint64 frequency)
+UIMediator::onJumpToBookmark(BookmarkInfo info)
 {
-  this->ui->spectrum->setCenterFreq(frequency);
+  this->ui->spectrum->setCenterFreq(info.frequency);
   this->ui->spectrum->setLoFreq(0);
 
-  this->onFrequencyChanged(frequency);
+  if (!info.modulation.isEmpty()) {
+    this->ui->audioPanel->setDemod(AudioPanel::strToDemod(info.modulation.toStdString()));
+  }
+
+  if (info.bandwidth() != 0) {
+    this->setBandwidth(info.bandwidth());
+  }
+
+  this->onFrequencyChanged(info.frequency);
 }
 
 void
 UIMediator::onBookmarkChanged(void)
 {
   this->ui->spectrum->updateOverlay();
+}
+
+void UIMediator::onModulationChanged(QString newModulation)
+{
+  this->ui->audioPanel->setDemod(AudioPanel::strToDemod(newModulation.toStdString()));
 }

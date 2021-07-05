@@ -37,10 +37,14 @@ namespace SigDigger {
       void setFrequencyHint(qint64 val);
       void setNameHint(QString const &name);
       void setColorHint(QColor const &);
+      void setBandwidthHint(qint32 val);
+      void setModulationHint(QString const &name);
 
       qint64 frequency(void) const;
       QString name(void) const;
       QColor color(void) const;
+      qint32 bandwidth(void) const;
+      QString modulation(void) const;
 
       virtual void showEvent(QShowEvent *event) override;
 

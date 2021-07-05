@@ -581,9 +581,9 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
-        SIGNAL(bookmarkAdded(QString, qint64, QColor)),
+        SIGNAL(bookmarkAdded(BookmarkInfo)),
         this,
-        SLOT(onAddBookmark(QString, qint64, QColor)));
+        SLOT(onAddBookmark(BookmarkInfo)));
 }
 
 void
@@ -1669,17 +1669,14 @@ Application::onScannerUpdated(void)
 }
 
 void
-Application::onAddBookmark(QString name, qint64 frequency, QColor color)
+Application::onAddBookmark(BookmarkInfo info)
 {
-  if (!Suscan::Singleton::get_instance()->registerBookmark(
-        name.toStdString(),
-        frequency,
-        color.name().toStdString())) {
+  if (!Suscan::Singleton::get_instance()->registerBookmark(info)) {
     QMessageBox *mb = new QMessageBox(
           QMessageBox::Warning,
           "Cannot create bookmark",
           "A bookmark already exists for frequency "
-          + SuWidgetsHelpers::formatQuantity(frequency, "Hz. If you wish to "
+          + SuWidgetsHelpers::formatQuantity(info.frequency, "Hz. If you wish to "
           "edit this bookmark use the bookmark manager instead."),
           QMessageBox::Ok,
           this);

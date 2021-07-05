@@ -33,6 +33,7 @@
 #include <analyzer/spectsrc.h>
 #include <analyzer/inspector/inspector.h>
 #include <analyzer/discovery.h>
+#include <BookmarkInfo.h>
 
 #include <map>
 #include <list>
@@ -48,9 +49,7 @@ namespace Suscan {
   typedef std::map<std::string, Source::Config> ConfigMap;
 
   struct Bookmark {
-    std::string name;
-    qint64 frequency;
-    std::string color;
+    BookmarkInfo info;
 
     int entry = -1;
   };
@@ -125,8 +124,8 @@ namespace Suscan {
     Suscan::Source::Config *getProfile(std::string const &name);
     void saveProfile(Suscan::Source::Config const &name);
 
-    bool registerBookmark(std::string const &, qint64 freq, std::string const &);
-    void replaceBookmark(std::string const &, qint64 freq, std::string const &);
+    bool registerBookmark(BookmarkInfo const& info);
+    void replaceBookmark(BookmarkInfo const& info);
     void removeBookmark(qint64);
 
     bool registerSpectrumUnit(std::string const &, float, float);

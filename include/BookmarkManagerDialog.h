@@ -21,6 +21,7 @@
 
 #include <QDialog>
 #include <QModelIndex>
+#include <BookmarkInfo.h>
 
 namespace Ui {
   class BookmarkManagerDialog;
@@ -66,7 +67,7 @@ namespace SigDigger {
       void onEditAccepted(void);
 
     signals:
-      void frequencySelected(qint64);
+      void bookmarkSelected(BookmarkInfo);
       void bookmarkChanged(void);
   };
 }

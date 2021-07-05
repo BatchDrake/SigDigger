@@ -24,6 +24,7 @@
 #include <map>
 #include <AppConfig.h>
 #include <QMessageBox>
+#include <BookmarkInfo.h>
 
 #define SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ 0
 #define SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ 6000000000
@@ -171,7 +172,7 @@ namespace SigDigger {
     void captureEnd(void);
     void profileChanged();
     void colorsChanged(ColorConfig config);
-    void bookmarkAdded(QString, qint64, QColor);
+    void bookmarkAdded(BookmarkInfo);
 
     void frequencyChanged(qint64, qint64);
     void loChanged(qint64);
@@ -236,7 +237,7 @@ namespace SigDigger {
     void onAddBookmark(void);
     void onBookmarkAccepted(void);
     void onOpenBookmarkManager(void);
-    void onJumpToBookmark(qint64);
+    void onJumpToBookmark(BookmarkInfo);
     void onBookmarkChanged(void);
 
     // Spectrum slots
@@ -246,6 +247,7 @@ namespace SigDigger {
     void onRangeChanged(float, float);
     void onZoomChanged(float);
     void onNewBandPlan(QString);
+    void onModulationChanged(QString);
 
     // Source panel
     void onToggleRecord(void);

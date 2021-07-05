@@ -132,6 +132,8 @@ namespace SigDigger {
 
     static int getFrequencyUnits(qint64 frew);
 
+    qint32 computeLowCutFreq(int bw) const;
+    qint32 computeHighCutFreq(int bw) const;
 
   signals:
     void bandwidthChanged(void);
@@ -141,6 +143,7 @@ namespace SigDigger {
     void rangeChanged(float, float);
     void zoomChanged(float);
     void newBandPlan(QString);
+    void modulationChanged(QString);
 
   public slots:
     void onRangeChanged(float, float);
@@ -150,6 +153,7 @@ namespace SigDigger {
     void onNewCenterFreq(qint64);
     void onLoChanged(void);
     void onNewZoomLevel(float);
+    void onNewModulation(QString);
     void onLnbFrequencyChanged(void);
   };
 }
