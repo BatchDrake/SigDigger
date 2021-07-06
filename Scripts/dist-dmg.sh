@@ -51,7 +51,7 @@ function bundle_libs()
   name="$1"
   shift
   
-  try "Bundling $name..." cp -Rfv "$@" "$LIBPATH"
+  try "Bundling $name..." cp -RLfv "$@" "$LIBPATH"
 }
 
 #
@@ -62,8 +62,70 @@ function bundle_libs()
 # purposes only) and a set of libraries.
 #
 
+function find_soapysdr()
+{
+    SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64"
+    
+    for i in $SOAPYDIRS; do
+	MODDIR="$i/SoapySDR/modules$SOAPYSDRVER"
+	if [ -d "$MODDIR" ]; then
+	    echo "$MODDIR"
+	    return 0
+	fi
+    done
+
+    return 1
+}
+
+function excluded()
+{
+    excludelist="libc++.1.dylib libSystem.B.dylib"
+
+    for ef in `echo $excludelist`; do
+	if [ "$ef" == "$1" ]; then
+	   return 0
+	fi
+    done
+
+    return 1
+}
+
+function embed_soapysdr()
+{
+    export SOAPYSDRVER=`pkg-config SoapySDR --modversion | sed 's/\([0-9]*\.[0-9]*\)\..*/\1/g'`
+    try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
+    try "Testing SoapySDR dir..." find_soapysdr
+
+    MODDIR=`find_soapysdr`
+
+    try "Creating SoapySDR module dir..."       mkdir -p "$LIBPATH/SoapySDR/"
+    try "Copying SoapySDR modules ($MODDIR)..." cp -RLfv "$MODDIR" "$LIBPATH/SoapySDR"
+
+    RADIODEPS=`otool -L "$MODDIR"/lib* | grep -v :$ | sed 's/ (.*)//g'`
+    MY_RPATH=/usr/local/lib # FIXME
+    
+    for i in $RADIODEPS; do
+	name=`basename "$i"`
+	dirname=`dirname "$i"`
+	
+	if [ "$dirname" == "@rpath" ]; then
+            i="$MY_RPATH/$name"
+        fi
+
+	if [ ! -f "$LIBPATH"/"$name" ] && ! excluded "$name"; then
+	    try "Bringing $name..." cp -L "$i" "$LIBPATH"
+	else
+	    rm -f "$LIBPATH"/"$name"
+	    skip "Skipping $name..."
+	fi
+    done
+    
+    return 0
+}
+
 function deploy_deps()
 {
+  embed_soapysdr
   bundle_libs "SoapySDR libraries" /usr/local/lib/libSoapySDR*dylib
 }
 
@@ -84,11 +146,12 @@ function remove_full_path_stdin () {
 function ensure_rpath()
 {
   for i in "$LIBPATH"/*.dylib "$BUNDLEPATH"/Contents/MacOS/SigDigger; do
-    if ! [ -L "$i" ]; then
-      try "Fixing "`basename $i`"..." true
-      otool -L "$i" | grep '\t/usr/local/' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
-      otool -L "$i" | grep '\t@rpath/.*\.dylib' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
-    fi
+      if ! [ -L "$i" ]; then
+	  chmod u+rw "$i"
+	  try "Fixing "`basename $i`"..." true
+	  otool -L "$i" | grep '\t/usr/local/' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
+	  otool -L "$i" | grep '\t@rpath/.*\.dylib' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
+      fi
   done
 }
 
