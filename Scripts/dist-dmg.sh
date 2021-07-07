@@ -7,7 +7,7 @@
 #    SIGDIGGER_EMBED_SOAPYSDR: Embeds SoapySDR to the resulting AppImage,
 #      along with all the modules installed in the deployment system.
 #
-#  Copyright (C) 2020 Gonzalo José Carracedo Carballal
+#  Copyright (C) 2021 Gonzalo José Carracedo Carballal
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as
@@ -33,6 +33,7 @@ BUNDLEPATH="$DEPLOYROOT/usr/bin/SigDigger.app"
 PLISTPATH="$BUNDLEPATH/Contents/Info.plist"
 RSRCPATH="$BUNDLEPATH/Contents/Resources"
 LIBPATH="$BUNDLEPATH/Contents/Frameworks"
+BINPATH="$BUNDLEPATH/Contents/MacOS"
 STAGINGDIR="$DEPLOYROOT/SigDigger.dir"
 DMG_NAME="$DISTFILENAME".dmg
 
@@ -133,19 +134,19 @@ function remove_full_paths()
 {
   FULLPATH="$2"
   RPATHNAME='@executable_path/../Frameworks/'`basename "$FULLPATH"`
-   
+
   install_name_tool -change "$FULLPATH" "$RPATHNAME" "$1"
 }
 
 function remove_full_path_stdin () {
-  while read line; do
+    while read line; do
     remove_full_paths "$1" "$line"
   done
 }
 
 function ensure_rpath()
 {
-  for i in "$LIBPATH"/*.dylib "$BUNDLEPATH"/Contents/MacOS/SigDigger; do
+  for i in "$LIBPATH"/*.dylib "$LIBPATH/SoapySDR/modules"*/*.so "$BUNDLEPATH"/Contents/MacOS/SigDigger; do
       if ! [ -L "$i" ]; then
 	  chmod u+rw "$i"
 	  try "Fixing "`basename $i`"..." true
@@ -176,9 +177,10 @@ function deploy()
 {
   locate_macdeploy
   try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH"
-  try "Copying Suscan data directory to bundle..." cp -Rfv "$DEPLOYROOT/usr/share/suscan" "$RSRCPATH" 
+  try "Copying Suscan data directory to bundle..." cp -Rfv "$DEPLOYROOT/usr/share/suscan" "$RSRCPATH"
+  try "Copying Suscan CLI tool to bundle..." cp -Rfv "$DEPLOYROOT/usr/bin/suscli" "$BINPATH"
   try "Bundling built libraries..." cp -Rfv "$DEPLOYROOT/usr/lib/"*.dylib "$LIBPATH"
-  
+
   deploy_deps
   ensure_rpath
   fix_plist
