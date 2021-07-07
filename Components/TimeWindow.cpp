@@ -302,7 +302,7 @@ TimeWindow::connectAll(void)
         this->histogramDialog,
         SIGNAL(blanked(void)),
         this,
-        SLOT(onTriggerHistogram(void)));
+        SLOT(onHistogramBlanked(void)));
 
   connect(
         this->ui->startSamplinButton,
@@ -1476,6 +1476,13 @@ TimeWindow::onTriggerHistogram(void)
   this->histogramDialog->show();
   this->notifyTaskRunning(true);
   this->taskController.process("triggerHistogram", hf);
+}
+
+void
+TimeWindow::onHistogramBlanked(void)
+{
+  if (this->histogramDialog->isVisible())
+    this->onTriggerHistogram();
 }
 
 void

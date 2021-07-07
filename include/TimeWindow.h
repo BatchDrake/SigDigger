@@ -165,6 +165,7 @@ namespace SigDigger {
     void onResetCarrier(void);
 
     void onTriggerHistogram(void);
+    void onHistogramBlanked(void);
     void onHistogramSamples(const float *data, unsigned int len);
 
     void onTriggerSampler(void);
