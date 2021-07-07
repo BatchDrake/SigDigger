@@ -217,12 +217,23 @@ TVProcessorWorker::returnFrame(struct sigutils_tv_frame_buffer *frame)
 void
 TVProcessorWorker::setParams(sigutils_tv_processor_params params)
 {
-  this->defaultParams = params;
+  bool success = false;
 
-  this->maxProcessingBlock =
-      static_cast<SUSCOUNT>(
-        TV_PROCESSOR_MAX_PENDING_FRAMES * params.line_len * params.frame_lines);
-  if (this->processor != nullptr)
+  if (this->processor != nullptr) {
+    // emit error("TV processor: failed to set processor parameters");
+
     if (!su_tv_processor_set_params(this->processor, &params))
-      emit error("TV processor: failed to set processor parameters");
+      emit paramsChanged(this->defaultParams);
+    else
+      success = true;
+  } else {
+    success = true;
+  }
+
+  if (success) {
+    this->defaultParams = params;
+    this->maxProcessingBlock =
+        static_cast<SUSCOUNT>(
+          TV_PROCESSOR_MAX_PENDING_FRAMES * params.line_len * params.frame_lines);
+  }
 }
