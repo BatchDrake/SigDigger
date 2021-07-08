@@ -928,6 +928,9 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   this->ui->wfSpectrum->setFftTextColor(colors.spectrumText);
   this->ui->wfSpectrum->setFilterBoxColor(colors.filterBox);
 
+  // Set SymView colors
+  this->symViewTab->setColorConfig(colors);
+
   // Set Waveform colors
   this->wfTab->setColorConfig(colors);
   this->wfTab->setPalette(panelConfig.palette);

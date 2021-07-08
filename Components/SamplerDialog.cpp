@@ -174,6 +174,10 @@ SamplerDialog::setColorConfig(ColorConfig const &cfg)
   this->ui->histogram->setForegroundColor(cfg.histogramForeground);
   this->ui->histogram->setBackgroundColor(cfg.histogramBackground);
   this->ui->histogram->setAxesColor(cfg.histogramAxes);
+
+  this->ui->symView->setBackgroundColor(cfg.symViewBackground);
+  this->ui->symView->setLoColor(cfg.symViewLow);
+  this->ui->symView->setHiColor(cfg.symViewHigh);
 }
 
 void

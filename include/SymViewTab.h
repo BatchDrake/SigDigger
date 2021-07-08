@@ -22,6 +22,7 @@
 
 #include <QWidget>
 #include <Decider.h>
+#include <ColorConfig.h>
 
 namespace Ui {
   class SymViewTab;
@@ -53,6 +54,7 @@ namespace SigDigger {
     void feed(const Symbol *data, unsigned int length);
     void setThrottleControl(ThrottleControl *);
     void setEnabled(bool);
+    void setColorConfig(const ColorConfig &);
 
     inline void
     feed(std::vector<Symbol> const &symVec)

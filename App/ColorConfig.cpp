@@ -53,6 +53,10 @@ ColorConfig::loadDefaults(void)
   this->transitionAxes = SIGDIGGER_DEFAULT_AXES;
   this->histogramAxes = SIGDIGGER_DEFAULT_AXES;
 
+  this->symViewBackground = SIGDIGGER_DEFAULT_SV_BG;
+  this->symViewHigh = SIGDIGGER_DEFAULT_SV_FG_HI;
+  this->symViewLow = SIGDIGGER_DEFAULT_SV_FG_LO;
+
   this->spectrumText = SIGDIGGER_DEFAULT_TEXT;
   this->histogramModel = QColor(255, 255, 0, 255);
 
@@ -91,6 +95,9 @@ ColorConfig::serialize(void)
   CCSTORE(histogramBackground);
   CCSTORE(histogramAxes);
   CCSTORE(histogramModel);
+  CCSTORE(symViewLow);
+  CCSTORE(symViewHigh);
+  CCSTORE(symViewBackground);
   CCSTORE(selection);
   CCSTORE(filterBox);
 
@@ -116,6 +123,9 @@ ColorConfig::deserialize(Suscan::Object const &conf)
   CCLOAD(histogramBackground);
   CCLOAD(histogramAxes);
   CCLOAD(histogramModel);
+  CCLOAD(symViewLow);
+  CCLOAD(symViewHigh);
+  CCLOAD(symViewBackground);
   CCLOAD(selection);
   CCLOAD(filterBox);
 }

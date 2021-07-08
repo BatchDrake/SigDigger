@@ -259,6 +259,9 @@ ConfigDialog::saveColors(void)
   CCSAVE(histogramBgColor, histogramBackground);
   CCSAVE(histogramAxesColor, histogramAxes);
   CCSAVE(histogramModelColor, histogramModel);
+  CCSAVE(symViewLoColor, symViewLow);
+  CCSAVE(symViewHiColor, symViewHigh);
+  CCSAVE(symViewBgColor, symViewBackground);
   CCSAVE(selectionColor, selection);
   CCSAVE(filterBoxColor, filterBox);
 }
@@ -282,6 +285,9 @@ ConfigDialog::refreshColorUi(void)
   CCREFRESH(histogramBgColor, histogramBackground);
   CCREFRESH(histogramAxesColor, histogramAxes);
   CCREFRESH(histogramModelColor, histogramModel);
+  CCREFRESH(symViewLoColor, symViewLow);
+  CCREFRESH(symViewHiColor, symViewHigh);
+  CCREFRESH(symViewBgColor, symViewBackground);
   CCREFRESH(selectionColor, selection);
   CCREFRESH(filterBoxColor, filterBox);
 }

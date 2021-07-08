@@ -159,6 +159,14 @@ SymViewTab::setEnabled(bool enabled)
 }
 
 void
+SymViewTab::setColorConfig(const ColorConfig &colors)
+{
+  this->ui->symView->setLoColor(colors.symViewLow);
+  this->ui->symView->setHiColor(colors.symViewHigh);
+  this->ui->symView->setBackgroundColor(colors.symViewBackground);
+}
+
+void
 SymViewTab::feed(const Symbol *data, unsigned int size)
 {
   this->ui->symView->feed(data, size);
