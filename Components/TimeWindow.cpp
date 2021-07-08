@@ -1507,8 +1507,10 @@ TimeWindow::onTriggerSampler(void)
 void
 TimeWindow::onResample(void)
 {
-  this->samplerDialog->reset();
-  this->startSampling();
+  if (this->samplerDialog->isVisible()) {
+    this->samplerDialog->reset();
+    this->startSampling();
+  }
 }
 
 bool
