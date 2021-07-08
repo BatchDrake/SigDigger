@@ -273,6 +273,8 @@ void
 SourcePanel::setProfile(Suscan::Source::Config *config)
 {
   SUFLOAT bw;
+  bool oldRefreshing = this->refreshing;
+  this->refreshing = true;
 
   this->profile = config;
   this->refreshGains(*config);
@@ -295,6 +297,8 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
   this->setPPM(this->profile->getPPM());
 
   this->refreshUi();
+
+  this->refreshing = oldRefreshing;
 }
 
 void
@@ -430,6 +434,9 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
   std::vector<Suscan::Source::GainDescription> gains;
   DeviceGain *gain = nullptr;
+  bool oldRefreshing = this->refreshing;
+
+  this->refreshing = true;
 
   this->setDCRemove(info.getDCRemove());
   this->setIQReverse(info.getIQReverse());
@@ -463,6 +470,8 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
     this->ui->gainsFrame->hide();
   else
     this->ui->gainsFrame->show();
+
+  this->refreshing = oldRefreshing;
 }
 
 void
@@ -593,8 +602,10 @@ SourcePanel::onGainChanged(QString name, float val)
 {
   // TODO: Config gain in dialog
 
-  this->setAGCEnabled(false);
-  emit gainChanged(name, val);
+  if (!this->refreshing) {
+    this->setAGCEnabled(false);
+    emit gainChanged(name, val);
+  }
 }
 
 void
@@ -621,13 +632,15 @@ SourcePanel::onThrottleChanged(void)
 void
 SourcePanel::onBandwidthChanged(void)
 {
-  emit bandwidthChanged();
+  if (!this->refreshing)
+    emit bandwidthChanged();
 }
 
 void
 SourcePanel::onPPMChanged(void)
 {
-  emit ppmChanged();
+  if (!this->refreshing)
+    emit ppmChanged();
 }
 
 void
@@ -662,26 +675,33 @@ SourcePanel::onSelectAutoGain(void)
 void
 SourcePanel::onToggleDCRemove(void)
 {
-  this->setDCRemove(this->ui->dcRemoveCheck->isChecked());
-  emit toggleDCRemove();
+  if (!this->refreshing) {
+    this->setDCRemove(this->ui->dcRemoveCheck->isChecked());
+    emit toggleDCRemove();
+  }
 }
 
 void
 SourcePanel::onToggleIQReverse(void)
 {
-  this->setIQReverse(this->ui->swapIQCheck->isChecked());
-  emit toggleIQReverse();
+  if (!this->refreshing) {
+    this->setIQReverse(this->ui->swapIQCheck->isChecked());
+    emit toggleIQReverse();
+  }
 }
 
 void
 SourcePanel::onToggleAGCEnabled(void)
 {
-  this->setAGCEnabled(this->ui->agcEnabledCheck->isChecked());
-  emit toggleAGCEnabled();
+  if (!this->refreshing) {
+    this->setAGCEnabled(this->ui->agcEnabledCheck->isChecked());
+    emit toggleAGCEnabled();
+  }
 }
 
 void
 SourcePanel::onAntennaChanged(int i)
 {
-  emit antennaChanged(this->ui->antennaCombo->itemText(i));
+  if (!this->refreshing)
+    emit antennaChanged(this->ui->antennaCombo->itemText(i));
 }

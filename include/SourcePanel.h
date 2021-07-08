@@ -51,6 +51,8 @@ namespace SigDigger {
   {
       Q_OBJECT
 
+      bool refreshing = false;
+
     public:
       enum State {
         DETACHED,
