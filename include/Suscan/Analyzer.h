@@ -154,6 +154,16 @@ namespace Suscan {
       for (i = 0; i < this->c_info->gain_count; ++i)
         vec.push_back(Source::GainDescription(this->c_info->gain_list[i]));
     }
+
+    inline void
+    getAntennaList(std::vector<std::string> &vec) const
+    {
+      unsigned int i;
+      vec.clear();
+
+      for (i = 0; i < this->c_info->antenna_count; ++i)
+        vec.push_back(this->c_info->antenna_list[i]);
+    }
   };
 
   class Analyzer: public QObject {

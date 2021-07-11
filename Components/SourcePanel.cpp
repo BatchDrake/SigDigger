@@ -164,6 +164,37 @@ SourcePanel::connectAll(void)
         SLOT(onPPMChanged(void)));
 }
 
+void
+SourcePanel::populateAntennaCombo(Suscan::AnalyzerSourceInfo const &info)
+{
+  int index = 0;
+  int i = 0;
+  QComboBox *combo = this->ui->antennaCombo;
+  std::vector<std::string> antennaList;
+
+  combo->clear();
+
+  info.getAntennaList(antennaList);
+
+  if (antennaList.empty()) {
+    this->ui->antennaCombo->hide();
+    this->ui->antennaLabel->hide();
+  } else {
+    this->ui->antennaCombo->show();
+    this->ui->antennaLabel->show();
+    for (auto p : antennaList) {
+      combo->addItem(QString::fromStdString(p));
+
+      if (info.getAntenna() == p)
+        index = i;
+
+      ++i;
+    }
+
+    combo->setCurrentIndex(index);
+  }
+}
+
 QString
 SourcePanel::formatSampleRate(unsigned int rate)
 {
@@ -188,18 +219,15 @@ SourcePanel::refreshUi()
 void
 SourcePanel::selectAntenna(std::string const &name)
 {
-  int count;
+  int index;
+  QString qNam = QString::fromStdString(name);
 
-  count = this->ui->antennaCombo->count();
+  if ((index = this->ui->antennaCombo->findText(qNam)) == -1) {
+    index = this->ui->antennaCombo->count();
+    this->ui->antennaCombo->addItem(qNam);
+  }
 
-  for (auto i = 0; i < count; ++i)
-    if (this->ui->antennaCombo->itemText(i).toStdString() == name) {
-      this->ui->antennaCombo->setCurrentIndex(i);
-      return;
-    }
-
-  this->ui->antennaCombo->addItem(QString::fromStdString(name));
-  this->ui->antennaCombo->setCurrentIndex(count);
+  this->ui->antennaCombo->setCurrentIndex(index);
 }
 
 void
@@ -284,6 +312,16 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
   ConfigDialog::populateAntennaCombo(
         *config,
         this->ui->antennaCombo);
+
+  if (this->ui->antennaCombo->count() == 0
+      || config->getType() != SUSCAN_SOURCE_TYPE_SDR
+      || config->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
+    this->ui->antennaCombo->hide();
+    this->ui->antennaLabel->hide();
+  } else {
+    this->ui->antennaCombo->show();
+    this->ui->antennaLabel->show();
+  }
 
   this->selectAntenna(config->getAntenna());
   this->setSampleRate(config->getDecimatedSampleRate());
@@ -442,6 +480,13 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   this->setIQReverse(info.getIQReverse());
   this->setAGCEnabled(info.getAGC());
   this->setBandwidth(info.getBandwidth());
+
+  // Populate antennas
+  populateAntennaCombo(info);
+
+  // What if SoapySDR lies? We consider the case in which the antenna is
+  // not reported in the antenna list
+  this->selectAntenna(info.getAntenna());
 
   // Create gains
   this->clearGains();

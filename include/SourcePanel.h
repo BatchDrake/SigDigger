@@ -91,6 +91,7 @@ namespace SigDigger {
       void selectAntenna(std::string const &name);
       void setBandwidth(float bw);
       void setPPM(float ppm);
+      void populateAntennaCombo(Suscan::AnalyzerSourceInfo const &info);
       void connectAll(void);
       void refreshUi(void);
 

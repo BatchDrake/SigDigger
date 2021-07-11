@@ -513,6 +513,12 @@ ConfigDialog::connectAll(void)
         SLOT(onDeviceChanged(int)));
 
   connect(
+        this->ui->antennaCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onAntennaChanged(int)));
+
+  connect(
         this->ui->loadProfileButton,
         SIGNAL(clicked()),
         this,
@@ -865,7 +871,6 @@ ConfigDialog::onDeviceChanged(int index)
       && index != -1
       && !this->remoteSelected()) {
     Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
     const Suscan::Source::Device *device;
 
     SU_ATTEMPT(
@@ -874,6 +879,14 @@ ConfigDialog::onDeviceChanged(int index)
             this->ui->deviceCombo->itemData(index).value<long>())));
 
     this->profile.setDevice(*device);
+    auto begin = device->getFirstAntenna();
+    auto end   = device->getLastAntenna();
+
+    // We check whether we can keep the current antenna configuration. If we
+    // cannot, just set the first antenna in the list.
+    if (device->findAntenna(this->profile.getAntenna()) == end
+        && begin != end)
+      this->profile.setAntenna(*begin);
 
     this->refreshUi();
 
@@ -903,6 +916,14 @@ ConfigDialog::onFormatChanged(int index)
         break;
     }
   }
+}
+
+void
+ConfigDialog::onAntennaChanged(int)
+{
+  if (!this->refreshing)
+    this->profile.setAntenna(
+          this->ui->antennaCombo->currentText().toStdString());
 }
 
 void

@@ -254,6 +254,16 @@ namespace Suscan {
       return this->antennas.end();
     }
 
+    std::vector<std::string>::const_iterator
+    findAntenna(std::string const &antenna) const
+    {
+      for (auto p = this->getFirstAntenna(); p != this->getLastAntenna(); ++p)
+        if (*p == antenna)
+          return p;
+
+      return this->getLastAntenna();
+    }
+
     std::vector<Source::GainDescription>::const_iterator
     getFirstGain(void) const
     {

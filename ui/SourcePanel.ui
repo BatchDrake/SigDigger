@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>301</width>
-    <height>264</height>
+    <width>319</width>
+    <height>317</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,8 +45,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>287</width>
-        <height>270</height>
+        <width>332</width>
+        <height>318</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
@@ -66,7 +66,7 @@
         <number>1</number>
        </property>
        <item row="7" column="0">
-        <widget class="QLabel" name="label_19">
+        <widget class="QLabel" name="antennaLabel">
          <property name="text">
           <string>Antenna</string>
          </property>

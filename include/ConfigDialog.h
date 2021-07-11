@@ -126,6 +126,7 @@ namespace SigDigger {
     void onToggleSourceType(bool);
     void onDeviceChanged(int);
     void onFormatChanged(int);
+    void onAntennaChanged(int);
     void onAnalyzerTypeChanged(int);
     void onCheckButtonsToggled(bool);
     void onSpinsChanged(void);
