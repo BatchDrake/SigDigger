@@ -57,7 +57,7 @@ function excluded()
 
 function find_soapysdr()
 {
-    SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64"
+    SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib/`gcc -dumpmachine` /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64"
     
     for i in $SOAPYDIRS; do
 	MODDIR="$i/SoapySDR/modules$SOAPYSDRVER"
