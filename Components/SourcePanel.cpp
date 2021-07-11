@@ -213,6 +213,9 @@ SourcePanel::refreshUi()
     this->ui->ppmSpinBox->setEnabled(
           this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR
           || this->profile->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE);
+
+    this->saverUI->setEnabled(
+          this->profile->getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE);
   }
 }
 
