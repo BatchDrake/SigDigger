@@ -26,17 +26,22 @@ build
 
 try "Removing unneeded development files..." rm -Rfv "$DEPLOYROOT"/usr/include "$DEPLOYROOT"/usr/bin/suscan.status "$DEPLOYROOT"/usr/lib/pkgconfig
 
-# Create startup script
-echo '#!/bin/sh
-SELF=$(readlink -f "$0")
-HERE=${SELF%/*}
-export SUSCAN_CONFIG_PATH="${HERE}/share/suscan/config"
-export LD_LIBRARY_PATH="${HERE}/lib:$LD_LIBRARY_PATH"
-exec "${HERE}"/bin/SigDigger "$@"' > "$DEPLOYROOT"/SigDigger
+function make_startup_script() {
+    # Create startup script
+    echo '#!/bin/sh
+    SELF=$(readlink -f "$0")
+    HERE=${SELF%/*}
+    export SUSCAN_CONFIG_PATH="${HERE}/share/suscan/config"
+    export LD_LIBRARY_PATH="${HERE}/lib:$LD_LIBRARY_PATH"
+    exec "${HERE}"/bin/'"$1"' "$@"' > "$DEPLOYROOT"/"$1"
+    return $?
+}
+try "Creating startup script for SigDigger" make_startup_script SigDigger
+try "Creating startup script for suscli" make_startup_script suscli
 
 try "Moving files out of /usr..." mv "$DEPLOYROOT"/usr/* "$DEPLOYROOT"
 try "Remove empty /usr..." rmdir "$DEPLOYROOT"/usr
-try "Setting permissions to wrapper script..." chmod a+x "$DEPLOYROOT"/SigDigger
+try "Setting permissions to wrapper scripts..." chmod a+x "$DEPLOYROOT"/SigDigger "$DEPLOYROOT"/suscli
 echo
 echo "Done. SigDigger compiled succesfully in $DEPLOYROOT"
 
