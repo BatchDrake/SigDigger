@@ -67,6 +67,9 @@
       </property>
       <item row="2" column="2">
        <widget class="QSpinBox" name="toneSpin">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>

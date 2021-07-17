@@ -33,8 +33,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <Suscan/Library.h>
-#include <DefaultGradient.h>
 #include <QMessageBox>
+#include <SuWidgetsHelpers.h>
+#include <SigDiggerHelpers.h>
 
 #include <iomanip>
 #include <fcntl.h>
@@ -45,57 +46,231 @@ InspectorUI::InspectorUI(
     QWidget *owner,
     Suscan::Config *config)
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  unsigned int ndx;
-
   this->ui = new Ui::Inspector();
   this->config = config;
   this->owner  = owner;
 
   this->ui->setupUi(owner);
 
-  if (config->hasPrefix("ask"))
-    this->decider.setDecisionMode(Decider::MODULUS);
+  this->symViewTab = new SymViewTab(this->ui->toolTab);
+  this->ui->toolTab->addTab(this->symViewTab, "Symbol stream");
 
+  this->wfTab = new WaveformTab(this->ui->toolTab);
+  this->ui->toolTab->addTab(this->wfTab, "Waveform");
+
+  this->tvTab = new TVProcessorTab(this->ui->toolTab, this->getBaudRateFloat());
+  this->ui->toolTab->addTab(this->tvTab, "Analog TV");
+
+  if (this->config->hasPrefix("ask")) {
+    this->decider.setDecisionMode(Decider::MODULUS);
+    this->tvTab->setDecisionMode(Decider::MODULUS);
+    this->decider.setMinimum(0);
+    this->decider.setMaximum(1);
+
+    this->ui->histogram->overrideDisplayRange(1);
+    this->ui->histogram->overrideUnits("");
+    this->ui->histogram->overrideDataRange(1);
+  } else if (this->config->hasPrefix("afc")) {
+    this->decider.setDecisionMode(Decider::ARGUMENT);
+    this->tvTab->setDecisionMode(Decider::ARGUMENT);
+    this->decider.setMinimum(-PI);
+    this->decider.setMaximum(PI);
+
+    this->ui->histogram->overrideDataRange(2 * M_PI);
+    this->ui->histogram->overrideDisplayRange(360);
+    this->ui->histogram->overrideUnits("º");
+  } else if (this->config->hasPrefix("fsk")) {
+    this->decider.setDecisionMode(Decider::ARGUMENT);
+    this->tvTab->setDecisionMode(Decider::ARGUMENT);
+    this->decider.setMinimum(-PI);
+    this->decider.setMaximum(PI);
+
+    this->ui->histogram->overrideDataRange(2 * M_PI);
+    this->ui->histogram->overrideUnits("Hz");
+  }
+
+  this->initUi();
+  this->connectAll();
+
+  // Refresh UI
+  this->refreshUi();
+
+  // Force refresh of waterfall
+  this->onRangeChanged();
+  this->onAspectSliderChanged(this->ui->aspectSlider->value());
+}
+
+InspectorUI::~InspectorUI()
+{
+  delete this->ui;
+
+  if (this->dataSaver != nullptr)
+    delete this->dataSaver;
+
+  if (this->socketForwarder != nullptr)
+    delete this->socketForwarder;
+}
+
+void
+InspectorUI::initUi(void)
+{
   this->ui->wfSpectrum->setFreqUnits(1);
 
-  // TODO: put shared UI objects in a singleton
-  this->palettes.push_back(Palette("Suscan", wf_gradient));
-  for (auto i = sus->getFirstPalette();
-       i != sus->getLastPalette();
-       i++) {
-    ndx = static_cast<unsigned int>(i - sus->getFirstPalette());
-
-    this->palettes.push_back(Palette(*i));
-
-    this->ui->paletteCombo->insertItem(
-          static_cast<int>(ndx),
-          QIcon(QPixmap::fromImage(this->palettes[ndx].getThumbnail())),
-          QString::fromStdString(this->palettes[ndx].getName()),
-          QVariant::fromValue(ndx));
-
-    this->palettes[ndx].getThumbnail();
-  }
+  SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
 
   this->setPalette("Suscan");
 
-  connect(
-        this->ui->symView,
-        SIGNAL(offsetChanged(unsigned int)),
-        this,
-        SLOT(onOffsetChanged(unsigned int)));
+  this->populateUnits();
+  this->populate();
+
+  // Configure throttleable widgets
+  this->throttle.setCpuBurn(false);
+  this->ui->constellation->setThrottleControl(&this->throttle);
+  this->symViewTab->setThrottleControl(&this->throttle);
+  this->wfTab->setThrottleControl(&this->throttle);
+  this->ui->transition->setThrottleControl(&this->throttle);
+  this->ui->histogram->setThrottleControl(&this->throttle);
+  this->ui->histogram->setDecider(&this->decider);
+  this->ui->histogram->reset();
+  this->ui->wfSpectrum->setCenterFreq(0);
+  this->ui->wfSpectrum->resetHorizontalZoom();
+  this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
+
+  // Refresh Bps
+  this->setBps(1);
+}
+
+void
+InspectorUI::adjustSizes(void)
+{
+  QList<int> sizes;
+  int width = this->ui->scrollAreaWidgetContents->sizeHint().width() - 25;
+
+  // Adjust splitter
+  sizes.append(width);
+  sizes.append(this->ui->splitter->width() - width);
+
+  this->ui->splitter->setSizes(sizes);
+}
+
+float
+InspectorUI::getZeroPoint(void) const
+{
+  return static_cast<float>(this->ui->zeroPointSpin->value());
+}
+
+void
+InspectorUI::setBasebandRate(unsigned int rate)
+{
+  this->basebandSampleRate = rate;
+  this->ui->loLcd->setMin(-static_cast<int>(rate) / 2);
+  this->ui->loLcd->setMax(static_cast<int>(rate) / 2);
+}
+
+void
+InspectorUI::setSampleRate(float rate)
+{
+  this->sampleRate = rate;
+  this->ui->sampleRateLabel->setText(
+        "Sample rate: "
+        + SuWidgetsHelpers::formatQuantity(
+            static_cast<qreal>(rate),
+            4,
+            "sp/s"));
+  this->ui->bwLcd->setMin(0);
+  this->ui->bwLcd->setMax(static_cast<qint64>(rate));
+
+  if (this->config->hasPrefix("fsk"))
+    this->ui->histogram->overrideDisplayRange(static_cast<qreal>(rate));
+
+  for (auto p : this->controls)
+    p->setSampleRate(rate);
+}
+
+void
+InspectorUI::setBandwidth(unsigned int bandwidth)
+{
+  // More COBOL
+  this->ui->bwLcd->setValue(static_cast<int>(bandwidth));
+}
+
+void
+InspectorUI::setLo(int lo)
+{
+  this->ui->loLcd->setValue(lo);
+}
+
+void
+InspectorUI::refreshInspectorCtls(void)
+{
+  for (auto p : this->controls)
+    p->refreshUi();
+}
+
+unsigned int
+InspectorUI::getBandwidth(void) const
+{
+  return static_cast<unsigned int>(this->ui->bwLcd->getValue());
+}
+
+int
+InspectorUI::getLo(void) const
+{
+  return static_cast<int>(this->ui->loLcd->getValue());
+}
+
+bool
+InspectorUI::setPalette(std::string const &str)
+{
+  int index = SigDiggerHelpers::instance()->getPaletteIndex(str);
+
+  if (index < 0)
+    return false;
+
+  this->ui->wfSpectrum->setPalette(
+        SigDiggerHelpers::instance()->getPalette(index)->getGradient());
+  this->ui->paletteCombo->setCurrentIndex(index);
+
+  return true;
+}
+
+void
+InspectorUI::addSpectrumSource(Suscan::SpectrumSource const &src)
+{
+  this->spectsrcs.push_back(src);
+  this->ui->spectrumSourceCombo->addItem(QString::fromStdString(src.desc));
+}
+
+void
+InspectorUI::addEstimator(Suscan::Estimator const &estimator)
+{
+  int position = static_cast<int>(this->estimators.size());
+  EstimatorControl *ctl;
+  this->ui->estimatorsGrid->setAlignment(Qt::AlignTop);
+
+  this->estimators.push_back(estimator);
+
+  ctl = new EstimatorControl(this->owner, estimator);
+  this->estimatorCtls[estimator.id] = ctl;
+
+  this->ui->estimatorsGrid->addWidget(ctl, position, 0, Qt::AlignTop);
 
   connect(
-        this->ui->symView,
-        SIGNAL(strideChanged(unsigned int)),
+        ctl,
+        SIGNAL(estimatorChanged(Suscan::EstimatorId, bool)),
         this,
-        SLOT(onStrideChanged(unsigned int)));
+        SLOT(onToggleEstimator(Suscan::EstimatorId, bool)));
 
   connect(
-        this->ui->symViewScrollBar,
-        SIGNAL(valueChanged(int)),
+        ctl,
+        SIGNAL(apply(QString, float)),
         this,
-        SLOT(onScrollBarChanged(int)));
+        SLOT(onApplyEstimation(QString, float)));
+}
+
+void
+InspectorUI::connectAll()
+{
 
   connect(
         this->ui->fpsSpin,
@@ -115,47 +290,6 @@ InspectorUI::InspectorUI(
         this,
         SLOT(onFPSReset()));
 
-  connect(
-        this->ui->recordButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->autoScrollButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->autoFitButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->widthSpin,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->offsetSpin,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onSymViewControlsChanged()));
-
-  connect(
-        this->ui->saveButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onSaveSymView()));
-
-  connect(
-        this->ui->clearButton,
-        SIGNAL(clicked(bool)),
-        this,
-        SLOT(onClearSymView()));
 
   connect(
         this->ui->paletteCombo,
@@ -211,138 +345,35 @@ InspectorUI::InspectorUI(
         this,
         SLOT(onChangeBandwidth(void)));
 
-  this->populate();
-
-  // Configure throttleable widgets
-  this->throttle.setCpuBurn(false);
-  this->ui->constellation->setThrottleControl(&this->throttle);
-  this->ui->symView->setThrottleControl(&this->throttle);
-  this->ui->transition->setThrottleControl(&this->throttle);
-  this->ui->histogram->setThrottleControl(&this->throttle);
-  this->ui->histogram->setDecider(&this->decider);
-  this->ui->wfSpectrum->setCenterFreq(0);
-  this->ui->wfSpectrum->resetHorizontalZoom();
-  this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
-
-  // Refresh Bps
-  this->setBps(1);
-
-  // Refresh UI
-  this->refreshUi();
-}
-
-InspectorUI::~InspectorUI()
-{
-  delete this->ui;
-
-  if (this->dataSaver != nullptr)
-    delete this->dataSaver;
-
-  if (this->socketForwarder != nullptr)
-    delete this->socketForwarder;
-
-}
-
-void
-InspectorUI::setBasebandRate(unsigned int rate)
-{
-  this->basebandSampleRate = rate;
-  this->ui->loLcd->setMin(-static_cast<int>(rate) / 2);
-  this->ui->loLcd->setMax(static_cast<int>(rate) / 2);
-}
-
-void
-InspectorUI::setSampleRate(float rate)
-{
-  this->sampleRate = rate;
-  this->ui->sampleRateLabel->setText(
-        "Sample rate: "
-        + QString::number(static_cast<qreal>(rate))
-        + " sps");
-  this->ui->bwLcd->setMin(0);
-  this->ui->bwLcd->setMax(static_cast<qint64>(rate));
-}
-
-void
-InspectorUI::setBandwidth(unsigned int bandwidth)
-{
-  // More COBOL
-  this->ui->bwLcd->setValue(static_cast<int>(bandwidth));
-}
-
-void
-InspectorUI::setLo(int lo)
-{
-  this->ui->loLcd->setValue(lo);
-}
-
-void
-InspectorUI::refreshInspectorCtls(void)
-{
-  for (auto p = this->controls.begin(); p != this->controls.end(); ++p)
-    (*p)->refreshUi();
-}
-
-unsigned int
-InspectorUI::getBandwidth(void) const
-{
-  return static_cast<unsigned int>(this->ui->bwLcd->getValue());
-}
-
-int
-InspectorUI::getLo(void) const
-{
-  return static_cast<int>(this->ui->loLcd->getValue());
-}
-
-bool
-InspectorUI::setPalette(std::string const &str)
-{
-  unsigned int i;
-
-  for (i = 0; i < this->palettes.size(); ++i) {
-    if (this->palettes[i].getName().compare(str) == 0) {
-      this->ui->wfSpectrum->setPalette(this->palettes[i].getGradient());
-      this->ui->paletteCombo->setCurrentIndex(static_cast<int>(i));
-      return true;
-    }
-  }
-
-  return false;
-}
-
-void
-InspectorUI::addSpectrumSource(Suscan::SpectrumSource const &src)
-{
-  this->spectsrcs.push_back(src);
-  this->ui->spectrumSourceCombo->addItem(QString::fromStdString(src.desc));
-}
-
-void
-InspectorUI::addEstimator(Suscan::Estimator const &estimator)
-{
-  int position = static_cast<int>(this->estimators.size());
-  EstimatorControl *ctl;
-  this->ui->estimatorsGrid->setAlignment(Qt::AlignTop);
-
-  this->estimators.push_back(estimator);
-
-  ctl = new EstimatorControl(this->owner, estimator);
-  this->estimatorCtls[estimator.id] = ctl;
-
-  this->ui->estimatorsGrid->addWidget(ctl, position, 0, Qt::AlignTop);
+  connect(
+        this->ui->aspectSlider,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onAspectSliderChanged(int)));
 
   connect(
-        ctl,
-        SIGNAL(estimatorChanged(Suscan::EstimatorId, bool)),
+        this->ui->wfSpectrum,
+        SIGNAL(pandapterRangeChanged(float, float)),
         this,
-        SLOT(onToggleEstimator(Suscan::EstimatorId, bool)));
+        SLOT(onPandapterRangeChanged(float, float)));
 
   connect(
-        ctl,
-        SIGNAL(apply(QString, float)),
+        this->ui->unitsCombo,
+        SIGNAL(activated(int)),
         this,
-        SLOT(onApplyEstimation(QString, float)));
+        SLOT(onUnitChanged(void)));
+
+  connect(
+        this->ui->zeroPointSpin,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onZeroPointChanged(void)));
+
+  connect(
+        this->ui->gainSpinBox,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onGainChanged(void)));
 }
 
 void
@@ -530,31 +561,6 @@ InspectorUI::onResetSNR(void)
 
 }
 
-static QString
-format2nUnits(unsigned long rate, QString const &units)
-{
-  if (rate < (1 << 10))
-    return QString::number(rate) + " " + units;
-  else if (rate < (1 << 20))
-    return QString::number(static_cast<qreal>(rate) / (1 << 10), 'f', 3) + " Ki" + units;
-  else if (rate < (1 << 30))
-    return QString::number(static_cast<qreal>(rate) / (1 << 20), 'f', 3) + " Mi" + units;
-
-  return QString::number(static_cast<qreal>(rate) / (1 << 30), 'f', 3) + " Gi" + units;
-}
-
-static QString
-formatUnits(unsigned long rate, QString const &units)
-{
-  if (rate < 1000)
-    return QString::number(rate) + " " + units;
-  else if (rate < 1000000)
-    return QString::number(rate / 1e3, 'f', 3) + " k" + units;
-  else if (rate < 1000000000)
-    return QString::number(rate / 1e6, 'f', 3) + " M" + units;
-
-  return QString::number(rate / 1e9, 'f', 3) + " G" + units;
-}
 
 void
 InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
@@ -579,28 +585,21 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
     }
   }
 
-  if (this->demodulating) {
+  // Decision happens here.
+  if (this->symViewTab->isRecording()) {
     if (this->decider.getBps() > 0) {
       this->decider.feed(data, size);
-      this->ui->symView->feed(this->decider.get());
+
+      this->symViewTab->feed(this->decider.get());
       this->ui->transition->feed(this->decider.get());
-
-
-      this->ui->sizeLabel->setText(
-            "Capture size: " +
-            formatUnits(this->ui->symView->getLength(), "sym"));
-
-      this->ui->dataSizeLabel->setText(
-            "Data size: " +
-            formatUnits(
-              this->ui->symView->getLength() * this->decider.getBps(),
-              "bits")
-            + " (" +
-            format2nUnits(
-              this->ui->symView->getLength() * this->decider.getBps() >> 3,
-              "B") + ")");
     }
   }
+
+  if (this->tvTab->isEnabled())
+    this->tvTab->feed(data, size);
+
+  if (this->wfTab->isRecording())
+    this->wfTab->feed(data, size);
 
   if (this->recording || this->forwarding) {
     if (this->decider.getDecisionMode() == Decider::MODULUS) {
@@ -693,6 +692,20 @@ InspectorUI::pushControl(InspectorCtl *ctl)
 }
 
 void
+InspectorUI::populateUnits(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  this->ui->unitsCombo->clear();
+
+  for (auto p: sus->getSpectrumUnitMap())
+    this->ui->unitsCombo->addItem(QString::fromStdString(p.name));
+
+  this->ui->unitsCombo->setCurrentIndex(0);
+  this->ui->zeroPointSpin->setValue(0.0);
+}
+
+void
 InspectorUI::populate(void)
 {
   this->ui->controlsGrid->setAlignment(Qt::AlignTop);
@@ -734,6 +747,7 @@ InspectorUI::populate(void)
         SIGNAL(forwardStateChanged(bool)),
         this,
         SLOT(onToggleNetForward(void)));
+
 }
 
 void
@@ -747,21 +761,20 @@ InspectorUI::refreshUi(void)
   this->ui->spectrumSourceCombo->setEnabled(enabled);
   this->ui->snrButton->setEnabled(enabled);
   this->ui->snrResetButton->setEnabled(enabled);
-  this->ui->recordButton->setEnabled(enabled);
+  this->symViewTab->setEnabled(enabled);
   this->ui->loLcd->setEnabled(enabled);
   this->ui->bwLcd->setEnabled(enabled);
   this->saverUI->setEnabled(enabled && this->recordingRate != 0);
   this->netForwarderUI->setEnabled(enabled && this->recordingRate != 0);
 }
 
-//////////////////////////////////// Slots ////////////////////////////////////
 void
 InspectorUI::setBps(unsigned int bps)
 {
   if (this->bps != bps) {
     this->decider.setBps(bps);
     this->estimator.setBps(bps);
-    this->ui->symView->setBitsPerSymbol(bps);
+    this->symViewTab->setBitsPerSymbol(bps);
     this->ui->constellation->setOrderHint(bps);
     this->ui->transition->setOrderHint(bps);
     this->ui->histogram->setDecider(&this->decider);
@@ -772,12 +785,18 @@ InspectorUI::setBps(unsigned int bps)
 unsigned int
 InspectorUI::getBaudRate(void) const
 {
+  return static_cast<unsigned int>(this->getBaudRateFloat());
+}
+
+SUFLOAT
+InspectorUI::getBaudRateFloat(void) const
+{
   const Suscan::FieldValue *val;
-  unsigned int baud = 1;
+  SUFLOAT baud = 1.;
 
   // Check baudrate
   if ((val = this->config->get("clock.baud")) != nullptr)
-    baud = static_cast<unsigned int>(val->getFloat());
+    baud = val->getFloat();
 
   return baud;
 }
@@ -815,6 +834,7 @@ InspectorUI::getBps(void) const
   return bps;
 }
 
+//////////////////////////////////// Slots ////////////////////////////////////
 void
 InspectorUI::onInspectorControlChanged(void)
 {
@@ -822,28 +842,33 @@ InspectorUI::onInspectorControlChanged(void)
   unsigned int oldRate = this->recordingRate;
   // Changing the newRate has a set of implications
 
-  if (this->recording && newRate != oldRate) {
-    this->recording = false;
-    if (newRate == 0) {
-      this->uninstallDataSaver();
-    } else if (newRate != this->recordingRate) {
-      this->uninstallDataSaver();
-      this->recording = this->installDataSaver();
+  if (newRate != oldRate) {
+    this->tvTab->setSampleRate(this->getBaudRateFloat());
+    this->wfTab->setSampleRate(this->getBaudRateFloat());
+
+    if (this->recording) {
+      this->recording = false;
+      if (newRate == 0) {
+        this->uninstallDataSaver();
+      } else if (newRate != this->recordingRate) {
+        this->uninstallDataSaver();
+        this->recording = this->installDataSaver();
+      }
+
+      this->saverUI->setRecordState(this->recording);
     }
 
-    this->saverUI->setRecordState(this->recording);
-  }
+    if (this->forwarding) {
+      this->forwarding = false;
+      if (newRate == 0) {
+        this->uninstallNetForwarder();
+      } else if (newRate != this->recordingRate) {
+        this->uninstallNetForwarder();
+        this->forwarding = this->installNetForwarder();
+      }
 
-  if (this->forwarding && newRate != oldRate) {
-    this->forwarding = false;
-    if (newRate == 0) {
-      this->uninstallNetForwarder();
-    } else if (newRate != this->recordingRate) {
-      this->uninstallNetForwarder();
-      this->forwarding = this->installNetForwarder();
+      this->saverUI->setRecordState(this->recording);
     }
-
-    this->saverUI->setRecordState(this->recording);
   }
 
   this->saverUI->setEnabled(newRate != 0);
@@ -856,39 +881,6 @@ InspectorUI::onInspectorControlChanged(void)
   emit configChanged();
 }
 
-void
-InspectorUI::onScrollBarChanged(int offset)
-{
-  this->scrolling = true;
-  this->ui->symView->setOffset(
-        static_cast<unsigned int>(this->ui->symView->getStride() * offset));
-  this->scrolling = false;
-}
-
-void
-InspectorUI::onOffsetChanged(unsigned int offset)
-{
-  int max = this->ui->symView->getLines() - this->ui->symView->height();
-
-  if (max <= 0) {
-    this->ui->symViewScrollBar->setPageStep(0);
-    this->ui->symViewScrollBar->setMaximum(1);
-  } else {
-    this->ui->symViewScrollBar->setPageStep(this->ui->symView->height());
-    this->ui->symViewScrollBar->setMaximum(max);
-
-    if (!this->scrolling)
-      this->ui->symViewScrollBar->setValue(static_cast<int>(offset));
-  }
-
-  this->ui->offsetSpin->setValue(static_cast<int>(offset));
-}
-
-void
-InspectorUI::onStrideChanged(unsigned int stride)
-{
-  this->ui->widthSpin->setValue(static_cast<int>(stride));
-}
 
 void
 InspectorUI::onCPUBurnClicked(void)
@@ -900,35 +892,14 @@ InspectorUI::onCPUBurnClicked(void)
 }
 
 void
-InspectorUI::onSymViewControlsChanged(void)
-{
-  bool autoStride = this->ui->autoFitButton->isChecked();
-  bool autoScroll = this->ui->autoScrollButton->isChecked();
-
-  this->demodulating = this->ui->recordButton->isChecked();
-
-  this->ui->symView->setAutoStride(autoStride);
-  this->ui->symView->setAutoScroll(autoScroll);
-  this->ui->widthSpin->setEnabled(!autoStride);
-  this->ui->offsetSpin->setEnabled(!autoScroll);
-
-  if (!autoStride)
-    this->ui->symView->setStride(
-        static_cast<unsigned int>(this->ui->widthSpin->value()));
-
-  if (!autoScroll)
-    this->ui->symView->setOffset(
-        static_cast<unsigned int>(this->ui->offsetSpin->value()));
-}
-
-void
 InspectorUI::setAppConfig(AppConfig const &cfg)
 {
   ColorConfig const &colors = cfg.colors;
-
+  InspectorPanelConfig panelConfig;
   FftPanelConfig fftConfig;
 
   fftConfig.deserialize(cfg.fftConfig->serialize());
+  panelConfig.deserialize(cfg.inspectorConfig->serialize());
 
   // Set colors according to application config
   this->ui->constellation->setForegroundColor(colors.constellationForeground);
@@ -945,14 +916,36 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
 
   // this->ui->histogram->setModelColor(colors.histogramModel);
 
+  this->ui->bwLcd->setForegroundColor(colors.lcdForeground);
+  this->ui->bwLcd->setBackgroundColor(colors.lcdBackground);
+
+  this->ui->loLcd->setForegroundColor(colors.lcdForeground);
+  this->ui->loLcd->setBackgroundColor(colors.lcdBackground);
+
   this->ui->wfSpectrum->setFftPlotColor(colors.spectrumForeground);
   this->ui->wfSpectrum->setFftBgColor(colors.spectrumBackground);
   this->ui->wfSpectrum->setFftAxesColor(colors.spectrumAxes);
   this->ui->wfSpectrum->setFftTextColor(colors.spectrumText);
+  this->ui->wfSpectrum->setFilterBoxColor(colors.filterBox);
+
+  // Set SymView colors
+  this->symViewTab->setColorConfig(colors);
+
+  // Set Waveform colors
+  this->wfTab->setColorConfig(colors);
+  this->wfTab->setPalette(panelConfig.palette);
+  this->wfTab->setPaletteOffset(panelConfig.paletteOffset);
+  this->wfTab->setPaletteContrast(panelConfig.paletteContrast);
 
   // Set palette
-  fftConfig.deserialize(cfg.fftConfig->serialize());
   (void) this->setPalette(fftConfig.palette);
+}
+
+void
+InspectorUI::setZeroPoint(float zp)
+{
+  this->ui->zeroPointSpin->setValue(static_cast<double>(zp));
+  this->ui->wfSpectrum->setZeroPoint(this->currentUnit.zeroPoint + zp);
 }
 
 void
@@ -972,54 +965,11 @@ InspectorUI::onFPSChanged(void)
 }
 
 void
-InspectorUI::onSaveSymView(void)
-{
-  QFileDialog dialog(this->ui->symView);
-  QStringList filters;
-  enum SymView::FileFormat fmt = SymView::FILE_FORMAT_TEXT;
-
-  filters << "Text file (*.txt)"
-          << "Binary file (*.bin)"
-          << "C source file (*.c)";
-
-  dialog.setFileMode(QFileDialog::AnyFile);
-  dialog.setAcceptMode(QFileDialog::AcceptSave);
-  dialog.setWindowTitle(QString("Save current symbol capture as..."));
-  dialog.setNameFilters(filters);
-
-  if (dialog.exec()) {
-    QString filter = dialog.selectedNameFilter();
-    if (strstr(filter.toStdString().c_str(), ".txt") != nullptr)
-      fmt = SymView::FILE_FORMAT_TEXT;
-    else if (strstr(filter.toStdString().c_str(), ".bin") != nullptr)
-      fmt = SymView::FILE_FORMAT_RAW;
-    else if (strstr(filter.toStdString().c_str(), ".c") != nullptr)
-      fmt = SymView::FILE_FORMAT_C_ARRAY;
-
-    try {
-      this->ui->symView->save(dialog.selectedFiles().first(), fmt);
-    } catch (std::ios_base::failure const &) {
-      (void) QMessageBox::critical(
-            this->ui->symView,
-            "Save symbol file",
-            "Failed to save file in the specified location. Please try again.",
-            QMessageBox::Close);
-    }
-  }
-}
-
-void
-InspectorUI::onClearSymView(void)
-{
-  this->ui->symView->clear();
-}
-
-void
 InspectorUI::onSpectrumConfigChanged(void)
 {
   int index = this->ui->paletteCombo->currentIndex();
   this->ui->wfSpectrum->setPalette(
-        this->palettes[static_cast<unsigned>(index)].getGradient());
+        SigDiggerHelpers::instance()->getPalette(index)->getGradient());
   this->ui->wfSpectrum->setPeakDetection(
         this->ui->peakDetectionButton->isChecked(), 3);
 
@@ -1036,13 +986,59 @@ InspectorUI::onSpectrumSourceChanged(void)
 void
 InspectorUI::onRangeChanged(void)
 {
-  this->ui->wfSpectrum->setPandapterRange(
-        this->ui->rangeSlider->minimumValue(),
-        this->ui->rangeSlider->maximumValue());
+  if (!this->adjusting) {
+    this->ui->wfSpectrum->setPandapterRange(
+          this->ui->rangeSlider->minimumValue(),
+          this->ui->rangeSlider->maximumValue());
 
-  this->ui->wfSpectrum->setWaterfallRange(
-        this->ui->rangeSlider->minimumValue(),
-        this->ui->rangeSlider->maximumValue());
+    this->ui->wfSpectrum->setWaterfallRange(
+          this->ui->rangeSlider->minimumValue(),
+          this->ui->rangeSlider->maximumValue());
+  }
+}
+
+void
+InspectorUI::onChangeLo(void)
+{
+  emit loChanged();
+}
+
+void
+InspectorUI::onChangeBandwidth(void)
+{
+  emit bandwidthChanged();
+}
+
+void
+InspectorUI::onToggleEstimator(Suscan::EstimatorId id, bool enabled)
+{
+  emit toggleEstimator(id, enabled);
+}
+
+void
+InspectorUI::onApplyEstimation(QString name, float value)
+{
+  emit applyEstimation(name, value);
+}
+
+void
+InspectorUI::onAspectSliderChanged(int ratio)
+{
+  this->ui->wfSpectrum->setPercent2DScreen(ratio);
+}
+
+void
+InspectorUI::onPandapterRangeChanged(float min, float max)
+{
+  bool adjusting = this->adjusting;
+  this->adjusting = true;
+
+  this->ui->rangeSlider->setMinimumPosition(static_cast<int>(min));
+  this->ui->rangeSlider->setMaximumPosition(static_cast<int>(max));
+
+  this->ui->wfSpectrum->setWaterfallRange(min, max);
+
+  this->adjusting = adjusting;
 }
 
 // Datasaver
@@ -1108,6 +1104,7 @@ InspectorUI::onCommit(void)
 {
   this->saverUI->setCaptureSize(this->dataSaver->getSize());
 }
+
 
 // Net Forwarder
 void
@@ -1181,26 +1178,42 @@ InspectorUI::onNetCommit(void)
 }
 
 void
-InspectorUI::onChangeLo(void)
+InspectorUI::onUnitChanged(void)
 {
-  emit loChanged();
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  float currZPdB = this->zeroPointToDb();
+  float newZp;
+  std::string name = this->ui->unitsCombo->currentText().toStdString();
+  auto it = sus->getSpectrumUnitFrom(name);
+
+  this->ui->zeroPointSpin->setSuffix(" " + QString::fromStdString(name));
+
+  if (it != sus->getLastSpectrumUnit()) {
+    this->currentUnit = *it;
+  } else {
+    this->currentUnit.name      = "dBFS";
+    this->currentUnit.dBPerUnit = 1.f;
+    this->currentUnit.zeroPoint = 0;
+  }
+
+  newZp = this->dbToZeroPoint(currZPdB);
+
+  this->ui->wfSpectrum->setUnitName(
+        QString::fromStdString(this->currentUnit.name));
+  this->ui->wfSpectrum->setdBPerUnit(this->currentUnit.dBPerUnit);
+  this->setZeroPoint(newZp);
 }
 
 void
-InspectorUI::onChangeBandwidth(void)
+InspectorUI::onZeroPointChanged(void)
 {
-  emit bandwidthChanged();
+  float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
+  this->ui->wfSpectrum->setZeroPoint(this->currentUnit.zeroPoint + currZP);
 }
 
 void
-InspectorUI::onToggleEstimator(Suscan::EstimatorId id, bool enabled)
+InspectorUI::onGainChanged(void)
 {
-  emit toggleEstimator(id, enabled);
+  this->ui->wfSpectrum->setGain(
+        static_cast<float>(this->ui->gainSpinBox->value()));
 }
-
-void
-InspectorUI::onApplyEstimation(QString name, float value)
-{
-  emit applyEstimation(name, value);
-}
-

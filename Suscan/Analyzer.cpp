@@ -27,6 +27,8 @@ Q_DECLARE_METATYPE(Suscan::ChannelMessage);
 Q_DECLARE_METATYPE(Suscan::InspectorMessage);
 Q_DECLARE_METATYPE(Suscan::PSDMessage);
 Q_DECLARE_METATYPE(Suscan::SamplesMessage);
+Q_DECLARE_METATYPE(Suscan::SourceInfoMessage);
+Q_DECLARE_METATYPE(Suscan::StatusMessage);
 Q_DECLARE_METATYPE(Suscan::GenericMessage);
 Q_DECLARE_METATYPE(Suscan::EstimatorId);
 
@@ -45,9 +47,12 @@ Analyzer::AsyncThread::run()
     data = this->owner->read(type);
 
     switch (type) {
+      case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INFO:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_INSPECTOR:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_PSD:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_SAMPLES:
+      case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INIT:
+      case SUSCAN_ANALYZER_MESSAGE_TYPE_INTERNAL:
         emit message(type, data);
         break;
 
@@ -110,9 +115,31 @@ Analyzer::setAntenna(std::string const &name)
 }
 
 void
+Analyzer::setSweepStrategy(SweepStrategy strategy)
+{
+  SU_ATTEMPT(suscan_analyzer_set_sweep_stratrgy(
+               this->instance,
+               static_cast<enum suscan_analyzer_sweep_strategy>(strategy)));
+}
+
+void
+Analyzer::setSpectrumPartitioning(SpectrumPartitioning partitioning)
+{
+  SU_ATTEMPT(suscan_analyzer_set_spectrum_partitioning(
+               this->instance,
+               static_cast<enum suscan_analyzer_spectrum_partitioning>(partitioning)));
+}
+
+void
 Analyzer::setBandwidth(SUFLOAT value)
 {
   SU_ATTEMPT(suscan_analyzer_set_bw(this->instance, value));
+}
+
+void
+Analyzer::setPPM(SUFLOAT value)
+{
+  SU_ATTEMPT(suscan_analyzer_set_ppm(this->instance, value));
 }
 
 void
@@ -157,6 +184,19 @@ Analyzer::setAGC(bool enabled)
 
 }
 
+void
+Analyzer::setHopRange(SUFREQ min, SUFREQ max)
+{
+  SU_ATTEMPT(
+        suscan_analyzer_set_hop_range(this->instance, min, max));
+}
+
+void
+Analyzer::setBufferingSize(SUSCOUNT len)
+{
+  SU_ATTEMPT(suscan_analyzer_set_buffering_size(this->instance, len));
+}
+
 SUSCOUNT
 Analyzer::getSampleRate(void) const
 {
@@ -182,6 +222,10 @@ Analyzer::captureMessage(quint32 type, void *data)
 {
   switch (type) {
     // Data messages
+    case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INFO:
+      emit source_info_message(SourceInfoMessage(static_cast<struct suscan_analyzer_source_info *>(data)));
+      break;
+
     case SUSCAN_ANALYZER_MESSAGE_TYPE_INSPECTOR:
       emit inspector_message(InspectorMessage(static_cast<struct suscan_analyzer_inspector_msg *>(data)));
       break;
@@ -192,6 +236,11 @@ Analyzer::captureMessage(quint32 type, void *data)
 
     case SUSCAN_ANALYZER_MESSAGE_TYPE_SAMPLES:
       emit samples_message(SamplesMessage(static_cast<struct suscan_analyzer_sample_batch_msg *>(data)));
+      break;
+
+    case SUSCAN_ANALYZER_MESSAGE_TYPE_INTERNAL:
+    case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INIT:
+      emit status_message(StatusMessage(static_cast<struct suscan_analyzer_status_msg *>(data)));
       break;
 
     // Exit conditions. These have no data.
@@ -224,6 +273,9 @@ Analyzer::assertTypeRegistration(void)
     qRegisterMetaType<Suscan::PSDMessage>();
     qRegisterMetaType<Suscan::InspectorMessage>();
     qRegisterMetaType<Suscan::SamplesMessage>();
+    qRegisterMetaType<Suscan::SourceInfoMessage>();
+    qRegisterMetaType<Suscan::StatusMessage>();
+
     Analyzer::registered = true;
   }
 }
@@ -298,25 +350,23 @@ Analyzer::setInspectorId(Handle handle, InspectorId id, RequestId req_id)
 }
 
 void
-Analyzer::setInspectorFreq(Handle handle, SUFREQ freq, RequestId req_id)
+Analyzer::setInspectorFreq(Handle handle, SUFREQ freq, RequestId)
 {
   SU_ATTEMPT(
-        suscan_analyzer_set_inspector_freq_async(
+        suscan_analyzer_set_inspector_freq_overridable(
           this->instance,
           handle,
-          freq,
-          req_id));
+          freq));
 }
 
 void
-Analyzer::setInspectorBandwidth(Handle handle, SUFREQ bw, RequestId req_id)
+Analyzer::setInspectorBandwidth(Handle handle, SUFREQ bw, RequestId)
 {
   SU_ATTEMPT(
-        suscan_analyzer_set_inspector_bandwidth_async(
+        suscan_analyzer_set_inspector_bandwidth_overridable(
           this->instance,
           handle,
-          bw,
-          req_id));
+          bw));
 }
 
 void

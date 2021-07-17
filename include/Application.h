@@ -28,6 +28,9 @@
 #include "UIMediator.h"
 #include "AudioPlayback.h"
 #include "FileDataSaver.h"
+#include "AudioFileSaver.h"
+#include "Scanner.h"
+#include <BookmarkInfo.h>
 
 namespace SigDigger {
   class DeviceDetectWorker : public QObject {
@@ -54,6 +57,7 @@ namespace SigDigger {
     // Suscan core object
     std::unique_ptr<Suscan::Analyzer> analyzer = nullptr;
     std::unique_ptr<FileDataSaver> dataSaver = nullptr;
+    std::unique_ptr<AudioFileSaver> audioFileSaver = nullptr;
 
     bool profileSelected = false;
     unsigned int currSampleRate;
@@ -73,11 +77,21 @@ namespace SigDigger {
     SUFREQ maxAudioBw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
     SUFREQ lastAudioLo = 0;
 
+    // Raw inspector for time view
+    Suscan::Handle rawInspHandle = 0;
+    bool rawInspectorOpened = false;
+
+    // Panoramic spectrum
+    Scanner *scanner = nullptr;
+    SUFREQ scanMinFreq;
+    SUFREQ scanMaxFreq;
+
     // Delayed audio parameters
     unsigned int delayedRate = 0;
     SUFLOAT delayedCutOff = 0;
-    SUFLOAT delayedVolume = 0;
     unsigned int delayedDemod = 0;
+    SUFLOAT delayedSqlLevel = 0;
+    bool delayedEnableSql = false;
 
     // Rediscover devices
     QThread *deviceDetectThread;
@@ -88,15 +102,22 @@ namespace SigDigger {
     void connectUI(void);
     void connectAnalyzer(void);
     void connectDataSaver(void);
+    void connectAudioFileSaver(void);
     void connectDeviceDetect(void);
+    void connectScanner(void);
+
     int  openCaptureFile(void);
     void installDataSaver(int fd);
     void uninstallDataSaver(void);
+    bool openAudioFileSaver(void);
+    void closeAudioFileSaver(void);
+    void orderedHalt(void);
     void setAudioInspectorParams(
         unsigned int rate,
         SUFLOAT cutOff,
-        SUFLOAT volume,
-        unsigned int demod);
+        unsigned int demod,
+        bool squelch,
+        SUFLOAT squelchLevel);
     SUFREQ getAudioInspectorLo(void) const;
     SUFREQ getAudioInspectorBandwidth(void) const;
     void   assertAudioInspectorLo(void);
@@ -135,6 +156,8 @@ namespace SigDigger {
     void onGainChanged(QString name, float val);
     void onFrequencyChanged(qint64, qint64);
     void onOpenInspector(void);
+    void onOpenRawInspector(void);
+    void onCloseRawInspector(void);
     void onThrottleConfigChanged(void);
     void onToggleRecord(void);
     void onToggleDCRemove(void);
@@ -144,11 +167,15 @@ namespace SigDigger {
     void onLoChanged(qint64);
     void onChannelBandwidthChanged(qreal);
     void onAudioChanged(void);
+    void onAudioRecordStateChanged(void);
+    void onAudioVolumeChanged(float);
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
+    void onPPMChanged(void);
     void onDeviceRefresh(void);
     void onRecentSelected(QString profile);
     void onRecentCleared(void);
+    void onAddBookmark(BookmarkInfo info);
     void quit(void);
 
     // Analyzer slots
@@ -158,6 +185,8 @@ namespace SigDigger {
     void onPSDMessage(const Suscan::PSDMessage &);
     void onInspectorMessage(const Suscan::InspectorMessage &);
     void onInspectorSamples(const Suscan::SamplesMessage &);
+    void onSourceInfoMessage(const Suscan::SourceInfoMessage &);
+    void onStatusMessage(const Suscan::StatusMessage &);
 
     // DataSaver slots
     void onSaveError(void);
@@ -165,8 +194,27 @@ namespace SigDigger {
     void onSaveRate(qreal rate);
     void onCommit(void);
 
+    // AudioFileSaver slots
+    void onAudioSaveError(void);
+    void onAudioSaveSwamped(void);
+    void onAudioSaveRate(qreal rate);
+    void onAudioCommit(void);
+
     // Device detect slots
     void onDetectFinished(void);
+
+    // Panoramic spectrum slots
+    void onPanSpectrumStart(void);
+    void onPanSpectrumStop(void);
+    void onPanSpectrumRangeChanged(qint64, qint64, bool);
+    void onPanSpectrumSkipChanged(void);
+    void onPanSpectrumRelBwChanged(void);
+    void onPanSpectrumReset(void);
+    void onPanSpectrumStrategyChanged(QString);
+    void onPanSpectrumPartitioningChanged(QString);
+    void onPanSpectrumGainChanged(QString, float);
+    void onScannerUpdated(void);
+    void onScannerStopped(void);
   };
 }
 

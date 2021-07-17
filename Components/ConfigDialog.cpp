@@ -21,8 +21,11 @@
 #include <QMessageBox>
 
 #include <Suscan/Library.h>
-
+#include <SuWidgetsHelpers.h>
 #include "ConfigDialog.h"
+
+#define SIGDIGGER_CONFIG_DIALOG_MIN_DEVICE_FREQ 0
+#define SIGDIGGER_CONFIG_DIALOG_MAX_DEVICE_FREQ 7.5e9
 
 using namespace SigDigger;
 
@@ -33,35 +36,105 @@ void
 ConfigDialog::populateCombos(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
   this->ui->profileCombo->clear();
   this->ui->deviceCombo->clear();
+  this->ui->remoteDeviceCombo->clear();
 
   for (auto i = sus->getFirstProfile(); i != sus->getLastProfile(); ++i)
       this->ui->profileCombo->addItem(
             QString::fromStdString(i->first),
             QVariant::fromValue(i->second));
 
+  // Populate local devices only
   for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i)
-    this->ui->deviceCombo->addItem(
-        QString::fromStdString(i->getDesc()));
+    if (i->isAvailable() && !i->isRemote())
+      this->ui->deviceCombo->addItem(
+          QString::fromStdString(i->getDesc()),
+          QVariant::fromValue<long>(i - sus->getFirstDevice()));
+
+  if (this->ui->deviceCombo->currentIndex() == -1)
+    this->ui->deviceCombo->setCurrentIndex(0);
+
+  // Network devices are traversed here.
+  for (
+       auto i = sus->getFirstNetworkProfile();
+       i != sus->getLastNetworkProfile();
+       ++i)
+    this->ui->remoteDeviceCombo->addItem(i->label().c_str());
+
+  if (this->ui->remoteDeviceCombo->currentIndex() != -1)
+    this->ui->remoteDeviceCombo->setCurrentIndex(0);
+
+  this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
 }
 
 void
 ConfigDialog::refreshUiState(void)
 {
-  if (this->ui->sdrRadio->isChecked()) {
-    this->ui->sdrFrame->setEnabled(true);
-    this->ui->fileFrame->setEnabled(false);
+  int analyzerTypeIndex = this->ui->analyzerTypeCombo->currentIndex();
+  bool netProfile = this->ui->useNetworkProfileRadio->isChecked();
+
+  this->ui->analyzerParamsStackedWidget->setCurrentIndex(analyzerTypeIndex);
+
+  if (!this->remoteSelected()) {
+    /* Local analyzer */
+    if (this->ui->sdrRadio->isChecked()) {
+      this->ui->sdrFrame->setEnabled(true);
+      this->ui->fileFrame->setEnabled(false);
+      this->ui->sampRateStack->setCurrentIndex(0);
+      this->ui->ppmSpinBox->setEnabled(true);
+    } else {
+      this->ui->sdrFrame->setEnabled(false);
+      this->ui->fileFrame->setEnabled(true);
+      this->ui->ppmSpinBox->setEnabled(false);
+      this->ui->sampRateStack->setCurrentIndex(1);
+    }
   } else {
-    this->ui->sdrFrame->setEnabled(false);
-    this->ui->fileFrame->setEnabled(true);
+    /* Remote analyzer */
+    this->ui->sampRateStack->setCurrentIndex(1);
+
+    if (this->ui->remoteDeviceCombo->count() == 0) {
+      if (netProfile)
+        netProfile = false;
+      this->ui->useNetworkProfileRadio->setChecked(false);
+      this->ui->useHostPortRadio->setChecked(true);
+      this->ui->useNetworkProfileRadio->setEnabled(false);
+    } else {
+      this->ui->useNetworkProfileRadio->setEnabled(true);
+    }
+
+    this->ui->hostEdit->setEnabled(!netProfile);
+    this->ui->portEdit->setEnabled(!netProfile);
+    this->ui->remoteDeviceCombo->setEnabled(netProfile);
+    this->ui->ppmSpinBox->setEnabled(true);
   }
+
+  this->setSelectedSampleRate(this->profile.getSampleRate());
+  this->refreshTrueSampleRate();
 }
 
 void
 ConfigDialog::refreshAntennas(void)
 {
   populateAntennaCombo(this->profile, this->ui->antennaCombo);
+}
+
+void
+ConfigDialog::refreshSampRates(void)
+{
+  Suscan::Source::Device device = this->profile.getDevice();
+
+  this->ui->sampleRateCombo->clear();
+
+  for (
+       auto p = device.getFirstSampRate();
+       p != device.getLastSampRate();
+       ++p) {
+    this->ui->sampleRateCombo->addItem(
+          getSampRateString(*p),
+          QVariant::fromValue<double>(*p));
+  }
 }
 
 #define APSTOREF(widget, field) \
@@ -140,6 +213,30 @@ ConfigDialog::refreshAnalyzerParamsUi(void)
   }
 }
 
+void
+ConfigDialog::refreshFrequencyLimits(void)
+{
+  SUFREQ lnbFreq = this->ui->lnbSpinBox->value();
+  SUFREQ devMinFreq = SIGDIGGER_CONFIG_DIALOG_MIN_DEVICE_FREQ;
+  SUFREQ devMaxFreq = SIGDIGGER_CONFIG_DIALOG_MAX_DEVICE_FREQ;
+
+  if (this->profile.getType() == SUSCAN_SOURCE_TYPE_FILE) {
+    devMinFreq = SIGDIGGER_MIN_RADIO_FREQ;
+    devMaxFreq = SIGDIGGER_MAX_RADIO_FREQ;
+  } else {
+    const Suscan::Source::Device *dev = &(this->profile.getDevice());
+
+    if (dev != nullptr) {
+      devMinFreq = dev->getMinFreq();
+      devMaxFreq = dev->getMaxFreq();
+    }
+  }
+  // DEVFREQ = FREQ - LNB
+
+  this->ui->frequencySpinBox->setMinimum(devMinFreq + lnbFreq);
+  this->ui->frequencySpinBox->setMaximum(devMaxFreq + lnbFreq);
+}
+
 #define CCREFRESH(widget, field) this->ui->widget->setColor(this->colors.field)
 #define CCSAVE(widget, field) this->ui->widget->getColor(this->colors.field)
 
@@ -162,6 +259,11 @@ ConfigDialog::saveColors(void)
   CCSAVE(histogramBgColor, histogramBackground);
   CCSAVE(histogramAxesColor, histogramAxes);
   CCSAVE(histogramModelColor, histogramModel);
+  CCSAVE(symViewLoColor, symViewLow);
+  CCSAVE(symViewHiColor, symViewHigh);
+  CCSAVE(symViewBgColor, symViewBackground);
+  CCSAVE(selectionColor, selection);
+  CCSAVE(filterBoxColor, filterBox);
 }
 
 void
@@ -183,17 +285,70 @@ ConfigDialog::refreshColorUi(void)
   CCREFRESH(histogramBgColor, histogramBackground);
   CCREFRESH(histogramAxesColor, histogramAxes);
   CCREFRESH(histogramModelColor, histogramModel);
+  CCREFRESH(symViewLoColor, symViewLow);
+  CCREFRESH(symViewHiColor, symViewHigh);
+  CCREFRESH(symViewBgColor, symViewBackground);
+  CCREFRESH(selectionColor, selection);
+  CCREFRESH(filterBoxColor, filterBox);
 }
 
 void
-ConfigDialog::updateBwStep(void)
+ConfigDialog::saveGuiConfigUi()
+{
+  this->guiConfig.useLMBdrag = this->ui->reverseDragBehaviorCheck->isChecked();
+}
+
+void
+ConfigDialog::refreshGuiConfigUi()
+{
+  this->ui->reverseDragBehaviorCheck->setChecked(this->guiConfig.useLMBdrag);
+}
+
+QString
+ConfigDialog::getSampRateString(qreal trueRate)
+{
+  QString rateText;
+
+  if (trueRate < 1e3)
+    rateText = QString::number(trueRate) + " sps";
+  else if (trueRate < 1e6)
+    rateText = QString::number(trueRate * 1e-3) + " ksps";
+  else if (trueRate < 1e9)
+    rateText = QString::number(trueRate * 1e-6) + " Msps";
+
+  return rateText;
+}
+
+void
+ConfigDialog::refreshTrueSampleRate(void)
 {
   float step = SU_POW(10., SU_FLOOR(SU_LOG(this->profile.getSampleRate())));
-
+  QString rateText;
+  qreal trueRate = static_cast<qreal>(this->getSelectedSampleRate())
+      / this->ui->decimationSpin->value();
   if (step >= 10.f)
     step /= 10.f;
 
-  this->ui->bwSpin->setSingleStep(static_cast<int>(step));
+  this->ui->trueRateLabel->setText(getSampRateString(trueRate));
+}
+
+void
+ConfigDialog::refreshAnalyzerTypeUi(void)
+{
+  if (this->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
+    this->ui->analyzerTypeCombo->setCurrentIndex(0);
+  } else {
+    this->ui->analyzerTypeCombo->setCurrentIndex(1);
+  }
+
+  this->ui->analyzerParamsStackedWidget->setCurrentIndex(
+        this->ui->analyzerTypeCombo->currentIndex());
+}
+
+int
+ConfigDialog::findRemoteProfileIndex(void)
+{
+  return this->ui->remoteDeviceCombo->findText(this->profile.label().c_str());
 }
 
 void
@@ -208,32 +363,33 @@ ConfigDialog::refreshProfileUi(void)
       break;
     }
 
-  this->ui->frequencyLine->setText(
-        QString::number(
-          static_cast<uint64_t>(this->profile.getFreq())));
+  this->refreshSampRates();
 
-  this->ui->lnbFrequencyLine->setText(
-        QString::number(
-          static_cast<uint64_t>(this->profile.getLnbFreq())));
-
-  this->ui->sampleRateLine->setText(
-        QString::number(
-          static_cast<uint64_t>(this->profile.getSampleRate())));
+  this->ui->decimationSpin->setValue(
+        static_cast<int>(this->profile.getDecimation()));
 
   switch (this->profile.getType()) {
     case SUSCAN_SOURCE_TYPE_SDR:
       this->ui->sdrRadio->setChecked(true);
+      this->ui->sampRateStack->setCurrentIndex(0);
       break;
 
     case SUSCAN_SOURCE_TYPE_FILE:
       this->ui->fileRadio->setChecked(true);
+      this->ui->sampRateStack->setCurrentIndex(1);
       break;
   }
+
+  this->setSelectedSampleRate(this->profile.getSampleRate());
 
   this->ui->iqBalanceCheck->setChecked(this->profile.getIQBalance());
   this->ui->removeDCCheck->setChecked(this->profile.getDCRemove());
   this->ui->loopCheck->setChecked(this->profile.getLoop());
-  this->ui->bwSpin->setValue(
+
+  this->ui->ppmSpinBox->setValue(
+        static_cast<double>(this->profile.getPPM()));
+
+  this->ui->bandwidthSpinBox->setValue(
         static_cast<double>(this->profile.getBandwidth()));
 
   switch (this->profile.getFormat()) {
@@ -241,34 +397,81 @@ ConfigDialog::refreshProfileUi(void)
       this->ui->formatCombo->setCurrentIndex(0);
       break;
 
-    case SUSCAN_SOURCE_FORMAT_RAW:
+    case SUSCAN_SOURCE_FORMAT_RAW_FLOAT32:
       this->ui->formatCombo->setCurrentIndex(1);
       break;
 
-    case SUSCAN_SOURCE_FORMAT_WAV:
+    case SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8:
       this->ui->formatCombo->setCurrentIndex(2);
+      break;
+
+    case SUSCAN_SOURCE_FORMAT_WAV:
+      this->ui->formatCombo->setCurrentIndex(3);
       break;
   }
 
   this->ui->pathEdit->setText(QString::fromStdString(this->profile.getPath()));
 
-  // Selecting the source is a bit trickier:
-  // We traverse all devices and get their index.
-  // Then, we use that information to set the current
-  // element in the combobox
+  this->refreshAnalyzerTypeUi();
 
-  this->ui->deviceCombo->setCurrentIndex(-1);
+  if (this->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
+    // Set local analyzer interface
+    for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
+      if (i->equals(this->profile.getDevice())) {
+        int index = this->ui->deviceCombo->findData(
+              QVariant::fromValue(
+                static_cast<long>(i - sus->getFirstDevice())));
+        if (index != -1) {
+          this->ui->deviceCombo->setCurrentIndex(index);
+          this->savedLocalDeviceIndex = index;
+        }
 
-  for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
-    if (i->equals(this->profile.getDevice())) {
-      this->ui->deviceCombo->setCurrentIndex(
-            static_cast<int>(i - sus->getFirstDevice()));
+        break;
+      }
+    }
+
+    if (this->ui->deviceCombo->currentIndex() == -1)
+      this->ui->deviceCombo->setCurrentIndex(0);
+  } else {
+    const char *val;
+    int index;
+    // Set remote analyzer interface
+    val = this->profile.getParam("host").c_str();
+    this->ui->hostEdit->setText(val);
+
+    try {
+      val = this->profile.getParam("port").c_str();
+      this->ui->portEdit->setValue(std::stoi(val));
+    } catch (std::invalid_argument &) {
+      this->ui->portEdit->setValue(28001);
+    }
+
+    val = this->profile.getParam("user").c_str();
+    this->ui->userEdit->setText(val);
+
+
+    val = this->profile.getParam("password").c_str();
+    this->ui->passEdit->setText(val);
+
+    this->ui->deviceCombo->setCurrentIndex(-1);
+
+    index = this->findRemoteProfileIndex();
+    if (index != -1) {
+      this->ui->useNetworkProfileRadio->setChecked(true);
+      this->ui->useHostPortRadio->setChecked(false);
+      this->ui->remoteDeviceCombo->setCurrentIndex(index);
+    } else {
+      this->ui->useHostPortRadio->setChecked(true);
+      this->ui->useNetworkProfileRadio->setChecked(false);
     }
   }
 
+  this->ui->lnbSpinBox->setValue(this->profile.getLnbFreq());
+  this->ui->frequencySpinBox->setValue(this->profile.getFreq());
+  this->refreshFrequencyLimits();
   this->refreshUiState();
   this->refreshAntennas();
-  this->updateBwStep();
+  this->refreshTrueSampleRate();
 }
 
 void
@@ -278,8 +481,26 @@ ConfigDialog::refreshUi(void)
 
   this->refreshColorUi();
   this->refreshProfileUi();
+  this->refreshGuiConfigUi();
 
   this->refreshing = false;
+}
+
+
+void
+ConfigDialog::saveProfile()
+{
+  this->profile.setType(
+        this->ui->sdrRadio->isChecked()
+        ? SUSCAN_SOURCE_TYPE_SDR
+        : SUSCAN_SOURCE_TYPE_FILE);
+
+  this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
+  this->onFormatChanged(this->ui->formatCombo->currentIndex());
+  this->onCheckButtonsToggled(false);
+  this->onSpinsChanged();
+  this->onBandwidthChanged(this->ui->bandwidthSpinBox->value());
+  this->onAnalyzerTypeChanged(this->ui->analyzerTypeCombo->currentIndex());
 }
 
 void
@@ -290,6 +511,12 @@ ConfigDialog::connectAll(void)
         SIGNAL(activated(int)),
         this,
         SLOT(onDeviceChanged(int)));
+
+  connect(
+        this->ui->antennaCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onAntennaChanged(int)));
 
   connect(
         this->ui->loadProfileButton,
@@ -310,22 +537,40 @@ ConfigDialog::connectAll(void)
         SLOT(onToggleSourceType(bool)));
 
   connect(
-        this->ui->frequencyLine,
-        SIGNAL(textEdited(const QString &)),
+        this->ui->frequencySpinBox,
+        SIGNAL(valueChanged(double)),
         this,
-        SLOT(onLineEditsChanged(const QString &)));
+        SLOT(onSpinsChanged(void)));
 
   connect(
-        this->ui->lnbFrequencyLine,
-        SIGNAL(textEdited(const QString &)),
+        this->ui->lnbSpinBox,
+        SIGNAL(valueChanged(double)),
         this,
-        SLOT(onLineEditsChanged(const QString &)));
+        SLOT(onSpinsChanged(void)));
 
   connect(
-        this->ui->sampleRateLine,
-        SIGNAL(textEdited(const QString &)),
+        this->ui->sampleRateSpinBox,
+        SIGNAL(valueChanged(double)),
         this,
-        SLOT(onLineEditsChanged(const QString &)));
+        SLOT(onSpinsChanged(void)));
+
+  connect(
+        this->ui->decimationSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onSpinsChanged(void)));
+
+  connect(
+        this->ui->sampleRateCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onSpinsChanged(void)));
+
+  connect(
+        this->ui->ppmSpinBox,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onSpinsChanged(void)));
 
   connect(
         this->ui->removeDCCheck,
@@ -346,7 +591,14 @@ ConfigDialog::connectAll(void)
         SLOT(onCheckButtonsToggled(bool)));
 
   connect(
-        this->ui->bwSpin,
+        this->ui->reverseDragBehaviorCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onCheckButtonsToggled(bool)));
+
+
+  connect(
+        this->ui->bandwidthSpinBox,
         SIGNAL(valueChanged(double)),
         this,
         SLOT(onBandwidthChanged(double)));
@@ -374,6 +626,60 @@ ConfigDialog::connectAll(void)
         SIGNAL(clicked(void)),
         this,
         SLOT(onSaveProfile(void)));
+
+  connect(
+        this->ui->analyzerTypeCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onAnalyzerTypeChanged(int)));
+
+  connect(
+        this->ui->hostEdit,
+        SIGNAL(textEdited(const QString &)),
+        this,
+        SLOT(onRemoteParamsChanged()));
+
+  connect(
+        this->ui->portEdit,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onRemoteParamsChanged()));
+
+  connect(
+        this->ui->userEdit,
+        SIGNAL(textEdited(const QString &)),
+        this,
+        SLOT(onRemoteParamsChanged()));
+
+  connect(
+        this->ui->passEdit,
+        SIGNAL(textEdited(const QString &)),
+        this,
+        SLOT(onRemoteParamsChanged()));
+
+  connect(
+        this->ui->useNetworkProfileRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onChangeConnectionType(void)));
+
+  connect(
+        this->ui->useHostPortRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onChangeConnectionType(void)));
+
+  connect(
+        this->ui->remoteDeviceCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onRemoteProfileSelected(void)));
+
+  connect(
+        this->ui->refreshButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onRefreshRemoteDevices(void)));
 }
 
 void
@@ -393,7 +699,7 @@ ConfigDialog::setProfile(const Suscan::Source::Config &profile)
 void
 ConfigDialog::setFrequency(qint64 val)
 {
-  this->profile.setFreq(val);
+  this->profile.setFreq(static_cast<SUFREQ>(val));
 }
 
 void
@@ -401,6 +707,12 @@ ConfigDialog::notifySingletonChanges(void)
 {
   this->populateCombos();
   this->refreshUi();
+}
+
+bool
+ConfigDialog::remoteSelected(void) const
+{
+  return this->ui->analyzerTypeCombo->currentIndex() == 1;
 }
 
 void
@@ -440,17 +752,53 @@ ConfigDialog::getColors(void)
   return this->colors;
 }
 
+void
+ConfigDialog::setGuiConfig(GuiConfig const &config)
+{
+  this->guiConfig = config;
+  this->refreshUi();
+}
+
+GuiConfig
+ConfigDialog::getGuiConfig()
+{
+  return this->guiConfig;
+}
+
+void
+ConfigDialog::updateRemoteParams(void)
+{
+  this->profile.setParam("host", this->ui->hostEdit->text().toStdString());
+  this->profile.setParam("port", std::to_string(this->ui->portEdit->value()));
+  this->profile.setParam("user", this->ui->userEdit->text().toStdString());
+  this->profile.setParam("password", this->ui->passEdit->text().toStdString());
+}
+
 ConfigDialog::ConfigDialog(QWidget *parent) :
   QDialog(parent),
   profile(SUSCAN_SOURCE_TYPE_FILE, SUSCAN_SOURCE_FORMAT_AUTO)
 {
   this->ui = new Ui_Config();
   this->ui->setupUi(this);
+  this->setWindowFlags(
+    this->windowFlags() & ~Qt::WindowMaximizeButtonHint);
+  this->layout()->setSizeConstraint(QLayout::SetFixedSize);
+
+  // Setup remote device
+  this->remoteDevice = Suscan::Source::Device(
+          "Remote device",
+          "localhost",
+          28001,
+          "anonymous",
+          "");
+
+  // Setup sample rate size
+  this->ui->trueRateLabel->setFixedWidth(
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->trueRateLabel,
+          "XXX.XXX Xsps"));
 
   // Setup integer validators
-  this->ui->frequencyLine->setValidator(new QDoubleValidator(0.0, 15e6, 0, this));
-  this->ui->lnbFrequencyLine->setValidator(new QDoubleValidator(0.0, 15e6, 0, this));
-  this->ui->sampleRateLine->setValidator(new QIntValidator(1, 64000000, this));
   this->ui->fftSizeEdit->setValidator(new QIntValidator(1, 1 << 20, this));
   this->ui->spectrumRefreshEdit->setValidator(new QIntValidator(1, 1 << 20, this));
   this->ui->channelRefreshEdit->setValidator(new QIntValidator(1, 1 << 20, this));
@@ -461,7 +809,12 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
   this->ui->nLevelAvgAlphaEdit->setValidator(new QDoubleValidator(0., 1., 10, this));
   this->ui->snrThresholdEdit->setValidator(new QDoubleValidator(0., 10., 10, this));
 
+  // Set limits
+  this->ui->lnbSpinBox->setMaximum(300e9);
+  this->ui->lnbSpinBox->setMinimum(-300e9);
+
   this->populateCombos();
+  this->ui->sampleRateSpinBox->setUnits("sps");
   this->connectAll();
   this->refreshUi();
 }
@@ -498,29 +851,46 @@ void
 ConfigDialog::onToggleSourceType(bool)
 {
   if (!this->refreshing) {
-    if (this->ui->sdrRadio->isChecked())
+    if (this->ui->sdrRadio->isChecked()) {
       this->profile.setType(SUSCAN_SOURCE_TYPE_SDR);
-    else
+    } else {
       this->profile.setType(SUSCAN_SOURCE_TYPE_FILE);
+      this->guessParamsFromFileName();
+    }
 
     this->refreshUiState();
+    this->refreshFrequencyLimits();
   }
 }
 
 void
 ConfigDialog::onDeviceChanged(int index)
 {
-  if (!this->refreshing && index != -1) {
+  // Remember: only set device if the analyzer type is local
+  if (!this->refreshing
+      && index != -1
+      && !this->remoteSelected()) {
     Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
     const Suscan::Source::Device *device;
 
-    SU_ATTEMPT(device = sus->getDeviceAt(
-          static_cast<unsigned int>(index)));
+    SU_ATTEMPT(
+          device = sus->getDeviceAt(
+            static_cast<unsigned int>(
+            this->ui->deviceCombo->itemData(index).value<long>())));
 
     this->profile.setDevice(*device);
+    auto begin = device->getFirstAntenna();
+    auto end   = device->getLastAntenna();
+
+    // We check whether we can keep the current antenna configuration. If we
+    // cannot, just set the first antenna in the list.
+    if (device->findAntenna(this->profile.getAntenna()) == end
+        && begin != end)
+      this->profile.setAntenna(*begin);
 
     this->refreshUi();
+
+    this->ui->bandwidthSpinBox->setValue(this->getSelectedSampleRate());
   }
 }
 
@@ -534,13 +904,56 @@ ConfigDialog::onFormatChanged(int index)
         break;
 
       case 1:
-        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW);
+        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_FLOAT32);
         break;
 
       case 2:
+        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8);
+        break;
+
+      case 3:
         this->profile.setFormat(SUSCAN_SOURCE_FORMAT_WAV);
         break;
     }
+  }
+}
+
+void
+ConfigDialog::onAntennaChanged(int)
+{
+  if (!this->refreshing)
+    this->profile.setAntenna(
+          this->ui->antennaCombo->currentText().toStdString());
+}
+
+void
+ConfigDialog::onAnalyzerTypeChanged(int index)
+{
+  if (!this->refreshing) {
+    switch (index) {
+      case 0:
+        this->profile.setInterface(SUSCAN_SOURCE_LOCAL_INTERFACE);
+        this->onDeviceChanged(this->savedLocalDeviceIndex);
+        break;
+
+      case 1:
+        this->savedLocalDeviceIndex = this->ui->deviceCombo->currentIndex();
+        this->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
+        this->onChangeConnectionType();
+        this->onRemoteParamsChanged();
+        break;
+    }
+
+    this->refreshUiState();
+  }
+}
+
+void
+ConfigDialog::onRemoteParamsChanged(void)
+{
+  if (this->remoteSelected()) {
+    this->profile.setDevice(this->remoteDevice);
+    this->updateRemoteParams();
   }
 }
 
@@ -554,48 +967,75 @@ ConfigDialog::onCheckButtonsToggled(bool)
   }
 }
 
-void
-ConfigDialog::onLineEditsChanged(const QString &)
+unsigned int
+ConfigDialog::getSelectedSampleRate(void) const
 {
-  SUFREQ freq;
-  unsigned int sampRate;
+  unsigned int sampRate = 0;
 
+  if (this->ui->sampRateStack->currentIndex() == 0) {
+    // Index 0: Sample Rate Combo
+    if (this->ui->sampleRateCombo->currentIndex() != -1) {
+      qreal selectedValue =
+          this->ui->sampleRateCombo->currentData().value<qreal>();
+      sampRate = static_cast<unsigned>(selectedValue);
+    }
+  } else {
+    // Index 1: Sample Rate Spin
+    sampRate = static_cast<unsigned>(
+          this->ui->sampleRateSpinBox->value());
+  }
+
+  return sampRate;
+}
+
+void
+ConfigDialog::setSelectedSampleRate(unsigned int rate)
+{
+  // Set sample rate in both places
+  qreal dist = std::numeric_limits<qreal>::infinity();
+  int bestIndex = -1;
+  for (auto i = 0; i < this->ui->sampleRateCombo->count(); ++i) {
+    qreal value = this->ui->sampleRateCombo->itemData(i).value<qreal>();
+    if (fabs(value - rate) < dist) {
+      bestIndex = i;
+      dist = fabs(value - rate);
+    }
+  }
+
+  if (bestIndex != -1)
+    this->ui->sampleRateCombo->setCurrentIndex(bestIndex);
+
+  this->ui->sampleRateSpinBox->setValue(rate);
+}
+
+void
+ConfigDialog::onSpinsChanged(void)
+{
   if (!this->refreshing) {
-    if (sscanf(
-          this->ui->frequencyLine->text().toStdString().c_str(),
-          "%lg",
-          &freq) < 1) {
-      this->ui->frequencyLine->setStyleSheet("color: red");
-    } else {
-      this->ui->frequencyLine->setStyleSheet("");
-      this->profile.setFreq(freq);
-    }
+    SUFREQ freq;
+    SUFREQ lnbFreq;
+    SUFLOAT ppm;
+    unsigned int sampRate;
 
-    if (sscanf(
-          this->ui->lnbFrequencyLine->text().toStdString().c_str(),
-          "%lg",
-          &freq) < 1) {
-      this->ui->lnbFrequencyLine->setStyleSheet("color: red");
-    } else {
-      this->ui->lnbFrequencyLine->setStyleSheet("");
-      this->profile.setLnbFreq(freq);
-    }
+    lnbFreq = this->ui->lnbSpinBox->value();
+    this->refreshFrequencyLimits();
+    freq = this->ui->frequencySpinBox->value();
+    sampRate = this->getSelectedSampleRate();
+    ppm = static_cast<float>(this->ui->ppmSpinBox->value());
 
-    if (sscanf(
-          this->ui->sampleRateLine->text().toStdString().c_str(),
-          "%u",
-          &sampRate) < 1) {
-      this->ui->sampleRateLine->setStyleSheet("color: red");
-    } else {
-      this->ui->sampleRateLine->setStyleSheet("");
-      this->profile.setSampleRate(sampRate);
-      this->ui->bwSpin->setMaximum(sampRate);
+    this->profile.setFreq(freq);
+    this->profile.setLnbFreq(lnbFreq);
+    this->profile.setSampleRate(sampRate);
+    this->profile.setDecimation(
+          static_cast<unsigned>(this->ui->decimationSpin->value()));
+    this->profile.setPPM(ppm);
 
-      if (sampRate < this->ui->bwSpin->value())
-        this->ui->bwSpin->setValue(sampRate);
+    if (sender() == static_cast<QObject *>(this->ui->sampleRateCombo)
+        || sender() == static_cast<QObject *>(this->ui->sampleRateSpinBox))
+      this->ui->bandwidthSpinBox->setValue(
+          sampRate / static_cast<qreal>(this->ui->decimationSpin->value()));
 
-      this->updateBwStep();
-    }
+    this->refreshTrueSampleRate();
   }
 }
 
@@ -610,18 +1050,80 @@ ConfigDialog::run(void)
 }
 
 void
-ConfigDialog::onBandwidthChanged(double value)
+ConfigDialog::onBandwidthChanged(double)
 {
   if (!this->refreshing)
-    this->profile.setBandwidth(static_cast<SUFLOAT>(value));
+    this->profile.setBandwidth(
+        static_cast<SUFLOAT>(
+          this->ui->bandwidthSpinBox->value()));
 }
 
 void
 ConfigDialog::onAccepted(void)
 {
+  this->saveGuiConfigUi();
   this->saveColors();
   this->saveAnalyzerParams();
+
+  // warning: it will trigger reconfiguring device
+  // and gui refresh from stored variables
+  this->saveProfile();
   this->accepted = true;
+}
+
+void
+ConfigDialog::guessParamsFromFileName(void)
+{
+  QFileInfo fi(QString::fromStdString(this->profile.getPath()));
+  std::string baseName = fi.baseName().toStdString();
+  SUFREQ fc;
+  unsigned int fs;
+  unsigned int date, time;
+  bool haveFc = false;
+  bool haveFs = false;
+
+  if (sscanf(
+        baseName.c_str(),
+        "sigdigger_%08d_%06dZ_%d_%lg_float32_iq",
+        &date,
+        &time,
+        &fs,
+        &fc) == 4) {
+    haveFc = true;
+    haveFs = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "sigdigger_%d_%lg_float32_iq",
+        &fs,
+        &fc) == 2) {
+    haveFc = true;
+    haveFs = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "gqrx_%08d_%06d_%lg_%d_fc",
+        &date,
+        &time,
+        &fc,
+        &fs) == 4) {
+    haveFc = true;
+    haveFs = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "SDRSharp_%08d_%06dZ_%lg_IQ",
+        &date,
+        &time,
+        &fc) == 3) {
+    haveFc = true;
+  }
+
+  if (haveFs)
+    this->profile.setSampleRate(fs);
+
+  if (haveFc)
+    this->profile.setFreq(fc);
+
+  if (haveFs || haveFc)
+    this->refreshUi();
 }
 
 void
@@ -636,7 +1138,12 @@ ConfigDialog::onBrowseCaptureFile(void)
       format = "I/Q files (*.raw);;WAV files (*.wav);;All files (*)";
       break;
 
-    case SUSCAN_SOURCE_FORMAT_RAW:
+    case SUSCAN_SOURCE_FORMAT_RAW_FLOAT32:
+      title = "Open I/Q file";
+      format = "I/Q files (*.raw);;All files (*)";
+      break;
+
+    case SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8:
       title = "Open I/Q file";
       format = "I/Q files (*.raw);;All files (*)";
       break;
@@ -657,6 +1164,7 @@ ConfigDialog::onBrowseCaptureFile(void)
   if (!path.isEmpty()) {
     this->ui->pathEdit->setText(path);
     this->profile.setPath(path.toStdString());
+    this->guessParamsFromFileName();
   }
 }
 
@@ -690,5 +1198,62 @@ ConfigDialog::onSaveProfile(void)
     this->profile.setLabel(candidate);
     sus->saveProfile(this->profile);
     this->populateCombos();
+  }
+}
+
+void
+ConfigDialog::onChangeConnectionType(void)
+{
+  if (this->ui->useNetworkProfileRadio->isChecked()) {
+    this->onRemoteProfileSelected();
+    this->ui->useHostPortRadio->setChecked(false);
+  }
+
+  if (this->ui->useHostPortRadio->isChecked()) {
+    this->onRemoteParamsChanged();
+    this->ui->useNetworkProfileRadio->setChecked(false);
+  }
+
+  this->refreshUiState();
+}
+
+void
+ConfigDialog::onRefreshRemoteDevices(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  int countBefore = this->ui->remoteDeviceCombo->count();
+  int countAfter;
+
+  sus->refreshNetworkProfiles();
+  this->populateCombos();
+
+  countAfter = this->ui->remoteDeviceCombo->count();
+
+  if (countAfter > countBefore) {
+    this->ui->useNetworkProfileRadio->setChecked(true);
+    this->onChangeConnectionType();
+  } else {
+    this->refreshUiState();
+  }
+}
+
+void
+ConfigDialog::onRemoteProfileSelected(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  if (this->ui->useNetworkProfileRadio->isChecked()) {
+    QHash<QString, Suscan::Source::Config>::const_iterator it;
+
+    it = sus->getNetworkProfileFrom(this->ui->remoteDeviceCombo->currentText());
+
+    if (it != sus->getLastNetworkProfile()) {
+      this->setProfile(*it);
+
+      // Provide a better hint for username if the server announced none
+      if (this->profile.getParam("user").length() == 0)
+        this->ui->userEdit->setText("anonymous");
+      this->updateRemoteParams();
+    }
   }
 }

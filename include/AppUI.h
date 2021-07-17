@@ -34,18 +34,30 @@
 #include "ui_MainWindow.h"
 #include "ConfigDialog.h"
 #include "DeviceDialog.h"
+#include "PanoramicDialog.h"
+#include "LogDialog.h"
+#include "BackgroundTasksDialog.h"
+#include "AddBookmarkDialog.h"
+#include "BookmarkManagerDialog.h"
 
 namespace SigDigger {
   struct AppUI {
     Ui_MainWindow *main = nullptr;
     ConfigDialog *configDialog = nullptr;
     DeviceDialog *deviceDialog = nullptr;
+    PanoramicDialog *panoramicDialog = nullptr;
     MainSpectrum *spectrum = nullptr;
     SourcePanel *sourcePanel = nullptr;
     InspectorPanel *inspectorPanel = nullptr;
     FftPanel *fftPanel = nullptr;
     AudioPanel *audioPanel = nullptr;
     AboutDialog *aboutDialog = nullptr;
+    DataSaverUI *dataSaverUI = nullptr;
+    LogDialog *logDialog = nullptr;
+    BackgroundTasksDialog *backgroundTasksDialog = nullptr;
+    AddBookmarkDialog *addBookmarkDialog = nullptr;
+    BookmarkManagerDialog *bookmarkManagerDialog = nullptr;
+
     std::map<Suscan::InspectorId, Inspector *> inspectorTable;
     Suscan::InspectorId lastId = 0;
 

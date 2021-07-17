@@ -18,6 +18,7 @@
 //
 
 #include <Suscan/Source.h>
+#include <Suscan/Analyzer.h>
 
 using namespace Suscan;
 
@@ -31,38 +32,98 @@ Source::GainDescription::GainDescription(const struct suscan_source_gain_desc *d
   this->name = std::string(desc->name);
 }
 
+Source::GainDescription::GainDescription(const struct suscan_analyzer_gain_info *desc)
+{
+  this->def  = desc->value;
+  this->max  = desc->max;
+  this->min  = desc->min;
+  this->step = desc->step;
+  this->name = std::string(desc->name);
+}
+
 void
 Source::Device::setDevice(const suscan_source_device_t *dev, unsigned int channel)
 {
-  int i;
+  unsigned int i;
 
   struct suscan_source_device_info info =
       suscan_source_device_info_INITIALIZER;
+
+  if (this->owned != nullptr && this->owned != dev) {
+    suscan_source_device_destroy(this->owned);
+    this->owned = nullptr;
+  }
 
   this->instance = dev;
 
   this->antennas.clear();
   this->gains.clear();
 
+  this->freqMin = 0;
+  this->freqMax = 0;
+
   if (suscan_source_device_get_info(dev, channel, &info)) {
+    this->freqMax = info.freq_max;
+    this->freqMin = 0; //info.freq_min;
+
     for (i = 0; i < info.antenna_count; ++i)
       this->antennas.push_back(std::string(info.antenna_list[i]));
 
     for (i = 0; i < info.gain_desc_count; ++i)
       this->gains.push_back(Source::GainDescription(info.gain_desc_list[i]));
 
+    for (i = 0; i < info.samp_rate_count; ++i)
+      this->rates.push_back(info.samp_rate_list[i]);
     suscan_source_device_info_finalize(&info);
   }
 }
 
+Source::Device::Device(
+    const std::string &name,
+    const std::string &host,
+    uint16_t port,
+    const std::string &user,
+    const std::string &password)
+{
+  SoapySDRKwargs args;
+  std::string label;
+
+  memset(&args, 0, sizeof(SoapySDRKwargs));
+
+  label = name + " on " + host + ":" + std::to_string(port);
+
+  SoapySDRKwargs_set(&args, "label",    label.c_str());
+  SoapySDRKwargs_set(&args, "driver",   "tcp");
+  SoapySDRKwargs_set(&args, "host",     host.c_str());
+  SoapySDRKwargs_set(&args, "port",     std::to_string(port).c_str());
+  SoapySDRKwargs_set(&args, "user",     user.c_str());
+  SoapySDRKwargs_set(&args, "password", password.c_str());
+
+  SU_ATTEMPT(
+        this->owned = suscan_source_device_new(
+          SUSCAN_SOURCE_REMOTE_INTERFACE,
+          &args));
+
+  SoapySDRKwargs_clear(&args);
+
+  this->setDevice(this->owned, 0);
+}
+
 Source::Device::Device(Source::Device &&rv)
 {
-  *this = rv;
+  *this       = rv;
+  rv.owned    = nullptr;
+  rv.instance = nullptr;
 }
 
 Source::Device::Device(const Source::Device &dev)
 {
-  this->setDevice(dev);
+  if (dev.owned != nullptr) {
+    SU_ATTEMPT(this->owned = suscan_source_device_dup(dev.owned));
+    this->setDevice(this->owned, 0);
+  } else {
+    this->setDevice(dev);
+  }
 }
 
 Source::Device::Device(const suscan_source_device_t *dev, unsigned int channel)
@@ -72,7 +133,14 @@ Source::Device::Device(const suscan_source_device_t *dev, unsigned int channel)
 
 Source::Device::Device()
 {
+  this->owned    = nullptr;
   this->instance = nullptr;
+}
+
+Source::Device::~Device()
+{
+  if (this->owned != nullptr)
+    suscan_source_device_destroy(this->owned);
 }
 
 //////////////////////////// Source config wrapper ///////////////////////////
@@ -125,6 +193,16 @@ Source::Config::~Config()
 {
   if (this->instance != nullptr && !this->borrowed)
     suscan_source_config_destroy(this->instance);
+}
+
+Source::Config
+Source::Config::wrap(suscan_source_config_t *config)
+{
+  Source::Config result = Source::Config(config);
+
+  result.borrowed = false;
+
+  return result;
 }
 
 /////////////////////////////// Operators  ///////////////////////////////////
@@ -218,12 +296,31 @@ Source::Config::getLnbFreq(void) const
 }
 
 unsigned int
+Source::Config::getDecimatedSampleRate(void) const
+{
+  if (this->instance == nullptr)
+    return 0;
+
+  return suscan_source_config_get_samp_rate(this->instance)
+      / suscan_source_config_get_average(this->instance);
+}
+
+unsigned int
 Source::Config::getSampleRate(void) const
 {
   if (this->instance == nullptr)
     return 0;
 
   return suscan_source_config_get_samp_rate(this->instance);
+}
+
+unsigned int
+Source::Config::getDecimation(void) const
+{
+  if (this->instance == nullptr)
+    return 0;
+
+  return suscan_source_config_get_average(this->instance);
 }
 
 bool
@@ -251,6 +348,15 @@ Source::Config::getIQBalance(void) const
     return false;
 
   return suscan_source_config_get_iq_balance(this->instance) != SU_FALSE;
+}
+
+std::string
+Source::Config::getInterface(void) const
+{
+  if (this->instance == nullptr)
+    return SUSCAN_SOURCE_LOCAL_INTERFACE;
+
+  return suscan_source_config_get_interface(this->instance);
 }
 
 SUFLOAT
@@ -296,6 +402,31 @@ Source::Config::getPath(void) const
   return path;
 }
 
+std::string
+Source::Config::getParam(const std::string &key) const
+{
+  const char *param;
+
+  if (this->instance == nullptr)
+    return "";
+
+  param = suscan_source_config_get_param(this->instance, key.c_str());
+
+  if (param == nullptr)
+    return "";
+
+  return param;
+}
+
+SUFLOAT
+Source::Config::getPPM(void) const
+{
+  if (this->instance == nullptr)
+    return 0.;
+
+  return suscan_source_config_get_ppm(this->instance);
+}
+
 void
 Source::Config::setSampleRate(unsigned int rate)
 {
@@ -303,6 +434,15 @@ Source::Config::setSampleRate(unsigned int rate)
     return;
 
   suscan_source_config_set_samp_rate(this->instance, rate);
+}
+
+void
+Source::Config::setDecimation(unsigned int rate)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_set_average(this->instance, rate);
 }
 
 void
@@ -342,6 +482,37 @@ Source::Config::setAntenna(const std::string &antenna)
     return;
 
   SU_ATTEMPT(suscan_source_config_set_antenna(this->instance, antenna.c_str()));
+}
+
+void
+Source::Config::setInterface(std::string const &iface)
+{
+  if (this->instance == nullptr)
+    return;
+
+  SU_ATTEMPT(suscan_source_config_set_interface(this->instance, iface.c_str()));
+}
+
+void
+Source::Config::setParam(std::string const &key, std::string const &val)
+{
+  if (this->instance == nullptr)
+    return;
+
+  SU_ATTEMPT(
+        suscan_source_config_set_param(
+          this->instance,
+          key.c_str(),
+          val.c_str()));
+}
+
+void
+Source::Config::setPPM(SUFLOAT ppm)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_set_ppm(this->instance, ppm);
 }
 
 void

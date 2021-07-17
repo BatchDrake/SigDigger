@@ -24,7 +24,11 @@
 #include <Suscan/AnalyzerParams.h>
 #include <Suscan/Source.h>
 #include <ColorConfig.h>
+#include <GuiConfig.h>
 #include <SaveProfileDialog.h>
+
+#define SIGDIGGER_MIN_RADIO_FREQ  -3e11
+#define SIGDIGGER_MAX_RADIO_FREQ   3e11
 
 namespace SigDigger {
   class ConfigDialog : public QDialog
@@ -33,11 +37,16 @@ namespace SigDigger {
 
   private:
     Suscan::Source::Config profile;
+    Suscan::Source::Device remoteDevice;
     Suscan::AnalyzerParams analyzerParams;
+
     ColorConfig colors;
+    GuiConfig guiConfig;
 
     bool accepted;
     bool refreshing = false;
+
+    int savedLocalDeviceIndex = 0;
 
     // UI elements
     Ui_Config *ui = nullptr;
@@ -46,29 +55,45 @@ namespace SigDigger {
     void connectAll(void);
     void populateCombos(void);
     void refreshAntennas(void);
+    void refreshSampRates(void);
     void refreshColorUi(void);
+    void refreshGuiConfigUi();
     void refreshAnalyzerParamsUi(void);
     void refreshProfileUi(void);
+    void refreshFrequencyLimits(void);
     void refreshUi(void);
+    void refreshAnalyzerTypeUi(void);
+    void saveProfile(void);
     void refreshUiState(void);
-    void updateBwStep(void);
+    void refreshTrueSampleRate(void);
     void loadProfile(Suscan::Source::Config &config);
     void saveAnalyzerParams(void);
     void saveColors(void);
+    void saveGuiConfigUi(void);
+    void guessParamsFromFileName(void);
+    void updateRemoteParams(void);
+    int  findRemoteProfileIndex(void);
+    unsigned int getSelectedSampleRate(void) const;
+    void setSelectedSampleRate(unsigned int);
 
+    static QString getSampRateString(qreal rate);
     static QString getBaseName(const QString &string);
 
   public:
     void setProfile(const Suscan::Source::Config &profile);
     void setAnalyzerParams(const Suscan::AnalyzerParams &params);
     void setColors(const ColorConfig &config);
+    void setGuiConfig(const GuiConfig &config);
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
     void notifySingletonChanges(void);
 
+    bool remoteSelected(void) const;
+
     float getGain(std::string const &name);
     Suscan::Source::Config getProfile(void);
     ColorConfig getColors(void);
+    GuiConfig getGuiConfig();
     Suscan::AnalyzerParams getAnalyzerParams(void);
 
     bool run(void);
@@ -101,12 +126,18 @@ namespace SigDigger {
     void onToggleSourceType(bool);
     void onDeviceChanged(int);
     void onFormatChanged(int);
+    void onAntennaChanged(int);
+    void onAnalyzerTypeChanged(int);
     void onCheckButtonsToggled(bool);
-    void onLineEditsChanged(const QString &);
+    void onSpinsChanged(void);
     void onBandwidthChanged(double);
     void onBrowseCaptureFile(void);
     void onAccepted(void);
     void onSaveProfile(void);
+    void onChangeConnectionType(void);
+    void onRemoteParamsChanged(void);
+    void onRefreshRemoteDevices(void);
+    void onRemoteProfileSelected(void);
   };
 };
 

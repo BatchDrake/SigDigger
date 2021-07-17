@@ -25,6 +25,7 @@
 #include <Suscan/AnalyzerParams.h>
 #include <AppUI.h>
 
+#include "Version.h"
 #include "ColorConfig.h"
 
 #define SIGDIGGER_FFT_WINDOW_SIZE  4096u
@@ -36,26 +37,37 @@
 #define SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH   200000
 #define SIGDIGGER_AUDIO_INSPECTOR_REQID       0xaaaaaaaa
 
+#define SIGDIGGER_RAW_INSPECTOR_MAGIC_ID      0xe0e0e0e0
+#define SIGDIGGER_RAW_INSPECTOR_REQID         0xeeeeeeee
+
 #define SIGDIGGER_PROFILE_FILE_MAX_SIZE       (1 << 20)
 
-namespace SigDigger {  
+namespace SigDigger {
   class AppConfig : public Suscan::Serializable {
     public:
       Suscan::Source::Config profile;
       Suscan::AnalyzerParams analyzerParams;
       ColorConfig colors;
+      GuiConfig guiConfig;
       Suscan::Serializable *sourceConfig = nullptr;
       Suscan::Serializable *fftConfig = nullptr;
       Suscan::Serializable *inspectorConfig = nullptr;
       Suscan::Serializable *audioConfig = nullptr;
+      Suscan::Serializable *panSpectrumConfig = nullptr;
 
+      int version = SIGDIGGER_UICONFIG_VERSION;
       int width = 1280;
       int height = 1024;
+      bool fullScreen = false;
       int x = -1;
       int y = -1;
 
+      bool disableHighRateWarning = false;
+
       int loFreq = 0;
       unsigned int bandwidth = 0;
+
+      std::vector<std::string> enabledBandPlans;
 
       // Methods
       AppConfig(AppUI *ui = nullptr);

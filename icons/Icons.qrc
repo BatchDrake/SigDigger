@@ -12,7 +12,6 @@
         <file>start-capture.png</file>
         <file>about.png</file>
         <file>critical.png</file>
-        <file>Icons.qrc</file>
         <file>splash.xcf</file>
         <file>splash-background</file>
         <file>warning.png</file>
@@ -25,6 +24,30 @@
         <file>preferences-16.png</file>
         <file>devices.png</file>
         <file>devices-unavail.png</file>
+        <file>panspect.png</file>
+        <file>zoom-original.png</file>
+        <file>zoom-fit.png</file>
+        <file>view-restore.png</file>
+        <file>object-flip-vertical.png</file>
+        <file>object-flip-horizontal.png</file>
+        <file>document-save.png</file>
+        <file>stop-shiki.png</file>
+        <file>start-shiki.png</file>
+        <file>autoscroll.png</file>
+        <file>offline.png</file>
+        <file>online.png</file>
+        <file>audio-volume-muted-panel.png</file>
+        <file>audio-volume-medium-panel.png</file>
+        <file>edit-clear.png</file>
+        <file>go-bottom.png</file>
+        <file>system-run.png</file>
+        <file>dialog-warning.png</file>
+        <file>dialog-information.png</file>
+        <file>dialog-error.png</file>
+        <file>bookmark-new.png</file>
+        <file>stock_bookmark.png</file>
+        <file>network-device.png</file>
+        <file>network-device-unavail.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

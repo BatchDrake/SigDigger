@@ -22,11 +22,17 @@
 using namespace SigDigger;
 
 AppConfig::AppConfig(AppUI *ui)
+  : profile{},
+  analyzerParams{},
+  colors{},
+  guiConfig{},
+  enabledBandPlans{}
 {
-  this->sourceConfig    = ui->sourcePanel->getConfig();
-  this->fftConfig       = ui->fftPanel->getConfig();
-  this->inspectorConfig = ui->inspectorPanel->getConfig();
-  this->audioConfig     = ui->audioPanel->getConfig();
+  this->sourceConfig      = ui->sourcePanel->getConfig();
+  this->fftConfig         = ui->fftPanel->getConfig();
+  this->inspectorConfig   = ui->inspectorPanel->getConfig();
+  this->audioConfig       = ui->audioPanel->getConfig();
+  this->panSpectrumConfig = ui->panoramicDialog->getConfig();
 }
 
 Suscan::Object &&
@@ -34,23 +40,37 @@ AppConfig::serialize(void)
 {
   Suscan::Object profileObj = this->profile.serialize();
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+  Suscan::Object bandPlans(SUSCAN_OBJECT_TYPE_SET);
 
   obj.setClass("qtui");
 
+  obj.set("version", this->version);
   obj.set("width", this->width);
   obj.set("height", this->height);
   obj.set("x", this->x);
   obj.set("y", this->y);
+  obj.set("fullScreen", this->fullScreen);
+  obj.set("disableHighRateWarning", this->disableHighRateWarning);
   obj.set("loFreq", this->loFreq);
   obj.set("bandwidth", this->bandwidth);
 
   obj.setField("source", profileObj);
   obj.setField("analyzerParams", this->analyzerParams.serialize());
   obj.setField("colors", this->colors.serialize());
+  obj.setField("guiConfig", this->guiConfig.serialize());
   obj.setField("sourcePanel", this->sourceConfig->serialize());
   obj.setField("fftPanel", this->fftConfig->serialize());
   obj.setField("audioPanel", this->audioConfig->serialize());
   obj.setField("inspectorPanel", this->inspectorConfig->serialize());
+  obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
+
+  obj.setField("bandPlans", bandPlans);
+
+  for (auto p : this->enabledBandPlans) {
+    Suscan::Object entry(SUSCAN_OBJECT_TYPE_FIELD);
+    entry.setValue(p);
+    bandPlans.append(entry);
+  }
 
   // Welcome to the world of stupid C++ hacks
   return this->persist(obj);
@@ -59,9 +79,20 @@ AppConfig::serialize(void)
 void
 AppConfig::loadDefaults(void)
 {
-  this->profile = Suscan::Source::Config(
-        SUSCAN_SOURCE_TYPE_SDR,
-        SUSCAN_SOURCE_FORMAT_AUTO);
+  Suscan::Source::Config *config;
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  if ((config = sus->getProfile(SUSCAN_SOURCE_DEFAULT_NAME)) != nullptr) {
+    this->profile = *config;
+  } else {
+    this->profile = Suscan::Source::Config(
+          SUSCAN_SOURCE_TYPE_SDR,
+          SUSCAN_SOURCE_FORMAT_AUTO);
+    this->profile.setFreq(SUSCAN_SOURCE_DEFAULT_FREQ);
+    this->profile.setSampleRate(SUSCAN_SOURCE_DEFAULT_SAMP_RATE);
+    this->profile.setBandwidth(SUSCAN_SOURCE_DEFAULT_BANDWIDTH);
+  }
+
 }
 
 #define TRYSILENT(x) \
@@ -74,17 +105,30 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->profile = Suscan::Source::Config(conf.getField("source")));
     TRYSILENT(this->analyzerParams.deserialize(conf.getField("analyzerParams")));
     TRYSILENT(this->colors.deserialize(conf.getField("colors")));
+    TRYSILENT(this->guiConfig.deserialize(conf.getField("guiConfig")));
     TRYSILENT(this->sourceConfig->deserialize(conf.getField("sourcePanel")));
     TRYSILENT(this->fftConfig->deserialize(conf.getField("fftPanel")));
     TRYSILENT(this->audioConfig->deserialize(conf.getField("audioPanel")));
     TRYSILENT(this->inspectorConfig->deserialize(conf.getField("inspectorPanel")));
+    TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
 
-    TRYSILENT(this->width  = conf.get("width", this->width));
-    TRYSILENT(this->height = conf.get("height", this->height));
-    TRYSILENT(this->x      = conf.get("x", this->x));
-    TRYSILENT(this->y      = conf.get("y", this->y));
-    TRYSILENT(this->loFreq = conf.get("loFreq", this->loFreq));
-    TRYSILENT(this->bandwidth = conf.get("bandwidth", this->bandwidth));
+    TRYSILENT(this->version    = conf.get("version", SIGDIGGER_UICONFIG_DEFAULT_VERSION));
+    TRYSILENT(this->width      = conf.get("width", this->width));
+    TRYSILENT(this->height     = conf.get("height", this->height));
+    TRYSILENT(this->x          = conf.get("x", this->x));
+    TRYSILENT(this->y          = conf.get("y", this->y));
+    TRYSILENT(this->fullScreen = conf.get("fullScreen", this->fullScreen));
+    TRYSILENT(this->disableHighRateWarning = conf.get("disableHighRateWarning", this->disableHighRateWarning));
+    TRYSILENT(this->loFreq     = conf.get("loFreq", this->loFreq));
+    TRYSILENT(this->bandwidth  = conf.get("bandwidth", this->bandwidth));
+
+    try {
+      Suscan::Object set = conf.getField("bandPlans");
+      for (unsigned int i = 0; i < set.length(); ++i)
+        this->enabledBandPlans.push_back(set[i].value());
+    } catch (Suscan::Exception &) {
+
+    }
   }
 }
 
@@ -94,4 +138,3 @@ AppConfig::AppConfig(const Suscan::Object &) : AppConfig()
 {
   throw Suscan::Exception("Improper call to AppConfig constructor");
 }
-

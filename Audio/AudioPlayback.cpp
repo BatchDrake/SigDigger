@@ -1,6 +1,6 @@
 //
 //    AudioPlayback.cpp: Put samples in the soundcard
-//    Copyright (C) 2019 Gonzalo José Carracedo Carballal
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -22,39 +22,52 @@
 #include <stdexcept>
 #include <sys/mman.h>
 
+#ifdef SIGDIGGER_HAVE_ALSA
+#  include "AlsaPlayer.h"
+#elif defined(SIGDIGGER_HAVE_PORTAUDIO)
+#  include "PortAudioPlayer.h"
+#endif // SIGIDGGER_HAVE_ALSA
+
 using namespace SigDigger;
 
 #define ATTEMPT(expr, what) \
   if ((err = expr) < 0)  \
-    throw std::runtime_error("Failed to " + std::string(what) + ": " + std::string(snd_strerror(err)))
-
-#ifdef SIGDIGGER_HAVE_ALSA
+    throw std::runtime_error("Failed to " + std::string(what) + ": " + \
+      std::string(snd_strerror(err)))
 
 ///////////////////////////// Playback worker /////////////////////////////////
-PlaybackWorker::PlaybackWorker(AudioBufferList *instance, snd_pcm_t *pcm)
+PlaybackWorker::PlaybackWorker(
+    AudioBufferList *instance,
+    GenericAudioPlayer *player)
 {
-  this->pcm      = pcm;
+  this->player   = player;
   this->instance = instance;
+}
+
+void
+PlaybackWorker::setGain(float vol)
+{
+  this->gain = vol;
 }
 
 void
 PlaybackWorker::play(void)
 {
   float *buffer;
+  unsigned int i;
 
   while (!this->halting && (buffer = this->instance->next()) != nullptr) {
-    long err;
-    err = snd_pcm_writei(this->pcm, buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
+    bool ok;
 
-    if (err == -EPIPE) {
-      snd_pcm_prepare(this->pcm);
-      err = snd_pcm_writei(this->pcm, buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
-    }
+    for (i = 0; i < SIGDIGGER_AUDIO_BUFFER_SIZE; ++i)
+      buffer[i] *= this->gain;
+
+    ok = this->player->write(buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
 
     // Done with this buffer, mark as free.
     this->instance->release();
 
-    if (err < 0)
+    if (!ok)
       emit error();
   }
 
@@ -81,7 +94,7 @@ AudioBuffer::AudioBuffer()
          SIGDIGGER_AUDIO_BUFFER_ALLOC,
          PROT_READ | PROT_WRITE,
          MAP_PRIVATE | MAP_ANONYMOUS,
-         0,
+         -1,
          0))) == reinterpret_cast<float *>(-1)) {
     throw std::runtime_error(
           "Failed to allocate "
@@ -184,7 +197,7 @@ AudioBufferList::commit(void)
     buffer->prev = nullptr;
     buffer->next = this->playListHead;
     if (this->playListHead != nullptr)
-      this->playListTail->prev = buffer;
+      this->playListHead->prev = buffer;
 
     this->playListHead = buffer;
 
@@ -240,61 +253,14 @@ AudioBufferList::release(void)
 AudioPlayback::AudioPlayback(std::string const &dev, unsigned int rate)
   : bufferList(SIGDIGGER_AUDIO_BUFFER_NUM)
 {
-  int err;
-  snd_pcm_hw_params_t *params = nullptr;
-  float *buf;
-
-  // Ladies and gentlemen, behold the COBOL
-  if ((buf = static_cast<float *>(mmap(
-         nullptr,
-         SIGDIGGER_AUDIO_BUFFER_ALLOC,
-         PROT_READ | PROT_WRITE,
-         MAP_PRIVATE | MAP_ANONYMOUS,
-         0,
-         0))) == reinterpret_cast<float *>(-1)) {
-    throw std::runtime_error(
-          "Failed to allocate "
-          + std::to_string(SIGDIGGER_AUDIO_BUFFER_ALLOC)
-          + " of buffer bytes for soundcard.");
-  }
-
-  ATTEMPT(
-        snd_pcm_open(&this->pcm, dev.c_str(), SND_PCM_STREAM_PLAYBACK, 0),
-        "open audio device " + dev);
-
-  snd_pcm_hw_params_alloca(&params);
-  snd_pcm_hw_params_any(pcm, params);
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_access(
-          this->pcm,
-          params,
-          SND_PCM_ACCESS_RW_INTERLEAVED),
-        "set interleaved access for audio device");
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_format(
-          this->pcm,
-          params,
-          SND_PCM_FORMAT_FLOAT_LE),
-        "set sample format");
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_buffer_size(
-          this->pcm,
-          params,
-          SIGDIGGER_AUDIO_BUFFER_SIZE),
-        "set buffer size");
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_channels(this->pcm, params, 1),
-        "set output to mono");
-
-  ATTEMPT(
-        snd_pcm_hw_params_set_rate_near(this->pcm, params, &rate, nullptr),
-        "set sample rate");
-
-  ATTEMPT(snd_pcm_hw_params(this->pcm, params), "set device params");
+#ifdef SIGDIGGER_HAVE_ALSA
+  this->player = new AlsaPlayer(dev, rate, SIGDIGGER_AUDIO_BUFFER_SIZE);
+#elif defined(SIGDIGGER_HAVE_PORTAUDIO)
+  this->player = new PortAudioPlayer(dev, rate, SIGDIGGER_AUDIO_BUFFER_SIZE);
+#else
+  throw std::runtime_error(
+      "Cannot create audio playback object: audio support disabled at compile time");
+#endif // SIGDIGGER_HAVE_ALSA
 
   this->sampRate = rate;
 
@@ -304,7 +270,7 @@ AudioPlayback::AudioPlayback(std::string const &dev, unsigned int rate)
 void
 AudioPlayback::startWorker()
 {
-  this->worker = new PlaybackWorker(&this->bufferList, this->pcm);
+  this->worker = new PlaybackWorker(&this->bufferList, this->player);
   this->workerThread = new QThread();
 
   this->worker->moveToThread(this->workerThread);
@@ -389,16 +355,34 @@ AudioPlayback::~AudioPlayback()
   if (this->worker != nullptr)
     delete this->worker;
 
-  if (this->pcm != nullptr) {
-    snd_pcm_drain(this->pcm);
-    snd_pcm_close(this->pcm);
-  }
+  if (this->player != nullptr)
+    delete this->player;
 }
 
 unsigned int
 AudioPlayback::getSampleRate(void) const
 {
   return this->sampRate;
+}
+
+float
+AudioPlayback::getVolume(void) const
+{
+  return this->volume;
+}
+
+void
+AudioPlayback::setVolume(float vol)
+{
+  SUFLOAT gain;
+
+  if (vol < -60)
+    gain = 0;
+  else
+    gain = SU_MAG_RAW(vol);
+
+  this->volume = vol;
+  this->worker->setGain(gain);
 }
 
 void
@@ -446,23 +430,3 @@ AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
     }
   }
 }
-
-#else
-AudioPlayback::AudioPlayback(std::string const &, unsigned int)
-{
-
-    throw std::runtime_error(
-        "Cannot create audio playback object: ALSA support disabled at compile time");
-}
-
-void AudioPlayback::onError(void) { }
-
-void AudioPlayback::onStarving(void) { }
-
-AudioPlayback::~AudioPlayback() { }
-
-unsigned int AudioPlayback::getSampleRate(void) const { return 0; }
-
-void AudioPlayback::write(const SUCOMPLEX *, SUSCOUNT) { }
-
-#endif // SIGDIGGER_HAVE_ALSA

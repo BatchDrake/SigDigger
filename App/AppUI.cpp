@@ -18,6 +18,7 @@
 //
 
 #include "AppUI.h"
+#include "SigDiggerHelpers.h"
 
 using namespace SigDigger;
 
@@ -27,6 +28,13 @@ AppUI::AppUI(QMainWindow *owner)
 
   this->main->setupUi(owner);
 
+  // In MacOS X there is already a system feature to show windows in full
+  // screen, and therefore this option is not needed.
+#ifdef __APPLE__
+  delete this->main->action_Full_screen;
+  this->main->action_Full_screen = nullptr;
+#endif // __APPLE__
+  
   this->spectrum = new MainSpectrum(owner);
   this->sourcePanel = new SourcePanel(owner);
   this->inspectorPanel = new InspectorPanel(owner);
@@ -34,14 +42,24 @@ AppUI::AppUI(QMainWindow *owner)
   this->audioPanel = new AudioPanel(owner);
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);
+  this->panoramicDialog = new PanoramicDialog(owner);
+  this->logDialog = new LogDialog(owner);
+  this->backgroundTasksDialog = new BackgroundTasksDialog(owner);
+  this->addBookmarkDialog = new AddBookmarkDialog(owner);
+  this->bookmarkManagerDialog = new BookmarkManagerDialog(owner);
 }
 
 void
 AppUI::postLoadInit(QMainWindow *owner)
 {
+  // Singleton config has been deserialized. Refresh UI with these changes.
+  SigDiggerHelpers::instance()->deserializePalettes();
+
   this->configDialog = new ConfigDialog(owner);
-  this->fftPanel->deserializePalettes();
+  this->fftPanel->refreshPalettes();
   this->sourcePanel->deserializeAutoGains();
+  this->spectrum->deserializeFATs();
+  this->inspectorPanel->postLoadInit();
 }
 
 AppUI::~AppUI(void)

@@ -36,7 +36,7 @@ ColorConfig::loadDefaults(void)
 {
   this->lcdForeground = SIGDIGGER_DEFAULT_FOREGROUND;
   this->lcdBackground = SIGDIGGER_DEFAULT_BACKGROUND;
-  this->spectrumForeground = QColor(255, 255, 255, 255);
+  this->spectrumForeground = SIGDIGGER_DEFAULT_FOREGROUND;
 
   this->spectrumBackground = SIGDIGGER_DEFAULT_BACKGROUND;
   this->constellationForeground = SIGDIGGER_DEFAULT_FOREGROUND;
@@ -53,8 +53,15 @@ ColorConfig::loadDefaults(void)
   this->transitionAxes = SIGDIGGER_DEFAULT_AXES;
   this->histogramAxes = SIGDIGGER_DEFAULT_AXES;
 
+  this->symViewBackground = SIGDIGGER_DEFAULT_SV_BG;
+  this->symViewHigh = SIGDIGGER_DEFAULT_SV_FG_HI;
+  this->symViewLow = SIGDIGGER_DEFAULT_SV_FG_LO;
+
   this->spectrumText = SIGDIGGER_DEFAULT_TEXT;
   this->histogramModel = QColor(255, 255, 0, 255);
+
+  this->selection = SIGDIGGER_DEFAULT_SELECTION;
+  this->filterBox = SIGDIGGER_DEFAULT_FILTER_BOX;
 }
 
 #define STRINGFY(x) #x
@@ -88,6 +95,11 @@ ColorConfig::serialize(void)
   CCSTORE(histogramBackground);
   CCSTORE(histogramAxes);
   CCSTORE(histogramModel);
+  CCSTORE(symViewLow);
+  CCSTORE(symViewHigh);
+  CCSTORE(symViewBackground);
+  CCSTORE(selection);
+  CCSTORE(filterBox);
 
   return this->persist(obj);
 }
@@ -111,4 +123,9 @@ ColorConfig::deserialize(Suscan::Object const &conf)
   CCLOAD(histogramBackground);
   CCLOAD(histogramAxes);
   CCLOAD(histogramModel);
+  CCLOAD(symViewLow);
+  CCLOAD(symViewHigh);
+  CCLOAD(symViewBackground);
+  CCLOAD(selection);
+  CCLOAD(filterBox);
 }

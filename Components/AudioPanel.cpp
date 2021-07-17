@@ -18,6 +18,8 @@
 //
 #include "AudioPanel.h"
 #include "ui_AudioPanel.h"
+#include <QDir>
+#include <QFileDialog>
 
 using namespace SigDigger;
 
@@ -27,7 +29,7 @@ static const unsigned int supportedRates[] = {
   32000,
   44100,
   48000,
-  196000};
+  192000};
 
 #define STRINGFY(x) #x
 #define STORE(field) obj.set(STRINGFY(field), this->field)
@@ -41,6 +43,10 @@ AudioPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(rate);
   LOAD(cutOff);
   LOAD(volume);
+  LOAD(savePath);
+  LOAD(squelch);
+  LOAD(amSquelch);
+  LOAD(ssbSquelch);
 }
 
 Suscan::Object &&
@@ -55,6 +61,10 @@ AudioPanelConfig::serialize(void)
   STORE(rate);
   STORE(cutOff);
   STORE(volume);
+  STORE(savePath);
+  STORE(squelch);
+  STORE(amSquelch);
+  STORE(ssbSquelch);
 
   return this->persist(obj);
 }
@@ -127,6 +137,36 @@ AudioPanel::connectAll(void)
       SIGNAL(valueChanged(int)),
       this,
       SLOT(onVolumeChanged(void)));
+
+  connect(
+      this->ui->muteButton,
+      SIGNAL(toggled(bool)),
+      this,
+      SLOT(onMuteToggled(bool)));
+
+  connect(
+        this->ui->saveButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onChangeSavePath(void)));
+
+  connect(
+        this->ui->recordStartStopButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onRecordStartStop(void)));
+
+  connect(
+        this->ui->sqlButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onToggleSquelch(void)));
+
+  connect(
+        this->ui->sqlLevelSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onSquelchLevelChanged(void)));
 }
 
 void
@@ -148,29 +188,58 @@ AudioPanel::populateRates(void)
 void
 AudioPanel::refreshUi(void)
 {
-  if (this->bandwidth < supportedRates[0]) {
-    this->ui->audioPreviewCheck->setChecked(false);
-    this->ui->audioPreviewCheck->setEnabled(false);
-    this->ui->demodCombo->setEnabled(false);
-    this->ui->sampleRateCombo->setEnabled(false);
-    this->ui->cutoffSlider->setEnabled(false);
-  } else {
-    bool enabled = this->getEnabled();
-    this->ui->audioPreviewCheck->setEnabled(true);
-    this->ui->demodCombo->setEnabled(enabled);
-    this->ui->sampleRateCombo->setEnabled(enabled);
-    this->ui->cutoffSlider->setEnabled(enabled);
+  bool enabled = this->getEnabled();
+  bool validRate = this->bandwidth >= supportedRates[0];
 
+  this->ui->audioPreviewCheck->setEnabled(validRate);
+  this->ui->demodCombo->setEnabled(enabled && validRate);
+  this->ui->sampleRateCombo->setEnabled(enabled && validRate);
+  this->ui->cutoffSlider->setEnabled(enabled && validRate);
+  this->ui->recordStartStopButton->setEnabled(enabled && validRate);
+
+  this->ui->sqlButton->setEnabled(enabled && validRate);
+  this->ui->sqlLevelSpin->setEnabled(
+        enabled && validRate && this->getDemod() != AudioDemod::FM);
+
+  if (validRate) {
     this->setCutOff(this->panelConfig->cutOff);
     this->setVolume(this->panelConfig->volume);
+  }
+
+  switch (this->getDemod()) {
+    case AudioDemod::AM:
+      this->ui->sqlLevelSpin->setSuffix(" %");
+      this->ui->sqlLevelSpin->setMinimum(0);
+      this->ui->sqlLevelSpin->setMaximum(100);
+      this->ui->sqlLevelSpin->setValue(
+            static_cast<qreal>(this->panelConfig->amSquelch * 100));
+      break;
+
+    case AudioDemod::FM:
+      this->ui->sqlLevelSpin->setSuffix("");
+      this->ui->sqlLevelSpin->setMinimum(0);
+      this->ui->sqlLevelSpin->setMaximum(0);
+      break;
+
+    case AudioDemod::USB:
+    case AudioDemod::LSB:
+      this->ui->sqlLevelSpin->setSuffix(" dB");
+      this->ui->sqlLevelSpin->setMinimum(-120);
+      this->ui->sqlLevelSpin->setMaximum(10);
+      this->ui->sqlLevelSpin->setValue(
+            static_cast<qreal>(
+              SU_POWER_DB(this->panelConfig->ssbSquelch)));
+      break;
   }
 }
 
 AudioPanel::AudioPanel(QWidget *parent) :
-  PersistentWidget(parent),
+  GenericDataSaverUI(parent),
   ui(new Ui::AudioPanel)
 {
   ui->setupUi(this);
+
+  this->setRecordSavePath(QDir::currentPath().toStdString());
 
   this->assertConfig();
   this->populateRates();
@@ -204,6 +273,7 @@ AudioPanel::setDemod(enum AudioDemod demod)
 {
   this->panelConfig->demod = AudioPanel::demodToStr(demod);
   this->ui->demodCombo->setCurrentIndex(static_cast<int>(demod));
+  this->refreshUi();
 }
 
 void
@@ -246,9 +316,105 @@ AudioPanel::setVolume(SUFLOAT volume)
   this->panelConfig->volume = volume;
   this->ui->volumeSlider->setValue(static_cast<int>(volume));
   this->ui->volumeLabel->setText(
-        QString::number(this->ui->volumeSlider->value()) + "%");
+        QString::number(this->ui->volumeSlider->value()) + " dB");
 }
 
+void
+AudioPanel::setMuted(bool muted)
+{
+  this->ui->muteButton->setChecked(muted);
+}
+
+void
+AudioPanel::setSquelchEnabled(bool enabled)
+{
+  this->panelConfig->squelch = enabled;
+  this->ui->sqlButton->setChecked(enabled);
+  this->refreshUi();
+}
+
+void
+AudioPanel::setSquelchLevel(SUFLOAT val)
+{
+  switch (this->getDemod()) {
+    case AudioDemod::AM:
+      this->panelConfig->amSquelch = val;
+      break;
+
+    case AudioDemod::USB:
+    case AudioDemod::LSB:
+      this->panelConfig->ssbSquelch = val;
+      break;
+
+    default:
+      break;
+  }
+
+  this->refreshUi();
+}
+
+// Overriden setters
+void
+AudioPanel::setRecordSavePath(std::string const &path)
+{
+  this->ui->savePath->setText(QString::fromStdString(path));
+  this->refreshDiskUsage();
+}
+
+void
+AudioPanel::setSaveEnabled(bool enabled)
+{
+  if (!enabled)
+    this->ui->saveButton->setChecked(false);
+
+  this->ui->saveButton->setEnabled(enabled);
+}
+
+static QString
+formatCaptureSize(quint64 size)
+{
+  if (size < (1ull << 10))
+    return QString::number(size) + " bytes";
+  else if (size < (1ull << 20))
+    return QString::number(size >> 10) + " KiB";
+  else if (size < (1ull << 30))
+    return QString::number(size >> 20) + " MiB";
+
+  return QString::number(size >> 30) + " GiB";
+}
+
+void
+AudioPanel::setCaptureSize(quint64 size)
+{
+  this->ui->captureSizeLabel->setText(
+        formatCaptureSize(size * sizeof(float _Complex)));
+}
+
+void
+AudioPanel::setDiskUsage(qreal usage)
+{
+  if (std::isnan(usage)) {
+    this->ui->diskUsageProgress->setEnabled(false);
+    this->ui->diskUsageProgress->setValue(100);
+  } else {
+    this->ui->diskUsageProgress->setEnabled(true);
+    this->ui->diskUsageProgress->setValue(static_cast<int>(usage * 100));
+  }
+}
+
+void
+AudioPanel::setIORate(qreal)
+{
+  // Do nothing. This is in general slow.
+  this->refreshDiskUsage();
+}
+
+void
+AudioPanel::setRecordState(bool state)
+{
+  this->ui->recordStartStopButton->setChecked(state);
+  this->ui->recordStartStopButton->setText(state ? "Stop" : "Record");
+}
 
 // Getters
 SUFLOAT
@@ -290,6 +456,56 @@ AudioPanel::getVolume(void) const
   return this->ui->volumeSlider->value();
 }
 
+SUFLOAT
+AudioPanel::getMuteableVolume(void) const
+{
+  return this->isMuted() ? -120 : this->getVolume();
+}
+
+bool
+AudioPanel::isMuted(void) const
+{
+  return this->ui->muteButton->isChecked();
+}
+
+bool
+AudioPanel::getSquelchEnabled(void) const
+{
+  return this->ui->sqlButton->isChecked();
+}
+
+SUFLOAT
+AudioPanel::getSquelchLevel(void) const
+{
+  switch (this->getDemod()) {
+    case AudioDemod::AM:
+      return SU_ASFLOAT(this->ui->sqlLevelSpin->value() * 1e-2);
+
+    case AudioDemod::USB:
+    case AudioDemod::LSB:
+      return SU_POWER_MAG(SU_ASFLOAT(this->ui->sqlLevelSpin->value()));
+
+    default:
+      break;
+  }
+
+  return 0;
+}
+
+
+// Overriden getters
+bool
+AudioPanel::getRecordState(void) const
+{
+  return this->ui->recordStartStopButton->isChecked();
+}
+
+std::string
+AudioPanel::getRecordSavePath(void) const
+{
+  return this->ui->savePath->text().toStdString();
+}
+
 // Overriden methods
 Suscan::Serializable *
 AudioPanel::allocConfig(void)
@@ -305,6 +521,10 @@ AudioPanel::applyConfig(void)
   this->setVolume(this->panelConfig->volume);
   this->setDemod(strToDemod(this->panelConfig->demod));
   this->setEnabled(this->panelConfig->enabled);
+  this->setSquelchEnabled(this->panelConfig->squelch);
+
+  if (this->panelConfig->savePath.size() > 0)
+    this->setRecordSavePath(this->panelConfig->savePath);
 }
 
 //////////////////////////////// Slots ////////////////////////////////////////
@@ -337,13 +557,73 @@ AudioPanel::onVolumeChanged(void)
 {
   this->setVolume(this->getVolume());
 
-  emit changed();
+  emit volumeChanged(this->getMuteableVolume());
+}
+
+void
+AudioPanel::onMuteToggled(bool)
+{
+  this->ui->volumeSlider->setEnabled(!this->isMuted());
+  this->ui->volumeLabel->setEnabled(!this->isMuted());
+
+  this->ui->muteButton->setIcon(
+        QIcon(
+          this->isMuted()
+          ? ":/icons/audio-volume-muted-panel.png"
+          : ":/icons/audio-volume-medium-panel.png"));
+
+  emit volumeChanged(this->getMuteableVolume());
 }
 
 void
 AudioPanel::onEnabledChanged(void)
 {
   this->setEnabled(this->getEnabled());
+
+  emit changed();
+}
+
+void
+AudioPanel::onChangeSavePath(void)
+{
+  QFileDialog dialog(this->ui->saveButton);
+
+  dialog.setFileMode(QFileDialog::DirectoryOnly);
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+  dialog.setWindowTitle(QString("Select current save directory"));
+
+  if (dialog.exec()) {
+    QString path = dialog.selectedFiles().first();
+    this->ui->savePath->setText(path);
+    this->panelConfig->savePath = path.toStdString();
+    this->refreshDiskUsage();
+    emit recordSavePathChanged(path);
+  }
+}
+
+void
+AudioPanel::onRecordStartStop(void)
+{
+  this->ui->recordStartStopButton->setText(
+        this->ui->recordStartStopButton->isChecked()
+        ? "Stop"
+        : "Record");
+
+  emit recordStateChanged(this->ui->recordStartStopButton->isChecked());
+}
+
+void
+AudioPanel::onToggleSquelch(void)
+{
+  this->setSquelchEnabled(this->getSquelchEnabled());
+
+  emit changed();
+}
+
+void
+AudioPanel::onSquelchLevelChanged(void)
+{
+  this->setSquelchLevel(this->getSquelchLevel());
 
   emit changed();
 }

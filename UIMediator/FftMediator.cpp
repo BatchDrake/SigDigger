@@ -65,6 +65,36 @@ UIMediator::connectFftPanel(void)
         SIGNAL(windowFunctionChanged(void)),
         this,
         SLOT(onWindowFunctionChanged(void)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(timeStampsChanged(void)),
+        this,
+        SLOT(onTimeStampsChanged(void)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(bookmarksChanged(void)),
+        this,
+        SLOT(onBookmarksButtonChanged(void)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(unitChanged(QString, float, float)),
+        this,
+        SLOT(onUnitChanged(QString, float, float)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(zeroPointChanged(float)),
+        this,
+        SLOT(onZeroPointChanged(float)));
+
+  connect(
+        this->ui->fftPanel,
+        SIGNAL(gainChanged(float)),
+        this,
+        SLOT(onGainChanged(float)));
 }
 
 void
@@ -77,19 +107,23 @@ UIMediator::onPaletteChanged(void)
 void
 UIMediator::onRangesChanged(void)
 {
-  this->ui->spectrum->setPandapterRange(
-        this->ui->fftPanel->getPandRangeMin(),
-        this->ui->fftPanel->getPandRangeMax());
+  if (!this->settingRanges) {
+    this->settingRanges = true;
+    this->ui->spectrum->setPandapterRange(
+          this->ui->fftPanel->getPandRangeMin(),
+          this->ui->fftPanel->getPandRangeMax());
 
-  this->ui->spectrum->setWfRange(
-        this->ui->fftPanel->getWfRangeMin(),
-        this->ui->fftPanel->getWfRangeMax());
+    this->ui->spectrum->setWfRange(
+          this->ui->fftPanel->getWfRangeMin(),
+          this->ui->fftPanel->getWfRangeMax());
 
-  this->ui->spectrum->setPanWfRatio(this->ui->fftPanel->getPanWfRatio());
-  this->ui->spectrum->setZoom(this->ui->fftPanel->getFreqZoom());
+    this->ui->spectrum->setPanWfRatio(this->ui->fftPanel->getPanWfRatio());
+    this->ui->spectrum->setZoom(this->ui->fftPanel->getFreqZoom());
 
-  this->ui->spectrum->setPeakDetect(this->ui->fftPanel->getPeakDetect());
-  this->ui->spectrum->setPeakHold(this->ui->fftPanel->getPeakHold());
+    this->ui->spectrum->setPeakDetect(this->ui->fftPanel->getPeakDetect());
+    this->ui->spectrum->setPeakHold(this->ui->fftPanel->getPeakHold());
+    this->settingRanges = false;
+  }
 }
 
 void
@@ -109,6 +143,8 @@ void
 UIMediator::onRefreshRateChanged(void)
 {
   this->appConfig->analyzerParams.psdUpdateInterval = 1.f / this->ui->fftPanel->getRefreshRate();
+  this->ui->spectrum->setExpectedRate(
+        static_cast<int>(this->ui->fftPanel->getRefreshRate()));
   emit analyzerParamsChanged();
 }
 
@@ -119,10 +155,40 @@ UIMediator::onTimeSpanChanged(void)
 }
 
 void
+UIMediator::onTimeStampsChanged(void)
+{
+  this->ui->spectrum->setTimeStamps(this->ui->fftPanel->getTimeStamps());
+}
+
+void
+UIMediator::onBookmarksButtonChanged(void)
+{
+  this->ui->spectrum->setBookmarks(this->ui->fftPanel->getBookmarks());
+}
+
+void
 UIMediator::onWindowFunctionChanged(void)
 {
   this->appConfig->analyzerParams.windowFunction =
       this->ui->fftPanel->getWindowFunction();
 
   emit analyzerParamsChanged();
+}
+
+void
+UIMediator::onUnitChanged(QString name, float dBPerUnit, float zeroPoint)
+{
+  this->ui->spectrum->setUnits(name, dBPerUnit, zeroPoint);
+}
+
+void
+UIMediator::onZeroPointChanged(float zp)
+{
+  this->ui->spectrum->setZeroPoint(zp);
+}
+
+void
+UIMediator::onGainChanged(float gain)
+{
+  this->ui->spectrum->setGain(gain);
 }

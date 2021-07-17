@@ -32,21 +32,17 @@ namespace SigDigger {
     Ui_DeviceGain *ui;
 
     std::string name;
-    int min;
-    int max;
-    int step;
-    int defl;
-    int current;
+    float min;
+    float max;
+    float step;
+    float defl;
+
+    int current; // Current value, to prevent spurious event triggers
 
   public:
     explicit DeviceGain(
         QWidget *parent,
         Suscan::Source::GainDescription const &desc);
-    float
-    getGain(void) const
-    {
-      return this->current;
-    }
 
     std::string const&
     getName(void) const
@@ -55,6 +51,7 @@ namespace SigDigger {
     }
 
     void setGain(float);
+    float getGain(void) const;
 
     ~DeviceGain();
 

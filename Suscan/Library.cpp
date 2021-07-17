@@ -18,12 +18,24 @@
 //
 
 #include <Suscan/Library.h>
+#include <Suscan/MultitaskController.h>
+#include <analyzer/version.h>
+#include <QtGui>
 
 using namespace Suscan;
 
 // Singleton initialization
 Singleton *Singleton::instance = nullptr;
 Logger    *Singleton::logger   = nullptr;
+
+uint
+Suscan::qHash(const Suscan::Source::Device &dev)
+{
+  return
+      ::qHash(dev.getDesc().c_str())
+    ^ ::qHash(dev.getDriver().c_str())
+    ^ ::qHash(dev.isRemote());
+}
 
 Singleton::Singleton()
 {
@@ -33,12 +45,30 @@ Singleton::Singleton()
   this->spectrum_sources_initd = false;
   this->inspectors_initd = false;
 
+  this->backgroundTaskController = new MultitaskController;
+
+  // Define some read-only units. We may let the user add customized
+  // units too.
+
+  this->registerSpectrumUnit("dBFS",     1.0, 0.0f);
+  this->registerSpectrumUnit("dBK",      1.0, -228.60f);
+  this->registerSpectrumUnit("dBW/Hz",   1.0, 0.0f);
+  this->registerSpectrumUnit("dBm/Hz",   1.0, -30.0f);
+
+  this->registerSpectrumUnit("dBJy",     1.0, 0.0f);
+
+  // The zero point of the AB magnitude scale is at 3631 Jy. This is,
+  // at 35.6 dB above the zero point of the dBJy scale. Since 1 mag = -4 dB,
+  // the zero point of the scale exactly at -8.9 mag w.r.t the zero point of the
+  // dBJy scale.
+  this->registerSpectrumUnit("mag (AB)", -4.0, -2.5f * SU_LOG(3631.f));
+
   this->logger = Logger::getInstance();
 }
 
 Singleton::~Singleton()
 {
-
+  this->killBackgroundTaskController();
 }
 
 Singleton *
@@ -53,6 +83,20 @@ Singleton::get_instance(void)
   }
 
   return Singleton::instance;
+}
+
+std::string
+Singleton::sigutilsVersion(void)
+{
+  return std::string(sigutils_api_version())
+      + " (" + std::string(sigutils_pkgversion()) + ")";
+}
+
+std::string
+Singleton::suscanVersion(void)
+{
+  return std::string(suscan_api_version())
+      + " (" + std::string(suscan_pkgversion()) + ")";
 }
 
 // Initialization methods
@@ -79,6 +123,19 @@ walk_all_devices(const suscan_source_device_t *device, unsigned int, void *privd
   Singleton *instance = static_cast<Singleton *>(privdata);
 
   instance->registerSourceDevice(device);
+
+  return SU_TRUE;
+}
+
+static SUBOOL
+walk_all_remote_devices(
+    void *privdata,
+    const suscan_source_device_t *,
+    const suscan_source_config_t *config)
+{
+  Singleton *instance = static_cast<Singleton *>(privdata);
+
+  instance->registerNetworkProfile(config);
 
   return SU_TRUE;
 }
@@ -139,6 +196,23 @@ Singleton::haveAutoGain(std::string const &name)
 }
 
 bool
+Singleton::haveFAT(std::string const &name)
+{
+  for (auto p = this->FATs.begin();
+       p != this->FATs.end();
+       ++p) {
+    try {
+      if (p->getField("name").value() == name)
+        return true;
+    } catch (Suscan::Exception const &) {
+
+    }
+  }
+
+  return false;
+}
+
+bool
 Singleton::havePalette(std::string const &name)
 {
   for (auto p = this->palettes.begin();
@@ -162,6 +236,8 @@ Singleton::init_palettes(void)
   ConfigContext ctx("palettes");
   Object list = ctx.listObject();
 
+  ctx.setSave(false);
+
   count = list.length();
 
   for (i = 0; i < count; ++i) {
@@ -179,6 +255,8 @@ Singleton::init_autogains(void)
   ConfigContext ctx("autogains");
   Object list = ctx.listObject();
 
+  ctx.setSave(false);
+
   count = list.length();
 
   for (i = 0; i < count; ++i) {
@@ -190,11 +268,86 @@ Singleton::init_autogains(void)
 }
 
 void
+Singleton::init_fats(void)
+{
+  unsigned int i, count;
+  ConfigContext ctx("frequency_allocations");
+  Object list = ctx.listObject();
+
+  ctx.setSave(false);
+
+  count = list.length();
+
+  for (i = 0; i < count; ++i) {
+    try {
+      if (!this->haveFAT(list[i].getField("name").value()))
+        this->FATs.push_back(list[i]);
+    } catch (Suscan::Exception const &) { }
+  }
+}
+
+void
+Singleton::init_bookmarks(void)
+{
+  unsigned int i, count;
+  ConfigContext ctx("bookmarks");
+  Object list = ctx.listObject();
+  qreal freq;
+
+  ctx.setSave(true);
+
+  count = list.length();
+
+  for (i = 0; i < count; ++i) {
+    try {
+      Bookmark bm;
+      std::string frequency = list[i].getField("frequency").value();
+
+      bm.info.name = QString::fromStdString(list[i].getField("name").value());
+      bm.info.color = QColor(QString::fromStdString(list[i].getField("color").value()));
+
+      try {
+        // try parse extended informations
+        std::string lowFreqCut = list[i].getField("low_freq_cut").value();
+        std::string highFreqCut = list[i].getField("high_freq_cut").value();
+        bm.info.modulation = QString::fromStdString(list[i].getField("modulation").value());
+
+        (void) sscanf(lowFreqCut.c_str(), "%d", &bm.info.lowFreqCut);
+        (void) sscanf(highFreqCut.c_str(), "%d", &bm.info.highFreqCut);
+
+      } catch (Suscan::Exception const &) { }
+
+      if (sscanf(frequency.c_str(), "%lg", &freq) == 1 && bm.info.name.size() > 0) {
+        bm.info.frequency = static_cast<qint64>(freq);
+        bm.entry = static_cast<int>(i);
+        this->bookmarks[bm.info.frequency] = bm;
+      }
+
+    } catch (Suscan::Exception const &) { }
+  }
+}
+
+void
+Singleton::refreshDevices(void)
+{
+  this->devices.clear();
+  suscan_source_device_walk(walk_all_devices, static_cast<void *>(this));
+}
+
+void
+Singleton::refreshNetworkProfiles(void)
+{
+  this->networkProfiles.clear();
+  suscan_discovered_remote_device_walk(
+        walk_all_remote_devices,
+        static_cast<void *>(this));
+}
+
+void
 Singleton::detect_devices(void)
 {
   suscan_source_detect_devices();
-  this->devices.clear();
-  suscan_source_device_walk(walk_all_devices, static_cast<void *>(this));
+  this->refreshDevices();
 }
 
 void
@@ -272,10 +425,46 @@ Singleton::syncUI(void)
 }
 
 void
+Singleton::syncBookmarks(void)
+{
+  ConfigContext ctx("bookmarks");
+  Object list = ctx.listObject();
+
+  // Sync all modified configurations
+  for (auto p : this->bookmarks.keys()) {
+    if (this->bookmarks[p].entry == -1) {
+      try {
+        Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+
+        obj.set("name", this->bookmarks[p].info.name.toStdString());
+        obj.set("frequency", static_cast<double>(this->bookmarks[p].info.frequency));
+        obj.set("color", this->bookmarks[p].info.color.name().toStdString());
+        obj.set("low_freq_cut", this->bookmarks[p].info.lowFreqCut);
+        obj.set("high_freq_cut", this->bookmarks[p].info.highFreqCut);
+        obj.set("modulation", this->bookmarks[p].info.modulation.toStdString());
+
+        list.append(std::move(obj));
+      } catch (Suscan::Exception const &) {
+      }
+    }
+  }
+}
+
+void
+Singleton::killBackgroundTaskController(void)
+{
+  if (this->backgroundTaskController != nullptr) {
+    delete this->backgroundTaskController;
+    this->backgroundTaskController = nullptr;
+  }
+}
+
+void
 Singleton::sync(void)
 {
   this->syncRecent();
   this->syncUI();
+  this->syncBookmarks();
 }
 
 // Singleton methods
@@ -288,6 +477,21 @@ Singleton::registerSourceConfig(suscan_source_config_t *config)
     label = "(Null profile)";
 
   this->profiles[label] = Suscan::Source::Config(config);
+}
+
+void
+Singleton::registerNetworkProfile(const suscan_source_config_t *config)
+{
+  QString name = QString(suscan_source_config_get_label(config));
+
+  this->networkProfiles[name] = Suscan::Source::Config::wrap(
+        suscan_source_config_clone(config));
+}
+
+MultitaskController *
+Singleton::getBackgroundTaskController(void) const
+{
+  return this->backgroundTaskController;
 }
 
 ConfigMap::const_iterator
@@ -319,6 +523,91 @@ Singleton::saveProfile(Suscan::Source::Config const &profile)
   SU_ATTEMPT(
         suscan_source_config_register(
           this->profiles[profile.label()].instance));
+}
+
+void
+Singleton::removeBookmark(qint64 freq)
+{
+  if (this->bookmarks.find(freq) != this->bookmarks.end()) {
+    Bookmark bm = this->bookmarks[freq];
+    this->bookmarks.remove(freq);
+
+    if (bm.entry != -1) {
+      ConfigContext ctx("bookmarks");
+      Object list = ctx.listObject();
+      list.remove(static_cast<unsigned>(bm.entry));
+    }
+  }
+}
+
+void
+Singleton::replaceBookmark(BookmarkInfo const& info)
+{
+  Bookmark bm;
+
+  bm.info = info;
+
+  this->removeBookmark(info.frequency);
+  this->bookmarks[info.frequency] = bm;
+}
+
+bool
+Singleton::registerBookmark(BookmarkInfo const& info)
+{
+  if (this->bookmarks.find(info.frequency) != this->bookmarks.end())
+    return false;
+
+  Bookmark bm;
+
+  bm.info = info;
+  this->bookmarks[info.frequency] = bm;
+
+  return true;
+}
+
+bool
+Singleton::registerSpectrumUnit(
+    std::string const &name,
+    float dBPerUnit,
+    float zeroPoint)
+{
+  if (this->spectrumUnits.find(name) != this->spectrumUnits.end())
+    return false;
+
+  SpectrumUnit su;
+
+  su.name      = name;
+  su.dBPerUnit = dBPerUnit;
+  su.zeroPoint = zeroPoint;
+
+  this->spectrumUnits[name] = su;
+
+  return true;
+}
+
+void
+Singleton::replaceSpectrumUnit(
+    std::string const &name,
+    float dBPerUnit,
+    float zeroPoint)
+{
+  SpectrumUnit su;
+
+  su.name      = name;
+  su.dBPerUnit = dBPerUnit;
+  su.zeroPoint = zeroPoint;
+
+  this->removeSpectrumUnit(name);
+  this->spectrumUnits[name] = su;
+}
+
+void
+Singleton::removeSpectrumUnit(std::string const &name)
+{
+  if (this->spectrumUnits.find(name) != this->spectrumUnits.end()) {
+    SpectrumUnit bm = this->spectrumUnits[name];
+    this->spectrumUnits.remove(name);
+  }
 }
 
 void
@@ -375,6 +664,18 @@ Singleton::getLastUIConfig(void)
   return this->uiConfig.end();
 }
 
+std::vector<Object>::const_iterator
+Singleton::getFirstFAT(void) const
+{
+  return this->FATs.begin();
+}
+
+std::vector<Object>::const_iterator
+Singleton::getLastFAT(void) const
+{
+  return this->FATs.end();
+}
+
 void
 Singleton::putUIConfig(unsigned int pos, Object &&rv)
 {
@@ -403,6 +704,79 @@ std::list<std::string>::const_iterator
 Singleton::getLastRecent(void) const
 {
   return this->recentProfiles.cend();
+}
+
+QMap<qint64,Bookmark> const &
+Singleton::getBookmarkMap(void) const
+{
+  return this->bookmarks;
+}
+
+QMap<qint64,Bookmark>::const_iterator
+Singleton::getFirstBookmark(void) const
+{
+  return this->bookmarks.cbegin();
+}
+
+QMap<qint64,Bookmark>::const_iterator
+Singleton::getLastBookmark(void) const
+{
+  return this->bookmarks.cend();
+}
+
+QMap<qint64,Bookmark>::const_iterator
+Singleton::getBookmarkFrom(qint64 freq) const
+{
+  return this->bookmarks.lowerBound(freq);
+}
+
+QMap<std::string, SpectrumUnit> const &
+Singleton::getSpectrumUnitMap(void) const
+{
+  return this->spectrumUnits;
+}
+
+QMap<std::string, SpectrumUnit>::const_iterator
+Singleton::getFirstSpectrumUnit(void) const
+{
+  return this->spectrumUnits.cbegin();
+}
+
+QMap<std::string, SpectrumUnit>::const_iterator
+Singleton::getLastSpectrumUnit(void) const
+{
+  return this->spectrumUnits.cend();
+}
+
+QMap<std::string, SpectrumUnit>::const_iterator
+Singleton::getSpectrumUnitFrom(std::string const &name) const
+{
+  return this->spectrumUnits.lowerBound(name);
+}
+
+
+QHash<QString, Source::Config> const &
+Singleton::getNetworkProfileMap(void) const
+{
+  return this->networkProfiles;
+}
+
+QHash<QString, Source::Config>::const_iterator
+Singleton::getFirstNetworkProfile(void) const
+{
+  return this->networkProfiles.cbegin();
+}
+
+QHash<QString, Source::Config>::const_iterator
+Singleton::getLastNetworkProfile(void) const
+{
+  return this->networkProfiles.cend();
+}
+
+QHash<QString, Source::Config>::const_iterator
+Singleton::getNetworkProfileFrom(QString const &name) const
+{
+  return this->networkProfiles.constFind(name);
 }
 
 bool

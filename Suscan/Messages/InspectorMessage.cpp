@@ -23,7 +23,6 @@ using namespace Suscan;
 
 InspectorMessage::InspectorMessage() : Message() {
   this->message = nullptr;
-  printf("Create EMPTY inspector message\n");
 }
 
 InspectorMessage::InspectorMessage(struct suscan_analyzer_inspector_msg *msg) :
@@ -186,7 +185,8 @@ InspectorMessage::getChannel(void) const
 
   if (this->message != nullptr) {
     ch.fc = this->message->channel.fc;
-    ch.fc = this->message->channel.bw;
+    ch.bw = this->message->channel.bw;
+    ch.ft = this->message->channel.ft;
   }
 
   return ch;

@@ -31,6 +31,8 @@ namespace SigDigger {
   {
       Q_OBJECT
 
+      static QString substituteVersions(QString str);
+
     public:
       explicit AboutDialog(QWidget *parent = nullptr);
       ~AboutDialog();

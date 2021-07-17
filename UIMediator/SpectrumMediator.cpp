@@ -18,6 +18,7 @@
 //
 
 #include "UIMediator.h"
+#include "MainWindow.h"
 
 using namespace SigDigger;
 
@@ -59,6 +60,12 @@ UIMediator::connectSpectrum(void)
         SIGNAL(zoomChanged(float)),
         this,
         SLOT(onZoomChanged(float)));
+
+  connect(
+        this->ui->spectrum,
+        SIGNAL(newBandPlan(QString)),
+        this,
+        SLOT(onNewBandPlan(QString)));
 }
 
 void
@@ -73,14 +80,17 @@ UIMediator::onSpectrumBandwidthChanged(void)
 void
 UIMediator::onFrequencyChanged(qint64)
 {
-  qint64 freq = this->ui->spectrum->getCenterFreq()
-      + this->ui->spectrum->getLoFreq();
+  qint64 freq = this->ui->spectrum->getCenterFreq();
+
   this->ui->inspectorPanel->setDemodFrequency(freq);
-  this->appConfig->profile.setFreq(freq);
+  this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
 
   emit frequencyChanged(
         this->ui->spectrum->getCenterFreq(),
         this->ui->spectrum->getLnbFreq());
+
+  emit loChanged(this->ui->spectrum->getLoFreq());
+
 }
 
 void
@@ -89,7 +99,6 @@ UIMediator::onLoChanged(qint64)
   qint64 freq = this->ui->spectrum->getCenterFreq()
       + this->ui->spectrum->getLoFreq();
   this->ui->inspectorPanel->setDemodFrequency(freq);
-
   this->appConfig->loFreq = static_cast<int>(this->ui->spectrum->getLoFreq());
   emit loChanged(this->ui->spectrum->getLoFreq());
 }
@@ -97,14 +106,18 @@ UIMediator::onLoChanged(qint64)
 void
 UIMediator::onRangeChanged(float min, float max)
 {
-  this->ui->spectrum->setPandapterRange(min, max);
-  this->ui->fftPanel->setPandRangeMin(static_cast<int>(min));
-  this->ui->fftPanel->setPandRangeMax(static_cast<int>(max));
+  if (!this->settingRanges) {
+    this->settingRanges = true;
+    this->ui->spectrum->setPandapterRange(min, max);
+    this->ui->fftPanel->setPandRangeMin(std::floor(min));
+    this->ui->fftPanel->setPandRangeMax(std::floor(max));
 
-  if (this->ui->fftPanel->getRangeLock()) {
-    this->ui->spectrum->setWfRange(min, max);
-    this->ui->fftPanel->setWfRangeMin(static_cast<int>(min));
-    this->ui->fftPanel->setWfRangeMax(static_cast<int>(max));
+    if (this->ui->fftPanel->getRangeLock()) {
+      this->ui->spectrum->setWfRange(min, max);
+      this->ui->fftPanel->setWfRangeMin(std::floor(min));
+      this->ui->fftPanel->setWfRangeMax(std::floor(max));
+    }
+    this->settingRanges = false;
   }
 }
 
@@ -112,4 +125,10 @@ void
 UIMediator::onZoomChanged(float level)
 {
   this->ui->fftPanel->setFreqZoom(static_cast<int>(level));
+}
+
+void
+UIMediator::onNewBandPlan(QString plan)
+{
+  this->addBandPlan(plan.toStdString());
 }

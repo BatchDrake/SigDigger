@@ -98,6 +98,11 @@
       </item>
       <item row="2" column="2" colspan="3">
        <widget class="QLineEdit" name="hostEdit">
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+         </font>
+        </property>
         <property name="text">
          <string>localhost</string>
         </property>
@@ -168,6 +173,9 @@
       </item>
       <item row="3" column="2" colspan="3">
        <widget class="QSpinBox" name="portSpin">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -181,6 +189,9 @@
       </item>
       <item row="4" column="2" colspan="3">
        <widget class="QSpinBox" name="frameLen">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
         <property name="suffix">
          <string> bytes</string>
         </property>

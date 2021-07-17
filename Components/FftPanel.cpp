@@ -16,10 +16,10 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include <Suscan/Library.h>
-#include "DefaultGradient.h"
 #include "FftPanel.h"
 #include "ui_FftPanel.h"
+#include "SigDiggerHelpers.h"
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -43,6 +43,11 @@ FftPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(zoom);
   LOAD(rangeLock);
   LOAD(timeSpan);
+  LOAD(timeStamps);
+  LOAD(bookmarks);
+  LOAD(unitName);
+  LOAD(zeroPoint);
+  LOAD(gain);
 }
 
 Suscan::Object &&
@@ -64,6 +69,11 @@ FftPanelConfig::serialize(void)
   STORE(zoom);
   STORE(rangeLock);
   STORE(timeSpan);
+  STORE(timeStamps);
+  STORE(bookmarks);
+  STORE(unitName);
+  STORE(zeroPoint);
+  STORE(gain);
 
   return this->persist(obj);
 }
@@ -74,7 +84,6 @@ FftPanel::allocConfig(void)
 {
   return this->panelConfig = new FftPanelConfig();
 }
-
 
 void
 FftPanel::applyConfig(void)
@@ -93,31 +102,12 @@ FftPanel::applyConfig(void)
   this->setPeakDetect(savedConfig.peakDetect);
   this->setRangeLock(savedConfig.rangeLock);
   this->setTimeSpan(savedConfig.timeSpan);
+  this->setTimeStamps(savedConfig.timeStamps);
+  this->setBookmarks(savedConfig.bookmarks);
+  this->setUnitName(QString::fromStdString(savedConfig.unitName));
+  this->setZeroPoint(savedConfig.zeroPoint);
+  this->setGain(savedConfig.gain);
 }
-
-void
-FftPanel::deserializePalettes(void)
-{
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  unsigned int ndx = 0;
-
-  for (auto i = sus->getFirstPalette();
-       i != sus->getLastPalette();
-       i++) {
-    ndx = static_cast<unsigned int>(i - sus->getFirstPalette());
-
-    this->palettes.push_back(Palette(*i));
-
-    this->ui->paletteCombo->insertItem(
-          static_cast<int>(ndx),
-          QIcon(QPixmap::fromImage(this->palettes[ndx].getThumbnail())),
-          QString::fromStdString(this->palettes[ndx].getName()),
-          QVariant::fromValue(ndx));
-
-    this->palettes[ndx].getThumbnail();
-  }
-}
-
 
 void
 FftPanel::connectAll(void)
@@ -196,10 +186,40 @@ FftPanel::connectAll(void)
         SLOT(onPeakChanged(void)));
 
   connect(
+        this->ui->timeStampsButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onTimeStampsChanged(void)));
+
+  connect(
         this->ui->windowCombo,
         SIGNAL(activated(int)),
         this,
         SLOT(onWindowFunctionChanged(void)));
+
+  connect(
+        this->ui->bookmarksButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onBookmarksChanged(void)));
+
+  connect(
+        this->ui->unitsCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onUnitChanged(void)));
+
+  connect(
+        this->ui->zeroPointSpin,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onZeroPointChanged(void)));
+
+  connect(
+        this->ui->gainSpinBox,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onGainChanged(void)));
 }
 
 FftPanel::FftPanel(QWidget *parent) :
@@ -210,11 +230,9 @@ FftPanel::FftPanel(QWidget *parent) :
 
   ui->setupUi(this);
 
-  this->palettes.push_back(Palette("Suscan", wf_gradient));
-
   this->assertConfig();
 
-  for (i = 9; i < 17; ++i)
+  for (i = 9; i < 21; ++i)
     this->addFftSize(1 << i);
 
   // Add refresh rates
@@ -243,7 +261,29 @@ FftPanel::FftPanel(QWidget *parent) :
   this->addTimeSpan(24 * 3600);
   this->addTimeSpan(48 * 3600);
 
+  this->populateUnits();
+
   this->connectAll();
+}
+
+void
+FftPanel::populateUnits(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  this->ui->unitsCombo->clear();
+
+  for (auto p: sus->getSpectrumUnitMap())
+    this->ui->unitsCombo->addItem(QString::fromStdString(p.name));
+
+  this->ui->unitsCombo->setCurrentIndex(0);
+  this->ui->zeroPointSpin->setValue(0.0);
+}
+
+void
+FftPanel::refreshPalettes(void)
+{
+  SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
 }
 
 void
@@ -273,6 +313,9 @@ void
 FftPanel::updateRefreshRates(void)
 {
   int index = 0;
+  int selectedIndex = 0;
+  unsigned int diff;
+  unsigned int bestMatch = 1 << 20; /* Just a big number */
   this->ui->rateCombo->clear();
 
   for (auto p = this->refreshRates.begin(); p != this->refreshRates.end(); ++p) {
@@ -285,11 +328,17 @@ FftPanel::updateRefreshRates(void)
       this->ui->rateCombo->addItem(QString::number(*p) + " fps");
     }
 
-    if (*p == this->refreshRate)
-      this->ui->rateCombo->setCurrentIndex(index);
+    diff = static_cast<unsigned>(
+          std::abs(static_cast<int>(*p) - static_cast<int>(this->refreshRate)));
+    if (diff < bestMatch) {
+      selectedIndex = index;
+      bestMatch = diff;
+    }
 
     ++index;
   }
+
+  this->ui->rateCombo->setCurrentIndex(selectedIndex);
 }
 
 static QString
@@ -347,8 +396,13 @@ FftPanel::updateRbw(void)
   if (this->rate == 0 || this->fftSize == 0) {
     this->ui->rbwLabel->setText("RBW: N/A");
   } else {
-    unsigned int rbw = this->rate / this->fftSize;
-    this->ui->rbwLabel->setText("RBW: " + QString::number(rbw) + " Hz");
+    qreal rbw = static_cast<qreal>(this->rate) / this->fftSize;
+    QString rbwString = SuWidgetsHelpers::formatQuantity(
+          rbw,
+          2,
+          QStringLiteral("Hz"));
+
+    this->ui->rbwLabel->setText("RBW: " + rbwString);
   }
 }
 
@@ -361,14 +415,10 @@ FftPanel::~FftPanel()
 std::string
 FftPanel::getPalette(void) const
 {
-  unsigned int index =
-      static_cast<unsigned int>(
-        this->ui->paletteCombo->currentIndex());
+  if (this->selected != nullptr)
+    return this->selected->getName();
 
-  if (index < this->palettes.size())
-    return this->palettes[index].getName();
-
-  return "Suscan";
+  return SigDiggerHelpers::instance()->getPalette(0)->getName();
 }
 
 float
@@ -413,7 +463,8 @@ FftPanel::getPaletteGradient(void) const
 {
   if (this->selected != nullptr)
     return this->selected->getGradient();
-  return this->palettes[0].getGradient();
+
+  return SigDiggerHelpers::instance()->getPalette(0)->getGradient();
 }
 
 unsigned int
@@ -458,6 +509,18 @@ FftPanel::getRangeLock(void) const
   return this->ui->lockButton->isChecked();
 }
 
+bool
+FftPanel::getTimeStamps(void) const
+{
+  return this->ui->timeStampsButton->isChecked();
+}
+
+bool
+FftPanel::getBookmarks(void) const
+{
+  return this->ui->bookmarksButton->isChecked();
+}
+
 enum Suscan::AnalyzerParams::WindowFunction
 FftPanel::getWindowFunction(void) const
 {
@@ -465,22 +528,65 @@ FftPanel::getWindowFunction(void) const
         this->ui->windowCombo->currentIndex());
 }
 
+QString
+FftPanel::getUnitName(void) const
+{
+  return this->ui->unitsCombo->currentText();
+}
+
+float
+FftPanel::getZeroPoint(void) const
+{
+  return static_cast<float>(this->ui->zeroPointSpin->value());
+}
+
+float
+FftPanel::getGain(void) const
+{
+  return static_cast<float>(this->ui->gainSpinBox->value());
+}
+
+float
+FftPanel::getCompleteZeroPoint(void) const
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
+
+  std::string name = this->ui->unitsCombo->currentText().toStdString();
+  auto it = sus->getSpectrumUnitFrom(name);
+
+  if (it != sus->getLastSpectrumUnit())
+    return it->zeroPoint + currZP;
+  else
+    return currZP;
+}
+
+float
+FftPanel::getdBPerUnit(void) const
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  std::string name = this->ui->unitsCombo->currentText().toStdString();
+  auto it = sus->getSpectrumUnitFrom(name);
+
+  if (it != sus->getLastSpectrumUnit())
+    return it->dBPerUnit;
+  else
+    return 1.;
+}
 ///////////////////////////////// Setters //////////////////////////////////////
 bool
 FftPanel::setPalette(std::string const &str)
 {
-  unsigned int i;
+  int index = SigDiggerHelpers::instance()->getPaletteIndex(str);
 
-  for (i = 0; i < this->palettes.size(); ++i) {
-    if (this->palettes[i].getName().compare(str) == 0) {
-      this->ui->paletteCombo->setCurrentIndex(static_cast<int>(i));
-      this->selected = &this->palettes[i];
-      this->panelConfig->palette = str;
-      return true;
-    }
-  }
+  if (index < 0)
+    return false;
 
-  return false;
+  this->ui->paletteCombo->setCurrentIndex(index);
+  this->selected = SigDiggerHelpers::instance()->getPalette(index);
+  this->panelConfig->palette = str;
+
+  return true;
 }
 
 void
@@ -594,6 +700,20 @@ FftPanel::setPeakDetect(bool detect)
 }
 
 void
+FftPanel::setTimeStamps(bool value)
+{
+  this->ui->timeStampsButton->setChecked(value);
+  this->panelConfig->timeStamps = value;
+}
+
+void
+FftPanel::setBookmarks(bool value)
+{
+  this->ui->bookmarksButton->setChecked(value);
+  this->panelConfig->bookmarks = value;
+}
+
+void
 FftPanel::setRangeLock(bool lock)
 {
   if (lock) {
@@ -603,6 +723,36 @@ FftPanel::setRangeLock(bool lock)
 
   this->ui->lockButton->setChecked(lock);
   this->panelConfig->rangeLock = lock;
+}
+
+bool
+FftPanel::setUnitName(QString name)
+{
+  int index = this->ui->unitsCombo->findText(name);
+
+  if (index == -1)
+    return false;
+
+  this->ui->unitsCombo->setCurrentIndex(index);
+  this->ui->zeroPointSpin->setSuffix(" " + name);
+
+  this->panelConfig->unitName = name.toStdString();
+
+  return true;
+}
+
+void
+FftPanel::setZeroPoint(float zp)
+{
+  this->ui->zeroPointSpin->setValue(static_cast<double>(zp));
+  this->panelConfig->zeroPoint = zp;
+}
+
+void
+FftPanel::setGain(float gain)
+{
+  this->ui->gainSpinBox->setValue(static_cast<double>(gain));
+  this->panelConfig->gain = gain;
 }
 
 void
@@ -665,8 +815,9 @@ FftPanel::onFreqZoomChanged(int)
 void
 FftPanel::onPaletteChanged(int index)
 {
-  this->selected = &this->palettes[static_cast<unsigned>(index)];
+  this->selected = SigDiggerHelpers::instance()->getPalette(index);
   this->panelConfig->palette = this->selected->getName();
+
   emit paletteChanged();
 }
 
@@ -727,4 +878,65 @@ void
 FftPanel::onWindowFunctionChanged(void)
 {
   emit windowFunctionChanged();
+}
+
+void
+FftPanel::onTimeStampsChanged(void)
+{
+  this->setTimeStamps(this->getTimeStamps());
+  emit timeStampsChanged();
+}
+
+void
+FftPanel::onBookmarksChanged(void)
+{
+  this->setBookmarks(this->getBookmarks());
+  emit bookmarksChanged();
+}
+
+void
+FftPanel::onUnitChanged(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  float currZPdB = this->zeroPointToDb();
+  float newZp;
+  std::string name = this->ui->unitsCombo->currentText().toStdString();
+  auto it = sus->getSpectrumUnitFrom(name);
+
+  this->ui->zeroPointSpin->setSuffix(" " + QString::fromStdString(name));
+
+  if (it != sus->getLastSpectrumUnit()) {
+    this->currentUnit = *it;
+  } else {
+    this->currentUnit.name      = "dBFS";
+    this->currentUnit.dBPerUnit = 1.f;
+    this->currentUnit.zeroPoint = 0;
+  }
+
+  this->panelConfig->unitName = this->currentUnit.name;
+
+  newZp = this->dbToZeroPoint(currZPdB);
+
+  emit unitChanged(
+        QString::fromStdString(this->currentUnit.name),
+        this->currentUnit.dBPerUnit,
+        this->currentUnit.zeroPoint + newZp);
+
+  this->setZeroPoint(newZp);
+}
+
+void
+FftPanel::onZeroPointChanged(void)
+{
+  float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
+
+  this->panelConfig->zeroPoint = currZP;
+  emit zeroPointChanged(this->currentUnit.zeroPoint + currZP);
+}
+
+void
+FftPanel::onGainChanged(void)
+{
+  this->panelConfig->gain = static_cast<float>(this->ui->gainSpinBox->value());
+  emit gainChanged(static_cast<float>(this->ui->gainSpinBox->value()));
 }

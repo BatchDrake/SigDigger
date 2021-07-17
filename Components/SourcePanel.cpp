@@ -20,6 +20,7 @@
 
 #include "SourcePanel.h"
 #include "ui_SourcePanel.h"
+#include <SuWidgetsHelpers.h>
 
 #include <QFileDialog>
 
@@ -38,25 +39,35 @@ SourcePanelConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(throttle);
   LOAD(throttleRate);
-  LOAD(captureFolder);
   LOAD(dcRemove);
   LOAD(iqRev);
   LOAD(agcEnabled);
+
+  try {
+    Suscan::Object field = conf.getField("DataSaverConfig");
+    this->dataSaverConfig->deserialize(field);
+  } catch (Suscan::Exception const &) {
+
+  }
 }
 
 Suscan::Object &&
 SourcePanelConfig::serialize(void)
 {
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+  Suscan::Object dataSaverConfig;
 
   obj.setClass("SourcePanelConfig");
 
   STORE(throttle);
   STORE(throttleRate);
-  STORE(captureFolder);
   STORE(dcRemove);
   STORE(iqRev);
   STORE(agcEnabled);
+
+  dataSaverConfig = this->dataSaverConfig->serialize();
+
+  obj.setField("DataSaverConfig", dataSaverConfig);
 
   return this->persist(obj);
 }
@@ -70,6 +81,9 @@ SourcePanel::SourcePanel(QWidget *parent) :
 
   this->saverUI = new DataSaverUI(this);
   this->ui->dataSaverGrid->addWidget(this->saverUI);
+  this->ui->throttleSpin->setUnits("sps");
+  this->ui->throttleSpin->setMinimum(0);
+
   this->assertConfig();
   this->connectAll();
 }
@@ -85,15 +99,9 @@ SourcePanel::connectAll(void)
 
   connect(
         this->ui->throttleSpin,
-        SIGNAL(valueChanged(int)),
+        SIGNAL(valueChanged(qreal)),
         this,
         SLOT(onThrottleChanged(void)));
-
-  connect(
-        this->saverUI,
-        SIGNAL(recordSavePathChanged(QString)),
-        this,
-        SLOT(onChangeSavePath()));
 
   connect(
         this->saverUI,
@@ -148,44 +156,81 @@ SourcePanel::connectAll(void)
         SIGNAL(valueChanged(qreal)),
         this,
         SLOT(onBandwidthChanged(void)));
+
+  connect(
+        this->ui->ppmSpinBox,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onPPMChanged(void)));
 }
 
-static QString
-formatSampleRate(unsigned int rate)
+void
+SourcePanel::populateAntennaCombo(Suscan::AnalyzerSourceInfo const &info)
 {
-  if (rate < 1000)
-    return QString::number(rate) + " sps";
-  else if (rate < 1000000)
-    return QString::number(rate / 1e3) + " ksps";
+  int index = 0;
+  int i = 0;
+  QComboBox *combo = this->ui->antennaCombo;
+  std::vector<std::string> antennaList;
 
-  return QString::number(rate / 1e6) + " Msps";
+  combo->clear();
+
+  info.getAntennaList(antennaList);
+
+  if (antennaList.empty()) {
+    this->ui->antennaCombo->hide();
+    this->ui->antennaLabel->hide();
+  } else {
+    this->ui->antennaCombo->show();
+    this->ui->antennaLabel->show();
+    for (auto p : antennaList) {
+      combo->addItem(QString::fromStdString(p));
+
+      if (info.getAntenna() == p)
+        index = i;
+
+      ++i;
+    }
+
+    combo->setCurrentIndex(index);
+  }
+}
+
+QString
+SourcePanel::formatSampleRate(unsigned int rate)
+{
+  return SuWidgetsHelpers::formatQuantity(rate, 4, "sp/s");
 }
 
 void
 SourcePanel::refreshUi()
 {
-  if (this->profile != nullptr)
+  if (this->profile != nullptr) {
     this->setThrottleable(this->profile->getType() != SUSCAN_SOURCE_TYPE_SDR);
 
-  this->ui->antennaCombo->setEnabled(
-        this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
+    this->ui->antennaCombo->setEnabled(
+          this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
+
+    this->ui->ppmSpinBox->setEnabled(
+          this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR
+          || this->profile->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE);
+
+    this->saverUI->setEnabled(
+          this->profile->getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE);
+  }
 }
 
 void
 SourcePanel::selectAntenna(std::string const &name)
 {
-  int count;
+  int index;
+  QString qNam = QString::fromStdString(name);
 
-  count = this->ui->antennaCombo->count();
+  if ((index = this->ui->antennaCombo->findText(qNam)) == -1) {
+    index = this->ui->antennaCombo->count();
+    this->ui->antennaCombo->addItem(qNam);
+  }
 
-  for (auto i = 0; i < count; ++i)
-    if (this->ui->antennaCombo->itemText(i).toStdString() == name) {
-      this->ui->antennaCombo->setCurrentIndex(i);
-      return;
-    }
-
-  this->ui->antennaCombo->addItem(QString::fromStdString(name));
-  this->ui->antennaCombo->setCurrentIndex(count);
+  this->ui->antennaCombo->setCurrentIndex(index);
 }
 
 void
@@ -207,8 +252,6 @@ SourcePanel::setSampleRate(unsigned int rate)
 
     if (step >= 10.f)
       step /= 10.f;
-
-    this->ui->bwSpin->setSingleStep(static_cast<int>(step));
   }
 }
 
@@ -252,9 +295,17 @@ SourcePanel::setBandwidth(float bw)
 }
 
 void
+SourcePanel::setPPM(float ppm)
+{
+  this->ui->ppmSpinBox->setValue(static_cast<qreal>(ppm));
+}
+
+void
 SourcePanel::setProfile(Suscan::Source::Config *config)
 {
   SUFLOAT bw;
+  bool oldRefreshing = this->refreshing;
+  this->refreshing = true;
 
   this->profile = config;
   this->refreshGains(*config);
@@ -265,16 +316,30 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
         *config,
         this->ui->antennaCombo);
 
+  if (this->ui->antennaCombo->count() == 0
+      || config->getType() != SUSCAN_SOURCE_TYPE_SDR
+      || config->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
+    this->ui->antennaCombo->hide();
+    this->ui->antennaLabel->hide();
+  } else {
+    this->ui->antennaCombo->show();
+    this->ui->antennaLabel->show();
+  }
+
   this->selectAntenna(config->getAntenna());
-  this->setSampleRate(config->getSampleRate());
+  this->setSampleRate(config->getDecimatedSampleRate());
+  this->setDCRemove(config->getDCRemove());
 
   bw = this->profile->getBandwidth();
   if (SU_ABS(bw) < 1e-6f)
-    bw = config->getSampleRate();
+    bw = config->getDecimatedSampleRate();
 
   this->setBandwidth(bw);
+  this->setPPM(this->profile->getPPM());
 
   this->refreshUi();
+
+  this->refreshing = oldRefreshing;
 }
 
 void
@@ -287,12 +352,12 @@ SourcePanel::setThrottleable(bool val)
 
   this->ui->throttleSpin->setEnabled(this->ui->throttleCheck->isChecked());
   this->ui->bwSpin->setEnabled(!val);
-  this->saverUI->setEnabled(!val);
 }
 
 DeviceGain *
 SourcePanel::lookupGain(std::string const &name)
 {
+  // Why is this? Use a map instead.
   for (auto p = this->gainControls.begin();
        p != this->gainControls.end();
        ++p) {
@@ -406,6 +471,58 @@ SourcePanel::refreshGains(Suscan::Source::Config &config)
 }
 
 void
+SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
+{
+  std::vector<Suscan::Source::GainDescription> gains;
+  DeviceGain *gain = nullptr;
+  bool oldRefreshing = this->refreshing;
+
+  this->refreshing = true;
+
+  this->setDCRemove(info.getDCRemove());
+  this->setIQReverse(info.getIQReverse());
+  this->setAGCEnabled(info.getAGC());
+  this->setBandwidth(info.getBandwidth());
+
+  // Populate antennas
+  populateAntennaCombo(info);
+
+  // What if SoapySDR lies? We consider the case in which the antenna is
+  // not reported in the antenna list
+  this->selectAntenna(info.getAntenna());
+
+  // Create gains
+  this->clearGains();
+
+  info.getGainInfo(gains);
+
+  for (auto p: gains) {
+    gain = new DeviceGain(nullptr, p);
+    this->gainControls.push_back(gain);
+    this->ui->gainGridLayout->addWidget(
+          gain,
+          static_cast<int>(this->gainControls.size() - 1),
+          0,
+          1,
+          1);
+
+    connect(
+          gain,
+          SIGNAL(gainChanged(QString, float)),
+          this,
+          SLOT(onGainChanged(QString, float)));
+    gain->setGain(p.getDefault());
+  }
+
+  if (this->gainControls.size() == 0)
+    this->ui->gainsFrame->hide();
+  else
+    this->ui->gainsFrame->show();
+
+  this->refreshing = oldRefreshing;
+}
+
+void
 SourcePanel::applyCurrentAutogain(void)
 {
   if (this->currentAutoGain != nullptr) {
@@ -428,20 +545,26 @@ SourcePanel::applyCurrentAutogain(void)
 Suscan::Serializable *
 SourcePanel::allocConfig(void)
 {
-  return this->panelConfig = new SourcePanelConfig();
+  this->panelConfig = new SourcePanelConfig();
+  this->panelConfig->dataSaverConfig = this->saverUI->allocConfig();
+
+  return this->panelConfig;
 }
 
 void
 SourcePanel::applyConfig(void)
 {
+  this->loadingConfig = true;
+
   this->ui->throttleCheck->setChecked(this->panelConfig->throttle);
   this->ui->dcRemoveCheck->setChecked(this->panelConfig->dcRemove);
   this->ui->swapIQCheck->setChecked(this->panelConfig->iqRev);
   this->ui->agcEnabledCheck->setChecked(this->panelConfig->agcEnabled);
   this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
-  if (this->panelConfig->captureFolder.size() == 0)
-    this->panelConfig->captureFolder = QDir::currentPath().toStdString();
-  this->setSavePath(this->panelConfig->captureFolder);
+
+  this->saverUI->applyConfig();
+
+  this->loadingConfig = false;
 }
 
 void
@@ -515,20 +638,22 @@ SourcePanel::getBandwidth(void) const
   return static_cast<float>(this->ui->bwSpin->value());
 }
 
+float
+SourcePanel::getPPM(void) const
+{
+  return static_cast<float>(this->ui->ppmSpinBox->value());
+}
+
 ////////////////////////////////// Slots /////////////////////////////////////
 void
 SourcePanel::onGainChanged(QString name, float val)
 {
   // TODO: Config gain in dialog
 
-  this->setAGCEnabled(false);
-  emit gainChanged(name, val);
-}
-
-void
-SourcePanel::onChangeSavePath(void)
-{
-  this->panelConfig->captureFolder = this->saverUI->getRecordSavePath();
+  if (!this->refreshing) {
+    this->setAGCEnabled(false);
+    emit gainChanged(name, val);
+  }
 }
 
 void
@@ -540,20 +665,30 @@ SourcePanel::onRecordStartStop(void)
 void
 SourcePanel::onThrottleChanged(void)
 {
-  bool throttling = this->ui->throttleCheck->isChecked();
+  if (!this->loadingConfig) {
+    bool throttling = this->ui->throttleCheck->isChecked();
 
-  this->panelConfig->throttle = throttling;
-  this->panelConfig->throttleRate = static_cast<unsigned>(this->ui->throttleSpin->value());
+    this->panelConfig->throttle = throttling;
+    this->panelConfig->throttleRate = static_cast<unsigned>(this->ui->throttleSpin->value());
 
-  this->ui->throttleSpin->setEnabled(throttling);
+    this->ui->throttleSpin->setEnabled(throttling);
 
-  emit throttleConfigChanged();
+    emit throttleConfigChanged();
+  }
 }
 
 void
 SourcePanel::onBandwidthChanged(void)
 {
-  emit bandwidthChanged();
+  if (!this->refreshing)
+    emit bandwidthChanged();
+}
+
+void
+SourcePanel::onPPMChanged(void)
+{
+  if (!this->refreshing)
+    emit ppmChanged();
 }
 
 void
@@ -588,26 +723,33 @@ SourcePanel::onSelectAutoGain(void)
 void
 SourcePanel::onToggleDCRemove(void)
 {
-  this->setDCRemove(this->ui->dcRemoveCheck->isChecked());
-  emit toggleDCRemove();
+  if (!this->refreshing) {
+    this->setDCRemove(this->ui->dcRemoveCheck->isChecked());
+    emit toggleDCRemove();
+  }
 }
 
 void
 SourcePanel::onToggleIQReverse(void)
 {
-  this->setIQReverse(this->ui->swapIQCheck->isChecked());
-  emit toggleIQReverse();
+  if (!this->refreshing) {
+    this->setIQReverse(this->ui->swapIQCheck->isChecked());
+    emit toggleIQReverse();
+  }
 }
 
 void
 SourcePanel::onToggleAGCEnabled(void)
 {
-  this->setAGCEnabled(this->ui->agcEnabledCheck->isChecked());
-  emit toggleAGCEnabled();
+  if (!this->refreshing) {
+    this->setAGCEnabled(this->ui->agcEnabledCheck->isChecked());
+    emit toggleAGCEnabled();
+  }
 }
 
 void
 SourcePanel::onAntennaChanged(int i)
 {
-  emit antennaChanged(this->ui->antennaCombo->itemText(i));
+  if (!this->refreshing)
+    emit antennaChanged(this->ui->antennaCombo->itemText(i));
 }

@@ -4,23 +4,14 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = SigDigger
 TEMPLATE = app
 
-# The following define makes your compiler emit warnings if you use
-# any feature of Qt which has been marked as deprecated (the exact warnings
-# depend on your compiler). Please consult the documentation of the
-# deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
-
-# You can also make your code fail to compile if you use deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
   QMAKE_CXXFLAGS += -std=gnu++14
@@ -28,8 +19,9 @@ equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
   CONFIG += c++14
 }
 
-CONFIG(release, debug|release): QMAKE_CXXFLAGS=-D__FILENAME__=\\\"SigDigger\\\"
-CONFIG(debug, debug|release):   QMAKE_CXXFLAGS=-D__FILENAME__=__FILE__
+CONFIG(release, debug|release): QMAKE_CXXFLAGS+=-D__FILENAME__=\\\"SigDigger\\\"
+CONFIG(debug, debug|release):   QMAKE_CXXFLAGS+=-D__FILENAME__=__FILE__
+CONFIG(release, debug|release): QMAKE_LFLAGS+=-s
 
 isEmpty(SUWIDGETS_PREFIX) {
   SUWIDGETS_INSTALL_LIBS=$$[QT_INSTALL_LIBS]
@@ -39,13 +31,26 @@ isEmpty(SUWIDGETS_PREFIX) {
   SUWIDGETS_INSTALL_HEADERS=$$SUWIDGETS_PREFIX/include/SuWidgets
 }
 
-isEmpty(SIGDIGGER_PREFIX) {
-  # Default rules for deployment.
-  qnx: target.path = /tmp/$${TARGET}/bin
-  else: unix:!android: target.path = /opt/$${TARGET}/bin
-} else {
-  target.path=$$SIGDIGGER_PREFIX/bin
+isEmpty(PREFIX) {
+  PREFIX=/usr/local
 }
+
+target.path=$$PREFIX/bin
+
+!isEmpty(PKGVERSION) {
+  QMAKE_CXXFLAGS += "-DSIGDIGGER_PKGVERSION='\""$$PKGVERSION"\"'"
+}
+
+darwin: ICON = icons/SigDigger.icns
+darwin: QMAKE_RPATHDIR += $$SUWIDGETS_INSTALL_LIBS
+datwin: QMAKE_RPATHDIR += /usr/local/lib
+
+unix:  QMAKE_SUBSTITUTES += SigDigger.desktop.in RMSViewer.desktop.in
+unix:  desktop.path  = $$PREFIX/share/applications
+unix:  desktop.files = SigDigger.desktop RMSViewer.desktop
+unix:  icons.path    = $$PREFIX/share/icons/hicolor/256x256/apps/
+unix:  icons.files   = icons/SigDigger.png
+unix:  INSTALLS     += desktop icons
 
 INCLUDEPATH += $$PWD/include $$SUWIDGETS_INSTALL_HEADERS
 SOURCES += \
@@ -53,23 +58,32 @@ SOURCES += \
     App/Application.cpp \
     App/AppUI.cpp \
     App/ColorConfig.cpp \
+    App/GuiConfig.cpp \
     App/Loader.cpp \
+    Audio/AudioFileSaver.cpp \
     Audio/AudioPlayback.cpp \
+    Audio/GenericAudioPlayer.cpp \
     Components/AboutDialog.cpp \
     Components/AudioPanel.cpp \
     Components/ConfigDialog.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
+    Components/DopplerDialog.cpp \
     Components/FftPanel.cpp \
     Components/GainSlider.cpp \
+    Components/GenericDataSaverUI.cpp \
+    Components/HistogramDialog.cpp \
     Components/InspectorPanel.cpp \
     Components/MainSpectrum.cpp \
     Components/MainWindow.cpp \
     Components/PersistentWidget.cpp \
+    Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
+    Components/TimeWindow.cpp \
     Inspector/Inspector.cpp \
     Inspector/InspectorUI.cpp \
+    Inspector/TVProcessorWorker.cpp \
     InspectorCtl/AfcControl.cpp \
     InspectorCtl/AskControl.cpp \
     InspectorCtl/ClockRecovery.cpp \
@@ -82,6 +96,8 @@ SOURCES += \
     Misc/Averager.cpp \
     Misc/Palette.cpp \
     Misc/SNREstimator.cpp \
+    Misc/SigDiggerHelpers.cpp \
+    Suscan/CancellableTask.cpp \
     Suscan/Messages/ChannelMessage.cpp \
     Suscan/Messages/GenericMessage.cpp \
     Suscan/Messages/InspectorMessage.cpp \
@@ -95,12 +111,21 @@ SOURCES += \
     Suscan/Logger.cpp \
     Suscan/Message.cpp \
     Suscan/MQ.cpp \
+    Suscan/Messages/SourceInfoMessage.cpp \
+    Suscan/Messages/StatusMessage.cpp \
+    Suscan/MultitaskController.cpp \
     Suscan/Object.cpp \
     Suscan/Serializable.cpp \
     Suscan/Source.cpp \
+    Tasks/CarrierDetector.cpp \
+    Tasks/CarrierXlator.cpp \
+    Tasks/DopplerCalculator.cpp \
+    Tasks/HistogramFeeder.cpp \
+    Tasks/WaveSampler.cpp \
     UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
+    UIMediator/PanoramicDialogMediator.cpp \
     UIMediator/SourceMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
     UIMediator/UIMediator.cpp \
@@ -112,10 +137,41 @@ SOURCES += \
     Components/NetForwarderUI.cpp \
     Components/WaitingSpinnerWidget.cpp \
     Components/DeviceDialog.cpp \
-    UIMediator/DeviceDialogMediator.cpp
+    UIMediator/DeviceDialogMediator.cpp \
+    Components/PanoramicDialog.cpp \
+    Panoramic/Scanner.cpp \
+    Components/RMSViewer.cpp \
+    Components/RMSViewTab.cpp \
+    Components/RMSViewerSettingsDialog.cpp \
+    Components/LogDialog.cpp \
+    Inspector/TVProcessorTab.cpp \
+    Inspector/SymViewTab.cpp \
+    Inspector/WaveformTab.cpp \
+    Misc/MultitaskControllerModel.cpp \
+    Components/BackgroundTasksDialog.cpp \
+    Tasks/ExportSamplesTask.cpp \
+    Components/AddBookmarkDialog.cpp \
+    Misc/BookmarkTableModel.cpp \
+    Components/BookmarkManagerDialog.cpp \
+    Misc/TableDelegates.cpp
 
 
 HEADERS += \
+    include/AlsaPlayer.h \
+    include/AudioFileSaver.h \
+    include/CarrierDetector.h \
+    include/CarrierXlator.h \
+    include/DopplerCalculator.h \
+    include/DopplerDialog.h \
+    include/GenericAudioPlayer.h \
+    include/GenericDataSaverUI.h \
+    include/HistogramDialog.h \
+    include/HistogramFeeder.h \
+    include/PortAudioPlayer.h \
+    include/SamplerDialog.h \
+    include/SamplingProperties.h \
+    include/SigDiggerHelpers.h \
+    include/Suscan/CancellableTask.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \
     include/Suscan/Messages/InspectorMessage.h \
@@ -123,7 +179,6 @@ HEADERS += \
     include/Suscan/Messages/SamplesMessage.h \
     include/Suscan/Analyzer.h \
     include/Suscan/AnalyzerParams.h \
-    include/Suscan/AutoGain_copy.h \
     include/Suscan/Channel.h \
     include/Suscan/Compat.h \
     include/Suscan/Config.h \
@@ -132,6 +187,9 @@ HEADERS += \
     include/Suscan/Logger.h \
     include/Suscan/Message.h \
     include/Suscan/MQ.h \
+    include/Suscan/Messages/SourceInfoMessage.h \
+    include/Suscan/Messages/StatusMessage.h \
+    include/Suscan/MultitaskController.h \
     include/Suscan/Object.h \
     include/Suscan/Serializable.h \
     include/Suscan/Source.h \
@@ -169,6 +227,8 @@ HEADERS += \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
     include/SourcePanel.h \
+    include/TVProcessorWorker.h \
+    include/TimeWindow.h \
     include/ToneControl.h \
     include/UIMediator.h \
     include/EstimatorControl.h \
@@ -176,8 +236,26 @@ HEADERS += \
     include/FileDataSaver.h \
     include/SocketForwarder.h \
     include/NetForwarderUI.h \
+    include/Version.h \
     include/WaitingSpinnerWidget.h \
-    include/DeviceDialog.h
+    include/DeviceDialog.h \
+    include/PanoramicDialog.h \
+    include/Scanner.h \
+    include/WaveSampler.h \
+    include/RMSViewer.h \
+    include/RMSViewTab.h \
+    include/RMSViewerSettingsDialog.h \
+    include/LogDialog.h \
+    include/TVProcessorTab.h \
+    include/SymViewTab.h \
+    include/WaveformTab.h \
+    include/MultitaskControllerModel.h \
+    include/BackgroundTasksDialog.h \
+    include/ExportSamplesTask.h \
+    include/AddBookmarkDialog.h \
+    include/BookmarkTableModel.h \
+    include/BookmarkManagerDialog.h \
+    include/TableDelegates.h
 
 
 FORMS += \
@@ -189,21 +267,36 @@ FORMS += \
     ui/Config.ui \
     ui/DataSaverUI.ui \
     ui/DeviceGain.ui \
+    ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
     ui/FftPanel.ui \
     ui/GainControl.ui \
     ui/GainSlider.ui \
+    ui/HistogramDialog.ui \
     ui/Inspector.ui \
     ui/InspectorPanel.ui \
     ui/MainSpectrum.ui \
     ui/MainWindow.ui \
     ui/MfControl.ui \
+    ui/SamplerDialog.ui \
     ui/SourcePanel.ui \
+    ui/TimeWindow.ui \
     ui/ToneControl.ui \
     ui/SaveProfileDialog.ui \
     ui/EstimatorControl.ui \
     ui/NetForwarderUI.ui \
-    ui/DeviceDialog.ui
+    ui/DeviceDialog.ui \
+    ui/PanoramicDialog.ui \
+    ui/RMSViewer.ui \
+    ui/RMSViewTab.ui \
+    ui/RMSViewerSettingsDialog.ui \
+    ui/LogDialog.ui \
+    ui/TVProcessorTab.ui \
+    ui/SymViewTab.ui \
+    ui/WaveformTab.ui \
+    ui/BackgroundTasksDialog.ui \
+    ui/AddBookmarkDialog.ui \
+    ui/BookmarkManagerDialog.ui
 
 !isEmpty(target.path): INSTALLS += target
 
@@ -211,11 +304,26 @@ RESOURCES += \
     icons/Icons.qrc
 
 unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += suscan
+unix: PKGCONFIG += suscan fftw3f
 
-packagesExist(alsa) {
+packagesExist(volk) {
+  PKGCONFIG += volk
+}
+  
+# Sound API detection. We first check for system-specific audio libraries,
+# which tend to be the faster ones. If they are not available, fallback
+# to PortAudio.
+
+packagesExist(alsa):!freebsd {
   PKGCONFIG += alsa
+  SOURCES += Audio/AlsaPlayer.cpp
   DEFINES += SIGDIGGER_HAVE_ALSA
+} else {
+  packagesExist(portaudio-2.0) {
+    PKGCONFIG += portaudio-2.0
+    SOURCES += Audio/PortAudioPlayer.cpp
+    DEFINES += SIGDIGGER_HAVE_PORTAUDIO
+  }
 }
 
 unix: LIBS += -L$$SUWIDGETS_INSTALL_LIBS -lsuwidgets
@@ -231,4 +339,8 @@ DISTFILES += \
     icons/select-source.png \
     icons/splash.png \
     icons/start-capture.png \
-    icons/splash.xcf
+    icons/splash.xcf \
+    icons/start.png \
+    icons/stop.png \
+    icons/online.png \
+    icons/offline.png

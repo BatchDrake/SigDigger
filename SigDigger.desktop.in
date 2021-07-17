@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=SigDigger
+Comment=The Free Digital Signal Analyzer
+Exec=$$target.path/SigDigger
+Icon=SigDigger
+Categories=HamRadio;

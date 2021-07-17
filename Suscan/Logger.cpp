@@ -1,5 +1,5 @@
 //
-//    filename: description
+//    Logger.cpp: Sigutils logger wrapper
 //    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,8 @@
 
 #include <Suscan/Logger.h>
 
+Q_DECLARE_METATYPE(Suscan::LoggerMessage);
+
 using namespace Suscan;
 
 Logger *Logger::instance = nullptr;
@@ -31,13 +33,15 @@ Logger::log_func(void *privdata, const struct sigutils_log_message *message)
   logger->push(message);
 }
 
-Logger::Logger(void)
+Logger::Logger(void) : QObject()
 {
   struct sigutils_log_config config;
 
   config.priv = this;
   config.exclusive = SU_FALSE;
   config.log_func = log_func;
+
+  qRegisterMetaType<Suscan::LoggerMessage>();
 
   su_log_init(&config);
 }
@@ -55,14 +59,16 @@ Logger::push(const struct sigutils_log_message *message)
   msg.function = std::string(message->function);
   msg.message  = std::string(message->message);
 
-  std::lock_guard<std::mutex>(this->mutex);
+  emit messageEmitted(msg);
+
+  std::lock_guard<std::mutex> lock(this->mutex);
   this->messages.push_back(std::move(msg));
 }
 
 void
 Logger::flush(void)
 {
-  std::lock_guard<std::mutex>(this->mutex);
+  std::lock_guard<std::mutex> lock(this->mutex);
   this->messages.clear();
 }
 
@@ -97,4 +103,9 @@ std::vector<LoggerMessage>::const_iterator
 Logger::end(void)
 {
   return this->messages.end();
+}
+
+Logger::~Logger(void)
+{
+
 }

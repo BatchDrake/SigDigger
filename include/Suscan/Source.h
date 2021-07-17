@@ -26,6 +26,8 @@
 #include <Suscan/Object.h>
 #include <analyzer/source.h>
 
+struct suscan_analyzer_gain_info;
+
 namespace Suscan {
   class Source
   {
@@ -52,6 +54,7 @@ namespace Suscan {
 
   public:
     GainDescription(const struct suscan_source_gain_desc *desc);
+    GainDescription(const struct suscan_analyzer_gain_info *info);
 
     std::string
     getName(void) const
@@ -85,9 +88,13 @@ namespace Suscan {
   };
 
   class Source::Device {
-    const suscan_source_device_t *instance; // Always borrowed
+    suscan_source_device_t *owned = nullptr; // owned device
+    const suscan_source_device_t *instance;  // Device pointer
     std::vector<std::string> antennas;
     std::vector<Source::GainDescription> gains;
+    std::vector<double> rates;
+    SUFREQ freqMin = 0;
+    SUFREQ freqMax = 0;
 
     friend class Config;
 
@@ -95,14 +102,27 @@ namespace Suscan {
     Device(); // Dummy constructor because Qt wants it
     Device(const Device &dev);
     Device(Device &&rv);
+    Device(
+        const std::string &name,
+        const std::string &host,
+        uint16_t port,
+        const std::string &user = "",
+        const std::string &password = "");
     Device(const suscan_source_device_t *dev, unsigned int channel);
+
+    ~Device();
     void setDevice(const suscan_source_device_t *dev, unsigned int channel);
 
     Device &
     operator = (const Device &dev)
     {
       if (this != &dev) {
-        this->setDevice(dev.instance, 0);
+        if (dev.owned != nullptr) {
+          SU_ATTEMPT(this->owned = suscan_source_device_dup(dev.owned));
+          this->setDevice(this->owned, 0);
+        } else {
+          this->setDevice(dev.instance, 0);
+        }
       }
 
       return *this;
@@ -113,10 +133,18 @@ namespace Suscan {
     {
       if (this != &dev) {
         std::swap(this->instance, dev.instance);
+        std::swap(this->owned,    dev.owned);
         std::swap(this->antennas, dev.antennas);
+        std::swap(this->rates,    dev.rates);
         std::swap(this->gains,    dev.gains);
       }
       return *this;
+    }
+
+    bool
+    operator == (const Device &dev) const
+    {
+      return this->equals(dev);
     }
 
     const suscan_source_device_t *
@@ -135,6 +163,34 @@ namespace Suscan {
     equals(const Device &dev) const
     {
       return this->instance == dev.instance;
+    }
+
+    bool
+    getParam(std::string const &key, std::string &val) const
+    {
+      const char *result;
+
+      if (this->instance == nullptr)
+        return false;
+
+
+      if ((result = suscan_source_device_get_param(
+             this->instance,
+             key.c_str())) == nullptr)
+        return false;
+
+      val = result;
+
+      return true;
+    }
+
+    const char *
+    getParam(std::string const &key) const
+    {
+      if (this->instance == nullptr)
+        return nullptr;
+
+      return suscan_source_device_get_param(this->instance, key.c_str());
     }
 
     std::string
@@ -170,6 +226,15 @@ namespace Suscan {
     }
 
     bool
+    isRemote(void) const
+    {
+      if (this->instance == nullptr)
+        return false;
+
+      return suscan_source_device_is_remote(this->instance);
+    }
+
+    bool
     isAvailable(void) const
     {
       if (this->instance == nullptr)
@@ -189,6 +254,16 @@ namespace Suscan {
       return this->antennas.end();
     }
 
+    std::vector<std::string>::const_iterator
+    findAntenna(std::string const &antenna) const
+    {
+      for (auto p = this->getFirstAntenna(); p != this->getLastAntenna(); ++p)
+        if (*p == antenna)
+          return p;
+
+      return this->getLastAntenna();
+    }
+
     std::vector<Source::GainDescription>::const_iterator
     getFirstGain(void) const
     {
@@ -201,6 +276,29 @@ namespace Suscan {
       return this->gains.end();
     }
 
+    std::vector<double>::const_iterator
+    getFirstSampRate(void) const
+    {
+      return this->rates.begin();
+    }
+
+    std::vector<double>::const_iterator
+    getLastSampRate(void) const
+    {
+      return this->rates.end();
+    }
+
+    SUFREQ
+    getMinFreq(void) const
+    {
+      return this->freqMin;
+    }
+
+    SUFREQ
+    getMaxFreq(void) const
+    {
+      return this->freqMax;
+    }
   };
 
   class Source::Config {
@@ -217,15 +315,20 @@ namespace Suscan {
     std::string label(void) const;
     SUFREQ getFreq(void) const;
     SUFREQ getLnbFreq(void) const;
-    unsigned int getSampleRate() const;
+    unsigned int getSampleRate(void) const;
+    unsigned int getDecimatedSampleRate(void) const;
+    unsigned int getDecimation(void) const;
     enum suscan_source_type getType(void) const;
     bool getLoop(void) const;
     std::string getPath(void) const;
     std::string getAntenna(void) const;
     bool getDCRemove(void) const;
     bool getIQBalance(void) const;
+    std::string getInterface(void) const;
     SUFLOAT getBandwidth(void) const;
     SUFLOAT getGain(const std::string &) const;
+    std::string getParam(const std::string &key) const;
+    SUFLOAT getPPM(void) const;
 
     const Source::Device &getDevice(void);
     enum suscan_source_format getFormat(void) const;
@@ -241,9 +344,13 @@ namespace Suscan {
     void setLabel(const std::string &);
     void setPath(const std::string &);
     void setSampleRate(unsigned int value);
+    void setDecimation(unsigned int);
     void setDevice(const Source::Device &dev);
     void setGain(const std::string &, SUFLOAT);
-    void setAntenna(const std::string &);
+    void setAntenna(const std::string &);    
+    void setInterface(std::string const &interface);
+    void setParam(std::string const &key, std::string const &param);
+    void setPPM(SUFLOAT);
 
     Config& operator=(const Config &);
     Config& operator=(Config &&);
@@ -257,6 +364,8 @@ namespace Suscan {
     Config(Config &&);
     Config(enum suscan_source_type type, enum suscan_source_format format);
     ~Config();
+
+    static Source::Config wrap(suscan_source_config_t *config);
   };
 };
 

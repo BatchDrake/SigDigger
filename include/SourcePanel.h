@@ -34,13 +34,13 @@ namespace Ui {
 namespace SigDigger {
   class SourcePanelConfig : public Suscan::Serializable {
     public:
+      Suscan::Serializable *dataSaverConfig = nullptr;
       bool throttle = false;
       bool dcRemove = false;
       bool iqRev = false;
       bool agcEnabled = false;
 
       unsigned int throttleRate = 196000;
-      std::string captureFolder;
 
       // Overriden methods
       void deserialize(Suscan::Object const &conf) override;
@@ -50,6 +50,8 @@ namespace SigDigger {
   class SourcePanel : public PersistentWidget
   {
       Q_OBJECT
+
+      bool refreshing = false;
 
     public:
       enum State {
@@ -77,6 +79,7 @@ namespace SigDigger {
       bool throttleable = false;
       std::vector<AutoGain> *currAutoGainSet;
       AutoGain *currentAutoGain = nullptr;
+      bool loadingConfig = false;
 
       // Private methods
       DeviceGain *lookupGain(std::string const &name);
@@ -87,10 +90,14 @@ namespace SigDigger {
       void applyCurrentAutogain(void);
       void selectAntenna(std::string const &name);
       void setBandwidth(float bw);
+      void setPPM(float ppm);
+      void populateAntennaCombo(Suscan::AnalyzerSourceInfo const &info);
       void connectAll(void);
       void refreshUi(void);
 
     public:
+      static QString formatSampleRate(unsigned int rate);
+
       // Inlined methods
       enum State
       getState(void) const
@@ -101,7 +108,7 @@ namespace SigDigger {
       std::string
       getRecordSavePath(void) const
       {
-        return this->panelConfig->captureFolder;
+        return this->saverUI->getRecordSavePath();
       }
 
       bool
@@ -152,7 +159,7 @@ namespace SigDigger {
       void setProfile(Suscan::Source::Config *);
       void setSampleRate(unsigned int rate);
       void setProcessRate(unsigned int rate);
-
+      void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
       void setGain(std::string const &name, SUFLOAT val);
 
       void setCaptureSize(quint64);
@@ -160,7 +167,6 @@ namespace SigDigger {
       void setIORate(qreal);
       void setRecordState(bool state);
       void setSavePath(std::string const &path);
-      void setState(enum State state);
       void setDCRemove(bool remove);
       void setIQReverse(bool rev);
       void setAGCEnabled(bool enabled);
@@ -169,6 +175,7 @@ namespace SigDigger {
       bool getRecordState(void) const;
       std::string getAntenna(void) const;
       float getBandwidth(void) const;
+      float getPPM(void) const;
 
       // Overriden methods
       Suscan::Serializable *allocConfig(void) override;
@@ -183,11 +190,11 @@ namespace SigDigger {
       void toggleIQReverse(void);
       void toggleAGCEnabled(void);
       void bandwidthChanged(void);
+      void ppmChanged(void);
 
     public slots:
       void onGainChanged(QString name, float val);
       void onAntennaChanged(int);
-      void onChangeSavePath(void);
       void onRecordStartStop(void);
       void onSelectAutoGain(void);
       void onToggleAutoGain(void);
@@ -197,6 +204,7 @@ namespace SigDigger {
       void onToggleIQReverse(void);
       void onToggleAGCEnabled(void);
       void onBandwidthChanged(void);
+      void onPPMChanged(void);
   };
 };
 

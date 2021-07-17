@@ -20,7 +20,7 @@
 
 #include "MfControl.h"
 #include "ui_MfControl.h"
-#include <suscan/analyzer/inspector/params.h>
+#include <analyzer/inspector/params.h>
 
 using namespace SigDigger;
 

@@ -6,10 +6,16 @@
 #include <QObject>
 #include <QColor>
 
-#define SIGDIGGER_DEFAULT_FOREGROUND QColor(183, 232, 105, 255)
-#define SIGDIGGER_DEFAULT_BACKGROUND QColor(29, 29, 31, 255)
-#define SIGDIGGER_DEFAULT_AXES       QColor(128, 128, 128, 255)
-#define SIGDIGGER_DEFAULT_TEXT       QColor(255, 255, 255, 255)
+#define SIGDIGGER_DEFAULT_FOREGROUND QColor("#3ed180")
+#define SIGDIGGER_DEFAULT_BACKGROUND QColor("#070d0c")
+#define SIGDIGGER_DEFAULT_AXES       QColor("#152d2b")
+#define SIGDIGGER_DEFAULT_TEXT       QColor("#ffffff")
+#define SIGDIGGER_DEFAULT_SELECTION  QColor("#152d2b")
+#define SIGDIGGER_DEFAULT_FILTER_BOX QColor("#327d54")
+
+#define SIGDIGGER_DEFAULT_SV_FG_HI   QColor("#ffffff")
+#define SIGDIGGER_DEFAULT_SV_FG_LO   QColor("#000000")
+#define SIGDIGGER_DEFAULT_SV_BG      QColor("#134529")
 
 namespace SigDigger {
   class ColorConfig : public Suscan::Serializable
@@ -31,6 +37,11 @@ namespace SigDigger {
       QColor histogramBackground;
       QColor histogramAxes;
       QColor histogramModel;
+      QColor symViewLow;
+      QColor symViewHigh;
+      QColor symViewBackground;
+      QColor filterBox;
+      QColor selection;
 
       ColorConfig();
       ColorConfig(Suscan::Object const &conf);

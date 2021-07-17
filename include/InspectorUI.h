@@ -21,10 +21,13 @@
 #define INSPECTORUI_H
 
 #include <QWidget>
+#include <QVector>
+#include <QThread>
 #include <memory>
 #include <map>
 #include <InspectorCtl.h>
 #include <Suscan/SpectrumSource.h>
+#include <Suscan/Library.h>
 #include <Suscan/Estimator.h>
 #include <SNREstimator.h>
 #include <sys/time.h>
@@ -38,6 +41,10 @@
 #include "FileDataSaver.h"
 #include "EstimatorControl.h"
 #include "NetForwarderUI.h"
+
+#include "SymViewTab.h"
+#include "TVProcessorTab.h"
+#include "WaveformTab.h"
 
 namespace Ui {
   class Inspector;
@@ -60,12 +67,12 @@ namespace SigDigger {
     unsigned int basebandSampleRate;
     float sampleRate;
 
-    bool scrolling = false;
-    bool demodulating = true;
     bool recording = false;
     bool forwarding = false;
+    bool adjusting = false;
 
     unsigned int recordingRate = 0;
+
     // Inspector config
     Suscan::Config *config; // Weak
     QWidget *owner;
@@ -74,15 +81,17 @@ namespace SigDigger {
     unsigned int bps = 0;
     Decider decider;
     SNREstimator estimator;
+
     bool estimating = false;
     struct timeval last_estimator_update;
     std::vector<SUCOMPLEX> buffer;
 
     // UI objects
-    std::vector<Palette> palettes;
     std::vector<Suscan::Estimator> estimators;
     std::vector<Suscan::SpectrumSource> spectsrcs;
     std::map<Suscan::EstimatorId, EstimatorControl *> estimatorCtls;
+
+    Suscan::SpectrumUnit currentUnit;
 
     ThrottleControl throttle;
     Ui::Inspector *ui = nullptr;
@@ -92,21 +101,46 @@ namespace SigDigger {
     FileDataSaver *dataSaver = nullptr;
     SocketForwarder *socketForwarder = nullptr;
 
+    TVProcessorTab *tvTab = nullptr;
+    WaveformTab *wfTab = nullptr;
+    SymViewTab *symViewTab = nullptr;
+
     State state = DETACHED;
     SUSCOUNT lastLen = 0;
     SUSCOUNT lastRate = 0;
+    bool editingTVProcessorParams = false;
 
     void pushControl(InspectorCtl *ctl);
     void setBps(unsigned int bps);
+    void connectAll(void);
+
+    void initUi(void);
     unsigned int getBps(void) const;
     unsigned int getBaudRate(void) const;
+    SUFLOAT getBaudRateFloat(void) const;
     std::string getClassName(void) const;
+    void populateUnits(void);
     void populate(void);
     void connectDataSaver(void);
     void connectNetForwarder(void);
-
+    void refreshSizes(void);
     std::string captureFileName(void) const;
+    unsigned int getVScrollPageSize(void) const;
+    unsigned int getHScrollOffset(void) const;
+    void refreshVScrollBar(void) const;
+    void refreshHScrollBar(void) const;
+
     int fd = -1;
+
+    float zeroPointToDb(void) const
+    {
+      return this->getZeroPoint() * this->currentUnit.dBPerUnit;
+    }
+
+    float dbToZeroPoint(float dB) const
+    {
+      return dB / this->currentUnit.dBPerUnit;
+    }
 
     public:
       InspectorUI(
@@ -124,8 +158,11 @@ namespace SigDigger {
       void addSpectrumSource(Suscan::SpectrumSource const &src);
       void addEstimator(Suscan::Estimator const &estimator);
       void setAppConfig(AppConfig const &cfg);
+      void setZeroPoint(float);
+
       bool installDataSaver(void);
       void uninstallDataSaver(void);
+
       bool installNetForwarder(void);
       void uninstallNetForwarder(void);
       void setBasebandRate(unsigned int);
@@ -135,20 +172,17 @@ namespace SigDigger {
       void refreshInspectorCtls(void);
       unsigned int getBandwidth(void) const;
       int getLo(void) const;
-
+      void adjustSizes(void);
+      float getZeroPoint(void) const;
       enum State getState(void) const;
 
     public slots:
       void onInspectorControlChanged();
-      void onOffsetChanged(unsigned int);
-      void onStrideChanged(unsigned int);
-      void onScrollBarChanged(int val);
+      void onAspectSliderChanged(int);
+      void onPandapterRangeChanged(float, float);
       void onCPUBurnClicked(void);
       void onFPSReset(void);
       void onFPSChanged(void);
-      void onSymViewControlsChanged(void);
-      void onSaveSymView(void);
-      void onClearSymView(void);
       void onSpectrumConfigChanged(void);
       void onSpectrumSourceChanged(void);
       void onRangeChanged(void);
@@ -160,6 +194,11 @@ namespace SigDigger {
       void onChangeBandwidth(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
       void onApplyEstimation(QString, float);
+
+      // Spectrum slots
+      void onUnitChanged(void);
+      void onZeroPointChanged(void);
+      void onGainChanged(void);
 
       // DataSaver slots
       void onSaveError(void);

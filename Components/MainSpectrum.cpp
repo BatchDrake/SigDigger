@@ -19,8 +19,36 @@
 
 #include "MainSpectrum.h"
 #include "ui_MainSpectrum.h"
+#include <Suscan/Library.h>
 
 using namespace SigDigger;
+
+namespace SigDigger {
+  class SuscanBookmarkSource : public BookmarkSource {
+    public:
+      virtual QList<BookmarkInfo> getBookmarksInRange(qint64, qint64) override;
+  };
+}
+
+QList<BookmarkInfo>
+SuscanBookmarkSource::getBookmarksInRange(qint64 start, qint64 end)
+{
+  QList<BookmarkInfo> list;
+
+  auto p = Suscan::Singleton::get_instance()->getBookmarkFrom(start);
+
+  while (p != Suscan::Singleton::get_instance()->getLastBookmark()) {
+    try {
+      if (p->info.frequency <= end) {
+        list.push_back(p->info);
+      }
+
+    } catch (Suscan::Exception const &) { }
+    ++p;
+  }
+
+  return list;
+}
 
 MainSpectrum::MainSpectrum(QWidget *parent) :
   QWidget(parent),
@@ -28,11 +56,21 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
 {
   ui->setupUi(this);
   this->connectAll();
-  this->setCenterFreq(0);
+  this->setFreqs(0, 0);
+  this->setShowFATs(true);
+
+  this->bookmarkSource = new SuscanBookmarkSource();
+
+  this->ui->mainSpectrum->setBookmarkSource(this->bookmarkSource);
 }
 
 MainSpectrum::~MainSpectrum()
 {
+  for (auto p : this->FATs)
+    delete p;
+
+  delete this->bookmarkSource;
+
   delete ui;
 }
 
@@ -77,15 +115,55 @@ MainSpectrum::connectAll(void)
 
   connect(
         this->ui->mainSpectrum,
+        SIGNAL(newCenterFreq(qint64)),
+        this,
+        SLOT(onNewCenterFreq(qint64)));
+
+  connect(
+        this->ui->mainSpectrum,
         SIGNAL(newZoomLevel(float)),
         this,
         SLOT(onNewZoomLevel(float)));
+
+  connect(
+        this->ui->mainSpectrum,
+        SIGNAL(newModulation(QString)),
+        this,
+        SLOT(onNewModulation(QString)));
 }
 
 void
 MainSpectrum::feed(float *data, int size)
 {
   this->ui->mainSpectrum->setNewFftData(data, size);
+}
+
+
+void
+MainSpectrum::updateLimits(void)
+{
+  qint64 minLcd = this->minFreq + this->getLnbFreq();
+  qint64 maxLcd = this->maxFreq + this->getLnbFreq();
+
+  // Center frequency LCD limits
+  this->ui->fcLcd->setMinSilent(minLcd);
+  this->ui->fcLcd->setMaxSilent(maxLcd);
+
+  // Demod frequency LCD limits
+  minLcd = this->ui->fcLcd->getValue() - this->cachedRate / 2;
+  maxLcd = this->ui->fcLcd->getValue() + this->cachedRate / 2;
+
+  this->ui->loLcd->setMinSilent(minLcd);
+  this->ui->loLcd->setMaxSilent(maxLcd);
+}
+
+void
+MainSpectrum::setFrequencyLimits(qint64 min, qint64 max)
+{
+  this->minFreq = min;
+  this->maxFreq = max;
+
+  this->updateLimits();
 }
 
 void
@@ -154,27 +232,52 @@ MainSpectrum::getFrequencyUnits(qint64 freq)
 }
 
 void
+MainSpectrum::notifyHalt(void)
+{
+  this->ui->mainSpectrum->setRunningState(false);
+}
+
+void
 MainSpectrum::setCenterFreq(qint64 freq)
 {
-  this->ui->fcLcd->setValue(freq);
-  this->ui->mainSpectrum->setCenterFreq(static_cast<quint64>(freq));
-  this->ui->mainSpectrum->setFreqUnits(
-        getFrequencyUnits(
-          static_cast<qint64>(freq)));
+  this->setFreqs(freq, this->getLnbFreq());
 }
 
 void
 MainSpectrum::setLoFreq(qint64 loFreq)
 {
-  this->ui->loLcd->setValue(loFreq);
-  this->ui->mainSpectrum->setFilterOffset(loFreq);
+  if (loFreq != this->getLoFreq()) {
+    this->ui->loLcd->setValue(loFreq + this->getCenterFreq());
+    this->ui->mainSpectrum->setFilterOffset(loFreq);
+    emit loChanged(loFreq);
+  }
 }
 
 void
 MainSpectrum::setLnbFreq(qint64 lnbFreq)
 {
-  this->ui->lnbLcd->setValue(lnbFreq);
-  this->ui->fcLcd->setMin(-lnbFreq);
+  this->setFreqs(this->getCenterFreq(), lnbFreq);
+}
+
+void
+MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq, bool silent)
+{
+  qint64 newLo = this->ui->loLcd->getValue() - freq;
+
+  if (silent) {
+    this->ui->lnbLcd->setValueSilent(lnbFreq);
+    this->ui->fcLcd->setValueSilent(freq);
+  } else {
+    this->ui->lnbLcd->setValue(lnbFreq);
+    this->ui->fcLcd->setValue(freq);
+  }
+
+
+  this->ui->mainSpectrum->setCenterFreq(freq);
+  this->ui->mainSpectrum->setFreqUnits(getFrequencyUnits(freq));
+
+  this->updateLimits();
+  this->setLoFreq(newLo);
 }
 
 void
@@ -213,6 +316,25 @@ MainSpectrum::setPeakDetect(bool det)
   this->ui->mainSpectrum->setPeakDetection(det, 5);
 }
 
+void
+MainSpectrum::setExpectedRate(int rate)
+{
+  this->ui->mainSpectrum->setExpectedRate(rate);
+}
+
+void
+MainSpectrum::setTimeStamps(bool enabled)
+{
+  this->ui->mainSpectrum->setTimeStampsEnabled(enabled);
+  this->ui->mainSpectrum->updateOverlay();
+}
+
+void
+MainSpectrum::setBookmarks(bool enabled)
+{
+  this->ui->mainSpectrum->setBookmarksEnabled(enabled);
+  this->ui->mainSpectrum->updateOverlay();
+}
 
 void
 MainSpectrum::setColorConfig(ColorConfig const &cfg)
@@ -240,6 +362,39 @@ MainSpectrum::setColorConfig(ColorConfig const &cfg)
   this->ui->mainSpectrum->setFftAxesColor(cfg.spectrumAxes);
   this->ui->mainSpectrum->setFftBgColor(cfg.spectrumBackground);
   this->ui->mainSpectrum->setFftTextColor(cfg.spectrumText);
+  this->ui->mainSpectrum->setFilterBoxColor(cfg.filterBox);
+}
+
+void
+MainSpectrum::setGuiConfig(GuiConfig const &cfg)
+{
+  this->ui->mainSpectrum->setUseLBMdrag(cfg.useLMBdrag);
+}
+
+void
+MainSpectrum::updateOverlay(void)
+{
+  this->ui->mainSpectrum->updateOverlay();
+}
+
+void
+MainSpectrum::setGain(float gain)
+{
+  this->ui->mainSpectrum->setGain(gain);
+}
+
+void
+MainSpectrum::setZeroPoint(float zeroPoint)
+{
+  this->ui->mainSpectrum->setZeroPoint(zeroPoint);
+}
+
+void
+MainSpectrum::setUnits(QString const &name, float dBPerUnit, float zeroPoint)
+{
+  this->ui->mainSpectrum->setUnitName(name);
+  this->ui->mainSpectrum->setdBPerUnit(dBPerUnit);
+  this->ui->mainSpectrum->setZeroPoint(zeroPoint);
 }
 
 void
@@ -247,10 +402,36 @@ MainSpectrum::setFilterBandwidth(unsigned int bw)
 {
   if (this->bandwidth != bw) {
     int freq = static_cast<int>(bw);
+
     this->ui->mainSpectrum->setHiLowCutFrequencies(
-          -freq / 2,
-          freq/2);
+          computeLowCutFreq(freq),
+          computeHighCutFreq(freq));
     this->bandwidth = bw;
+  }
+}
+
+void
+MainSpectrum::setFilterSkewness(Skewness skw)
+{
+  if (skw != this->filterSkewness) {
+    this->filterSkewness = skw;
+    unsigned int bw = this->bandwidth;
+    int freq = static_cast<int>(this->cachedRate);
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
+
+    this->ui->mainSpectrum->setDemodRanges(
+          lowerSideBand ? -freq / 2 : 1,
+          1,
+          1,
+          upperSideBand ? +freq / 2 : 1,
+          skw == SYMMETRIC);
+
+    this->bandwidth = 0;
+    this->setFilterBandwidth(bw);
+    emit bandwidthChanged();
   }
 }
 
@@ -269,16 +450,116 @@ MainSpectrum::setSampleRate(unsigned int rate)
 {
   if (this->cachedRate != rate) {
     int freq = static_cast<int>(rate);
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
 
-    this->ui->mainSpectrum->setDemodRanges(-freq / 2, 1, 1, freq / 2, true);
+    this->ui->mainSpectrum->setDemodRanges(
+          lowerSideBand ? -freq / 2 : 1,
+          1,
+          1,
+          upperSideBand ? +freq / 2 : 1,
+          this->filterSkewness == SYMMETRIC);
 
     this->ui->mainSpectrum->setSampleRate(rate);
 
     this->ui->mainSpectrum->setSpanFreq(rate / this->zoom);
-    this->ui->loLcd->setMin(-freq / 2);
-    this->ui->loLcd->setMax(freq / 2);
+    this->ui->loLcd->setMin(-freq / 2 + this->getCenterFreq());
+    this->ui->loLcd->setMax(freq / 2 + this->getCenterFreq());
 
     this->cachedRate = rate;
+  }
+}
+
+qint32 MainSpectrum::computeLowCutFreq(int bw) const
+{
+    bool lowerSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == LOWER;
+    return lowerSideBand ? -bw / 2 : 0;
+}
+qint32 MainSpectrum::computeHighCutFreq(int bw) const
+{
+    bool upperSideBand =
+        this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
+
+    return upperSideBand ? +bw / 2 : 0;
+}
+
+void
+MainSpectrum::setShowFATs(bool show)
+{
+  this->ui->mainSpectrum->setFATsVisible(show);
+}
+
+void
+MainSpectrum::pushFAT(FrequencyAllocationTable *fat)
+{
+  this->ui->mainSpectrum->pushFAT(fat);
+}
+
+void
+MainSpectrum::removeFAT(QString const &name)
+{
+  this->ui->mainSpectrum->removeFAT(name.toStdString());
+}
+
+FrequencyBand
+MainSpectrum::deserializeFrequencyBand(Suscan::Object const &obj)
+{
+  FrequencyBand band;
+
+  band.min = static_cast<qint64>(obj.get("min", 0.f));
+  band.max = static_cast<qint64>(obj.get("max", 0.f));
+  band.primary = obj.get("primary", std::string());
+  band.secondary = obj.get("secondary", std::string());
+  band.footnotes = obj.get("footnotes", std::string());
+
+  band.color.setNamedColor(
+        QString::fromStdString(obj.get("color", std::string("#1f1f1f"))));
+
+  return band;
+}
+
+FrequencyAllocationTable *
+MainSpectrum::getFAT(QString const &name) const
+{
+  std::string asStdString = name.toStdString();
+
+  for (auto p : this->FATs)
+    if (p->getName() == asStdString)
+      return p;
+
+  return nullptr;
+}
+
+void
+MainSpectrum::deserializeFATs(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  Suscan::Object bands;
+  unsigned int i, count, ndx = 0;
+
+  for (auto p = sus->getFirstFAT();
+       p != sus->getLastFAT();
+       p++) {
+    this->FATs.resize(ndx + 1);
+    this->FATs[ndx] = new FrequencyAllocationTable(p->getField("name").value());
+    bands = p->getField("bands");
+
+    SU_ATTEMPT(bands.getType() == SUSCAN_OBJECT_TYPE_SET);
+
+    count = bands.length();
+
+    for (i = 0; i < count; ++i) {
+      try {
+        this->FATs[ndx]->pushBand(deserializeFrequencyBand(bands[i]));
+      } catch (Suscan::Exception &) {
+      }
+    }
+
+    emit newBandPlan(QString::fromStdString(this->FATs[ndx]->getName()));
+    ++ndx;
   }
 }
 
@@ -304,7 +585,7 @@ MainSpectrum::getCenterFreq(void) const
 qint64
 MainSpectrum::getLoFreq(void) const
 {
-  return this->ui->loLcd->getValue();
+  return this->ui->loLcd->getValue() - this->getCenterFreq();
 }
 
 qint64
@@ -323,7 +604,9 @@ MainSpectrum::getBandwidth(void) const
 void
 MainSpectrum::onWfBandwidthChanged(int min, int max)
 {
-  this->setFilterBandwidth(static_cast<unsigned int>(max - min));
+  this->setFilterBandwidth(
+        (this->filterSkewness == SYMMETRIC ? 1 : 2)
+        * static_cast<unsigned int>(max - min));
   emit bandwidthChanged();
 }
 
@@ -333,6 +616,14 @@ MainSpectrum::onFrequencyChanged(void)
   qint64 freq = this->ui->fcLcd->getValue();
   this->setCenterFreq(freq);
   emit frequencyChanged(freq);
+  this->onLoChanged();
+}
+
+void
+MainSpectrum::onNewCenterFreq(qint64 freq)
+{
+  this->ui->fcLcd->setValue(freq);
+  this->updateLimits();
 }
 
 void
@@ -346,14 +637,14 @@ MainSpectrum::onLnbFrequencyChanged(void)
 void
 MainSpectrum::onWfLoChanged(void)
 {
-  this->ui->loLcd->setValue(this->ui->mainSpectrum->getFilterOffset());
+  this->ui->loLcd->setValue(this->ui->mainSpectrum->getFilterOffset() + this->getCenterFreq());
   emit loChanged(this->getLoFreq());
 }
 
 void
 MainSpectrum::onLoChanged(void)
 {
-  this->ui->mainSpectrum->setFilterOffset(this->ui->loLcd->getValue());
+  this->ui->mainSpectrum->setFilterOffset(this->getLoFreq());
   emit loChanged(this->getLoFreq());
 }
 
@@ -367,4 +658,10 @@ void
 MainSpectrum::onNewZoomLevel(float level)
 {
   emit zoomChanged(level);
+}
+
+void
+MainSpectrum::onNewModulation(QString modulation)
+{
+  emit modulationChanged(modulation);
 }

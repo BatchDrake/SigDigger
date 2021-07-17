@@ -9,6 +9,7 @@
 
 namespace SigDigger {
   class AppConfig;
+
   class Inspector : public QWidget
   {
       Q_OBJECT
@@ -23,6 +24,7 @@ namespace SigDigger {
       Suscan::Handle handle;
       Suscan::InspectorId id;
       Suscan::Analyzer *analyzer = nullptr;
+      bool adjusted = false;
 
     public:
       Suscan::InspectorId
@@ -53,6 +55,7 @@ namespace SigDigger {
       void feed(const SUCOMPLEX *data, unsigned int size);
       void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
       void updateEstimator(Suscan::EstimatorId id, float val);
+      void showEvent(QShowEvent *event);
 
       explicit Inspector(
           QWidget *parent,

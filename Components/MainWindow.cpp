@@ -1,5 +1,5 @@
 //
-//    filename: description
+//    MainWindow.cpp: Main application window
 //    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
+  this->ui->menuBand_plans->clear();
 }
 
 MainWindow::~MainWindow()

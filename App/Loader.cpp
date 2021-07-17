@@ -21,6 +21,7 @@
 
 #include <QThread>
 #include <QMessageBox>
+#include <SigDiggerHelpers.h>
 
 #include <Loader.h>
 
@@ -33,6 +34,7 @@ void
 InitThread::run()
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
+  QString verString;
 
   try {
     emit change("Loading signal sources");
@@ -47,6 +49,10 @@ InitThread::run()
     sing->init_codecs();
     emit change("Loading palettes");
     sing->init_palettes();
+    emit change("Loading frequency tables");
+    sing->init_fats();
+    emit change("Loading bookmarks");
+    sing->init_bookmarks();
     emit change("Loading auto gains");
     sing->init_autogains();
     emit change("Loading UI config");
@@ -56,6 +62,15 @@ InitThread::run()
   } catch (Suscan::Exception const &e) {
     emit failure(QString(e.what()));
   }
+
+  verString =
+      "SigDigger "
+      + SigDiggerHelpers::version()
+      + " loaded.";
+
+  SU_INFO(
+        "%s\n",
+        verString.toStdString().c_str());
 
   emit done();
 }

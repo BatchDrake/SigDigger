@@ -19,7 +19,7 @@
 
 #include "ClockRecovery.h"
 #include "ui_ClockRecovery.h"
-#include <suscan/analyzer/inspector/params.h>
+#include <analyzer/inspector/params.h>
 
 using namespace SigDigger;
 
@@ -29,14 +29,16 @@ ClockRecovery::ClockRecovery(QWidget *parent, Suscan::Config *config) :
 {
   ui->setupUi(this);
 
-  this->ui->baudRate->setValidator(new QDoubleValidator(0.0, 3e6, 0, this));
   this->refreshUi();
 
-  this->registerWidget(this->ui->baudRate, SIGNAL(editingFinished()));
+  this->registerWidget(this->ui->baudRateSpin, SIGNAL(valueChanged(double)));
   this->registerWidget(this->ui->startButton, SIGNAL(clicked(bool)));
   this->registerWidget(this->ui->typeCombo, SIGNAL(activated(int)));
   this->registerWidget(this->ui->gainSpin, SIGNAL(valueChanged(double)));
   this->registerWidget(this->ui->phaseSlider, SIGNAL(valueChanged(int)));
+
+  this->ui->baudRateSpin->setUnits("baud");
+  this->ui->baudRateSpin->setAutoUnitMultiplierEnabled(false);
 }
 
 bool
@@ -51,7 +53,10 @@ ClockRecovery::applicable(QString const &key)
 void
 ClockRecovery::refreshUi(void)
 {
-  this->ui->baudRate->setText(QString::number(this->getFloat("clock.baud")));
+  if (this->sampleRate() > 0)
+    this->ui->baudRateSpin->setMaximum(this->sampleRate());
+
+  this->ui->baudRateSpin->setValue(this->getFloat("clock.baud"));
   this->ui->startButton->setChecked(this->getBoolean("clock.running"));
   this->ui->gainSpin->setValue(this->getFloat("clock.gain"));
   this->ui->phaseSlider->setValue(
@@ -81,7 +86,7 @@ ClockRecovery::parseConfig(void)
     SUSCAN_INSPECTOR_BAUDRATE_CONTROL_GARDNER
   };
 
-  this->refreshEntry("clock.baud", this->ui->baudRate->text().toDouble());
+  this->refreshEntry("clock.baud", this->ui->baudRateSpin->value());
   this->refreshEntry("clock.running", this->ui->startButton->isChecked());
   this->refreshEntry("clock.gain", this->ui->gainSpin->value());
   this->refreshEntry("clock.phase", this->ui->phaseSlider->value() / 100.);

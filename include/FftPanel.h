@@ -21,6 +21,9 @@
 
 #include <PersistentWidget.h>
 #include <Suscan/AnalyzerParams.h>
+#include <QListWidgetItem>
+#include <Suscan/Library.h>
+
 #include "Palette.h"
 
 namespace Ui {
@@ -43,9 +46,15 @@ namespace SigDigger {
 
     unsigned int timeSpan = 0;
 
-    bool rangeLock = false;
+    bool rangeLock = true;
+    bool timeStamps = false;
+    bool bookmarks = true;
 
-    std::string palette = "Suscan";
+    std::string palette = "Magma (Feely)";
+
+    std::string unitName;
+    float zeroPoint;
+    float gain;
 
     int zoom = 1;
 
@@ -70,12 +79,14 @@ namespace SigDigger {
     unsigned int fftSize = 0;
     unsigned int refreshRate = 0;
     unsigned int defaultRefreshRate = 0;
-    std::vector<Palette> palettes;
+
     std::vector<unsigned int> sizes;
     std::vector<unsigned int> refreshRates;
     std::vector<unsigned int> timeSpans;
 
-    Palette *selected = nullptr;
+    Suscan::SpectrumUnit currentUnit;
+
+    const Palette *selected = nullptr;
 
     // Private methods
     void addFftSize(unsigned int sz);
@@ -85,13 +96,24 @@ namespace SigDigger {
     void updateFftSizes(void);
     void updateTimeSpans(void);
     void connectAll(void);
+    void populateUnits(void);
     void updateRbw(void);
+
+    float zeroPointToDb(void) const
+    {
+      return this->getZeroPoint() * this->currentUnit.dBPerUnit;
+    }
+
+    float dbToZeroPoint(float dB) const
+    {
+      return dB / this->currentUnit.dBPerUnit;
+    }
 
   public:
     explicit FftPanel(QWidget *parent = nullptr);
     ~FftPanel() override;
 
-    void deserializePalettes(void);
+    void refreshPalettes(void);
 
     // Getters
     const QColor *getPaletteGradient(void) const;
@@ -109,6 +131,15 @@ namespace SigDigger {
     bool getPeakHold(void) const;
     bool getPeakDetect(void) const;
     bool getRangeLock(void) const;
+    bool getTimeStamps(void) const;
+    bool getBookmarks(void) const;
+
+    QString getUnitName(void) const;
+    float getZeroPoint(void) const;
+    float getGain(void) const;
+    float getCompleteZeroPoint(void) const;
+    float getdBPerUnit(void) const;
+
     enum Suscan::AnalyzerParams::WindowFunction getWindowFunction(void) const;
 
     // Setters
@@ -128,6 +159,13 @@ namespace SigDigger {
     void setDefaultRefreshRate(unsigned int);
     void setRefreshRate(unsigned int);
     void setTimeSpan(unsigned int);
+    void setTimeStamps(bool);
+    void setBookmarks(bool);
+
+    bool setUnitName(QString);
+    void setZeroPoint(float);
+    void setGain(float);
+
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
 
@@ -148,6 +186,13 @@ namespace SigDigger {
     void onRangeLockChanged(void);
     void onPeakChanged(void);
     void onWindowFunctionChanged(void);
+    void onTimeStampsChanged(void);
+    void onBookmarksChanged(void);
+
+    // Unit handling slots
+    void onUnitChanged(void);
+    void onZeroPointChanged(void);
+    void onGainChanged(void);
 
   signals:
     void paletteChanged(void);
@@ -157,7 +202,11 @@ namespace SigDigger {
     void windowFunctionChanged(void);
     void refreshRateChanged(void);
     void timeSpanChanged(void);
-
+    void timeStampsChanged(void);
+    void bookmarksChanged(void);
+    void unitChanged(QString, float, float);
+    void zeroPointChanged(float);
+    void gainChanged(float);
   };
 }
 

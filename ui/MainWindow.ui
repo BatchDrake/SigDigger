@@ -89,8 +89,21 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
-    <addaction name="actionDevices"/>
+    <widget class="QMenu" name="menuBand_plans">
+     <property name="title">
+      <string>Band plans</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="separator"/>
+    </widget>
+    <addaction name="action_Full_screen"/>
+    <addaction name="menuBand_plans"/>
     <addaction name="separator"/>
+    <addaction name="actionDevices"/>
+    <addaction name="actionPanoramicSpectrum"/>
+    <addaction name="separator"/>
+    <addaction name="actionLogMessages"/>
+    <addaction name="action_Background_tasks"/>
     <addaction name="actionOptions"/>
    </widget>
    <addaction name="menuFile"/>
@@ -122,6 +135,9 @@
    <addaction name="actionRun"/>
    <addaction name="separator"/>
    <addaction name="actionSetup"/>
+   <addaction name="actionAddBookmark"/>
+   <addaction name="actionManageBookmarks"/>
+   <addaction name="separator"/>
    <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -135,6 +151,9 @@
    </property>
    <property name="text">
     <string>Run</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
   <action name="actionSetup">
@@ -158,7 +177,7 @@
   <action name="actionStart_capture">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/media-playback-start.png</normaloff>:/icons/media-playback-start.png</iconset>
+     <normaloff>:/icons/start-shiki.png</normaloff>:/icons/start-shiki.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Start capture</string>
@@ -167,7 +186,7 @@
   <action name="actionStop_capture">
    <property name="icon">
     <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/media-playback-stop.png</normaloff>:/icons/media-playback-stop.png</iconset>
+     <normaloff>:/icons/stop-shiki.png</normaloff>:/icons/stop-shiki.png</iconset>
    </property>
    <property name="text">
     <string>S&amp;top capture</string>
@@ -204,6 +223,9 @@
    <property name="text">
     <string>&amp;Quit</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
   </action>
   <action name="actionDevices">
    <property name="icon">
@@ -213,6 +235,9 @@
    <property name="text">
     <string>&amp;Devices...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
   </action>
   <action name="actionOptions">
    <property name="icon">
@@ -221,6 +246,9 @@
    </property>
    <property name="text">
     <string>&amp;Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionClear_recent">
@@ -238,11 +266,63 @@
     <string>Clear</string>
    </property>
   </action>
+  <action name="actionPanoramicSpectrum">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/panspect.png</normaloff>:/icons/panspect.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Panoramic spectrum</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="action_Full_screen">
+   <property name="text">
+    <string>&amp;Full screen</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
+   </property>
+  </action>
+  <action name="actionLogMessages">
+   <property name="text">
+    <string>&amp;Log messages</string>
+   </property>
+  </action>
+  <action name="action_Background_tasks">
+   <property name="text">
+    <string>&amp;Background tasks</string>
+   </property>
+  </action>
+  <action name="actionAddBookmark">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/bookmark-new.png</normaloff>:/icons/bookmark-new.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add &amp;bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="actionManageBookmarks">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/stock_bookmark.png</normaloff>:/icons/stock_bookmark.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Manage bookmarks</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="../icons/Icons.qrc"/>
-  <include location="../icons/Icons.qrc"/>
   <include location="../icons/Icons.qrc"/>
  </resources>
  <connections/>

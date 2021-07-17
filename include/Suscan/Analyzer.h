@@ -34,16 +34,153 @@
 #include <Suscan/Messages/InspectorMessage.h>
 #include <Suscan/Messages/PSDMessage.h>
 #include <Suscan/Messages/SamplesMessage.h>
+#include <Suscan/Messages/SourceInfoMessage.h>
+#include <Suscan/Messages/StatusMessage.h>
 #include <Suscan/Messages/GenericMessage.h>
 
 #include <analyzer/analyzer.h>
 
 namespace Suscan {
-  class Analyzer: public QObject
-  {
+  struct AnalyzerSourceInfo {
+    bool loan = false;
+    struct suscan_analyzer_source_info local_info;
+    struct suscan_analyzer_source_info *c_info = nullptr;
+
+    AnalyzerSourceInfo()
+    {
+      suscan_analyzer_source_info_init(&this->local_info);
+    }
+
+    ~AnalyzerSourceInfo()
+    {
+      if (!this->loan)
+        suscan_analyzer_source_info_finalize(&this->local_info);
+    }
+
+    AnalyzerSourceInfo(struct suscan_analyzer_source_info *ptr, bool loan = false)
+    {
+      this->loan = loan;
+
+      if (loan) {
+        suscan_analyzer_source_info_init(&this->local_info);
+        this->c_info = ptr;
+      } else {
+        SU_ATTEMPT(
+              suscan_analyzer_source_info_init_copy(&this->local_info, ptr));
+        this->c_info = &this->local_info;
+      }
+    }
+
+    inline SUSCOUNT
+    getSampleRate(void) const
+    {
+      return this->c_info->source_samp_rate;
+    }
+
+    inline SUSCOUNT
+    getEffectiveSampleRate(void) const
+    {
+      return this->c_info->effective_samp_rate;
+    }
+
+    inline SUFLOAT
+    getMeasuredSampleRate(void) const
+    {
+      return this->c_info->measured_samp_rate;
+    }
+
+    inline SUFREQ
+    getFrequency(void) const
+    {
+      return this->c_info->frequency;
+    }
+
+    inline SUFREQ
+    getMinFrequency(void) const
+    {
+      return this->c_info->freq_min;
+    }
+
+    inline SUFREQ
+    getMaxFrequency(void) const
+    {
+      return this->c_info->freq_max;
+    }
+
+    inline SUFREQ
+    getLnbFrequency(void) const
+    {
+      return this->c_info->lnb;
+    }
+
+    inline SUFLOAT
+    getBandwidth(void) const
+    {
+      return this->c_info->bandwidth;
+    }
+
+    inline std::string
+    getAntenna(void) const
+    {
+      return this->c_info->antenna == nullptr
+          ? "N/A"
+          : std::string(this->c_info->antenna);
+    }
+
+    inline bool
+    getDCRemove(void) const
+    {
+      return this->c_info->dc_remove != SU_FALSE;
+    }
+
+    inline bool
+    getIQReverse(void) const
+    {
+      return this->c_info->iq_reverse != SU_FALSE;
+    }
+
+    inline bool
+    getAGC(void) const
+    {
+      return this->c_info->agc != SU_FALSE;
+    }
+
+    inline void
+    getGainInfo(std::vector<Source::GainDescription> &vec) const
+    {
+      unsigned int i;
+      vec.clear();
+
+      for (i = 0; i < this->c_info->gain_count; ++i)
+        vec.push_back(Source::GainDescription(this->c_info->gain_list[i]));
+    }
+
+    inline void
+    getAntennaList(std::vector<std::string> &vec) const
+    {
+      unsigned int i;
+      vec.clear();
+
+      for (i = 0; i < this->c_info->antenna_count; ++i)
+        vec.push_back(this->c_info->antenna_list[i]);
+    }
+  };
+
+  class Analyzer: public QObject {
     Q_OBJECT
 
     class AsyncThread;
+
+  public:
+    enum SweepStrategy {
+      STOCHASTIC = SUSCAN_ANALYZER_SWEEP_STRATEGY_STOCHASTIC,
+      PROGRESSIVE = SUSCAN_ANALYZER_SWEEP_STRATEGY_PROGRESSIVE
+    };
+
+    enum SpectrumPartitioning {
+      DISCRETE   = SUSCAN_ANALYZER_SPECTRUM_PARTITIONING_DISCRETE,
+      CONTINUOUS = SUSCAN_ANALYZER_SPECTRUM_PARTITIONING_CONTINUOUS
+    };
 
   private:
     suscan_analyzer_t *instance = nullptr;
@@ -57,6 +194,8 @@ namespace Suscan {
     void psd_message(const Suscan::PSDMessage &message);
     void inspector_message(const Suscan::InspectorMessage &message);
     void samples_message(const Suscan::SamplesMessage &message);
+    void status_message(const Suscan::StatusMessage &message);
+    void source_info_message(const Suscan::SourceInfoMessage &message);
     void read_error(void);
     void eos(void);
     void halted(void);
@@ -72,14 +211,18 @@ namespace Suscan {
     void registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t, void *);
     void setFrequency(SUFREQ freq, SUFREQ lnbFreq = 0);
     void setGain(std::string const &name, SUFLOAT val);
+    void setSweepStrategy(SweepStrategy);
+    void setSpectrumPartitioning(SpectrumPartitioning);
     void setAntenna(std::string const &name);
     void setBandwidth(SUFLOAT val);
+    void setPPM(SUFLOAT val);
     void setThrottle(unsigned int throttle);
     void setParams(AnalyzerParams &params);
     void setDCRemove(bool remove);
     void setIQReverse(bool reverse);
     void setAGC(bool enabled);
-
+    void setHopRange(SUFREQ min, SUFREQ max);
+    void setBufferingSize(SUSCOUNT len);
     void halt(void);
 
     // Analyzer asynchronous requests

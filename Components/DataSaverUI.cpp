@@ -18,13 +18,36 @@
 //
 
 #include <QFileDialog>
+#include <SuWidgetsHelpers.h>
 #include "DataSaverUI.h"
 #include "ui_DataSaverUI.h"
 
-#include <sys/statvfs.h>
-
 using namespace SigDigger;
 
+//////////////////////////// DataSaverConfig ///////////////////////////////////
+#define STRINGFY(x) #x
+#define STORE(field) obj.set(STRINGFY(field), this->field)
+#define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
+
+void
+DataSaverConfig::deserialize(Suscan::Object const &conf)
+{
+  LOAD(path);
+}
+
+Suscan::Object &&
+DataSaverConfig::serialize(void)
+{
+  Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+
+  obj.setClass("DataSaverConfig");
+
+  STORE(path);
+
+  return this->persist(obj);
+}
+
+////////////////////////////// DataSaverUI /////////////////////////////////////
 void
 DataSaverUI::connectAll(void)
 {
@@ -39,23 +62,6 @@ DataSaverUI::connectAll(void)
         SIGNAL(clicked(bool)),
         this,
         SLOT(onRecordStartStop(void)));
-}
-
-void
-DataSaverUI::refreshDiskUsage(void)
-{
-  std::string path = this->getRecordSavePath().c_str();
-  struct statvfs svfs;
-
-  if (statvfs(path.c_str(), &svfs) != -1) {
-    this->ui->diskUsageProgress->setEnabled(true);
-    this->setDiskUsage(
-          1. - static_cast<qreal>(svfs.f_bavail) /
-          static_cast<qreal>(svfs.f_blocks));
-  } else {
-    this->ui->diskUsageProgress->setEnabled(false);
-    this->setDiskUsage(1);
-  }
 }
 
 // Setters
@@ -75,30 +81,24 @@ DataSaverUI::setSaveEnabled(bool enabled)
   this->ui->saveButton->setEnabled(enabled);
 }
 
-static QString
-formatCaptureSize(quint64 size)
-{
-  if (size < (1ull << 10))
-    return QString::number(size) + " bytes";
-  else if (size < (1ull << 20))
-    return QString::number(size >> 10) + " KiB";
-  else if (size < (1ull << 30))
-    return QString::number(size >> 20) + " MiB";
-
-  return QString::number(size >> 30) + " GiB";
-}
-
 void
 DataSaverUI::setCaptureSize(quint64 size)
 {
   this->ui->captureSizeLabel->setText(
-        formatCaptureSize(size * sizeof(float _Complex)));
+        SuWidgetsHelpers::formatBinaryQuantity(
+          static_cast<qint64>(size * sizeof(SUFLOAT))));
 }
 
 void
 DataSaverUI::setDiskUsage(qreal usage)
 {
-  this->ui->diskUsageProgress->setValue(static_cast<int>(usage * 100));
+  if (std::isnan(usage)) {
+    this->ui->diskUsageProgress->setEnabled(false);
+    this->ui->diskUsageProgress->setValue(100);
+  } else {
+    this->ui->diskUsageProgress->setEnabled(true);
+    this->ui->diskUsageProgress->setValue(static_cast<int>(usage * 100));
+  }
 }
 
 void
@@ -112,6 +112,8 @@ void
 DataSaverUI::setRecordState(bool state)
 {
   this->ui->recordStartStopButton->setChecked(state);
+
+  this->ui->recordStartStopButton->setText(state ? "Stop" : "Record");
 
   if (!state)
     this->ui->ioBwProgress->setValue(0);
@@ -132,7 +134,7 @@ DataSaverUI::getRecordSavePath(void) const
 
 
 DataSaverUI::DataSaverUI(QWidget *parent) :
-  QWidget(parent),
+  GenericDataSaverUI(parent),
   ui(new Ui::DataSaverUI)
 {
   ui->setupUi(this);
@@ -145,6 +147,21 @@ DataSaverUI::DataSaverUI(QWidget *parent) :
 DataSaverUI::~DataSaverUI()
 {
   delete ui;
+}
+
+
+// Overriden methods
+Suscan::Serializable *
+DataSaverUI::allocConfig(void)
+{
+  return this->config = new DataSaverConfig();
+}
+
+void
+DataSaverUI::applyConfig(void)
+{
+  if (this->config->path.size() > 0)
+    this->setRecordSavePath(this->config->path);
 }
 
 ///////////////////////////////// Slots ////////////////////////////////////////
@@ -160,6 +177,8 @@ DataSaverUI::onChangeSavePath(void)
   if (dialog.exec()) {
     QString path = dialog.selectedFiles().first();
     this->ui->savePath->setText(path);
+    this->config->path = path.toStdString();
+    this->refreshDiskUsage();
     emit recordSavePathChanged(path);
   }
 }
@@ -167,5 +186,10 @@ DataSaverUI::onChangeSavePath(void)
 void
 DataSaverUI::onRecordStartStop(void)
 {
+  this->ui->recordStartStopButton->setText(
+        this->ui->recordStartStopButton->isChecked()
+        ? "Stop"
+        : "Record");
+
   emit recordStateChanged(this->ui->recordStartStopButton->isChecked());
 }

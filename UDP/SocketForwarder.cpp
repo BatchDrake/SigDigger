@@ -20,8 +20,13 @@
 #include <SocketForwarder.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <netdb.h>
 #include <stdexcept>
+
+#ifndef MSG_NOSIGNAL
+#  define MSG_NOSIGNAL 0
+#endif // MSG_NOSIGNAL
 
 using namespace SigDigger;
 
@@ -48,7 +53,7 @@ namespace SigDigger {
     bool prepare(void) override;
     std::string getError(void) const override;
     bool canWrite(void) const override;
-    ssize_t write(const float _Complex *data, size_t len) override;
+    ssize_t write(const SUCOMPLEX *data, size_t len) override;
     bool close(void) override;
     ~SocketDataWriter() override;
   };
@@ -59,7 +64,7 @@ SocketDataWriter::SocketDataWriter(
     uint16_t port,
     unsigned int size,
     bool tcp) :
-  host(host), port(port), tcp(tcp), size(size / sizeof(float _Complex))
+  host(host), port(port), tcp(tcp), size(size / sizeof(SUCOMPLEX))
 {
   this->pad[0] = this->pad2[0] = 0; // Shut up
 }
@@ -116,7 +121,7 @@ SocketDataWriter::canWrite(void) const
 }
 
 ssize_t
-SocketDataWriter::write(const float _Complex *data, size_t len)
+SocketDataWriter::write(const SUCOMPLEX *data, size_t len)
 {
   ssize_t sent;
 
@@ -126,7 +131,7 @@ SocketDataWriter::write(const float _Complex *data, size_t len)
   sent = sendto(
           this->fd,
           data,
-          static_cast<size_t>(len) * sizeof(float _Complex),
+          static_cast<size_t>(len) * sizeof(SUCOMPLEX),
           MSG_NOSIGNAL,
           reinterpret_cast<struct sockaddr *>(&this->addr),
           sizeof(struct sockaddr_in));
@@ -135,7 +140,7 @@ SocketDataWriter::write(const float _Complex *data, size_t len)
     this->lastError = std::string(strerror(errno));
 
 
-  sent /= static_cast<ssize_t>(sizeof(float _Complex));
+  sent /= static_cast<ssize_t>(sizeof(SUCOMPLEX));
 
 
   return sent;
