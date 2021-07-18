@@ -31,6 +31,7 @@ OSTYPE=`uname -s`
 ARCH=`uname -m`
 RELEASE="0.2.0"
 DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
+PKGVERSION=""
 
 if [ "$OSTYPE" == "Linux" ]; then
     SCRIPTPATH=`realpath "$0"`
@@ -142,13 +143,13 @@ function build()
         try "Cloning SigDigger..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SigDigger
         try "Creating builddirs..."        mkdir -p sigutils/build suscan/build
         cd sigutils/build
-        try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr"  -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
+        try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
         cd ../../
         try "Building sigutils..."         make -j $THREADS -C sigutils/build
         try "Deploying sigutils..."        make -j $THREADS -C sigutils/build install
 
         cd suscan/build
-        try "Running CMake (suscan)..."    cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr"  -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
+        try "Running CMake (suscan)..."    cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
         cd ../../
         try "Building suscan..."           make -j $THREADS -C suscan/build
         try "Deploying suscan..."          make -j $THREADS -C suscan/build install
