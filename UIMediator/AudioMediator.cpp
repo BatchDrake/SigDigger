@@ -46,20 +46,26 @@ UIMediator::connectAudioPanel(void)
 void
 UIMediator::onAudioChanged(void)
 {
-  switch (this->ui->audioPanel->getDemod()) {
-    case AM:
-    case FM:
-      this->ui->spectrum->setFilterSkewness(MainSpectrum::SYMMETRIC);
-      break;
+  MainSpectrum::Skewness skewness = MainSpectrum::SYMMETRIC;
 
-    case USB:
-      this->ui->spectrum->setFilterSkewness(MainSpectrum::UPPER);
-      break;
+  if (this->ui->audioPanel->getEnabled()) {
+    switch (this->ui->audioPanel->getDemod()) {
+      case AM:
+      case FM:
+        skewness = MainSpectrum::SYMMETRIC;
+        break;
 
-    case LSB:
-      this->ui->spectrum->setFilterSkewness(MainSpectrum::LOWER);
-      break;
+      case USB:
+        skewness = MainSpectrum::UPPER;
+        break;
+
+      case LSB:
+        skewness = MainSpectrum::LOWER;
+        break;
+    }
   }
+
+  this->ui->spectrum->setFilterSkewness(skewness);
 
   emit audioChanged();
 }
