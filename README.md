@@ -1,12 +1,7 @@
 # SigDigger - The free digital signal analyzer
-_Now for Qt and C++14!_
+SigDigger is a free digital signal analyzer for GNU/Linux and macOS, designed to extract information of unknown radio signals. It supports a variety of SDR devices through SoapySDR, and allows adjustable demodulation of FSK, PSK and ASK signals, decode analog video, analyze bursty signals and listen to analog voice channels (all in real time).
 
-
-SigDigger is the continuation project for the already-deprecated Suscan. GTK+3.0 ended up falling short (especially in terms of performance) and exposing Suscan's API to C++ paid off. 
-
-The set of features is more or less the same, with few things missing (like estimators, the FAC analysis or the Berlekamp-Massey algorithm... working on it, still trying to figure out the UI) and a lot of additions, like a realtime audio inspector, sample recorder, realtime 6Msps channel inspection (AirSpy tested), LSE-based SNR calculator or gain presents. I tried to make it as customizable as Suscan, but I'm still a Qt newbie, so expect bugs!
-
-![](https://raw.githubusercontent.com/BatchDrake/batchdrake.github.io/master/images/Captura%20de%20pantalla%20de%202020-04-11%2018-30-27.png) 
+![](Screenshots/0.2.0.png) 
 
 ## Wait, why does it look like Gqrx?
 Because I'm a terrible person. Also, because after dealing with a lot of software of the sort, I realized that Gqrx had the best UI of them all: minimalistic yet operative. Earlier versions of the UI were somewhat different, but after a lot of debugging I came to the conclusion that it would be better off if I just tried to mimic existing (and successful) software, reducing the learning curve to the new feature set.

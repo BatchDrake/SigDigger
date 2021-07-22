@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+#  AppRun: SigDigger's multitool launcher
+#
+#  Copyright (C) 2021 Gonzalo José Carracedo Carballal
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this program.  If not, see
+#  <http://www.gnu.org/licenses/>
+#
+
+SELF=$(readlink -f "$0")
+HERE=${SELF%/*}
+export SUSCAN_CONFIG_PATH="${HERE}/../share/suscan/config"
+export LD_LIBRARY_PATH="${HERE}/../lib:$LD_LIBRARY_PATH"
+
+SIGDIGGER_EXEC="${HERE}"/SigDigger.app
+SIGDIGGER_ARGS=
+
+RMSVIEWER_EXEC="$SIGDIGGER_EXEC"
+RMSVIEWER_ARGS="-t RMSViewer"
+
+SUSCLI_EXEC="${HERE}"/suscli
+SUSCLI_ARGS=""
+
+EXEC="$SIGDIGGER_EXEC"
+ARGS="$SIGDIGGER_ARGS"
+
+# Detect tool
+case "$ARGV0" in
+    RMSViewer*)
+	EXEC="$RMSVIEWER_EXEC"
+	ARGS="$RMSVIEWER_ARGS"
+	;;
+    suscli*)
+	EXEC="$SUSCLI_EXEC"
+	ARGS="$SUSCLI_ARGS"
+	;;
+esac
+
+# Detect bundle type. If SoapySDR has been bundled to the AppImage,
+# a directory named SoapySDR must exist under usr/lib/
+if [ -d "${HERE}"/../lib/SoapySDR ]; then
+    export SOAPY_SDR_ROOT="${HERE}/.."
+    if [ "x$SIGDIGGER_SOAPY_SDR_ROOT" != "x" ]; then
+	export SOAPY_SDR_ROOT="$SIGDIGGER_SOAPY_SDR_ROOT"
+    fi
+fi
+
+# Launch tool
+exec  -a "$ARGV0" "$EXEC" `echo $ARGS` "$@"
