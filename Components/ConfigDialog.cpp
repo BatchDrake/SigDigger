@@ -1114,6 +1114,14 @@ ConfigDialog::guessParamsFromFileName(void)
         &time,
         &fc) == 3) {
     haveFc = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "HDSDR_%08d_%06dZ_%lgkHz",
+        &date,
+        &time,
+        &fc) == 3) {
+    fc *= 1e3;
+    haveFc = true;
   }
 
   if (haveFs)
