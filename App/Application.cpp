@@ -866,6 +866,9 @@ void
 Application::onSourceInfoMessage(const Suscan::SourceInfoMessage &msg)
 {
   this->mediator->notifySourceInfo(*msg.info());
+
+  // It may have notified a change in current frequency.
+  this->assertAudioInspectorLo();
 }
 
 void
