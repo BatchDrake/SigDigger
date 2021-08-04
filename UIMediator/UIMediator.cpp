@@ -154,9 +154,9 @@ UIMediator::refreshUI(void)
         : InspectorPanel::State::DETACHED);
 
   if (config->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
-    QString user = dev.getParam("user");
-    QString host = dev.getParam("host");
-    QString port = dev.getParam("port");
+    QString user = QString::fromStdString(config->getParam("user"));
+    QString host = QString::fromStdString(config->getParam("host"));
+    QString port = QString::fromStdString(config->getParam("port"));
     sourceDesc = "Remote analyzer on " + user + "@" + host + ":" + port;
   } else {
     if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {

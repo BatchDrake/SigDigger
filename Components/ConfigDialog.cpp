@@ -433,25 +433,25 @@ ConfigDialog::refreshProfileUi(void)
     if (this->ui->deviceCombo->currentIndex() == -1)
       this->ui->deviceCombo->setCurrentIndex(0);
   } else {
-    const char *val;
+    std::string value;
     int index;
     // Set remote analyzer interface
-    val = this->profile.getParam("host").c_str();
-    this->ui->hostEdit->setText(val);
+    value = this->profile.getParam("host");
+    this->ui->hostEdit->setText(value.c_str());
 
     try {
-      val = this->profile.getParam("port").c_str();
-      this->ui->portEdit->setValue(std::stoi(val));
+      value = this->profile.getParam("port").c_str();
+      this->ui->portEdit->setValue(std::stoi(value));
     } catch (std::invalid_argument &) {
       this->ui->portEdit->setValue(28001);
     }
 
-    val = this->profile.getParam("user").c_str();
-    this->ui->userEdit->setText(val);
+    value = this->profile.getParam("user").c_str();
+    this->ui->userEdit->setText(value.c_str());
 
 
-    val = this->profile.getParam("password").c_str();
-    this->ui->passEdit->setText(val);
+    value = this->profile.getParam("password").c_str();
+    this->ui->passEdit->setText(value.c_str());
 
     this->ui->deviceCombo->setCurrentIndex(-1);
 
@@ -772,6 +772,7 @@ ConfigDialog::updateRemoteParams(void)
   this->profile.setParam("port", std::to_string(this->ui->portEdit->value()));
   this->profile.setParam("user", this->ui->userEdit->text().toStdString());
   this->profile.setParam("password", this->ui->passEdit->text().toStdString());
+  this->profile.setParam("label", "User-defined remote profile");
 }
 
 ConfigDialog::ConfigDialog(QWidget *parent) :
