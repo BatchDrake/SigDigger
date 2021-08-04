@@ -627,6 +627,12 @@ Application::connectAnalyzer(void)
 
   connect(
         this->analyzer.get(),
+        SIGNAL(analyzer_params(const Suscan::AnalyzerParams &)),
+        this,
+        SLOT(onAnalyzerParams(const Suscan::AnalyzerParams &)));
+
+  connect(
+        this->analyzer.get(),
         SIGNAL(inspector_message(const Suscan::InspectorMessage &)),
         this,
         SLOT(onInspectorMessage(const Suscan::InspectorMessage &)));
@@ -907,6 +913,12 @@ Application::onStatusMessage(const Suscan::StatusMessage &message)
   } else {
     this->mediator->setStatusMessage(message.getMessage());
   }
+}
+
+void
+Application::onAnalyzerParams(const Suscan::AnalyzerParams &params)
+{
+  this->mediator->setAnalyzerParams(params);
 }
 
 void

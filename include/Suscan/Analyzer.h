@@ -196,6 +196,7 @@ namespace Suscan {
     void samples_message(const Suscan::SamplesMessage &message);
     void status_message(const Suscan::StatusMessage &message);
     void source_info_message(const Suscan::SourceInfoMessage &message);
+    void analyzer_params(const Suscan::AnalyzerParams &params);
     void read_error(void);
     void eos(void);
     void halted(void);

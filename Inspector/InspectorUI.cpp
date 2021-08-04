@@ -631,7 +631,12 @@ InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
     this->lastRate = rate;
   }
 
-  this->ui->wfSpectrum->setNewFftData((float *) data, static_cast<int>(len));
+  this->fftData.resize(len);
+  this->fftData.assign(data, data + len);
+
+  this->ui->wfSpectrum->setNewFftData(
+        static_cast<float *>(this->fftData.data()),
+        static_cast<int>(len));
 
   if (this->lastLen != len) {
     this->ui->wfSpectrum->resetHorizontalZoom();

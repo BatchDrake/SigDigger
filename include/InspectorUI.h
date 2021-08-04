@@ -85,6 +85,7 @@ namespace SigDigger {
     bool estimating = false;
     struct timeval last_estimator_update;
     std::vector<SUCOMPLEX> buffer;
+    std::vector<SUFLOAT> fftData;
 
     // UI objects
     std::vector<Suscan::Estimator> estimators;

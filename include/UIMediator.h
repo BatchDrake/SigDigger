@@ -148,6 +148,7 @@ namespace SigDigger {
     unsigned int getFftSize(void) const;
 
     // Mediated setters
+    void setAnalyzerParams(Suscan::AnalyzerParams const &params);
     void setStatusMessage(QString const &);
     void setRecordState(bool state);
     void setAudioRecordState(bool);

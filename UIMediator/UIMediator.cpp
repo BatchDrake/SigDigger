@@ -700,6 +700,17 @@ UIMediator::detachAllInspectors()
 }
 
 void
+UIMediator::setAnalyzerParams(Suscan::AnalyzerParams const &params)
+{
+  this->ui->spectrum->setExpectedRate(
+        static_cast<int>(1.f / params.psdUpdateInterval));
+  this->ui->fftPanel->setWindowFunction(params.windowFunction);
+  this->ui->fftPanel->setFftSize(params.windowSize);
+  this->ui->fftPanel->setRefreshRate(
+        static_cast<unsigned int>(1.f / params.psdUpdateInterval));
+}
+
+void
 UIMediator::setStatusMessage(QString const &message)
 {
   this->ui->main->statusBar->showMessage(message);
@@ -817,14 +828,11 @@ UIMediator::applyConfig(void)
   this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
-  this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
-  this->ui->spectrum->setExpectedRate(
-        static_cast<int>(1.f / this->appConfig->analyzerParams.psdUpdateInterval));
   this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
-  this->ui->fftPanel->setWindowFunction(this->appConfig->analyzerParams.windowFunction);
-  this->ui->fftPanel->setFftSize(this->appConfig->analyzerParams.windowSize);
-  this->ui->fftPanel->setRefreshRate(
-        static_cast<unsigned int>(1.f / this->appConfig->analyzerParams.psdUpdateInterval));
+  this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
+
+  this->setAnalyzerParams(this->appConfig->analyzerParams);
+
   this->ui->fftPanel->setDefaultFftSize(SIGDIGGER_FFT_WINDOW_SIZE);
   this->ui->fftPanel->setDefaultRefreshRate(SIGDIGGER_FFT_REFRESH_RATE);
 

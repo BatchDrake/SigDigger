@@ -31,6 +31,7 @@ Q_DECLARE_METATYPE(Suscan::SourceInfoMessage);
 Q_DECLARE_METATYPE(Suscan::StatusMessage);
 Q_DECLARE_METATYPE(Suscan::GenericMessage);
 Q_DECLARE_METATYPE(Suscan::EstimatorId);
+Q_DECLARE_METATYPE(Suscan::AnalyzerParams);
 
 using namespace Suscan;
 
@@ -53,6 +54,7 @@ Analyzer::AsyncThread::run()
       case SUSCAN_ANALYZER_MESSAGE_TYPE_SAMPLES:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INIT:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_INTERNAL:
+      case SUSCAN_ANALYZER_MESSAGE_TYPE_PARAMS:
         emit message(type, data);
         break;
 
@@ -243,6 +245,10 @@ Analyzer::captureMessage(quint32 type, void *data)
       emit status_message(StatusMessage(static_cast<struct suscan_analyzer_status_msg *>(data)));
       break;
 
+    case SUSCAN_ANALYZER_MESSAGE_TYPE_PARAMS:
+      emit analyzer_params(AnalyzerParams(*static_cast<struct suscan_analyzer_params *>(data)));
+      break;
+
     // Exit conditions. These have no data.
     case SUSCAN_WORKER_MSG_TYPE_HALT:
       emit halted();
@@ -275,6 +281,7 @@ Analyzer::assertTypeRegistration(void)
     qRegisterMetaType<Suscan::SamplesMessage>();
     qRegisterMetaType<Suscan::SourceInfoMessage>();
     qRegisterMetaType<Suscan::StatusMessage>();
+    qRegisterMetaType<Suscan::AnalyzerParams>();
 
     Analyzer::registered = true;
   }
