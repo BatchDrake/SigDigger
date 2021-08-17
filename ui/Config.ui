@@ -100,7 +100,7 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="label_7">
          <property name="text">
           <string>Decimation</string>
@@ -154,9 +154,6 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
-        <widget class="FrequencySpinBox" name="lnbSpinBox"/>
-       </item>
        <item row="3" column="2">
         <widget class="QWidget" name="widget_3" native="true">
          <property name="sizePolicy">
@@ -190,6 +187,12 @@
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
+       </item>
+       <item row="3" column="1">
+         <widget class="FrequencySpinBox" name="frequencySpinBox"/>
+       </item>
+       <item row="4" column="1">
+         <widget class="FrequencySpinBox" name="lnbSpinBox"/>
        </item>
        <item row="7" column="0" rowspan="2">
         <widget class="QLabel" name="label_3">
@@ -264,7 +267,7 @@
            <property name="verticalSpacing">
             <number>0</number>
            </property>
-           <item row="0" column="0">
+           <item row="1" column="0">
             <widget class="QWidget" name="widget_2" native="true">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -291,7 +294,7 @@
              </layout>
             </widget>
            </item>
-           <item row="1" column="0">
+           <item row="0" column="0">
             <widget class="FrequencySpinBox" name="sampleRateSpinBox">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -315,6 +318,13 @@
          </property>
         </widget>
        </item>
+       <item row="13" column="0" colspan="7">
+        <widget class="Line" name="line_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="1" colspan="3">
         <widget class="QComboBox" name="profileCombo">
          <property name="currentText">
@@ -328,14 +338,7 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="0" colspan="7">
-        <widget class="Line" name="line_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
+       <item row="11" column="1">
         <widget class="QSpinBox" name="decimationSpin">
          <property name="enabled">
           <bool>true</bool>
@@ -365,7 +368,21 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="12" column="1">
+        <widget class="QComboBox" name="analyzerTypeCombo">
+         <item>
+          <property name="text">
+           <string>Local</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Remote</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="12" column="0">
         <widget class="QLabel" name="label_9">
          <property name="text">
           <string>Analyzer type</string>
@@ -382,20 +399,6 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
-        <widget class="QComboBox" name="analyzerTypeCombo">
-         <item>
-          <property name="text">
-           <string>Local</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Remote</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
@@ -406,13 +409,10 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="FrequencySpinBox" name="frequencySpinBox"/>
-       </item>
-       <item row="12" column="0" colspan="7">
+       <item row="14" column="0" colspan="7">
         <widget class="QStackedWidget" name="analyzerParamsStackedWidget">
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="localPage">
           <layout class="QGridLayout" name="gridLayout_14">
@@ -1398,6 +1398,49 @@
    <header>FrequencySpinBox.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>profileCombo</tabstop>
+  <tabstop>loadProfileButton</tabstop>
+  <tabstop>saveProfileButton</tabstop>
+  <tabstop>iqBalanceCheck</tabstop>
+  <tabstop>removeDCCheck</tabstop>
+  <tabstop>ppmSpinBox</tabstop>
+  <tabstop>decimationSpin</tabstop>
+  <tabstop>analyzerTypeCombo</tabstop>
+  <tabstop>useNetworkProfileRadio</tabstop>
+  <tabstop>remoteDeviceCombo</tabstop>
+  <tabstop>refreshButton</tabstop>
+  <tabstop>useHostPortRadio</tabstop>
+  <tabstop>hostEdit</tabstop>
+  <tabstop>portEdit</tabstop>
+  <tabstop>userEdit</tabstop>
+  <tabstop>passEdit</tabstop>
+  <tabstop>sdrRadio</tabstop>
+  <tabstop>deviceCombo</tabstop>
+  <tabstop>antennaCombo</tabstop>
+  <tabstop>channelSpin</tabstop>
+  <tabstop>fileRadio</tabstop>
+  <tabstop>pathEdit</tabstop>
+  <tabstop>browseButton</tabstop>
+  <tabstop>formatCombo</tabstop>
+  <tabstop>loopCheck</tabstop>
+  <tabstop>spectAvgAlphaEdit</tabstop>
+  <tabstop>sLevelAvgAlphaEdit</tabstop>
+  <tabstop>nLevelAvgAlphaEdit</tabstop>
+  <tabstop>snrThresholdEdit</tabstop>
+  <tabstop>searchBwSlider</tabstop>
+  <tabstop>fftSizeEdit</tabstop>
+  <tabstop>rectangularRadio</tabstop>
+  <tabstop>hammingRadio</tabstop>
+  <tabstop>hannRadio</tabstop>
+  <tabstop>flatTopRadio</tabstop>
+  <tabstop>blackmannHarrisRadio</tabstop>
+  <tabstop>channelRefreshEdit</tabstop>
+  <tabstop>spectrumRefreshEdit</tabstop>
+  <tabstop>sampleRateCombo</tabstop>
+  <tabstop>reverseDragBehaviorCheck</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
