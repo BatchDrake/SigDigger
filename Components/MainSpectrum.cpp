@@ -58,6 +58,7 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   this->connectAll();
   this->setFreqs(0, 0);
   this->setShowFATs(true);
+  this->lastFreqUpdate.start();
 
   this->bookmarkSource = new SuscanBookmarkSource();
 
@@ -260,18 +261,28 @@ MainSpectrum::setLnbFreq(qint64 lnbFreq)
 }
 
 void
+MainSpectrum::setGracePeriod(qint64 period)
+{
+  this->freqGracePeriod = period;
+}
+
+void
 MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq, bool silent)
 {
   qint64 newLo = this->ui->loLcd->getValue() - freq;
+
+  if (silent
+      && !this->lastFreqUpdate.hasExpired(this->freqGracePeriod))
+    return;
 
   if (silent) {
     this->ui->lnbLcd->setValueSilent(lnbFreq);
     this->ui->fcLcd->setValueSilent(freq);
   } else {
+    this->lastFreqUpdate.start();
     this->ui->lnbLcd->setValue(lnbFreq);
     this->ui->fcLcd->setValue(freq);
   }
-
 
   this->ui->mainSpectrum->setCenterFreq(freq);
   this->ui->mainSpectrum->setFreqUnits(getFrequencyUnits(freq));

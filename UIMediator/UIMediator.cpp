@@ -158,6 +158,9 @@ UIMediator::refreshUI(void)
     QString host = QString::fromStdString(config->getParam("host"));
     QString port = QString::fromStdString(config->getParam("port"));
     sourceDesc = "Remote analyzer on " + user + "@" + host + ":" + port;
+
+    this->ui->spectrum->setGracePeriod(
+          SIGDIGGER_UI_MEDIATOR_REMOTE_GRACE_PERIOD_MS);
   } else {
     if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {
       sourceDesc = QString::fromStdString(dev.getDesc());
@@ -165,6 +168,8 @@ UIMediator::refreshUI(void)
       QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
       sourceDesc = fi.fileName();
     }
+    this->ui->spectrum->setGracePeriod(
+          SIGDIGGER_UI_MEDIATOR_LOCAL_GRACE_PERIOD_MS);
   }
 
   this->owner->setWindowTitle(

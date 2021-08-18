@@ -25,6 +25,9 @@
 #include <GuiConfig.h>
 #include <Waterfall.h>
 #include <Palette.h>
+#include <QElapsedTimer>
+
+#define SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS 1000
 
 namespace Ui {
   class MainSpectrum;
@@ -62,6 +65,9 @@ namespace SigDigger {
     bool throttling = false;
     qint64 minFreq = 0;
     qint64 maxFreq = 6000000000;
+    QElapsedTimer lastFreqUpdate;
+    qint64 freqGracePeriod =
+        SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS;
 
     // Cached members (for UI update, etc)
     unsigned int cachedRate = 0;
@@ -108,6 +114,7 @@ namespace SigDigger {
     void setZoom(unsigned int zoom);
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
+    void setGracePeriod(qint64 ms);
 
     void setShowFATs(bool);
     void pushFAT(FrequencyAllocationTable *);
