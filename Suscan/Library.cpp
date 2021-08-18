@@ -362,7 +362,7 @@ Singleton::init_bookmarks(void)
       bm.info.color = QColor(QString::fromStdString(list[i].getField("color").value()));
 
       try {
-        // try parse extended informations
+        // try parse extended information
         std::string lowFreqCut = list[i].getField("low_freq_cut").value();
         std::string highFreqCut = list[i].getField("high_freq_cut").value();
         bm.info.modulation = QString::fromStdString(list[i].getField("modulation").value());

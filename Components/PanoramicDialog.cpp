@@ -849,7 +849,7 @@ PanoramicDialog::refreshGains(Suscan::Source::Device &device)
   }
 }
 
-// Overriden methods
+// Overridden methods
 Suscan::Serializable *
 PanoramicDialog::allocConfig(void)
 {
@@ -1110,7 +1110,7 @@ PanoramicDialog::onExport(void)
           QMessageBox::warning(
                 this,
                 "Cannot open file",
-                "Cannote save file in the specified location. Please choose "
+                "Cannot save file in the specified location. Please choose "
                 "a different location and try again.",
                 QMessageBox::Ok);
         } else {

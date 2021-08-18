@@ -58,7 +58,7 @@ namespace SigDigger {
 
     int zoom = 1;
 
-    // Overriden methods
+    // Overridden methods
     void deserialize(Suscan::Object const &conf) override;
     Suscan::Object &&serialize(void) override;
   };
@@ -169,7 +169,7 @@ namespace SigDigger {
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
 
-    // Overriden methods
+    // Overridden methods
     Suscan::Serializable *allocConfig(void) override;
     void applyConfig(void) override;
 

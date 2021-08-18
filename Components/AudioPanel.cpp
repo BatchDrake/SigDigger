@@ -600,7 +600,7 @@ AudioPanel::getOrbit(void) const
   return this->fcDialog->getOrbit();
 }
 
-// Overriden getters
+// Overridden getters
 bool
 AudioPanel::getRecordState(void) const
 {
@@ -613,7 +613,7 @@ AudioPanel::getRecordSavePath(void) const
   return this->ui->savePath->text().toStdString();
 }
 
-// Overriden methods
+// Overridden methods
 Suscan::Serializable *
 AudioPanel::allocConfig(void)
 {

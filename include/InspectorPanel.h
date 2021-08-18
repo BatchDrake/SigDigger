@@ -42,7 +42,7 @@ namespace SigDigger {
     int paletteContrast;
     bool precise = false;
 
-    // Overriden methods
+    // Overridden methods
     void deserialize(Suscan::Object const &conf) override;
     Suscan::Object &&serialize(void) override;
   };
@@ -118,7 +118,7 @@ namespace SigDigger {
     bool getPrecise(void) const;
     enum State getState(void) const;
 
-    // Overriden methods
+    // Overridden methods
     Suscan::Serializable *allocConfig(void) override;
     void applyConfig(void) override;
 

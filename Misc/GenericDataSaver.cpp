@@ -1,5 +1,5 @@
 //
-//    GenericDataSaver.h: save hight bandwidth data
+//    GenericDataSaver.h: save height bandwidth data
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify

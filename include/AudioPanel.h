@@ -52,7 +52,7 @@ namespace SigDigger {
     std::string satName = "ISS (ZARYA)";
     std::string tleData = "";
 
-    // Overriden methods
+    // Overridden methods
     void deserialize(Suscan::Object const &conf) override;
     Suscan::Object &&serialize(void) override;
   };
@@ -111,7 +111,7 @@ namespace SigDigger {
     void notifyOrbitReport(Suscan::OrbitReport const &);
     void notifyDisableCorrection(void);
 
-    // Overriden setters
+    // Overridden setters
     void setRecordSavePath(std::string const &) override;
     void setSaveEnabled(bool enabled) override;
     void setCaptureSize(quint64) override;
@@ -133,11 +133,11 @@ namespace SigDigger {
     SUFLOAT getSquelchLevel(void) const;
     Suscan::Orbit getOrbit(void) const;
 
-    // Overriden getters
+    // Overridden getters
     bool getRecordState(void) const override;
     std::string getRecordSavePath(void) const override;
 
-    // Overriden methods
+    // Overridden methods
     Suscan::Serializable *allocConfig(void) override;
     void applyConfig(void) override;
 
