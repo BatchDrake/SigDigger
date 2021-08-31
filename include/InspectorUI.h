@@ -130,6 +130,7 @@ namespace SigDigger {
     unsigned int getHScrollOffset(void) const;
     void refreshVScrollBar(void) const;
     void refreshHScrollBar(void) const;
+    void redrawMeasures(void);
 
     int fd = -1;
 
@@ -200,6 +201,8 @@ namespace SigDigger {
       void onUnitChanged(void);
       void onZeroPointChanged(void);
       void onGainChanged(void);
+      void onNewOffset(void);
+      void onNewBandwidth(int, int);
 
       // DataSaver slots
       void onSaveError(void);

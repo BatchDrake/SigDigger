@@ -136,6 +136,16 @@ InspectorUI::initUi(void)
   this->ui->wfSpectrum->resetHorizontalZoom();
   this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
 
+  this->ui->centerLabel->setFixedWidth(
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->centerLabel,
+          "XXX.XXXXXXXXX XHz"));
+
+  this->ui->bwLabel->setFixedWidth(
+        SuWidgetsHelpers::getWidgetTextWidth(
+          this->ui->bwLabel,
+          "XXX.XXXXXXXXX XHz"));
+
   // Refresh Bps
   this->setBps(1);
 }
@@ -374,6 +384,19 @@ InspectorUI::connectAll()
         SIGNAL(valueChanged(double)),
         this,
         SLOT(onGainChanged(void)));
+
+  connect(
+        this->ui->wfSpectrum,
+        SIGNAL(newFilterFreq(int, int)),
+        this,
+        SLOT(onNewBandwidth(int, int)));
+
+  connect(
+        this->ui->wfSpectrum,
+        SIGNAL(newDemodFreq(qint64, qint64)),
+        this,
+        SLOT(onNewOffset()));
+
 }
 
 void
@@ -753,6 +776,24 @@ InspectorUI::populate(void)
         this,
         SLOT(onToggleNetForward(void)));
 
+}
+
+void
+InspectorUI::redrawMeasures(void)
+{
+  this->ui->centerLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(
+            this->ui->wfSpectrum->getFilterOffset()),
+          6,
+          "Hz",
+          true));
+
+  this->ui->bwLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(this->ui->wfSpectrum->getFilterBw()),
+          6,
+          "Hz"));
 }
 
 void
@@ -1221,4 +1262,16 @@ InspectorUI::onGainChanged(void)
 {
   this->ui->wfSpectrum->setGain(
         static_cast<float>(this->ui->gainSpinBox->value()));
+}
+
+void
+InspectorUI::onNewOffset(void)
+{
+  this->redrawMeasures();
+}
+
+void
+InspectorUI::onNewBandwidth(int, int)
+{
+  this->redrawMeasures();
 }
