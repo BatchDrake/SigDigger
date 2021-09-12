@@ -26,7 +26,7 @@
 
 
 DISTROOT="$PWD"
-BRANCH=master
+BRANCH=develop
 OSTYPE=`uname -s`
 ARCH=`uname -m`
 RELEASE="0.2.0"
