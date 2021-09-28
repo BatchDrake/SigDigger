@@ -65,6 +65,7 @@ SOURCES += \
     Audio/GenericAudioPlayer.cpp \
     Components/AboutDialog.cpp \
     Components/AudioPanel.cpp \
+    Components/ColorConfigTab.cpp \
     Components/ConfigDialog.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
@@ -72,11 +73,14 @@ SOURCES += \
     Components/FftPanel.cpp \
     Components/GainSlider.cpp \
     Components/GenericDataSaverUI.cpp \
+    Components/GuiConfigTab.cpp \
     Components/HistogramDialog.cpp \
     Components/InspectorPanel.cpp \
+    Components/LocationConfigTab.cpp \
     Components/MainSpectrum.cpp \
     Components/MainWindow.cpp \
     Components/PersistentWidget.cpp \
+    Components/ProfileConfigTab.cpp \
     Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
@@ -161,13 +165,17 @@ HEADERS += \
     include/AudioFileSaver.h \
     include/CarrierDetector.h \
     include/CarrierXlator.h \
+    include/ColorConfigTab.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
+    include/GuiConfigTab.h \
     include/HistogramDialog.h \
     include/HistogramFeeder.h \
+    include/LocationConfigTab.h \
     include/PortAudioPlayer.h \
+    include/ProfileConfigTab.h \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
     include/SigDiggerHelpers.h \
@@ -264,6 +272,7 @@ FORMS += \
     ui/AskControl.ui \
     ui/AudioPanel.ui \
     ui/ClockRecovery.ui \
+    ui/ColorConfigTab.ui \
     ui/Config.ui \
     ui/DataSaverUI.ui \
     ui/DeviceGain.ui \
@@ -272,12 +281,15 @@ FORMS += \
     ui/FftPanel.ui \
     ui/GainControl.ui \
     ui/GainSlider.ui \
+    ui/GuiConfigTab.ui \
     ui/HistogramDialog.ui \
     ui/Inspector.ui \
     ui/InspectorPanel.ui \
+    ui/LocationConfigTab.ui \
     ui/MainSpectrum.ui \
     ui/MainWindow.ui \
     ui/MfControl.ui \
+    ui/ProfileConfigTab.ui \
     ui/SamplerDialog.ui \
     ui/SourcePanel.ui \
     ui/TimeWindow.ui \

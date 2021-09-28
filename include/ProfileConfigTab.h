@@ -1,5 +1,5 @@
 //
-//    ConfigDialog.h: Configuration dialog window
+//    filename: description
 //    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,50 +16,41 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef CONFIGDIALOG_H
-#define CONFIGDIALOG_H
+#ifndef PROFILECONFIGTAB_H
+#define PROFILECONFIGTAB_H
 
-#include <QDialog>
-#include <ui_Config.h>
+#include <QWidget>
 #include <Suscan/AnalyzerParams.h>
 #include <Suscan/Source.h>
-#include <ColorConfig.h>
-#include <GuiConfig.h>
+
+#include <QComboBox>
 #include <SaveProfileDialog.h>
 
 #define SIGDIGGER_MIN_RADIO_FREQ  -3e11
 #define SIGDIGGER_MAX_RADIO_FREQ   3e11
 
+namespace Ui {
+  class ProfileConfigTab;
+}
+
 namespace SigDigger {
-  class ConfigDialog : public QDialog
+  class ProfileConfigTab : public QWidget
   {
     Q_OBJECT
 
-  private:
+    Ui::ProfileConfigTab *ui;
+    bool refreshing = true;
     Suscan::Source::Config profile;
     Suscan::Source::Device remoteDevice;
-    Suscan::AnalyzerParams analyzerParams;
-
-    ColorConfig colors;
-    GuiConfig guiConfig;
-    QMap<QString, int> countryList;
-    bool accepted;
-    bool refreshing = false;
 
     int savedLocalDeviceIndex = 0;
 
-    // UI elements
-    Ui_Config *ui = nullptr;
     SaveProfileDialog saveProfileDialog;
 
     void connectAll(void);
     void populateCombos(void);
-    void populateLocations(void);
     void refreshAntennas(void);
     void refreshSampRates(void);
-    void refreshColorUi(void);
-    void refreshGuiConfigUi();
-    void refreshAnalyzerParamsUi(void);
     void refreshProfileUi(void);
     void refreshFrequencyLimits(void);
     void refreshUi(void);
@@ -68,9 +59,6 @@ namespace SigDigger {
     void refreshUiState(void);
     void refreshTrueSampleRate(void);
     void loadProfile(Suscan::Source::Config &config);
-    void saveAnalyzerParams(void);
-    void saveColors(void);
-    void saveGuiConfigUi(void);
     void guessParamsFromFileName(void);
     void updateRemoteParams(void);
     int  findRemoteProfileIndex(void);
@@ -83,8 +71,6 @@ namespace SigDigger {
   public:
     void setProfile(const Suscan::Source::Config &profile);
     void setAnalyzerParams(const Suscan::AnalyzerParams &params);
-    void setColors(const ColorConfig &config);
-    void setGuiConfig(const GuiConfig &config);
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
     void notifySingletonChanges(void);
@@ -93,13 +79,10 @@ namespace SigDigger {
 
     float getGain(std::string const &name);
     Suscan::Source::Config getProfile(void);
-    ColorConfig getColors(void);
-    GuiConfig getGuiConfig();
     Suscan::AnalyzerParams getAnalyzerParams(void);
 
-    bool run(void);
-    explicit ConfigDialog(QWidget *parent = nullptr);
-    ~ConfigDialog();
+    explicit ProfileConfigTab(QWidget *parent = nullptr);
+    ~ProfileConfigTab();
 
     static void
     populateAntennaCombo(
@@ -133,15 +116,12 @@ namespace SigDigger {
     void onSpinsChanged(void);
     void onBandwidthChanged(double);
     void onBrowseCaptureFile(void);
-    void onAccepted(void);
     void onSaveProfile(void);
     void onChangeConnectionType(void);
     void onRemoteParamsChanged(void);
     void onRefreshRemoteDevices(void);
     void onRemoteProfileSelected(void);
-    void onLocationSelected(QListWidgetItem *item);
   };
-};
+}
 
-
-#endif // CONFIGDIALOG_H
+#endif // PROFILECONFIGTAB_H

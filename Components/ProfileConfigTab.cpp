@@ -1,6 +1,6 @@
 //
-//    ConfigDialog.cpp: Configuration dialog window
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    ProfileCOnfigTab.cpp: Configuration dialog window
+//    Copyright (C) 2021 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -23,10 +23,11 @@
 #include <Suscan/Library.h>
 #include <SuWidgetsHelpers.h>
 #include <time.h>
-#include "ConfigDialog.h"
+#include "ProfileConfigTab.h"
+#include "ui_ProfileConfigTab.h"
 
-#define SIGDIGGER_CONFIG_DIALOG_MIN_DEVICE_FREQ 0
-#define SIGDIGGER_CONFIG_DIALOG_MAX_DEVICE_FREQ 7.5e9
+#define PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ 0
+#define PROFILE_CONFIG_TAB_MAX_DEVICE_FREQ 7.5e9
 
 using namespace SigDigger;
 
@@ -34,7 +35,7 @@ Q_DECLARE_METATYPE(Suscan::Source::Config); // Unicorns
 Q_DECLARE_METATYPE(Suscan::Source::Device); // More unicorns
 
 void
-ConfigDialog::populateCombos(void)
+ProfileConfigTab::populateCombos(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
@@ -71,31 +72,7 @@ ConfigDialog::populateCombos(void)
 }
 
 void
-ConfigDialog::populateLocations(void)
-{
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  int index = 0;
-
-  for (auto i = sus->getFirstLocation(); i != sus->getLastLocation(); ++i) {
-    QString country;
-    QListWidgetItem *item = new QListWidgetItem;
-    item->setText(i->getLocationName());
-    this->ui->cityListWidget->addItem(item);
-
-    country = QString::fromStdString(i->country);
-
-    if (this->countryList.find(country) == this->countryList.end())
-      this->countryList.insert(country, -1);
-  }
-
-  for (auto p = this->countryList.begin(); p != this->countryList.end(); ++p) {
-    *p = index++;
-    this->ui->countryCombo->insertItem(*p, p.key());
-  }
-}
-
-void
-ConfigDialog::refreshUiState(void)
+ProfileConfigTab::refreshUiState(void)
 {
   int analyzerTypeIndex = this->ui->analyzerTypeCombo->currentIndex();
   bool netProfile = this->ui->useNetworkProfileRadio->isChecked();
@@ -140,13 +117,13 @@ ConfigDialog::refreshUiState(void)
 }
 
 void
-ConfigDialog::refreshAntennas(void)
+ProfileConfigTab::refreshAntennas(void)
 {
   populateAntennaCombo(this->profile, this->ui->antennaCombo);
 }
 
 void
-ConfigDialog::refreshSampRates(void)
+ProfileConfigTab::refreshSampRates(void)
 {
   Suscan::Source::Device device = this->profile.getDevice();
 
@@ -162,88 +139,12 @@ ConfigDialog::refreshSampRates(void)
   }
 }
 
-#define APSTOREF(widget, field) \
-  this->ui->widget->setText(QString::number(static_cast<qreal>(\
-    this->analyzerParams.field)))
-#define APSTOREI(widget, field) \
-  this->ui->widget->setText(QString::number(this->analyzerParams.field))
-#define APSAVEF(widget, field) \
-  this->analyzerParams.field = this->ui->widget->text().toFloat()
-#define APSAVEI(widget, field) \
-  this->analyzerParams.field = this->ui->widget->text().toUInt()
-
 void
-ConfigDialog::saveAnalyzerParams(void)
-{
-  APSAVEF(spectAvgAlphaEdit, spectrumAvgAlpha);
-  APSAVEF(sLevelAvgAlphaEdit, sAvgAlpha);
-  APSAVEF(nLevelAvgAlphaEdit, nAvgAlpha);
-  APSAVEF(snrThresholdEdit, snr);
-  APSAVEF(spectrumRefreshEdit, psdUpdateInterval);
-  APSAVEF(channelRefreshEdit, channelUpdateInterval);
-  APSAVEI(fftSizeEdit, windowSize);
-
-  this->analyzerParams.psdUpdateInterval *= 1e-3f;
-  this->analyzerParams.channelUpdateInterval *= 1e-3f;
-
-  if (this->ui->rectangularRadio->isChecked())
-    this->analyzerParams.windowFunction = Suscan::AnalyzerParams::NONE;
-  else if (this->ui->hammingRadio->isChecked())
-    this->analyzerParams.windowFunction = Suscan::AnalyzerParams::HAMMING;
-  else if (this->ui->hannRadio->isChecked())
-    this->analyzerParams.windowFunction = Suscan::AnalyzerParams::HANN;
-  else if (this->ui->flatTopRadio->isChecked())
-    this->analyzerParams.windowFunction = Suscan::AnalyzerParams::FLAT_TOP;
-  else if (this->ui->blackmannHarrisRadio->isChecked())
-    this->analyzerParams.windowFunction = Suscan::AnalyzerParams::BLACKMANN_HARRIS;
-}
-
-void
-ConfigDialog::refreshAnalyzerParamsUi(void)
-{
-  this->analyzerParams.psdUpdateInterval *= 1e3f;
-  this->analyzerParams.channelUpdateInterval *= 1e3f;
-
-  APSTOREF(spectAvgAlphaEdit, spectrumAvgAlpha);
-  APSTOREF(sLevelAvgAlphaEdit, sAvgAlpha);
-  APSTOREF(nLevelAvgAlphaEdit, nAvgAlpha);
-  APSTOREF(snrThresholdEdit, snr);
-  APSTOREF(spectrumRefreshEdit, psdUpdateInterval);
-  APSTOREF(channelRefreshEdit, channelUpdateInterval);
-  APSTOREI(fftSizeEdit, windowSize);
-
-  this->analyzerParams.psdUpdateInterval *= 1e-3f;
-  this->analyzerParams.channelUpdateInterval *= 1e-3f;
-
-  switch (this->analyzerParams.windowFunction) {
-    case Suscan::AnalyzerParams::NONE:
-      this->ui->rectangularRadio->setChecked(true);
-      break;
-
-    case Suscan::AnalyzerParams::HAMMING:
-      this->ui->hammingRadio->setChecked(true);
-      break;
-
-    case Suscan::AnalyzerParams::HANN:
-      this->ui->hannRadio->setChecked(true);
-      break;
-
-    case Suscan::AnalyzerParams::FLAT_TOP:
-      this->ui->flatTopRadio->setChecked(true);
-      break;
-
-    case Suscan::AnalyzerParams::BLACKMANN_HARRIS:
-      this->ui->blackmannHarrisRadio->setChecked(true);
-      break;
-  }
-}
-
-void
-ConfigDialog::refreshFrequencyLimits(void)
+ProfileConfigTab::refreshFrequencyLimits(void)
 {
   SUFREQ lnbFreq = this->ui->lnbSpinBox->value();
-  SUFREQ devMinFreq = SIGDIGGER_CONFIG_DIALOG_MIN_DEVICE_FREQ;
-  SUFREQ devMaxFreq = SIGDIGGER_CONFIG_DIALOG_MAX_DEVICE_FREQ;
+  SUFREQ devMinFreq = PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ;
+  SUFREQ devMaxFreq = PROFILE_CONFIG_TAB_MAX_DEVICE_FREQ;
 
   if (this->profile.getType() == SUSCAN_SOURCE_TYPE_FILE) {
     devMinFreq = SIGDIGGER_MIN_RADIO_FREQ;
@@ -262,75 +163,8 @@ ConfigDialog::refreshFrequencyLimits(void)
   this->ui->frequencySpinBox->setMaximum(devMaxFreq + lnbFreq);
 }
 
-#define CCREFRESH(widget, field) this->ui->widget->setColor(this->colors.field)
-#define CCSAVE(widget, field) this->ui->widget->getColor(this->colors.field)
-
-void
-ConfigDialog::saveColors(void)
-{
-  CCSAVE(lcdFgColor, lcdForeground);
-  CCSAVE(lcdBgColor, lcdBackground);
-  CCSAVE(spectrumFgColor, spectrumForeground);
-  CCSAVE(spectrumBgColor, spectrumBackground);
-  CCSAVE(spectrumAxesColor, spectrumAxes);
-  CCSAVE(spectrumTextColor, spectrumText);
-  CCSAVE(constellationFgColor, constellationForeground);
-  CCSAVE(constellationBgColor, constellationBackground);
-  CCSAVE(constellationAxesColor, constellationAxes);
-  CCSAVE(transitionFgColor, transitionForeground);
-  CCSAVE(transitionBgColor, transitionBackground);
-  CCSAVE(transitionAxesColor, transitionAxes);
-  CCSAVE(histogramFgColor, histogramForeground);
-  CCSAVE(histogramBgColor, histogramBackground);
-  CCSAVE(histogramAxesColor, histogramAxes);
-  CCSAVE(histogramModelColor, histogramModel);
-  CCSAVE(symViewLoColor, symViewLow);
-  CCSAVE(symViewHiColor, symViewHigh);
-  CCSAVE(symViewBgColor, symViewBackground);
-  CCSAVE(selectionColor, selection);
-  CCSAVE(filterBoxColor, filterBox);
-}
-
-void
-ConfigDialog::refreshColorUi(void)
-{
-  CCREFRESH(lcdFgColor, lcdForeground);
-  CCREFRESH(lcdBgColor, lcdBackground);
-  CCREFRESH(spectrumFgColor, spectrumForeground);
-  CCREFRESH(spectrumBgColor, spectrumBackground);
-  CCREFRESH(spectrumAxesColor, spectrumAxes);
-  CCREFRESH(spectrumTextColor, spectrumText);
-  CCREFRESH(constellationFgColor, constellationForeground);
-  CCREFRESH(constellationBgColor, constellationBackground);
-  CCREFRESH(constellationAxesColor, constellationAxes);
-  CCREFRESH(transitionFgColor, transitionForeground);
-  CCREFRESH(transitionBgColor, transitionBackground);
-  CCREFRESH(transitionAxesColor, transitionAxes);
-  CCREFRESH(histogramFgColor, histogramForeground);
-  CCREFRESH(histogramBgColor, histogramBackground);
-  CCREFRESH(histogramAxesColor, histogramAxes);
-  CCREFRESH(histogramModelColor, histogramModel);
-  CCREFRESH(symViewLoColor, symViewLow);
-  CCREFRESH(symViewHiColor, symViewHigh);
-  CCREFRESH(symViewBgColor, symViewBackground);
-  CCREFRESH(selectionColor, selection);
-  CCREFRESH(filterBoxColor, filterBox);
-}
-
-void
-ConfigDialog::saveGuiConfigUi()
-{
-  this->guiConfig.useLMBdrag = this->ui->reverseDragBehaviorCheck->isChecked();
-}
-
-void
-ConfigDialog::refreshGuiConfigUi()
-{
-  this->ui->reverseDragBehaviorCheck->setChecked(this->guiConfig.useLMBdrag);
-}
-
 QString
-ConfigDialog::getSampRateString(qreal trueRate)
+ProfileConfigTab::getSampRateString(qreal trueRate)
 {
   QString rateText;
 
@@ -345,7 +179,7 @@ ConfigDialog::getSampRateString(qreal trueRate)
 }
 
 void
-ConfigDialog::refreshTrueSampleRate(void)
+ProfileConfigTab::refreshTrueSampleRate(void)
 {
   float step = SU_POW(10., SU_FLOOR(SU_LOG(this->profile.getSampleRate())));
   QString rateText;
@@ -358,7 +192,7 @@ ConfigDialog::refreshTrueSampleRate(void)
 }
 
 void
-ConfigDialog::refreshAnalyzerTypeUi(void)
+ProfileConfigTab::refreshAnalyzerTypeUi(void)
 {
   if (this->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
     this->ui->analyzerTypeCombo->setCurrentIndex(0);
@@ -371,13 +205,13 @@ ConfigDialog::refreshAnalyzerTypeUi(void)
 }
 
 int
-ConfigDialog::findRemoteProfileIndex(void)
+ProfileConfigTab::findRemoteProfileIndex(void)
 {
   return this->ui->remoteDeviceCombo->findText(this->profile.label().c_str());
 }
 
 void
-ConfigDialog::refreshProfileUi(void)
+ProfileConfigTab::refreshProfileUi(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   bool adjustableSourceTime = false;
@@ -518,20 +352,18 @@ ConfigDialog::refreshProfileUi(void)
 }
 
 void
-ConfigDialog::refreshUi(void)
+ProfileConfigTab::refreshUi(void)
 {
   this->refreshing = true;
 
-  this->refreshColorUi();
   this->refreshProfileUi();
-  this->refreshGuiConfigUi();
 
   this->refreshing = false;
 }
 
 
 void
-ConfigDialog::saveProfile()
+ProfileConfigTab::saveProfile()
 {
   this->profile.setType(
         this->ui->sdrRadio->isChecked()
@@ -547,7 +379,7 @@ ConfigDialog::saveProfile()
 }
 
 void
-ConfigDialog::connectAll(void)
+ProfileConfigTab::connectAll(void)
 {
   connect(
         this->ui->deviceCombo,
@@ -634,13 +466,6 @@ ConfigDialog::connectAll(void)
         SLOT(onCheckButtonsToggled(bool)));
 
   connect(
-        this->ui->reverseDragBehaviorCheck,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onCheckButtonsToggled(bool)));
-
-
-  connect(
         this->ui->bandwidthSpinBox,
         SIGNAL(valueChanged(double)),
         this,
@@ -723,99 +548,54 @@ ConfigDialog::connectAll(void)
         SIGNAL(clicked(void)),
         this,
         SLOT(onRefreshRemoteDevices(void)));
-
-  connect(
-        this->ui->cityListWidget,
-        SIGNAL(itemDoubleClicked(QListWidgetItem *)),
-        this,
-        SLOT(onLocationSelected(QListWidgetItem *)));
 }
 
 void
-ConfigDialog::setAnalyzerParams(const Suscan::AnalyzerParams &params)
-{
-  this->analyzerParams = params;
-  this->refreshAnalyzerParamsUi();
-}
-
-void
-ConfigDialog::setProfile(const Suscan::Source::Config &profile)
+ProfileConfigTab::setProfile(const Suscan::Source::Config &profile)
 {
   this->profile = profile;
   this->refreshUi();
 }
 
 void
-ConfigDialog::setFrequency(qint64 val)
+ProfileConfigTab::setFrequency(qint64 val)
 {
   this->profile.setFreq(static_cast<SUFREQ>(val));
 }
 
 void
-ConfigDialog::notifySingletonChanges(void)
+ProfileConfigTab::notifySingletonChanges(void)
 {
   this->populateCombos();
   this->refreshUi();
 }
 
 bool
-ConfigDialog::remoteSelected(void) const
+ProfileConfigTab::remoteSelected(void) const
 {
   return this->ui->analyzerTypeCombo->currentIndex() == 1;
 }
 
 void
-ConfigDialog::setGain(std::string const &name, float value)
+ProfileConfigTab::setGain(std::string const &name, float value)
 {
   this->profile.setGain(name, value);
 }
 
 float
-ConfigDialog::getGain(std::string const &name)
+ProfileConfigTab::getGain(std::string const &name)
 {
   return this->profile.getGain(name);
 }
 
-Suscan::AnalyzerParams
-ConfigDialog::getAnalyzerParams(void)
-{
-  return this->analyzerParams;
-}
-
 Suscan::Source::Config
-ConfigDialog::getProfile(void)
+ProfileConfigTab::getProfile(void)
 {
   return this->profile;
 }
 
 void
-ConfigDialog::setColors(ColorConfig const &config)
-{
-  this->colors = config;
-  this->refreshUi();
-}
-
-ColorConfig
-ConfigDialog::getColors(void)
-{
-  return this->colors;
-}
-
-void
-ConfigDialog::setGuiConfig(GuiConfig const &config)
-{
-  this->guiConfig = config;
-  this->refreshUi();
-}
-
-GuiConfig
-ConfigDialog::getGuiConfig()
-{
-  return this->guiConfig;
-}
-
-void
-ConfigDialog::updateRemoteParams(void)
+ProfileConfigTab::updateRemoteParams(void)
 {
   this->profile.setParam("host", this->ui->hostEdit->text().toStdString());
   this->profile.setParam("port", std::to_string(this->ui->portEdit->value()));
@@ -824,11 +604,10 @@ ConfigDialog::updateRemoteParams(void)
   this->profile.setParam("label", "User-defined remote profile");
 }
 
-ConfigDialog::ConfigDialog(QWidget *parent) :
-  QDialog(parent),
+ProfileConfigTab::ProfileConfigTab(QWidget *parent) : QWidget(parent),
   profile(SUSCAN_SOURCE_TYPE_FILE, SUSCAN_SOURCE_FORMAT_AUTO)
 {
-  this->ui = new Ui_Config();
+  this->ui = new Ui::ProfileConfigTab;
   this->ui->setupUi(this);
   this->setWindowFlags(
     this->windowFlags() & ~Qt::WindowMaximizeButtonHint);
@@ -848,37 +627,19 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
           this->ui->trueRateLabel,
           "XXX.XXX Xsps"));
 
-  // Setup integer validators
-  this->ui->fftSizeEdit->setValidator(new QIntValidator(1, 1 << 20, this));
-  this->ui->spectrumRefreshEdit->setValidator(new QIntValidator(1, 1 << 20, this));
-  this->ui->channelRefreshEdit->setValidator(new QIntValidator(1, 1 << 20, this));
-
-  // Setup double validators
-  this->ui->spectAvgAlphaEdit->setValidator(new QDoubleValidator(0., 1., 10, this));
-  this->ui->sLevelAvgAlphaEdit->setValidator(new QDoubleValidator(0., 1., 10, this));
-  this->ui->nLevelAvgAlphaEdit->setValidator(new QDoubleValidator(0., 1., 10, this));
-  this->ui->snrThresholdEdit->setValidator(new QDoubleValidator(0., 10., 10, this));
-
   // Set limits
   this->ui->lnbSpinBox->setMaximum(300e9);
   this->ui->lnbSpinBox->setMinimum(-300e9);
 
-  // Configure search box
-  this->ui->searchEdit->setClearButtonEnabled(true);
-  this->ui->searchEdit->addAction(
-        QIcon(":/icons/system-search.png"),
-        QLineEdit::LeadingPosition);
-
   // Populate locations
   this->populateCombos();
-  this->populateLocations();
   this->ui->sampleRateSpinBox->setUnits("sps");
   this->connectAll();
   this->refreshUi();
 }
 
 QString
-ConfigDialog::getBaseName(const QString &path)
+ProfileConfigTab::getBaseName(const QString &path)
 {
   int ndx;
 
@@ -889,14 +650,14 @@ ConfigDialog::getBaseName(const QString &path)
 }
 
 
-ConfigDialog::~ConfigDialog()
+ProfileConfigTab::~ProfileConfigTab()
 {
   delete this->ui;
 }
 
 //////////////// Slots //////////////////
 void
-ConfigDialog::onLoadProfileClicked(void)
+ProfileConfigTab::onLoadProfileClicked(void)
 {
   QVariant data = this->ui->profileCombo->itemData(this->ui->profileCombo->currentIndex());
 
@@ -906,7 +667,7 @@ ConfigDialog::onLoadProfileClicked(void)
 }
 
 void
-ConfigDialog::onToggleSourceType(bool)
+ProfileConfigTab::onToggleSourceType(bool)
 {
   if (!this->refreshing) {
     if (this->ui->sdrRadio->isChecked()) {
@@ -922,7 +683,7 @@ ConfigDialog::onToggleSourceType(bool)
 }
 
 void
-ConfigDialog::onDeviceChanged(int index)
+ProfileConfigTab::onDeviceChanged(int index)
 {
   // Remember: only set device if the analyzer type is local
   if (!this->refreshing
@@ -953,7 +714,7 @@ ConfigDialog::onDeviceChanged(int index)
 }
 
 void
-ConfigDialog::onFormatChanged(int index)
+ProfileConfigTab::onFormatChanged(int index)
 {
   if (!this->refreshing) {
     switch (index) {
@@ -977,7 +738,7 @@ ConfigDialog::onFormatChanged(int index)
 }
 
 void
-ConfigDialog::onAntennaChanged(int)
+ProfileConfigTab::onAntennaChanged(int)
 {
   if (!this->refreshing)
     this->profile.setAntenna(
@@ -985,7 +746,7 @@ ConfigDialog::onAntennaChanged(int)
 }
 
 void
-ConfigDialog::onAnalyzerTypeChanged(int index)
+ProfileConfigTab::onAnalyzerTypeChanged(int index)
 {
   if (!this->refreshing) {
     switch (index) {
@@ -1007,7 +768,7 @@ ConfigDialog::onAnalyzerTypeChanged(int index)
 }
 
 void
-ConfigDialog::onRemoteParamsChanged(void)
+ProfileConfigTab::onRemoteParamsChanged(void)
 {
   if (this->remoteSelected()) {
     this->profile.setDevice(this->remoteDevice);
@@ -1016,7 +777,7 @@ ConfigDialog::onRemoteParamsChanged(void)
 }
 
 void
-ConfigDialog::onCheckButtonsToggled(bool)
+ProfileConfigTab::onCheckButtonsToggled(bool)
 {
   if (!this->refreshing) {
     this->profile.setDCRemove(this->ui->removeDCCheck->isChecked());
@@ -1026,7 +787,7 @@ ConfigDialog::onCheckButtonsToggled(bool)
 }
 
 unsigned int
-ConfigDialog::getSelectedSampleRate(void) const
+ProfileConfigTab::getSelectedSampleRate(void) const
 {
   unsigned int sampRate = 0;
 
@@ -1047,7 +808,7 @@ ConfigDialog::getSelectedSampleRate(void) const
 }
 
 void
-ConfigDialog::setSelectedSampleRate(unsigned int rate)
+ProfileConfigTab::setSelectedSampleRate(unsigned int rate)
 {
   // Set sample rate in both places
   qreal dist = std::numeric_limits<qreal>::infinity();
@@ -1067,7 +828,7 @@ ConfigDialog::setSelectedSampleRate(unsigned int rate)
 }
 
 void
-ConfigDialog::onSpinsChanged(void)
+ProfileConfigTab::onSpinsChanged(void)
 {
   if (!this->refreshing) {
     SUFREQ freq;
@@ -1097,18 +858,8 @@ ConfigDialog::onSpinsChanged(void)
   }
 }
 
-bool
-ConfigDialog::run(void)
-{
-  this->accepted = false;
-
-  this->exec();
-
-  return this->accepted;
-}
-
 void
-ConfigDialog::onBandwidthChanged(double)
+ProfileConfigTab::onBandwidthChanged(double)
 {
   if (!this->refreshing)
     this->profile.setBandwidth(
@@ -1117,20 +868,7 @@ ConfigDialog::onBandwidthChanged(double)
 }
 
 void
-ConfigDialog::onAccepted(void)
-{
-  this->saveGuiConfigUi();
-  this->saveColors();
-  this->saveAnalyzerParams();
-
-  // warning: it will trigger reconfiguring device
-  // and gui refresh from stored variables
-  this->saveProfile();
-  this->accepted = true;
-}
-
-void
-ConfigDialog::guessParamsFromFileName(void)
+ProfileConfigTab::guessParamsFromFileName(void)
 {
   QFileInfo fi(QString::fromStdString(this->profile.getPath()));
   std::string baseName = fi.baseName().toStdString();
@@ -1242,7 +980,7 @@ ConfigDialog::guessParamsFromFileName(void)
 }
 
 void
-ConfigDialog::onBrowseCaptureFile(void)
+ProfileConfigTab::onBrowseCaptureFile(void)
 {
   QString format;
   QString title;
@@ -1284,7 +1022,7 @@ ConfigDialog::onBrowseCaptureFile(void)
 }
 
 void
-ConfigDialog::onSaveProfile(void)
+ProfileConfigTab::onSaveProfile(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   std::string name = "My " + this->profile.label();
@@ -1317,7 +1055,7 @@ ConfigDialog::onSaveProfile(void)
 }
 
 void
-ConfigDialog::onChangeConnectionType(void)
+ProfileConfigTab::onChangeConnectionType(void)
 {
   if (this->ui->useNetworkProfileRadio->isChecked()) {
     this->onRemoteProfileSelected();
@@ -1333,7 +1071,7 @@ ConfigDialog::onChangeConnectionType(void)
 }
 
 void
-ConfigDialog::onRefreshRemoteDevices(void)
+ProfileConfigTab::onRefreshRemoteDevices(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   int countBefore = this->ui->remoteDeviceCombo->count();
@@ -1353,7 +1091,7 @@ ConfigDialog::onRefreshRemoteDevices(void)
 }
 
 void
-ConfigDialog::onRemoteProfileSelected(void)
+ProfileConfigTab::onRemoteProfileSelected(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
@@ -1372,26 +1110,3 @@ ConfigDialog::onRemoteProfileSelected(void)
     }
   }
 }
-
-void
-ConfigDialog::onLocationSelected(QListWidgetItem *item)
-{
-  QString fullName = item->text();
-  auto locMap = Suscan::Singleton::get_instance()->getLocationMap();
-
-  if (locMap.find(fullName) != locMap.end()) {
-    auto loc = locMap[fullName];
-    QString country = QString::fromStdString(loc.country);
-    int index = -1;
-
-    this->ui->latitudeSpinBox->setValue(loc.site.lat);
-    this->ui->longitudeSpinBox->setValue(loc.site.lon);
-    this->ui->altitudeSpinBox->setValue(loc.site.height * 1e3);
-    this->ui->cityNameEdit->setText(QString::fromStdString(loc.name));
-
-    if (this->countryList.find(country) != this->countryList.end()
-        && (index = this->countryList[country]) != -1)
-      this->ui->countryCombo->setCurrentIndex(index);
-  }
-}
-
