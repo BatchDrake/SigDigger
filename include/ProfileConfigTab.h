@@ -55,7 +55,6 @@ namespace SigDigger {
     void refreshFrequencyLimits(void);
     void refreshUi(void);
     void refreshAnalyzerTypeUi(void);
-    void saveProfile(void);
     void refreshUiState(void);
     void refreshTrueSampleRate(void);
     void loadProfile(Suscan::Source::Config &config);
@@ -69,6 +68,8 @@ namespace SigDigger {
     static QString getBaseName(const QString &string);
 
   public:
+    void save(void);
+
     void setProfile(const Suscan::Source::Config &profile);
     void setAnalyzerParams(const Suscan::AnalyzerParams &params);
     void setGain(std::string const &name, float value);
@@ -77,8 +78,8 @@ namespace SigDigger {
 
     bool remoteSelected(void) const;
 
-    float getGain(std::string const &name);
-    Suscan::Source::Config getProfile(void);
+    float getGain(std::string const &name) const;
+    Suscan::Source::Config getProfile(void) const;
     Suscan::AnalyzerParams getAnalyzerParams(void);
 
     explicit ProfileConfigTab(QWidget *parent = nullptr);

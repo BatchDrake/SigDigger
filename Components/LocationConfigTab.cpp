@@ -56,6 +56,12 @@ LocationConfigTab::populateLocations(void)
   }
 }
 
+void
+LocationConfigTab::save(void)
+{
+
+}
+
 LocationConfigTab::LocationConfigTab(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::LocationConfigTab)

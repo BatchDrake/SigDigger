@@ -25,7 +25,7 @@ using namespace SigDigger;
 #define CCSAVE(widget, field) this->ui->widget->getColor(this->colors.field)
 
 void
-ColorConfigTab::saveColors(void)
+ColorConfigTab::save(void)
 {
   CCSAVE(lcdFgColor, lcdForeground);
   CCSAVE(lcdBgColor, lcdBackground);
@@ -51,7 +51,7 @@ ColorConfigTab::saveColors(void)
 }
 
 void
-ColorConfigTab::refreshColorUi(void)
+ColorConfigTab::refreshUi(void)
 {
   CCREFRESH(lcdFgColor, lcdForeground);
   CCREFRESH(lcdBgColor, lcdBackground);
@@ -77,14 +77,14 @@ ColorConfigTab::refreshColorUi(void)
 }
 
 void
-ColorConfigTab::setColors(ColorConfig const &config)
+ColorConfigTab::setColorConfig(ColorConfig const &config)
 {
   this->colors = config;
-  this->refreshColorUi();
+  this->refreshUi();
 }
 
 ColorConfig
-ColorConfigTab::getColors(void)
+ColorConfigTab::getColorConfig(void) const
 {
   return this->colors;
 }

@@ -33,13 +33,14 @@ namespace SigDigger {
 
     GuiConfig guiConfig;
 
-    void refreshGuiConfigUi();
+    void refreshUi();
     void connectAll(void);
-    void saveGuiConfigUi(void);
 
   public:
+    void save(void);
+
     void setGuiConfig(const GuiConfig &config);
-    GuiConfig getGuiConfig();
+    GuiConfig getGuiConfig() const;
 
     explicit GuiConfigTab(QWidget *parent = nullptr);
     ~GuiConfigTab();

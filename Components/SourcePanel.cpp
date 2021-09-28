@@ -25,7 +25,7 @@
 #include <QFileDialog>
 
 #include <Suscan/Library.h>
-#include <ConfigDialog.h>
+#include <ProfileConfigTab.h>
 
 using namespace SigDigger;
 
@@ -312,7 +312,7 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
   this->refreshAutoGains(*config);
 
   // TODO: Move this somewhere else!!!!
-  ConfigDialog::populateAntennaCombo(
+  ProfileConfigTab::populateAntennaCombo(
         *config,
         this->ui->antennaCombo);
 

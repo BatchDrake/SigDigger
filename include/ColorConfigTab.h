@@ -33,13 +33,13 @@ namespace SigDigger {
 
     ColorConfig colors;
 
-    void refreshColorUi(void);
+    void refreshUi(void);
     void connectAll(void);
-    void saveColors(void);
 
   public:
-    void setColors(const ColorConfig &config);
-    ColorConfig getColors(void);
+    void save(void);
+    void setColorConfig(const ColorConfig &config);
+    ColorConfig getColorConfig(void) const;
 
     explicit ColorConfigTab(QWidget *parent = nullptr);
     ~ColorConfigTab();

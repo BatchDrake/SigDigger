@@ -22,15 +22,28 @@
 using namespace SigDigger;
 
 void
-GuiConfigTab::saveGuiConfigUi()
+GuiConfigTab::save()
 {
   this->guiConfig.useLMBdrag = this->ui->reverseDragBehaviorCheck->isChecked();
 }
 
 void
-GuiConfigTab::refreshGuiConfigUi()
+GuiConfigTab::refreshUi()
 {
   this->ui->reverseDragBehaviorCheck->setChecked(this->guiConfig.useLMBdrag);
+}
+
+void
+GuiConfigTab::setGuiConfig(GuiConfig const &config)
+{
+  this->guiConfig = config;
+  this->refreshUi();
+}
+
+GuiConfig
+GuiConfigTab::getGuiConfig(void) const
+{
+  return this->guiConfig;
 }
 
 void

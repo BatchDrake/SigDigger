@@ -37,6 +37,7 @@ namespace SigDigger {
     void connectAll(void);
 
   public:
+    void save();
     explicit LocationConfigTab(QWidget *parent = nullptr);
     ~LocationConfigTab();
 

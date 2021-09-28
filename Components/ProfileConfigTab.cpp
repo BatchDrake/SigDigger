@@ -363,7 +363,7 @@ ProfileConfigTab::refreshUi(void)
 
 
 void
-ProfileConfigTab::saveProfile()
+ProfileConfigTab::save()
 {
   this->profile.setType(
         this->ui->sdrRadio->isChecked()
@@ -478,12 +478,6 @@ ProfileConfigTab::connectAll(void)
         SLOT(onFormatChanged(int)));
 
   connect(
-        this,
-        SIGNAL(accepted(void)),
-        this,
-        SLOT(onAccepted(void)));
-
-  connect(
         this->ui->browseButton,
         SIGNAL(clicked(void)),
         this,
@@ -583,13 +577,13 @@ ProfileConfigTab::setGain(std::string const &name, float value)
 }
 
 float
-ProfileConfigTab::getGain(std::string const &name)
+ProfileConfigTab::getGain(std::string const &name) const
 {
   return this->profile.getGain(name);
 }
 
 Suscan::Source::Config
-ProfileConfigTab::getProfile(void)
+ProfileConfigTab::getProfile(void) const
 {
   return this->profile;
 }
@@ -609,9 +603,6 @@ ProfileConfigTab::ProfileConfigTab(QWidget *parent) : QWidget(parent),
 {
   this->ui = new Ui::ProfileConfigTab;
   this->ui->setupUi(this);
-  this->setWindowFlags(
-    this->windowFlags() & ~Qt::WindowMaximizeButtonHint);
-  this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 
   // Setup remote device
   this->remoteDevice = Suscan::Source::Device(

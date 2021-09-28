@@ -23,6 +23,7 @@
 #include <SuWidgetsHelpers.h>
 
 #include "UIMediator.h"
+#include "ProfileConfigTab.h"
 
 #include <QGuiApplication>
 #include <QDockWidget>
