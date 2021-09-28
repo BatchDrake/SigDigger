@@ -28,6 +28,38 @@ using namespace Suscan;
 Singleton *Singleton::instance = nullptr;
 Logger    *Singleton::logger   = nullptr;
 
+#define STRINGFY(x) #x
+#define STORE(field) obj.set(STRINGFY(field), this->field)
+#define STORE_NAME(name, field) obj.set(name, this->field)
+#define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
+#define LOAD_NAME(name, field) this->field = conf.get(name, this->field)
+
+void
+Location::deserialize(Suscan::Object const &conf)
+{
+  LOAD(name);
+  LOAD(country);
+  LOAD_NAME("lat", site.lat);
+  LOAD_NAME("lon", site.lon);
+  LOAD_NAME("alt", site.height);
+}
+
+Suscan::Object &&
+Location::serialize(void)
+{
+  Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+
+  obj.setClass("Location");
+
+  STORE(name);
+  STORE(country);
+  STORE_NAME("lat", site.lat);
+  STORE_NAME("lon", site.lon);
+  STORE_NAME("alt", site.height);
+
+  return this->persist(obj);
+}
+
 uint
 Suscan::qHash(const Suscan::Source::Device &dev)
 {
@@ -328,6 +360,48 @@ Singleton::init_bookmarks(void)
 }
 
 void
+Singleton::initLocationsFromContext(ConfigContext &ctx, bool user)
+{
+  Object list = ctx.listObject();
+  unsigned int i, count;
+  Location loc;
+
+  count = list.length();
+
+  loc.userLocation = user;
+  loc.site.height  = 0;
+
+  for (i = 0; i < count; ++i) {
+    loc.deserialize(list[i]);
+    this->locations[loc.getLocationName()] = loc;
+  }
+}
+
+void
+Singleton::init_locations(void)
+{
+  ConfigContext globalCtx("locations");
+  ConfigContext userCtx("user_locations");
+  ConfigContext qthCtx("qth");
+  Object list = qthCtx.listObject();
+
+  globalCtx.setSave(false);
+  userCtx.setSave(true);
+  qthCtx.setSave(true);
+
+  initLocationsFromContext(globalCtx, false);
+  initLocationsFromContext(userCtx, true);
+
+  if (list.length() > 0) {
+    if (list[0].getType() == SUSCAN_OBJECT_TYPE_OBJECT
+        && list[0].getClass() == "Location") {
+      this->qth.deserialize(list[0]);
+      this->have_qth = true;
+    }
+  }
+}
+
+void
 Singleton::refreshDevices(void)
 {
   this->devices.clear();
@@ -341,6 +415,13 @@ Singleton::refreshNetworkProfiles(void)
   suscan_discovered_remote_device_walk(
         walk_all_remote_devices,
         static_cast<void *>(this));
+}
+
+void
+Singleton::setQth(Location const &loc)
+{
+  this->qth = loc;
+  this->have_qth = true;
 }
 
 void
@@ -400,6 +481,33 @@ Singleton::syncRecent(void)
     } catch (Suscan::Exception const &) {
       // Don't even bother to warn
     }
+  }
+}
+
+void
+Singleton::syncLocations(void)
+{
+  ConfigContext ctx("user_locations");
+  Object list = ctx.listObject();
+
+  // Save all user locations
+  list.clear();
+
+  for (auto p : this->locations) {
+    try {
+      if (p.userLocation)
+        list.append(p.serialize());
+    } catch (Suscan::Exception const &) {
+      // Don't even bother to warn
+    }
+  }
+
+  // Save QTH, if defined
+  if (this->have_qth) {
+    ConfigContext ctx("qth");
+    Object list = ctx.listObject();
+    list.clear();
+    list.append(this->qth.serialize());
   }
 }
 
@@ -465,6 +573,7 @@ Singleton::sync(void)
   this->syncRecent();
   this->syncUI();
   this->syncBookmarks();
+  this->syncLocations();
 }
 
 // Singleton methods
@@ -561,6 +670,22 @@ Singleton::registerBookmark(BookmarkInfo const& info)
 
   bm.info = info;
   this->bookmarks[info.frequency] = bm;
+
+  return true;
+}
+
+bool
+Singleton::registerLocation(Location const& loc)
+{
+  if (this->locations.find(loc.getLocationName()) != this->locations.end())
+    return false;
+
+  Location newLoc;
+
+  newLoc = loc;
+  newLoc.userLocation = true;
+
+  this->locations[newLoc.getLocationName()] = newLoc;
 
   return true;
 }
@@ -728,6 +853,24 @@ QMap<qint64,Bookmark>::const_iterator
 Singleton::getBookmarkFrom(qint64 freq) const
 {
   return this->bookmarks.lowerBound(freq);
+}
+
+QMap<QString, Location> const &
+Singleton::getLocationMap(void) const
+{
+  return this->locations;
+}
+
+QMap<QString, Location>::const_iterator
+Singleton::getFirstLocation(void) const
+{
+  return this->locations.cbegin();
+}
+
+QMap<QString, Location>::const_iterator
+Singleton::getLastLocation(void) const
+{
+  return this->locations.cend();
 }
 
 QMap<std::string, SpectrumUnit> const &

@@ -53,6 +53,8 @@ InitThread::run()
     sing->init_fats();
     emit change("Loading bookmarks");
     sing->init_bookmarks();
+    emit change("Loading locations");
+    sing->init_locations();
     emit change("Loading auto gains");
     sing->init_autogains();
     emit change("Loading UI config");

@@ -324,6 +324,7 @@ namespace Suscan {
     std::string getAntenna(void) const;
     bool getDCRemove(void) const;
     bool getIQBalance(void) const;
+    struct timeval getStartTime(void) const;
     std::string getInterface(void) const;
     SUFLOAT getBandwidth(void) const;
     SUFLOAT getGain(const std::string &) const;
@@ -339,6 +340,7 @@ namespace Suscan {
     void setLoop(bool);
     void setDCRemove(bool);
     void setIQBalance(bool);
+    void setStartTime(struct timeval const &tv);
     void setFormat(enum suscan_source_format fmt);
     void setType(enum suscan_source_type type);
     void setLabel(const std::string &);

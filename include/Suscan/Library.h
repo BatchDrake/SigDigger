@@ -26,6 +26,7 @@
 #include <Suscan/Source.h>
 #include <Suscan/Logger.h>
 #include <Suscan/Config.h>
+#include <Suscan/Serializable.h>
 
 #include <codec/codec.h>
 #include <analyzer/source.h>
@@ -33,6 +34,7 @@
 #include <analyzer/spectsrc.h>
 #include <analyzer/inspector/inspector.h>
 #include <analyzer/discovery.h>
+#include <sgdp4/sgdp4.h>
 #include <BookmarkInfo.h>
 
 #include <map>
@@ -60,13 +62,30 @@ namespace Suscan {
     float zeroPoint  = 0.0f;
   };
 
+  struct Location : public Serializable {
+    std::string name;
+    std::string country;
+    xyz_t site;
+    bool userLocation = false;
+
+    inline QString
+    getLocationName(void) const
+    {
+      return QString::fromStdString(
+            this->name + ", " + this->country);
+    }
+
+    // Overriden methods
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize(void) override;
+  };
+
   class Singleton {
     static Singleton *instance;
     static Logger *logger;
 
     // Background tasks
     MultitaskController *backgroundTaskController = nullptr;
-
     std::vector<Source::Device> devices;
     ConfigMap profiles;
     std::vector<Object> palettes;
@@ -74,6 +93,8 @@ namespace Suscan {
     std::vector<Object> uiConfig;
     std::vector<Object> FATs;
 
+    Location qth;
+    QMap<QString, Location> locations;
     QMap<qint64, Bookmark> bookmarks;
     QMap<std::string, SpectrumUnit> spectrumUnits;
     QHash<QString, Source::Config> networkProfiles;
@@ -84,6 +105,7 @@ namespace Suscan {
     bool estimators_initd;
     bool spectrum_sources_initd;
     bool inspectors_initd;
+    bool have_qth;
 
     Singleton();
     ~Singleton();
@@ -93,7 +115,9 @@ namespace Suscan {
     bool haveFAT(std::string const &name);
     void syncUI(void);
     void syncRecent(void);
+    void syncLocations(void);
     void syncBookmarks(void);
+    void initLocationsFromContext(ConfigContext &ctx, bool user);
 
   public:
     void init_codecs(void);
@@ -106,6 +130,7 @@ namespace Suscan {
     void init_autogains(void);
     void init_ui_config(void);
     void init_recent_list(void);
+    void init_locations(void);
     void init_bookmarks(void);
     void detect_devices(void);
 
@@ -128,12 +153,15 @@ namespace Suscan {
     void replaceBookmark(BookmarkInfo const& info);
     void removeBookmark(qint64);
 
+    bool registerLocation(Location const& loc);
+
     bool registerSpectrumUnit(std::string const &, float, float);
     void replaceSpectrumUnit(std::string const &, float, float);
     void removeSpectrumUnit(std::string const &);
 
     void refreshDevices(void);
     void refreshNetworkProfiles(void);
+    void setQth(Location const &);
 
     std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
     std::vector<Source::Device>::const_iterator getLastDevice(void) const;
@@ -157,6 +185,10 @@ namespace Suscan {
     QMap<qint64, Bookmark>::const_iterator getFirstBookmark(void) const;
     QMap<qint64, Bookmark>::const_iterator getLastBookmark(void) const;
     QMap<qint64, Bookmark>::const_iterator getBookmarkFrom(qint64 bm) const;
+
+    QMap<QString, Location> const &getLocationMap(void) const;
+    QMap<QString, Location>::const_iterator getFirstLocation(void) const;
+    QMap<QString, Location>::const_iterator getLastLocation(void) const;
 
     QMap<std::string, SpectrumUnit> const &getSpectrumUnitMap(void) const;
     QMap<std::string, SpectrumUnit>::const_iterator getFirstSpectrumUnit(void) const;
@@ -183,5 +215,6 @@ namespace Suscan {
   };
 };
 
+uint qHash(const xyz_t &site);
 
 #endif // CPP_LIBRARY_H

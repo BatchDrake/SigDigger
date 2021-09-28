@@ -350,6 +350,18 @@ Source::Config::getIQBalance(void) const
   return suscan_source_config_get_iq_balance(this->instance) != SU_FALSE;
 }
 
+struct timeval
+Source::Config::getStartTime(void) const
+{
+  struct timeval tv = {0, 0};
+
+  if (this->instance != nullptr)
+    suscan_source_config_get_start_time(this->instance, &tv);
+
+  return tv;
+}
+
+
 std::string
 Source::Config::getInterface(void) const
 {
@@ -545,6 +557,16 @@ Source::Config::setDCRemove(bool value)
         this->instance,
         value ? SU_TRUE : SU_FALSE);
 }
+
+void
+Source::Config::setStartTime(struct timeval const &tv)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_set_start_time(this->instance,tv);
+}
+
 
 void
 Source::Config::setIQBalance(bool value)
