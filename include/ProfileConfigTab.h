@@ -39,7 +39,9 @@ namespace SigDigger {
     Q_OBJECT
 
     Ui::ProfileConfigTab *ui;
-    bool refreshing = true;
+    bool modified      = false;
+    bool needsRestart  = false;
+    bool refreshing    = true;
     Suscan::Source::Config profile;
     Suscan::Source::Device remoteDevice;
 
@@ -60,6 +62,8 @@ namespace SigDigger {
     void loadProfile(Suscan::Source::Config &config);
     void guessParamsFromFileName(void);
     void updateRemoteParams(void);
+    void configChanged(bool restart = false);
+
     int  findRemoteProfileIndex(void);
     unsigned int getSelectedSampleRate(void) const;
     void setSelectedSampleRate(unsigned int);
@@ -69,6 +73,10 @@ namespace SigDigger {
 
   public:
     void save(void);
+
+    void setUnchanged(void);
+    bool hasChanged(void) const;
+    bool shouldRestart(void) const;
 
     void setProfile(const Suscan::Source::Config &profile);
     void setAnalyzerParams(const Suscan::AnalyzerParams &params);
@@ -105,6 +113,9 @@ namespace SigDigger {
 
       combo->setCurrentIndex(index);
     }
+
+  signals:
+    void changed(void);
 
   public slots:
     void onLoadProfileClicked(void);

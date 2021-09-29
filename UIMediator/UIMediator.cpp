@@ -87,12 +87,12 @@ UIMediator::finishRecent(void)
 }
 
 void
-UIMediator::setProfile(Suscan::Source::Config const &prof)
+UIMediator::setProfile(Suscan::Source::Config const &prof, bool restart)
 {
   this->appConfig->profile = prof;
   this->refreshProfile();
   this->refreshUI();
-  emit profileChanged();
+  emit profileChanged(restart);
 }
 
 void
@@ -893,18 +893,37 @@ UIMediator::~UIMediator()
 void
 UIMediator::onTriggerSetup(bool)
 {
+  auto sus = Suscan::Singleton::get_instance();
   this->ui->configDialog->setProfile(*this->getProfile());
   this->ui->configDialog->setAnalyzerParams(*this->getAnalyzerParams());
+  this->ui->configDialog->setColors(this->appConfig->colors);
+
+  if (sus->haveQth())
+    this->ui->configDialog->setLocation(sus->getQth());
 
   if (this->ui->configDialog->run()) {
     this->appConfig->analyzerParams = this->ui->configDialog->getAnalyzerParams();
     this->ui->fftPanel->setFftSize(this->getFftSize());
-    this->appConfig->colors = this->ui->configDialog->getColors();
-    this->appConfig->guiConfig = this->ui->configDialog->getGuiConfig();
-    this->ui->spectrum->setColorConfig(this->appConfig->colors);
-    this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
-    this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
-    this->setProfile(this->ui->configDialog->getProfile());
+
+    if (this->ui->configDialog->profileChanged())
+      this->setProfile(
+          this->ui->configDialog->getProfile(),
+          this->ui->configDialog->sourceNeedsRestart());
+
+    if (this->ui->configDialog->colorsChanged()) {
+      this->appConfig->colors = this->ui->configDialog->getColors();
+      this->ui->spectrum->setColorConfig(this->appConfig->colors);
+      this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
+    }
+
+    if (this->ui->configDialog->guiChanged()) {
+      this->appConfig->guiConfig = this->ui->configDialog->getGuiConfig();
+      this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
+    }
+
+    if (this->ui->configDialog->locationChanged())
+      sus->setQth(
+            this->ui->configDialog->getLocation());
   }
 }
 

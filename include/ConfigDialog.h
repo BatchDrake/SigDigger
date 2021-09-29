@@ -26,6 +26,7 @@
 #include <ColorConfig.h>
 #include <GuiConfig.h>
 #include <SaveProfileDialog.h>
+#include <Suscan/Library.h>
 
 namespace SigDigger {
   class ProfileConfigTab;
@@ -62,6 +63,15 @@ namespace SigDigger {
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
     void notifySingletonChanges(void);
+
+    bool profileChanged(void) const;
+    bool locationChanged(void) const;
+    bool colorsChanged(void) const;
+    bool guiChanged(void) const;
+
+    Suscan::Location getLocation(void) const;
+    void setLocation(Suscan::Location const &);
+    bool sourceNeedsRestart(void) const;
     bool remoteSelected(void) const;
 
     float getGain(std::string const &name) const;
@@ -76,6 +86,10 @@ namespace SigDigger {
     ~ConfigDialog();
 
   public slots:
+    void onProfileChanged(void);
+    void onLocationChanged(void);
+    void onColorsChanged(void);
+    void onGuiChanged(void);
     void onAccepted(void);
   };
 };

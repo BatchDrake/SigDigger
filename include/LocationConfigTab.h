@@ -22,6 +22,7 @@
 #include <QWidget>
 #include <QMap>
 #include <QListWidgetItem>
+#include <Suscan/Library.h>
 
 namespace Ui {
   class LocationConfigTab;
@@ -32,12 +33,21 @@ namespace SigDigger {
   {
     Q_OBJECT
 
+    Suscan::Location current;
+    bool modified = false;
     QMap<QString, int> countryList;
+    void paintMapCoords(double x, double y);
     void populateLocations(void);
+    void repaintCountryList(QString searchText = "");
     void connectAll(void);
 
   public:
     void save();
+    bool hasChanged(void) const;
+
+    Suscan::Location getLocation(void) const;
+    void setLocation(Suscan::Location const &);
+
     explicit LocationConfigTab(QWidget *parent = nullptr);
     ~LocationConfigTab();
 
@@ -45,7 +55,14 @@ namespace SigDigger {
     Ui::LocationConfigTab *ui;
 
   public slots:
+    void onSearchTextChanged(void);
     void onLocationSelected(QListWidgetItem *item);
+    void onLocationChanged(void);
+    void onRegisterLocation(void);
+
+  signals:
+    void changed(void);
+
   };
 }
 

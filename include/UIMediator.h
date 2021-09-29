@@ -159,7 +159,7 @@ namespace SigDigger {
     void setAudioRecordIORate(qreal rate);
     void setIORate(qreal rate);
     void saveUIConfig(void);
-    void setProfile(Suscan::Source::Config const &config);
+    void setProfile(Suscan::Source::Config const &config, bool restart = false);
     void setPanSpectrumRunning(bool state);
     void resetRawInspector(qreal fs);
     void feedRawInspector(const SUCOMPLEX *, size_t size);
@@ -174,7 +174,7 @@ namespace SigDigger {
   signals:
     void captureStart(void);
     void captureEnd(void);
-    void profileChanged();
+    void profileChanged(bool);
     void colorsChanged(ColorConfig config);
     void bookmarkAdded(BookmarkInfo);
 

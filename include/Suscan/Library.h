@@ -161,6 +161,9 @@ namespace Suscan {
 
     void refreshDevices(void);
     void refreshNetworkProfiles(void);
+
+    bool haveQth() const;
+    Location getQth(void) const;
     void setQth(Location const &);
 
     std::vector<Source::Device>::const_iterator getFirstDevice(void) const;

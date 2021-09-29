@@ -23,7 +23,12 @@ using namespace SigDigger;
 
 #define CCREFRESH(widget, field) this->ui->widget->setColor(this->colors.field)
 #define CCSAVE(widget, field) this->ui->widget->getColor(this->colors.field)
-
+#define CCCONNECT(widget)         \
+  connect(                        \
+      this->ui->widget,           \
+      SIGNAL(colorChanged(QColor)), \
+      this,                       \
+      SLOT(onColorChanged(void)))
 void
 ColorConfigTab::save(void)
 {
@@ -77,10 +82,37 @@ ColorConfigTab::refreshUi(void)
 }
 
 void
+ColorConfigTab::connectAll(void)
+{
+  CCCONNECT(lcdFgColor);
+  CCCONNECT(lcdBgColor);
+  CCCONNECT(spectrumFgColor);
+  CCCONNECT(spectrumBgColor);
+  CCCONNECT(spectrumAxesColor);
+  CCCONNECT(spectrumTextColor);
+  CCCONNECT(constellationFgColor);
+  CCCONNECT(constellationBgColor);
+  CCCONNECT(constellationAxesColor);
+  CCCONNECT(transitionFgColor);
+  CCCONNECT(transitionBgColor);
+  CCCONNECT(transitionAxesColor);
+  CCCONNECT(histogramFgColor);
+  CCCONNECT(histogramBgColor);
+  CCCONNECT(histogramAxesColor);
+  CCCONNECT(histogramModelColor);
+  CCCONNECT(symViewLoColor);
+  CCCONNECT(symViewHiColor);
+  CCCONNECT(symViewBgColor);
+  CCCONNECT(selectionColor);
+  CCCONNECT(filterBoxColor);
+}
+
+void
 ColorConfigTab::setColorConfig(ColorConfig const &config)
 {
   this->colors = config;
   this->refreshUi();
+  this->modified = false;
 }
 
 ColorConfig
@@ -89,14 +121,30 @@ ColorConfigTab::getColorConfig(void) const
   return this->colors;
 }
 
+bool
+ColorConfigTab::hasChanged(void) const
+{
+  return this->modified;
+}
+
 ColorConfigTab::ColorConfigTab(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::ColorConfigTab)
 {
   ui->setupUi(this);
+
+  this->connectAll();
 }
 
 ColorConfigTab::~ColorConfigTab()
 {
   delete ui;
+}
+
+////////////////////////////// Slots //////////////////////////////////////////
+void
+ColorConfigTab::onColorChanged(void)
+{
+  this->modified = true;
+  emit changed();
 }

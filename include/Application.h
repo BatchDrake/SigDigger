@@ -106,6 +106,7 @@ namespace SigDigger {
     void connectDeviceDetect(void);
     void connectScanner(void);
 
+    void hotApplyProfile(Suscan::Source::Config const *);
     int  openCaptureFile(void);
     void installDataSaver(int fd);
     void uninstallDataSaver(void);
@@ -152,7 +153,7 @@ namespace SigDigger {
     // UI Slots
     void onCaptureStart(void);
     void onCaptureStop(void);
-    void onProfileChanged(void);
+    void onProfileChanged(bool);
     void onGainChanged(QString name, float val);
     void onFrequencyChanged(qint64, qint64);
     void onOpenInspector(void);

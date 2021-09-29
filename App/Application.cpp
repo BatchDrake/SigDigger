@@ -389,9 +389,9 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
-        SIGNAL(profileChanged()),
+        SIGNAL(profileChanged(bool)),
         this,
-        SLOT(onProfileChanged()));
+        SLOT(onProfileChanged(bool)));
 
   connect(
         this->mediator,
@@ -1084,7 +1084,7 @@ Application::onCaptureStop(void)
 }
 
 void
-Application::onProfileChanged(void)
+Application::onProfileChanged(bool needsRestart)
 {
   if (this->mediator->getProfile()->label() != "") {
     Suscan::Singleton *sing = Suscan::Singleton::get_instance();
@@ -1092,7 +1092,10 @@ Application::onProfileChanged(void)
     this->updateRecent();
   }
 
-  this->restartCapture();
+  if (needsRestart)
+    this->restartCapture();
+  else if (this->mediator->getState() == UIMediator::RUNNING)
+    this->hotApplyProfile(this->mediator->getProfile());
 }
 
 void
@@ -1206,6 +1209,15 @@ Application::onThrottleConfigChanged(void)
       this->analyzer->setThrottle(0);
     }
   }
+}
+
+void
+Application::hotApplyProfile(Suscan::Source::Config const *profile)
+{
+  this->analyzer->setFrequency(profile->getFreq(), profile->getLnbFreq());
+  this->analyzer->setBandwidth(profile->getBandwidth());
+  this->analyzer->setDCRemove(profile->getDCRemove());
+  this->analyzer->setAntenna(profile->getAntenna());
 }
 
 //

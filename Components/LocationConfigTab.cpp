@@ -19,6 +19,8 @@
 #include "LocationConfigTab.h"
 #include "ui_LocationConfigTab.h"
 #include <Suscan/Library.h>
+#include <QPainter>
+#include <QMessageBox>
 
 using namespace SigDigger;
 
@@ -30,6 +32,64 @@ LocationConfigTab::connectAll(void)
         SIGNAL(itemDoubleClicked(QListWidgetItem *)),
         this,
         SLOT(onLocationSelected(QListWidgetItem *)));
+
+  connect(
+        this->ui->cityNameEdit,
+        SIGNAL(textChanged(const QString &)),
+        this,
+        SLOT(onLocationChanged(void)));
+
+  connect(
+        this->ui->countryCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onLocationChanged(void)));
+
+  connect(
+        this->ui->latitudeSpinBox,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onLocationChanged(void)));
+
+  connect(
+        this->ui->longitudeSpinBox,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onLocationChanged(void)));
+
+  connect(
+        this->ui->altitudeSpinBox,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onLocationChanged(void)));
+
+  connect(
+        this->ui->searchEdit,
+        SIGNAL(textEdited(const QString &)),
+        this,
+        SLOT(onSearchTextChanged(void)));
+
+  connect(
+        this->ui->addToListButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onRegisterLocation(void)));
+}
+
+void
+LocationConfigTab::repaintCountryList(QString searchText)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  this->ui->cityListWidget->clear();
+
+  for (auto i = sus->getFirstLocation(); i != sus->getLastLocation(); ++i) {
+    QString locName = i->getLocationName();
+    if (locName.contains(searchText)) {
+      QListWidgetItem *item = new QListWidgetItem(locName);
+      this->ui->cityListWidget->addItem(item);
+    }
+  }
 }
 
 void
@@ -40,8 +100,7 @@ LocationConfigTab::populateLocations(void)
 
   for (auto i = sus->getFirstLocation(); i != sus->getLastLocation(); ++i) {
     QString country;
-    QListWidgetItem *item = new QListWidgetItem;
-    item->setText(i->getLocationName());
+    QListWidgetItem *item = new QListWidgetItem(i->getLocationName());
     this->ui->cityListWidget->addItem(item);
 
     country = QString::fromStdString(i->country);
@@ -57,9 +116,67 @@ LocationConfigTab::populateLocations(void)
 }
 
 void
+LocationConfigTab::paintMapCoords(double lat, double lon)
+{
+  QPixmap bg = QPixmap(QString::fromUtf8(":/images/earthmap.png"));
+  QSize dim = bg.size();
+  QPainter painter(&bg);
+  int x, y;
+  int hL = dim.width() / 100;
+
+  lat = 90. - lat;
+  lon = lon + 180.;
+
+  y = static_cast<int>(lat * dim.height() / 180.);
+  x = static_cast<int>(lon * dim.width()  / 360.);
+
+
+  painter.setPen(QPen(Qt::red, hL / 2));
+  painter.drawLine(x - hL, y - hL, x + hL, y + hL);
+  painter.drawLine(x - hL, y + hL, x + hL, y - hL);
+
+  this->ui->mapLabel->setPixmap(bg);
+}
+
+Suscan::Location
+LocationConfigTab::getLocation(void) const
+{
+  return this->current;
+}
+
+void
+LocationConfigTab::setLocation(Suscan::Location const &loc)
+{
+  this->current = loc;
+
+  this->ui->latitudeSpinBox->setValue(loc.site.lat);
+  this->ui->longitudeSpinBox->setValue(loc.site.lon);
+  this->ui->altitudeSpinBox->setValue(loc.site.height * 1e3);
+  this->ui->cityNameEdit->setText(QString::fromStdString(loc.name));
+
+  if (this->countryList.find(QString::fromStdString(loc.country)) !=
+      this->countryList.end())
+    this->ui->countryCombo->setCurrentIndex(
+        this->countryList[QString::fromStdString(loc.country)]);
+
+  this->modified = false;
+}
+
+bool
+LocationConfigTab::hasChanged(void) const
+{
+  return this->modified;
+}
+
+void
 LocationConfigTab::save(void)
 {
+  this->current.name    = this->ui->cityNameEdit->text().toStdString();
+  this->current.country = this->ui->countryCombo->currentText().toStdString();
 
+  this->current.site.height = this->ui->altitudeSpinBox->value() * 1e-3;
+  this->current.site.lat    = this->ui->latitudeSpinBox->value();
+  this->current.site.lon    = this->ui->longitudeSpinBox->value();
 }
 
 LocationConfigTab::LocationConfigTab(QWidget *parent) :
@@ -105,5 +222,51 @@ LocationConfigTab::onLocationSelected(QListWidgetItem *item)
     if (this->countryList.find(country) != this->countryList.end()
         && (index = this->countryList[country]) != -1)
       this->ui->countryCombo->setCurrentIndex(index);
+  }
+}
+
+void
+LocationConfigTab::onLocationChanged(void)
+{
+  this->modified = true;
+  this->paintMapCoords(
+        this->ui->latitudeSpinBox->value(),
+        this->ui->longitudeSpinBox->value());
+  emit changed();
+}
+
+void
+LocationConfigTab::onSearchTextChanged(void)
+{
+  this->repaintCountryList(this->ui->searchEdit->text());
+}
+
+void
+LocationConfigTab::onRegisterLocation(void)
+{
+  Suscan::Location loc;
+  auto sus = Suscan::Singleton::get_instance();
+  auto locMap = Suscan::Singleton::get_instance()->getLocationMap();
+
+
+  loc.name        = this->ui->cityNameEdit->text().toStdString();
+  loc.country     = this->ui->countryCombo->currentText().toStdString();
+  loc.site.height = this->ui->altitudeSpinBox->value() * 1e-3;
+  loc.site.lat    = this->ui->latitudeSpinBox->value();
+  loc.site.lon    = this->ui->longitudeSpinBox->value();
+
+  QString locName = loc.getLocationName();
+  if (locMap.find(locName) != locMap.end()) {
+    QMessageBox::warning(
+          this,
+          "Register location",
+          "Location "
+          + locName
+          + " already exists. Please choose a different name.");
+  } else {
+    sus->registerLocation(loc);
+    QListWidgetItem *item = new QListWidgetItem(loc.getLocationName());
+    this->ui->cityListWidget->addItem(item);
+    this->ui->cityListWidget->scrollToBottom();
   }
 }

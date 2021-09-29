@@ -41,6 +41,30 @@ ConfigDialog::connectAll(void)
          SIGNAL(accepted(void)),
          this,
          SLOT(onAccepted(void)));
+
+  connect(
+        this->profileTab,
+        SIGNAL(changed(void)),
+        this,
+        SLOT(onProfileChanged(void)));
+
+  connect(
+        this->locationTab,
+        SIGNAL(changed(void)),
+        this,
+        SLOT(onLocationChanged(void)));
+
+  connect(
+        this->colorTab,
+        SIGNAL(changed(void)),
+        this,
+        SLOT(onLocationChanged(void)));
+
+  connect(
+        this->guiTab,
+        SIGNAL(changed(void)),
+        this,
+        SLOT(onGuiChanged(void)));
 }
 
 void
@@ -122,9 +146,52 @@ ConfigDialog::getGuiConfig() const
 }
 
 bool
+ConfigDialog::profileChanged(void) const
+{
+  return this->profileTab->hasChanged();
+}
+
+bool
+ConfigDialog::colorsChanged(void) const
+{
+  return this->colorTab->hasChanged();
+}
+
+bool
+ConfigDialog::guiChanged(void) const
+{
+  return this->guiTab->hasChanged();
+}
+
+bool
+ConfigDialog::locationChanged(void) const
+{
+  return this->locationTab->hasChanged();
+}
+
+Suscan::Location
+ConfigDialog::getLocation(void) const
+{
+  return this->locationTab->getLocation();
+}
+
+void
+ConfigDialog::setLocation(Suscan::Location const &loc)
+{
+  this->locationTab->setLocation(loc);
+}
+
+bool
+ConfigDialog::sourceNeedsRestart(void) const
+{
+  return this->profileTab->shouldRestart();
+}
+
+bool
 ConfigDialog::run(void)
 {
   this->accepted = false;
+  this->setWindowTitle("Settings");
 
   this->exec();
 
@@ -172,3 +239,26 @@ ConfigDialog::onAccepted(void)
   this->accepted = true;
 }
 
+void
+ConfigDialog::onProfileChanged(void)
+{
+  this->setWindowTitle("Settings [changed]");
+}
+
+void
+ConfigDialog::onLocationChanged(void)
+{
+  this->setWindowTitle("Settings [changed]");
+}
+
+void
+ConfigDialog::onColorsChanged(void)
+{
+  this->setWindowTitle("Settings [changed]");
+}
+
+void
+ConfigDialog::onGuiChanged(void)
+{
+  this->setWindowTitle("Settings [changed]");
+}

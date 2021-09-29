@@ -32,18 +32,24 @@ namespace SigDigger {
     Q_OBJECT
 
     GuiConfig guiConfig;
-
+    bool modified = false;
     void refreshUi();
     void connectAll(void);
 
   public:
     void save(void);
-
+    bool hasChanged(void) const;
     void setGuiConfig(const GuiConfig &config);
     GuiConfig getGuiConfig() const;
 
     explicit GuiConfigTab(QWidget *parent = nullptr);
     ~GuiConfigTab();
+
+  public slots:
+    void onConfigChanged(void);
+
+  signals:
+    void changed(void);
 
   private:
     Ui::GuiConfigTab *ui;

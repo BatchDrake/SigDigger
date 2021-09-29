@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    ColorConfigTab.h: configure SigDigger colors
+//    Copyright (C) 2021 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -32,6 +32,7 @@ namespace SigDigger {
     Q_OBJECT
 
     ColorConfig colors;
+    bool modified = false;
 
     void refreshUi(void);
     void connectAll(void);
@@ -41,8 +42,16 @@ namespace SigDigger {
     void setColorConfig(const ColorConfig &config);
     ColorConfig getColorConfig(void) const;
 
+    bool hasChanged(void) const;
+
     explicit ColorConfigTab(QWidget *parent = nullptr);
     ~ColorConfigTab();
+
+  public slots:
+    void onColorChanged(void);
+
+  signals:
+    void changed(void);
 
   private:
     Ui::ColorConfigTab *ui;

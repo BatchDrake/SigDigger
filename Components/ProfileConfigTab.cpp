@@ -34,6 +34,22 @@ using namespace SigDigger;
 Q_DECLARE_METATYPE(Suscan::Source::Config); // Unicorns
 Q_DECLARE_METATYPE(Suscan::Source::Device); // More unicorns
 
+
+// TODO:
+// hasChanged and shouldRestart is based on the idea that the modification
+// of certain fields can be used as a hint to whether we should restart
+// the source or not. This can be done better: just add a Source::Config
+// method that compares two source configs, and determines whether it
+// makes sense to restart certain things or not.
+
+void
+ProfileConfigTab::configChanged(bool restart)
+{
+  this->modified     = true;
+  this->needsRestart = this->needsRestart || restart;
+  emit changed();
+}
+
 void
 ProfileConfigTab::populateCombos(void)
 {
@@ -361,10 +377,12 @@ ProfileConfigTab::refreshUi(void)
   this->refreshing = false;
 }
 
-
 void
 ProfileConfigTab::save()
 {
+  bool modified = this->modified;
+  bool needsRestart = this->needsRestart;
+
   this->profile.setType(
         this->ui->sdrRadio->isChecked()
         ? SUSCAN_SOURCE_TYPE_SDR
@@ -372,10 +390,32 @@ ProfileConfigTab::save()
 
   this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
   this->onFormatChanged(this->ui->formatCombo->currentIndex());
+  this->onBandwidthChanged(this->ui->bandwidthSpinBox->value());
   this->onCheckButtonsToggled(false);
   this->onSpinsChanged();
-  this->onBandwidthChanged(this->ui->bandwidthSpinBox->value());
   this->onAnalyzerTypeChanged(this->ui->analyzerTypeCombo->currentIndex());
+
+  this->modified     = modified;
+  this->needsRestart = needsRestart;
+}
+
+void
+ProfileConfigTab::setUnchanged(void)
+{
+  this->modified     = false;
+  this->needsRestart = false;
+}
+
+bool
+ProfileConfigTab::hasChanged(void) const
+{
+  return this->modified;
+}
+
+bool
+ProfileConfigTab::shouldRestart(void) const
+{
+  return this->needsRestart;
 }
 
 void
@@ -549,6 +589,7 @@ ProfileConfigTab::setProfile(const Suscan::Source::Config &profile)
 {
   this->profile = profile;
   this->refreshUi();
+  this->setUnchanged();
 }
 
 void
@@ -652,6 +693,7 @@ ProfileConfigTab::onLoadProfileClicked(void)
 {
   QVariant data = this->ui->profileCombo->itemData(this->ui->profileCombo->currentIndex());
 
+  this->configChanged(true);
   this->profile = data.value<Suscan::Source::Config>();
 
   this->refreshUi();
@@ -661,6 +703,7 @@ void
 ProfileConfigTab::onToggleSourceType(bool)
 {
   if (!this->refreshing) {
+    this->configChanged(true);
     if (this->ui->sdrRadio->isChecked()) {
       this->profile.setType(SUSCAN_SOURCE_TYPE_SDR);
     } else {
@@ -688,6 +731,7 @@ ProfileConfigTab::onDeviceChanged(int index)
             static_cast<unsigned int>(
             this->ui->deviceCombo->itemData(index).value<long>())));
 
+    this->configChanged(true);
     this->profile.setDevice(*device);
     auto begin = device->getFirstAntenna();
     auto end   = device->getLastAntenna();
@@ -700,7 +744,13 @@ ProfileConfigTab::onDeviceChanged(int index)
 
     this->refreshUi();
 
-    this->ui->bandwidthSpinBox->setValue(this->getSelectedSampleRate());
+    unsigned sampRate = this->getSelectedSampleRate();
+    unsigned decimation = static_cast<unsigned>(this->ui->decimationSpin->value());
+    qreal maxBandwidth = static_cast<qreal>(sampRate)
+        / static_cast<qreal>(decimation);
+
+    if (this->ui->bandwidthSpinBox->value() > maxBandwidth)
+      this->ui->bandwidthSpinBox->setValue(maxBandwidth);
   }
 }
 
@@ -708,6 +758,7 @@ void
 ProfileConfigTab::onFormatChanged(int index)
 {
   if (!this->refreshing) {
+    this->configChanged(true);
     switch (index) {
       case 0:
         this->profile.setFormat(SUSCAN_SOURCE_FORMAT_AUTO);
@@ -731,9 +782,11 @@ ProfileConfigTab::onFormatChanged(int index)
 void
 ProfileConfigTab::onAntennaChanged(int)
 {
-  if (!this->refreshing)
+  if (!this->refreshing) {
+    this->configChanged();
     this->profile.setAntenna(
           this->ui->antennaCombo->currentText().toStdString());
+  }
 }
 
 void
@@ -762,6 +815,7 @@ void
 ProfileConfigTab::onRemoteParamsChanged(void)
 {
   if (this->remoteSelected()) {
+    this->configChanged(true);
     this->profile.setDevice(this->remoteDevice);
     this->updateRemoteParams();
   }
@@ -771,9 +825,20 @@ void
 ProfileConfigTab::onCheckButtonsToggled(bool)
 {
   if (!this->refreshing) {
-    this->profile.setDCRemove(this->ui->removeDCCheck->isChecked());
-    this->profile.setIQBalance(this->ui->iqBalanceCheck->isChecked());
-    this->profile.setLoop(this->ui->loopCheck->isChecked());
+    if (this->profile.getDCRemove() != this->ui->removeDCCheck->isChecked()) {
+      this->profile.setDCRemove(this->ui->removeDCCheck->isChecked());
+      this->configChanged();
+    }
+
+    if (this->profile.getIQBalance() != this->ui->iqBalanceCheck->isChecked()) {
+      this->profile.setIQBalance(this->ui->iqBalanceCheck->isChecked());
+      this->configChanged();
+    }
+
+    if (this->profile.getLoop() != this->ui->loopCheck->isChecked()) {
+      this->profile.setLoop(this->ui->loopCheck->isChecked());
+      this->configChanged(true);
+    }
   }
 }
 
@@ -825,25 +890,49 @@ ProfileConfigTab::onSpinsChanged(void)
     SUFREQ freq;
     SUFREQ lnbFreq;
     SUFLOAT ppm;
+    SUFLOAT maxBandwidth;
+    bool adjustBandwidth = false;
+
     unsigned int sampRate;
+    unsigned int decimation;
 
     lnbFreq = this->ui->lnbSpinBox->value();
     this->refreshFrequencyLimits();
     freq = this->ui->frequencySpinBox->value();
     sampRate = this->getSelectedSampleRate();
-    ppm = static_cast<float>(this->ui->ppmSpinBox->value());
+    decimation = static_cast<unsigned>(this->ui->decimationSpin->value());
+    ppm = static_cast<SUFLOAT>(this->ui->ppmSpinBox->value());
+    maxBandwidth = static_cast<SUFLOAT>(sampRate)
+        / static_cast<SUFLOAT>(decimation) ;
+    if (!sufeq(this->profile.getFreq(), freq, 1)) {
+      this->profile.setFreq(freq);
+      this->configChanged();
+    }
 
-    this->profile.setFreq(freq);
-    this->profile.setLnbFreq(lnbFreq);
-    this->profile.setSampleRate(sampRate);
-    this->profile.setDecimation(
-          static_cast<unsigned>(this->ui->decimationSpin->value()));
-    this->profile.setPPM(ppm);
+    if (!sufeq(this->profile.getLnbFreq(), lnbFreq, 1)) {
+      this->profile.setLnbFreq(lnbFreq);
+      this->configChanged();
+    }
 
-    if (sender() == static_cast<QObject *>(this->ui->sampleRateCombo)
-        || sender() == static_cast<QObject *>(this->ui->sampleRateSpinBox))
-      this->ui->bandwidthSpinBox->setValue(
-          sampRate / static_cast<qreal>(this->ui->decimationSpin->value()));
+    if (this->profile.getSampleRate() != sampRate) {
+      this->profile.setSampleRate(sampRate);
+      this->configChanged(true);
+      adjustBandwidth = true;
+    }
+
+    if (this->profile.getDecimation() != decimation) {
+      this->profile.setDecimation(decimation);
+      this->configChanged(true);
+      adjustBandwidth = true;
+    }
+
+    if (!sufeq(this->profile.getPPM(), ppm, 1)) {
+      this->profile.setPPM(ppm);
+      this->configChanged();
+    }
+
+    if (adjustBandwidth && this->profile.getBandwidth() > maxBandwidth)
+      this->ui->bandwidthSpinBox->setValue(static_cast<qreal>(maxBandwidth));
 
     this->refreshTrueSampleRate();
   }
@@ -852,10 +941,12 @@ ProfileConfigTab::onSpinsChanged(void)
 void
 ProfileConfigTab::onBandwidthChanged(double)
 {
-  if (!this->refreshing)
+  if (!this->refreshing) {
     this->profile.setBandwidth(
         static_cast<SUFLOAT>(
           this->ui->bandwidthSpinBox->value()));
+    this->configChanged();
+  }
 }
 
 void
@@ -1007,6 +1098,7 @@ ProfileConfigTab::onBrowseCaptureFile(void)
 
   if (!path.isEmpty()) {
     this->ui->pathEdit->setText(path);
+    this->configChanged(true);
     this->profile.setPath(path.toStdString());
     this->guessParamsFromFileName();
   }
@@ -1058,6 +1150,7 @@ ProfileConfigTab::onChangeConnectionType(void)
     this->ui->useNetworkProfileRadio->setChecked(false);
   }
 
+  this->configChanged(true);
   this->refreshUiState();
 }
 
@@ -1092,6 +1185,7 @@ ProfileConfigTab::onRemoteProfileSelected(void)
     it = sus->getNetworkProfileFrom(this->ui->remoteDeviceCombo->currentText());
 
     if (it != sus->getLastNetworkProfile()) {
+      this->configChanged(true);
       this->setProfile(*it);
 
       // Provide a better hint for username if the server announced none

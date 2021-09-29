@@ -38,6 +38,7 @@ GuiConfigTab::setGuiConfig(GuiConfig const &config)
 {
   this->guiConfig = config;
   this->refreshUi();
+  this->modified = false;
 }
 
 GuiConfig
@@ -46,10 +47,20 @@ GuiConfigTab::getGuiConfig(void) const
   return this->guiConfig;
 }
 
+bool
+GuiConfigTab::hasChanged(void) const
+{
+  return this->modified;
+}
+
 void
 GuiConfigTab::connectAll(void)
 {
-  // None, but it will be necessary
+  connect(
+        this->ui->reverseDragBehaviorCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onConfigChanged(void)));
 }
 
 GuiConfigTab::GuiConfigTab(QWidget *parent) :
@@ -64,4 +75,12 @@ GuiConfigTab::GuiConfigTab(QWidget *parent) :
 GuiConfigTab::~GuiConfigTab()
 {
   delete ui;
+}
+
+////////////////////////////////// Slots ///////////////////////////////////////
+void
+GuiConfigTab::onConfigChanged(void)
+{
+  this->modified = true;
+  emit changed();
 }

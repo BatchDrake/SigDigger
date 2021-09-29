@@ -42,6 +42,8 @@ Location::deserialize(Suscan::Object const &conf)
   LOAD_NAME("lat", site.lat);
   LOAD_NAME("lon", site.lon);
   LOAD_NAME("alt", site.height);
+
+  site.height *= 1e-3;
 }
 
 Suscan::Object &&
@@ -55,7 +57,7 @@ Location::serialize(void)
   STORE(country);
   STORE_NAME("lat", site.lat);
   STORE_NAME("lon", site.lon);
-  STORE_NAME("alt", site.height);
+  STORE_NAME("alt", site.height * 1e3);
 
   return this->persist(obj);
 }
@@ -415,6 +417,18 @@ Singleton::refreshNetworkProfiles(void)
   suscan_discovered_remote_device_walk(
         walk_all_remote_devices,
         static_cast<void *>(this));
+}
+
+bool
+Singleton::haveQth() const
+{
+  return this->have_qth;
+}
+
+Location
+Singleton::getQth(void) const
+{
+  return this->qth;
 }
 
 void
