@@ -92,6 +92,7 @@ ProfileConfigTab::refreshUiState(void)
 {
   int analyzerTypeIndex = this->ui->analyzerTypeCombo->currentIndex();
   bool netProfile = this->ui->useNetworkProfileRadio->isChecked();
+  bool adjustStartTime = false;
 
   this->ui->analyzerParamsStackedWidget->setCurrentIndex(analyzerTypeIndex);
 
@@ -107,6 +108,7 @@ ProfileConfigTab::refreshUiState(void)
       this->ui->fileFrame->setEnabled(true);
       this->ui->ppmSpinBox->setEnabled(false);
       this->ui->sampRateStack->setCurrentIndex(1);
+      adjustStartTime = true;
     }
   } else {
     /* Remote analyzer */
@@ -128,6 +130,8 @@ ProfileConfigTab::refreshUiState(void)
     this->ui->ppmSpinBox->setEnabled(true);
   }
 
+  this->ui->sourceTimeEdit->setEnabled(adjustStartTime);
+  this->ui->sourceTimeIsUTCCheck->setEnabled(adjustStartTime);
   this->setSelectedSampleRate(this->profile.getSampleRate());
   this->refreshTrueSampleRate();
 }
@@ -349,14 +353,10 @@ ProfileConfigTab::refreshProfileUi(void)
     this->ui->sourceTimeEdit->setDateTime(
           QDateTime::fromTime_t(
             static_cast<unsigned int>(this->profile.getStartTime().tv_sec)));
-    this->ui->sourceTimeIsUTCCheck->setEnabled(true);
-    this->ui->sourceTimeEdit->setEnabled(true);
   } else {
     this->ui->sourceTimeEdit->setDateTime(
           QDateTime::fromTime_t(
             static_cast<unsigned int>(time(nullptr))));
-    this->ui->sourceTimeEdit->setEnabled(false);
-    this->ui->sourceTimeIsUTCCheck->setEnabled(false);
   }
 
   this->ui->lnbSpinBox->setValue(this->profile.getLnbFreq());
@@ -582,6 +582,27 @@ ProfileConfigTab::connectAll(void)
         SIGNAL(clicked(void)),
         this,
         SLOT(onRefreshRemoteDevices(void)));
+
+  connect(
+        this->ui->ppmSpinBox,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onSpinsChanged(void)));
+
+  connect(
+        this->ui->sourceTimeEdit,
+        SIGNAL(dateTimeChanged(QDateTime const &)),
+        this,
+        SLOT(onSpinsChanged(void)));
+
+  connect(
+        this->ui->sourceTimeIsUTCCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onChangeSourceTimeUTC(void)));
+
+  // this->ui->sourceTimeEdit->setDateTime
+
 }
 
 void
@@ -891,6 +912,8 @@ ProfileConfigTab::onSpinsChanged(void)
     SUFREQ lnbFreq;
     SUFLOAT ppm;
     SUFLOAT maxBandwidth;
+    time_t timeStamp;
+    time_t timeStampUsec;
     bool adjustBandwidth = false;
 
     unsigned int sampRate;
@@ -904,12 +927,16 @@ ProfileConfigTab::onSpinsChanged(void)
     ppm = static_cast<SUFLOAT>(this->ui->ppmSpinBox->value());
     maxBandwidth = static_cast<SUFLOAT>(sampRate)
         / static_cast<SUFLOAT>(decimation) ;
-    if (!sufeq(this->profile.getFreq(), freq, 1)) {
+    timeStamp = this->ui->sourceTimeEdit->dateTime().toSecsSinceEpoch();
+    timeStampUsec = 1000 * (
+          this->ui->sourceTimeEdit->dateTime().toMSecsSinceEpoch() % 1000);
+
+    if (!sufeq(this->profile.getFreq(), freq, .5f)) {
       this->profile.setFreq(freq);
       this->configChanged();
     }
 
-    if (!sufeq(this->profile.getLnbFreq(), lnbFreq, 1)) {
+    if (!sufeq(this->profile.getLnbFreq(), lnbFreq, .5f)) {
       this->profile.setLnbFreq(lnbFreq);
       this->configChanged();
     }
@@ -926,9 +953,19 @@ ProfileConfigTab::onSpinsChanged(void)
       adjustBandwidth = true;
     }
 
-    if (!sufeq(this->profile.getPPM(), ppm, 1)) {
+    if (!sufeq(this->profile.getPPM(), ppm, .5f)) {
       this->profile.setPPM(ppm);
       this->configChanged();
+    }
+
+    if (this->profile.getStartTime().tv_sec != timeStamp
+        || this->profile.getStartTime().tv_usec != timeStampUsec) {
+      struct timeval tv;
+      tv.tv_sec = timeStamp;
+      tv.tv_usec = timeStampUsec;
+
+      this->profile.setStartTime(tv);
+      this->configChanged(true);
     }
 
     if (adjustBandwidth && this->profile.getBandwidth() > maxBandwidth)
@@ -1194,4 +1231,13 @@ ProfileConfigTab::onRemoteProfileSelected(void)
       this->updateRemoteParams();
     }
   }
+}
+
+void
+ProfileConfigTab::onChangeSourceTimeUTC(void)
+{
+  this->ui->sourceTimeEdit->setTimeSpec(
+        this->ui->sourceTimeIsUTCCheck->isChecked()
+        ? Qt::TimeSpec::UTC
+        : Qt::TimeSpec::LocalTime);
 }

@@ -28,6 +28,8 @@ namespace Ui {
 }
 
 namespace SigDigger {
+  class FrequencyCorrectionDialog;
+
   class AudioPanelConfig : public Suscan::Serializable {
   public:
     bool enabled = false;
@@ -55,6 +57,9 @@ namespace SigDigger {
 
     // Data
     SUFLOAT bandwidth = 200000;
+
+    // UI methods
+    FrequencyCorrectionDialog *fcDialog = nullptr;
 
     // Private methods
     void connectAll(void);

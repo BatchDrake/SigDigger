@@ -133,6 +133,7 @@ namespace SigDigger {
     void onRemoteParamsChanged(void);
     void onRefreshRemoteDevices(void);
     void onRemoteProfileSelected(void);
+    void onChangeSourceTimeUTC(void);
   };
 }
 

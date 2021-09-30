@@ -71,6 +71,7 @@ SOURCES += \
     Components/DeviceGain.cpp \
     Components/DopplerDialog.cpp \
     Components/FftPanel.cpp \
+    Components/FrequencyCorrectionDialog.cpp \
     Components/GainSlider.cpp \
     Components/GenericDataSaverUI.cpp \
     Components/GuiConfigTab.cpp \
@@ -168,6 +169,7 @@ HEADERS += \
     include/ColorConfigTab.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
+    include/FrequencyCorrectionDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
     include/GuiConfigTab.h \
@@ -279,6 +281,7 @@ FORMS += \
     ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
     ui/FftPanel.ui \
+    ui/FrequencyCorrectionDialog.ui \
     ui/GainControl.ui \
     ui/GainSlider.ui \
     ui/GuiConfigTab.ui \
