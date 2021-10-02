@@ -122,8 +122,6 @@ ExportSamplesTask::exportToWav(void)
           SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE))
         goto done;
 
-    goto done;
-
     this->breathe(i);
   }
 
@@ -131,7 +129,8 @@ ExportSamplesTask::exportToWav(void)
     if (sf_write_float(
         this->sfp,
         reinterpret_cast<const SUFLOAT *>(this->data.data() + i),
-        static_cast<sf_count_t>(size - i) << 1) != 2)
+        2 * static_cast<sf_count_t>(size - i)) !=
+        2 * static_cast<sf_count_t>(size - i))
       goto done;
 
   ok = true;
