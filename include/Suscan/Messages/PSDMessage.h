@@ -34,6 +34,7 @@ namespace Suscan {
     SUFREQ getFrequency(void) const;
     unsigned int getSampleRate(void) const;
     unsigned int getMeasuredSampleRate(void) const;
+    struct timeval getTimeStamp(void) const;
     const SUFLOAT *get(void) const;
 
     PSDMessage();

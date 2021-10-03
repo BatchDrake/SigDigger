@@ -20,21 +20,81 @@
 #define FREQUENCYCORRECTIONDIALOG_H
 
 #include <QDialog>
+#include <Suscan/Library.h>
+#include <sgdp4/sgdp4.h>
+#include <ColorConfig.h>
+#include <QTimer>
+
+// 10 days
+#define FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW 864000.0
 
 namespace Ui {
   class FrequencyCorrectionDialog;
 }
 
-class FrequencyCorrectionDialog : public QDialog
-{
-  Q_OBJECT
+namespace Suscan {
+  struct Orbit;
+};
 
-public:
-  explicit FrequencyCorrectionDialog(QWidget *parent = nullptr);
-  ~FrequencyCorrectionDialog();
+namespace SigDigger {
+  class FrequencyCorrectionDialog : public QDialog
+  {
+    Q_OBJECT
 
-private:
-  Ui::FrequencyCorrectionDialog *ui;
+    SUFREQ centerFreq = 0;
+    sgdp4_prediction_t prediction;
+    QString currentTle;
+    orbit_t currentOrbit;
+    bool haveOrbit = false;
+    QTimer timer;
+    ColorConfig colors;
+
+    bool   realTime = true;
+    bool   haveALOS = false;
+    xyz_t  rxSite;
+    struct timeval losTime;
+    struct timeval aosTime;
+    struct timeval timeStamp;
+
+    QPixmap azElAxesPixmap;
+
+    void paintAzimuthElevationMap(QPixmap &pixmap);
+    void paintAzimuthElevationSatPath(QPixmap &pixmap);
+    void repaintSatellitePlot(void);
+
+    void updatePrediction(void);
+    void recalcALOS(void);
+    void connectAll(void);
+    void refreshUiState(void);
+    void setCurrentOrbit(orbit_t *);
+    void paintTextAt(QPainter &, int x, int y, QString text);
+
+  public:
+    void setColorConfig(ColorConfig const &colors);
+    void setFrequency(SUFREQ freq);
+    void setTimestamp(struct timeval const &timestamp);
+    void setQth(xyz_t const &qth);
+    void setRealTime(bool);
+
+    bool isCorrectionEnabled(void) const;
+    Suscan::Orbit getOrbit(void) const;
+
+    explicit FrequencyCorrectionDialog(
+        QWidget *parent,
+        SUFREQ centerFreq,
+        ColorConfig const &);
+    ~FrequencyCorrectionDialog();
+
+  public slots:
+    void onSwitchCorrectionType(void);
+    void onSwitchSatellite(void);
+    void onToggleOrbitType(void);
+    void onTLEEdit(void);
+    void onTick(void);
+
+  private:
+    Ui::FrequencyCorrectionDialog *ui;
+  };
 };
 
 #endif // FREQUENCYCORRECTIONDIALOG_H

@@ -66,6 +66,7 @@ namespace SigDigger {
     // UI
     AppUI ui;
     UIMediator *mediator = nullptr;
+    QTimer uiTimer;
 
     // Audio
     std::unique_ptr<AudioPlayback> playBack = nullptr;
@@ -170,6 +171,8 @@ namespace SigDigger {
     void onAudioChanged(void);
     void onAudioRecordStateChanged(void);
     void onAudioVolumeChanged(float);
+    void onAudioSetCorrection(Suscan::Orbit);
+    void onAudioDisableCorrection(void);
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
     void onPPMChanged(void);
@@ -177,6 +180,7 @@ namespace SigDigger {
     void onRecentSelected(QString profile);
     void onRecentCleared(void);
     void onAddBookmark(BookmarkInfo info);
+    void onTick(void);
     void quit(void);
 
     // Analyzer slots

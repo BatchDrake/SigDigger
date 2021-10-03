@@ -83,6 +83,7 @@ UIMediator::onFrequencyChanged(qint64)
   qint64 freq = this->ui->spectrum->getCenterFreq();
 
   this->ui->inspectorPanel->setDemodFrequency(freq);
+  this->ui->audioPanel->setDemodFreq(freq);
   this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
 
   emit frequencyChanged(
@@ -99,6 +100,7 @@ UIMediator::onLoChanged(qint64)
   qint64 freq = this->ui->spectrum->getCenterFreq()
       + this->ui->spectrum->getLoFreq();
   this->ui->inspectorPanel->setDemodFrequency(freq);
+  this->ui->audioPanel->setDemodFreq(freq);
   this->appConfig->loFreq = static_cast<int>(this->ui->spectrum->getLoFreq());
   emit loChanged(this->ui->spectrum->getLoFreq());
 }

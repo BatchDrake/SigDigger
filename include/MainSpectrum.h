@@ -87,7 +87,7 @@ namespace SigDigger {
     ~MainSpectrum();
 
     // Actions
-    void feed(float *data, int size);
+    void feed(float *data, int size, struct timeval const &tv);
     void deserializeFATs(void);
 
     // Setters

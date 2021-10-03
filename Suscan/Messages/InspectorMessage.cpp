@@ -36,18 +36,27 @@ InspectorMessage::InspectorMessage(struct suscan_analyzer_inspector_msg *msg) :
 
   this->message = msg;
 
-  this->sources.resize(static_cast<unsigned>(msg->spectsrc_count));
-  for (i = 0; i < static_cast<unsigned>(msg->spectsrc_count); ++i) {
-    this->sources[i].name = msg->spectsrc_list[i]->name;
-    this->sources[i].desc = msg->spectsrc_list[i]->desc;
-  }
+  switch (msg->kind) {
+    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_GET_CONFIG:
+    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_CONFIG:
+    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_OPEN:
+      this->sources.resize(static_cast<unsigned>(msg->spectsrc_count));
+      for (i = 0; i < static_cast<unsigned>(msg->spectsrc_count); ++i) {
+        this->sources[i].name = msg->spectsrc_list[i]->name;
+        this->sources[i].desc = msg->spectsrc_list[i]->desc;
+      }
 
-  this->estimators.resize(static_cast<unsigned>(msg->estimator_count));
-  for (i = 0; i < static_cast<unsigned>(msg->estimator_count); ++i) {
-    this->estimators[i].name  = msg->estimator_list[i]->name;
-    this->estimators[i].desc  = msg->estimator_list[i]->desc;
-    this->estimators[i].field = msg->estimator_list[i]->field;
-    this->estimators[i].id    = i;
+      this->estimators.resize(static_cast<unsigned>(msg->estimator_count));
+      for (i = 0; i < static_cast<unsigned>(msg->estimator_count); ++i) {
+        this->estimators[i].name  = msg->estimator_list[i]->name;
+        this->estimators[i].desc  = msg->estimator_list[i]->desc;
+        this->estimators[i].field = msg->estimator_list[i]->field;
+        this->estimators[i].id    = i;
+      }
+      break;
+
+     default:
+      ;
   }
 }
 

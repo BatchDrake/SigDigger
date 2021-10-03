@@ -32,6 +32,8 @@ Q_DECLARE_METATYPE(Suscan::StatusMessage);
 Q_DECLARE_METATYPE(Suscan::GenericMessage);
 Q_DECLARE_METATYPE(Suscan::EstimatorId);
 Q_DECLARE_METATYPE(Suscan::AnalyzerParams);
+Q_DECLARE_METATYPE(Suscan::OrbitReport);
+Q_DECLARE_METATYPE(Suscan::Orbit);
 
 using namespace Suscan;
 
@@ -212,6 +214,16 @@ Analyzer::getMeasuredSampleRate(void) const
         suscan_analyzer_get_measured_samp_rate(this->instance));
 }
 
+struct timeval
+Analyzer::getSourceTimeStamp(void) const
+{
+  struct timeval tv;
+
+  suscan_analyzer_get_source_time(this->instance, &tv);
+
+  return tv;
+}
+
 void
 Analyzer::halt(void)
 {
@@ -282,6 +294,8 @@ Analyzer::assertTypeRegistration(void)
     qRegisterMetaType<Suscan::SourceInfoMessage>();
     qRegisterMetaType<Suscan::StatusMessage>();
     qRegisterMetaType<Suscan::AnalyzerParams>();
+    qRegisterMetaType<Suscan::OrbitReport>();
+    qRegisterMetaType<Suscan::Orbit>();
 
     Analyzer::registered = true;
   }
@@ -412,6 +426,33 @@ Analyzer::setInspectorEnabled(
           handle,
           eid,
           enabled,
+          id));
+}
+
+void
+Analyzer::setInspectorDopplerCorrection(
+    Handle handle,
+    Orbit const &orbit,
+    RequestId id)
+{
+  SU_ATTEMPT(
+        suscan_analyzer_inspector_set_tle_async(
+          this->instance,
+          handle,
+          &orbit.getCOrbit(),
+          id));
+}
+
+void
+Analyzer::disableDopplerCorrection(
+    Handle handle,
+    RequestId id)
+{
+  SU_ATTEMPT(
+        suscan_analyzer_inspector_set_tle_async(
+          this->instance,
+          handle,
+          nullptr,
           id));
 }
 

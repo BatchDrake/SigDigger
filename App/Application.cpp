@@ -96,6 +96,8 @@ Application::run(Suscan::Object const &config)
 
   this->show();
 
+  this->uiTimer.start(250);
+
   this->mediator->notifyStartupErrors();
 }
 
@@ -584,6 +586,24 @@ Application::connectUI(void)
         SIGNAL(bookmarkAdded(BookmarkInfo)),
         this,
         SLOT(onAddBookmark(BookmarkInfo)));
+
+  connect(
+        this->mediator,
+        SIGNAL(audioSetCorrection(Suscan::Orbit)),
+        this,
+        SLOT(onAudioSetCorrection(Suscan::Orbit)));
+
+  connect(
+        this->mediator,
+        SIGNAL(audioDisableCorrection(void)),
+        this,
+        SLOT(onAudioDisableCorrection(void)));
+
+  connect(
+        &this->uiTimer,
+        SIGNAL(timeout(void)),
+        this,
+        SLOT(onTick(void)));
 }
 
 void
@@ -1451,6 +1471,25 @@ Application::onAudioVolumeChanged(float)
 }
 
 void
+Application::onAudioSetCorrection(Suscan::Orbit orbit)
+{
+  if (this->mediator->getState() == UIMediator::RUNNING
+      && this->audioInspectorOpened)
+    this->analyzer->setInspectorDopplerCorrection(
+          this->audioInspHandle,
+          orbit,
+          0);
+}
+
+void
+Application::onAudioDisableCorrection(void)
+{
+  if (this->mediator->getState() == UIMediator::RUNNING
+      && this->audioInspectorOpened)
+  this->analyzer->disableDopplerCorrection(this->audioInspHandle, 0);
+}
+
+void
 Application::onAudioRecordStateChanged(void)
 {
   if (this->mediator->getAudioRecordState()) {
@@ -1712,4 +1751,11 @@ Application::onAddBookmark(BookmarkInfo info)
   }
 
   this->ui.spectrum->updateOverlay();
+}
+
+void
+Application::onTick(void)
+{
+  if (this->mediator->getState() == UIMediator::RUNNING)
+    this->mediator->notifyTimeStamp(this->analyzer->getSourceTimeStamp());
 }

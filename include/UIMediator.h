@@ -97,6 +97,7 @@ namespace SigDigger {
     void setState(enum State);
     State getState(void) const;
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
+    void notifyTimeStamp(struct timeval const &timestamp);
 
     // Recent list handling
     void clearRecent(void);
@@ -208,6 +209,8 @@ namespace SigDigger {
     void audioChanged(void);
     void audioVolumeChanged(float);
     void audioRecordStateChanged(void);
+    void audioSetCorrection(Suscan::Orbit);
+    void audioDisableCorrection(void);
 
     void panSpectrumStart(void);
     void panSpectrumStop(void);

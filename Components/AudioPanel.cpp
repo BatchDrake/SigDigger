@@ -16,10 +16,12 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+
 #include "AudioPanel.h"
 #include "ui_AudioPanel.h"
 #include <QDir>
 #include <QFileDialog>
+#include <FrequencyCorrectionDialog.h>
 
 using namespace SigDigger;
 
@@ -167,6 +169,12 @@ AudioPanel::connectAll(void)
         SIGNAL(valueChanged(qreal)),
         this,
         SLOT(onSquelchLevelChanged(void)));
+
+  connect(
+        this->ui->dopplerSettingsButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onOpenDopplerSettings(void)));
 }
 
 void
@@ -269,6 +277,33 @@ AudioPanel::setEnabled(bool enabled)
 }
 
 void
+AudioPanel::setDemodFreq(qint64 freq)
+{
+  this->demodFreq = static_cast<SUFREQ>(freq);
+
+  if (this->fcDialog != nullptr)
+    this->fcDialog->setFrequency(this->demodFreq);
+}
+
+void
+AudioPanel::setRealTime(bool realTime)
+{
+  this->isRealTime = realTime;
+
+  if (this->fcDialog != nullptr)
+    this->fcDialog->setRealTime(this->isRealTime);
+}
+
+void
+AudioPanel::setTimeStamp(struct timeval const &tv)
+{
+  this->timeStamp = tv;
+
+  if (this->fcDialog != nullptr)
+    this->fcDialog->setTimestamp(tv);
+}
+
+void
 AudioPanel::setDemod(enum AudioDemod demod)
 {
   this->panelConfig->demod = AudioPanel::demodToStr(demod);
@@ -323,6 +358,15 @@ void
 AudioPanel::setMuted(bool muted)
 {
   this->ui->muteButton->setChecked(muted);
+}
+
+void
+AudioPanel::setColorConfig(ColorConfig const &colors)
+{
+  this->colorConfig = colors;
+
+  if (this->fcDialog != nullptr)
+    this->fcDialog->setColorConfig(colors);
 }
 
 void
@@ -626,4 +670,34 @@ AudioPanel::onSquelchLevelChanged(void)
   this->setSquelchLevel(this->getSquelchLevel());
 
   emit changed();
+}
+
+void
+AudioPanel::onOpenDopplerSettings(void)
+{
+  if (this->fcDialog == nullptr) {
+    this->fcDialog = new FrequencyCorrectionDialog(
+        this,
+        this->demodFreq,
+        this->colorConfig);
+    this->fcDialog->setTimestamp(this->timeStamp);
+    this->fcDialog->setRealTime(this->isRealTime);
+
+    connect(
+          this->fcDialog,
+          SIGNAL(accepted()),
+          this,
+          SLOT(onAcceptCorrectionSetting(void)));
+  }
+
+  this->fcDialog->show();
+}
+
+void
+AudioPanel::onAcceptCorrectionSetting(void)
+{
+  if (this->fcDialog->isCorrectionEnabled())
+    emit setCorrection(this->fcDialog->getOrbit());
+  else
+    emit disableCorrection();
 }

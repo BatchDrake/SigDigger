@@ -134,11 +134,14 @@ MainSpectrum::connectAll(void)
 }
 
 void
-MainSpectrum::feed(float *data, int size)
+MainSpectrum::feed(float *data, int size, struct timeval const &tv)
 {
-  this->ui->mainSpectrum->setNewFftData(data, size);
-}
+  QDateTime dateTime;
 
+  dateTime.setMSecsSinceEpoch(tv.tv_sec * 1000 + tv.tv_usec / 1000);
+
+  this->ui->mainSpectrum->setNewFftData(data, size, dateTime);
+}
 
 void
 MainSpectrum::updateLimits(void)

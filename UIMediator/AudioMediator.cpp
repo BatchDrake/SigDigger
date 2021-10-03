@@ -41,6 +41,18 @@ UIMediator::connectAudioPanel(void)
         SIGNAL(recordStateChanged(bool)),
         this,
         SIGNAL(audioRecordStateChanged(void)));
+
+  connect(
+        this->ui->audioPanel,
+        SIGNAL(setCorrection(Suscan::Orbit)),
+        this,
+        SIGNAL(audioSetCorrection(Suscan::Orbit)));
+
+  connect(
+        this->ui->audioPanel,
+        SIGNAL(disableCorrection(void)),
+        this,
+        SIGNAL(audioDisableCorrection(void)));
 }
 
 void

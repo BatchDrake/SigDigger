@@ -448,6 +448,12 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 }
 
 void
+UIMediator::notifyTimeStamp(struct timeval const &timestamp)
+{
+  this->ui->audioPanel->setTimeStamp(timestamp);
+}
+
+void
 UIMediator::setPanSpectrumRunning(bool running)
 {
   this->ui->panoramicDialog->setRunning(running);
@@ -557,7 +563,8 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
   this->averager.feed(msg);
   this->ui->spectrum->feed(
         this->averager.get(),
-        static_cast<int>(this->averager.size()));
+        static_cast<int>(this->averager.size()),
+        msg.getTimeStamp());
 }
 
 void
@@ -741,14 +748,30 @@ UIMediator::refreshProfile(void)
   this->ui->sourcePanel->setProfile(&this->appConfig->profile);
   this->ui->configDialog->setProfile(this->appConfig->profile);
 
-  if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
-    min = static_cast<qint64>(
-          this->appConfig->profile.getDevice().getMinFreq());
-    max = static_cast<qint64>(
-          this->appConfig->profile.getDevice().getMaxFreq());
+  if (this->appConfig->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
+    if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+      min = static_cast<qint64>(
+            this->appConfig->profile.getDevice().getMinFreq());
+      max = static_cast<qint64>(
+            this->appConfig->profile.getDevice().getMaxFreq());
+        this->ui->audioPanel->setRealTime(true);
+    } else {
+      min = SIGDIGGER_MIN_RADIO_FREQ;
+      max = SIGDIGGER_MAX_RADIO_FREQ;
+
+      this->ui->audioPanel->setTimeStamp(
+            this->appConfig->profile.getStartTime());
+      this->ui->audioPanel->setRealTime(false);
+    }
   } else {
+    struct timeval tv;
+    // Remote sources receive time from the server
     min = SIGDIGGER_MIN_RADIO_FREQ;
     max = SIGDIGGER_MAX_RADIO_FREQ;
+
+    gettimeofday(&tv, nullptr);
+    this->ui->audioPanel->setTimeStamp(tv);
+    this->ui->audioPanel->setRealTime(false);
   }
 
   // Dummy device should not accept modifications if we don't accept
@@ -834,6 +857,7 @@ UIMediator::applyConfig(void)
   this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
+  this->ui->audioPanel->setColorConfig(this->appConfig->colors);
   this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
   this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
 
@@ -914,6 +938,7 @@ UIMediator::onTriggerSetup(bool)
       this->appConfig->colors = this->ui->configDialog->getColors();
       this->ui->spectrum->setColorConfig(this->appConfig->colors);
       this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
+      this->ui->audioPanel->setColorConfig(this->appConfig->colors);
     }
 
     if (this->ui->configDialog->guiChanged()) {

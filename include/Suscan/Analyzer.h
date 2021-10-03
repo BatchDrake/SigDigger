@@ -166,6 +166,93 @@ namespace Suscan {
     }
   };
 
+  struct OrbitReport {
+    bool loan = false;
+    struct suscan_orbit_report local_info;
+    struct suscan_orbit_report *c_info = nullptr;
+
+    OrbitReport()
+    {
+      this->c_info = &this->local_info;
+    }
+
+    OrbitReport(struct suscan_orbit_report *ptr, bool loan = false)
+    {
+      this->loan = loan;
+
+      if (loan) {
+        this->c_info = ptr;
+      } else {
+        this->local_info = *ptr;
+        this->c_info = &this->local_info;
+      }
+    }
+
+    struct timeval const &
+    getRxTime(void) const
+    {
+      return this->c_info->rx_time;
+    }
+
+    xyz_t const &
+    getAzel(void) const
+    {
+      return this->c_info->satpos;
+    }
+
+    SUFLOAT
+    getFrequencyCorrection(void) const
+    {
+      return this->c_info->freq_corr;
+    }
+
+    SUDOUBLE
+    getVlosVelocity(void) const
+    {
+      return this->c_info->vlos_vel;
+    }
+  };
+
+
+  struct Orbit {
+    bool loan = false;
+    orbit_t local_info;
+    const orbit_t *c_info = nullptr;
+
+    Orbit()
+    {
+      memset(&local_info, 0, sizeof(orbit_t));
+      this->c_info = &this->local_info;
+    }
+
+    Orbit(const orbit_t *ptr, bool loan = false)
+    {
+      this->loan = loan;
+
+      if (loan) {
+        this->c_info = ptr;
+      } else {
+        this->local_info = *ptr;
+        this->local_info.name = strdup(ptr->name);
+        this->c_info = &this->local_info;
+      }
+    }
+
+    Orbit(Orbit const &orbit) : Orbit(orbit.c_info) { }
+
+    ~Orbit()
+    {
+      if (!this->loan)
+        free(local_info.name);
+    }
+
+    orbit_t const &
+    getCOrbit(void) const
+    {
+      return *this->c_info;
+    }
+  };
+
   class Analyzer: public QObject {
     Q_OBJECT
 
@@ -207,6 +294,7 @@ namespace Suscan {
   public:
     SUSCOUNT getSampleRate(void) const;
     SUSCOUNT getMeasuredSampleRate(void) const;
+    struct timeval getSourceTimeStamp(void) const;
 
     void *read(uint32_t &type);
     void registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t, void *);
@@ -237,6 +325,8 @@ namespace Suscan {
     void setInspectorWatermark(Handle handle, SUSCOUNT watermark, RequestId id);
     void setSpectrumSource(Handle handle, unsigned int source, RequestId id);
     void setInspectorEnabled(Handle handle, EstimatorId eid, bool, RequestId id);
+    void setInspectorDopplerCorrection(Handle handle, Orbit const &, RequestId id);
+    void disableDopplerCorrection(Handle handle, RequestId id);
     void closeInspector(Handle handle, RequestId id);
 
     // Constructors

@@ -22,6 +22,10 @@
 #include <PersistentWidget.h>
 #include <GenericDataSaverUI.h>
 #include <AudioFileSaver.h>
+#include <ColorConfig.h>
+#include <Suscan/Analyzer.h>
+
+#include <suscan/sgdp4/sgdp4-types.h>
 
 namespace Ui {
   class AudioPanel;
@@ -56,9 +60,13 @@ namespace SigDigger {
     AudioPanelConfig *panelConfig = nullptr;
 
     // Data
-    SUFLOAT bandwidth = 200000;
+    SUFLOAT        bandwidth  = 200000;
+    SUFREQ         demodFreq  = 0;
+    bool           isRealTime = false;
+    struct timeval timeStamp = {0, 0};
 
     // UI methods
+    ColorConfig colorConfig;
     FrequencyCorrectionDialog *fcDialog = nullptr;
 
     // Private methods
@@ -78,13 +86,16 @@ namespace SigDigger {
 
     // Setters
     void setBandwidth(SUFLOAT);
+    void setDemodFreq(qint64);
+    void setRealTime(bool);
     void setEnabled(bool);
     void setDemod(enum AudioDemod);
     void setSampleRate(unsigned int);
+    void setTimeStamp(struct timeval const &);
     void setCutOff(SUFLOAT);
     void setVolume(SUFLOAT);
     void setMuted(bool);
-
+    void setColorConfig(ColorConfig const &);
     void setSquelchEnabled(bool);
     void setSquelchLevel(SUFLOAT);
 
@@ -105,6 +116,8 @@ namespace SigDigger {
     bool    isMuted(void) const;
     SUFLOAT getMuteableVolume(void) const;
 
+    bool isCorrectionEnabled(void) const;
+
     bool getSquelchEnabled(void) const;
     SUFLOAT getSquelchLevel(void) const;
 
@@ -123,15 +136,19 @@ namespace SigDigger {
     void onVolumeChanged(void);
     void onMuteToggled(bool);
     void onEnabledChanged(void);
+    void onAcceptCorrectionSetting(void);
 
     void onChangeSavePath(void);
     void onRecordStartStop(void);
     void onToggleSquelch(void);
     void onSquelchLevelChanged(void);
+    void onOpenDopplerSettings(void);
 
   signals:
     void changed(void);
     void volumeChanged(float);
+    void setCorrection(Suscan::Orbit);
+    void disableCorrection(void);
 
   private:
     Ui::AudioPanel *ui = nullptr;
