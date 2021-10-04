@@ -21,7 +21,6 @@
 #include <QPainter>
 #include <SuWidgetsHelpers.h>
 #include <Suscan/Analyzer.h>
-#include <suscan/analyzer/local.h>
 
 #define FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING 2
 #define FREQUENCY_EV_TICKS 10
@@ -275,6 +274,7 @@ void
 FrequencyCorrectionDialog::setColorConfig(ColorConfig const &colors)
 {
   this->colors = colors;
+  this->azElAxesPixmap = QPixmap();
   this->repaintSatellitePlot();
 }
 
@@ -312,22 +312,16 @@ FrequencyCorrectionDialog::recalcALOS(void)
       sgdp4_prediction_update(&this->prediction, &this->timeStamp);
       sgdp4_prediction_get_azel(&this->prediction, &azel);
 
-      this->haveALOS =
-          sgdp4_prediction_find_aos(
-            &this->prediction,
-            &this->timeStamp,
-            FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
-            &this->aosTime)
-          && sgdp4_prediction_find_los(
-            &this->prediction,
-            &this->aosTime,
-            FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
-            &this->losTime);
-
       if (azel.elevation > 0) {
         struct timeval delta, search;
 
-        timersub(&this->losTime, &this->aosTime, &delta);
+        sgdp4_prediction_find_los(
+              &this->prediction,
+              &this->timeStamp,
+              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
+              &this->losTime);
+
+        timersub(&this->losTime, &this->timeStamp, &delta);
 
         delta.tv_sec += 20 * 60;
 
@@ -341,7 +335,19 @@ FrequencyCorrectionDialog::recalcALOS(void)
               &this->aosTime)
             && sgdp4_prediction_find_los(
               &this->prediction,
-              &search,
+              &this->aosTime,
+              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
+              &this->losTime);
+      } else {
+        this->haveALOS =
+            sgdp4_prediction_find_aos(
+              &this->prediction,
+              &this->timeStamp,
+              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
+              &this->aosTime)
+            && sgdp4_prediction_find_los(
+              &this->prediction,
+              &this->aosTime,
               FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
               &this->losTime);
       }
@@ -353,25 +359,33 @@ void
 FrequencyCorrectionDialog::setCurrentOrbit(orbit_t *orbit)
 {
   if (this->haveOrbit) {
-    orbit_finalize(&this->currentOrbit);
+    if (&this->currentOrbit != orbit) {
+      orbit_finalize(&this->currentOrbit);
+      this->currentOrbit.name = nullptr;
+    }
     sgdp4_prediction_finalize(&this->prediction);
     this->haveOrbit = false;
     this->haveALOS  = false;
   }
 
   if (orbit != nullptr) {
-    this->currentOrbit = *orbit;
-    this->currentOrbit.name = orbit->name == nullptr
-        ? nullptr
-        : strdup(orbit->name);
+    if (&this->currentOrbit != orbit) {
+      this->currentOrbit = *orbit;
+      this->currentOrbit.name = orbit->name == nullptr
+          ? nullptr
+          : strdup(orbit->name);
+    }
 
-    if (sgdp4_prediction_init(
+    if (this->haveQth
+        && sgdp4_prediction_init(
           &this->prediction,
           &this->currentOrbit,
-          &this->rxSite))
+          &this->rxSite)) {
       this->haveOrbit = true;
-    else
+    } else {
       orbit_finalize(&this->currentOrbit);
+      this->currentOrbit.name = nullptr;
+    }
   }
 
   this->updatePrediction();
@@ -386,6 +400,16 @@ FrequencyCorrectionDialog::setTimestamp(struct timeval const &tv)
   }
 }
 
+void
+FrequencyCorrectionDialog::resetTimestamp(struct timeval const &tv)
+{
+  if (!this->realTime) {
+    this->timeStamp = tv;
+    this->haveALOS = false;
+    this->updatePrediction();
+  }
+}
+
 bool
 FrequencyCorrectionDialog::isCorrectionEnabled(void) const
 {
@@ -393,13 +417,34 @@ FrequencyCorrectionDialog::isCorrectionEnabled(void) const
       && this->haveOrbit;
 }
 
+bool
+FrequencyCorrectionDialog::isCorrectionFromSatellite(void) const
+{
+  return this->ui->satRadio->isChecked();
+}
+
+QString
+FrequencyCorrectionDialog::getCurrentSatellite(void) const
+{
+  return this->ui->satCombo->currentIndex() >= 0
+      ? this->ui->satCombo->currentText()
+      : "";
+}
+
+QString
+FrequencyCorrectionDialog::getCurrentTLE(void) const
+{
+  return this->ui->tleEdit->toPlainText();
+}
+
 Suscan::Orbit
 FrequencyCorrectionDialog::getOrbit(void) const
 {
-  if (this->haveOrbit)
+  if (this->haveOrbit) {
     return Suscan::Orbit(&this->currentOrbit);
-  else
+  } else {
     return Suscan::Orbit();
+  }
 }
 
 void
@@ -477,6 +522,45 @@ void
 FrequencyCorrectionDialog::setRealTime(bool realTime)
 {
   this->realTime = realTime;
+
+  if (realTime) {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    this->resetTimestamp(tv);
+  } else {
+    this->haveALOS = false;
+  }
+}
+
+void
+FrequencyCorrectionDialog::setCorrectionEnabled(bool enabled)
+{
+  this->ui->correctionTypeCombo->setCurrentIndex(enabled ? 1 : 0);
+  this->refreshUiState();
+}
+
+void
+FrequencyCorrectionDialog::setCorrectionFromSatellite(bool enabled)
+{
+  this->ui->satRadio->setChecked(enabled);
+  this->ui->tleRadio->setChecked(!enabled);
+
+  this->refreshUiState();
+}
+
+void
+FrequencyCorrectionDialog::setCurrentSatellite(QString sat)
+{
+  int ndx;
+
+  if ((ndx = this->ui->satCombo->findText(sat)) > 0)
+    this->ui->satCombo->setCurrentIndex(ndx);
+}
+
+void
+FrequencyCorrectionDialog::setCurrentTLE(QString data)
+{
+  this->ui->tleEdit->setPlainText(data);
 }
 
 void
@@ -533,12 +617,20 @@ FrequencyCorrectionDialog::FrequencyCorrectionDialog(
 
   gettimeofday(&this->timeStamp, nullptr);
 
-  suscan_local_analyzer_get_qth(&this->rxSite);
-
   this->timer.start(250);
   this->updatePrediction();
   this->setFrequency(centerFreq);
   this->refreshUiState();
+}
+
+void
+FrequencyCorrectionDialog::setQth(xyz_t const &qth)
+{
+  this->rxSite = qth;
+  this->haveQth = true;
+
+  if (this->haveOrbit)
+    this->setCurrentOrbit(&this->currentOrbit);
 }
 
 FrequencyCorrectionDialog::~FrequencyCorrectionDialog()
@@ -576,11 +668,12 @@ FrequencyCorrectionDialog::onTLEEdit(void)
     this->ui->tleStatusLabel->setText("Please input a valid TLE set");
     this->setCurrentOrbit(nullptr);
   } else {
-    orbit_t orbit;
+    orbit_t orbit = orbit_INITIALIZER;
+
     if (orbit_init_from_data(
           &orbit,
           str,
-          static_cast<size_t>(tleData.length())) > 0) {
+          static_cast<size_t>(asStdString.length())) > 0) {
       this->setCurrentOrbit(&orbit);
       orbit_finalize(&orbit);
       this->ui->tleStatusLabel->setText("TLE is valid");

@@ -37,6 +37,26 @@ Q_DECLARE_METATYPE(Suscan::Orbit);
 
 using namespace Suscan;
 
+// Orbit
+void
+Orbit::debug(void) const
+{
+  printf("SAT NAME: %s\n", this->c_info->name);
+  printf("  Epoch:    %d + %g\n", this->c_info->ep_year, this->c_info->ep_day);
+  printf("  MM:       %g rev / day\n", this->c_info->rev);
+  printf("  dMM/dt:   %g rev / day²\n", this->c_info->drevdt);
+  printf("  d²MM/dt²: %g rev / day³\n", this->c_info->d2revdt2);
+  printf("  B*:       %g\n", this->c_info->bstar);
+  printf("  Incl:     %gº\n", SU_RAD2DEG(this->c_info->eqinc));
+  printf("  Ecc:      %g\n", this->c_info->ecc);
+  printf("  Mnan:     %gº\n", SU_RAD2DEG(this->c_info->mnan));
+  printf("  Argp:     %gº\n", SU_RAD2DEG(this->c_info->argp));
+  printf("  RAAN:     %gº\n", SU_RAD2DEG(this->c_info->ascn));
+  printf("  S. axis:  %gº\n", this->c_info->smjaxs);
+  printf("  Norb:     %ld\n", this->c_info->norb);
+  printf("  Satno:    %d\n", this->c_info->satno);
+}
+
 // Async thread
 void
 Analyzer::AsyncThread::run()

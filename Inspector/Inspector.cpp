@@ -75,6 +75,18 @@ Inspector::Inspector(
         this,
         SLOT(onApplyEstimation(QString, float)));
 
+  connect(
+        this->ui.get(),
+        SIGNAL(setCorrection(Suscan::Orbit)),
+        this,
+        SLOT(onDopplerCorrection(Suscan::Orbit)));
+
+  connect(
+        this->ui.get(),
+        SIGNAL(disableCorrection(void)),
+        this,
+        SLOT(onDisableCorrection(void)));
+
   for (auto p = msg.getSpectrumSources().begin();
        p != msg.getSpectrumSources().end();
        ++p)
@@ -122,6 +134,36 @@ void
 Inspector::updateEstimator(Suscan::EstimatorId id, float val)
 {
   this->ui->updateEstimator(id, val);
+}
+
+void
+Inspector::notifyOrbitReport(Suscan::OrbitReport const &report)
+{
+  this->ui->setOrbitReport(report);
+}
+
+void
+Inspector::disableCorrection(void)
+{
+  this->ui->notifyDisableCorrection();
+}
+
+void
+Inspector::setTunerFrequency(SUFREQ freq)
+{
+  this->ui->setTunerFrequency(freq);
+}
+
+void
+Inspector::setRealTime(bool realTime)
+{
+  this->ui->setRealTime(realTime);
+}
+
+void
+Inspector::setTimeStamp(struct timeval const &tv)
+{
+  this->ui->setTimeStamp(tv);
 }
 
 Inspector::~Inspector()
@@ -190,4 +232,22 @@ Inspector::onApplyEstimation(QString key, float value)
           this->config,
           static_cast<Suscan::RequestId>(rand()));
   }
+}
+
+void
+Inspector::onDopplerCorrection(Suscan::Orbit orbit)
+{
+  if (this->analyzer != nullptr) {
+    this->analyzer->setInspectorDopplerCorrection(
+        this->handle,
+        orbit,
+        static_cast<Suscan::RequestId>(rand()));
+  }
+}
+
+void
+Inspector::onDisableCorrection(void)
+{
+  if (this->analyzer != nullptr)
+    this->analyzer->disableDopplerCorrection(this->handle, 0);
 }

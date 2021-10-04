@@ -27,6 +27,7 @@
 #include <map>
 #include <InspectorCtl.h>
 #include <Suscan/SpectrumSource.h>
+#include <Suscan/Analyzer.h>
 #include <Suscan/Library.h>
 #include <Suscan/Estimator.h>
 #include <SNREstimator.h>
@@ -51,6 +52,7 @@ namespace Ui {
 }
 
 namespace SigDigger {
+  class FrequencyCorrectionDialog;
   class AppConfig;
 
   class InspectorUI : public QObject {
@@ -76,6 +78,8 @@ namespace SigDigger {
     // Inspector config
     Suscan::Config *config; // Weak
     QWidget *owner;
+    bool haveQth = false;
+    xyz_t qth;
 
     // Decider goes here
     unsigned int bps = 0;
@@ -106,6 +110,8 @@ namespace SigDigger {
     WaveformTab *wfTab = nullptr;
     SymViewTab *symViewTab = nullptr;
 
+    FrequencyCorrectionDialog *fcDialog = nullptr;
+
     State state = DETACHED;
     SUSCOUNT lastLen = 0;
     SUSCOUNT lastRate = 0;
@@ -125,6 +131,7 @@ namespace SigDigger {
     void connectDataSaver(void);
     void connectNetForwarder(void);
     void refreshSizes(void);
+    void setQth(xyz_t const &);
     std::string captureFileName(void) const;
     unsigned int getVScrollPageSize(void) const;
     unsigned int getHScrollOffset(void) const;
@@ -161,10 +168,13 @@ namespace SigDigger {
       void addEstimator(Suscan::Estimator const &estimator);
       void setAppConfig(AppConfig const &cfg);
       void setZeroPoint(float);
-
+      void setOrbitReport(Suscan::OrbitReport const &report);
+      void notifyDisableCorrection(void);
       bool installDataSaver(void);
       void uninstallDataSaver(void);
-
+      void setTunerFrequency(SUFREQ freq);
+      void setRealTime(bool);
+      void setTimeStamp(struct timeval const &);
       bool installNetForwarder(void);
       void uninstallNetForwarder(void);
       void setBasebandRate(unsigned int);
@@ -196,6 +206,8 @@ namespace SigDigger {
       void onChangeBandwidth(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
       void onApplyEstimation(QString, float);
+      void onOpenDopplerSettings(void);
+      void onDopplerAccepted(void);
 
       // Spectrum slots
       void onUnitChanged(void);
@@ -224,6 +236,8 @@ namespace SigDigger {
       void bandwidthChanged(void);
       void toggleEstimator(Suscan::EstimatorId, bool);
       void applyEstimation(QString, float);
+      void disableCorrection(void);
+      void setCorrection(Suscan::Orbit);
   };
 }
 

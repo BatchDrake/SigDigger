@@ -203,6 +203,8 @@ namespace Suscan {
     {
       return *this->c_info;
     }
+
+    void debug(void) const;
   };
 
   class Analyzer: public QObject {

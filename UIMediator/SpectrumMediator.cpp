@@ -86,6 +86,10 @@ UIMediator::onFrequencyChanged(qint64)
   this->ui->audioPanel->setDemodFreq(freq);
   this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
 
+  for (auto i : this->ui->inspectorTable)
+    i.second->setTunerFrequency(
+          this->ui->spectrum->getCenterFreq());
+
   emit frequencyChanged(
         this->ui->spectrum->getCenterFreq(),
         this->ui->spectrum->getLnbFreq());

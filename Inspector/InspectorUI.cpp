@@ -36,7 +36,9 @@
 #include <QMessageBox>
 #include <SuWidgetsHelpers.h>
 #include <SigDiggerHelpers.h>
-
+#include <FrequencyCorrectionDialog.h>
+#include <QMessageBox>
+#include <suscan.h>
 #include <iomanip>
 #include <fcntl.h>
 
@@ -46,11 +48,15 @@ InspectorUI::InspectorUI(
     QWidget *owner,
     Suscan::Config *config)
 {
+  struct timeval tv;
+
   this->ui = new Ui::Inspector();
   this->config = config;
   this->owner  = owner;
 
   this->ui->setupUi(owner);
+
+  this->haveQth = suscan_get_qth(&this->qth);
 
   this->symViewTab = new SymViewTab(this->ui->toolTab);
   this->ui->toolTab->addTab(this->symViewTab, "Symbol stream");
@@ -60,6 +66,16 @@ InspectorUI::InspectorUI(
 
   this->tvTab = new TVProcessorTab(this->ui->toolTab, this->getBaudRateFloat());
   this->ui->toolTab->addTab(this->tvTab, "Analog TV");
+
+  this->fcDialog = new FrequencyCorrectionDialog(
+        owner,
+        0,
+        ColorConfig());
+
+  gettimeofday(&tv, NULL);
+  this->fcDialog->resetTimestamp(tv);
+  if (this->haveQth)
+    this->fcDialog->setQth(this->qth);
 
   if (this->config->hasPrefix("ask")) {
     this->decider.setDecisionMode(Decider::MODULUS);
@@ -202,6 +218,14 @@ InspectorUI::setBandwidth(unsigned int bandwidth)
 {
   // More COBOL
   this->ui->bwLcd->setValue(static_cast<int>(bandwidth));
+}
+
+void
+InspectorUI::setQth(xyz_t const &site)
+{
+  this->qth = site;
+  this->haveQth = true;
+  this->fcDialog->setQth(site);
 }
 
 void
@@ -397,6 +421,17 @@ InspectorUI::connectAll()
         this,
         SLOT(onNewOffset()));
 
+  connect(
+        this->ui->dopplerSettingsButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onOpenDopplerSettings(void)));
+
+  connect(
+        this->fcDialog,
+        SIGNAL(accepted(void)),
+        this,
+        SLOT(onDopplerAccepted(void)));
 }
 
 void
@@ -511,6 +546,24 @@ InspectorUI::uninstallNetForwarder(void)
   if (this->socketForwarder)
     this->socketForwarder->deleteLater();
   this->socketForwarder = nullptr;
+}
+
+void
+InspectorUI::setTunerFrequency(SUFREQ freq)
+{
+  this->fcDialog->setFrequency(freq);
+}
+
+void
+InspectorUI::setRealTime(bool realTime)
+{
+  this->fcDialog->setRealTime(realTime);
+}
+
+void
+InspectorUI::setTimeStamp(struct timeval const &tv)
+{
+  this->fcDialog->setTimestamp(tv);
 }
 
 bool
@@ -947,6 +1000,8 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   fftConfig.deserialize(cfg.fftConfig->serialize());
   panelConfig.deserialize(cfg.inspectorConfig->serialize());
 
+  this->fcDialog->setColorConfig(colors);
+
   // Set colors according to application config
   this->ui->constellation->setForegroundColor(colors.constellationForeground);
   this->ui->constellation->setBackgroundColor(colors.constellationBackground);
@@ -985,6 +1040,68 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
 
   // Set palette
   (void) this->setPalette(fftConfig.palette);
+}
+
+void
+InspectorUI::setOrbitReport(Suscan::OrbitReport const &report)
+{
+  this->ui->vlosLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          report.getVlosVelocity(),
+          3,
+          "m/s",
+          true));
+
+  this->ui->dopplerLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(report.getFrequencyCorrection()),
+          3,
+          "Hz",
+          true));
+
+
+  this->ui->azLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          SU_RAD2DEG(report.getAzel().azimuth),
+          0,
+          "º",
+          false));
+
+  this->ui->elLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          SU_RAD2DEG(report.getAzel().elevation),
+          0,
+          "º",
+          true));
+
+  this->ui->distanceLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          SU_RAD2DEG(report.getAzel().distance),
+          3,
+          "m",
+          true));
+
+  this->ui->airmassLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          1 / cos(.5 * PI - report.getAzel().elevation),
+          3,
+          "Hz",
+          true));
+
+  this->ui->visibleLabel->setText(
+        report.getAzel().elevation < 0 ? "No" : "Yes");
+}
+
+void
+InspectorUI::notifyDisableCorrection(void)
+{
+  this->ui->vlosLabel->setText("N / A");
+  this->ui->dopplerLabel->setText("N / A");
+  this->ui->azLabel->setText("N / A");
+  this->ui->elLabel->setText("N / A");
+  this->ui->distanceLabel->setText("N / A");
+  this->ui->airmassLabel->setText("N / A");
+  this->ui->visibleLabel->setText("N / A");
 }
 
 void
@@ -1275,3 +1392,31 @@ InspectorUI::onNewBandwidth(int, int)
 {
   this->redrawMeasures();
 }
+
+void
+InspectorUI::onOpenDopplerSettings(void)
+{
+  if (this->haveQth) {
+    this->fcDialog->show();
+  } else {
+    QMessageBox::warning(
+          this->owner,
+          "Doppler settings",
+          "Doppler settings require RX location to be properly initialized. "
+          "Plase set a receiver location in the settings dialog.");
+
+  }
+}
+
+void
+InspectorUI::onDopplerAccepted(void)
+{
+  if (this->fcDialog->isCorrectionEnabled()) {
+    Suscan::Orbit orbit = this->fcDialog->getOrbit();
+    emit setCorrection(orbit);
+  } else {
+    emit disableCorrection();
+  }
+}
+
+

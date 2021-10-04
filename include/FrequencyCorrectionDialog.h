@@ -45,12 +45,14 @@ namespace SigDigger {
     sgdp4_prediction_t prediction;
     QString currentTle;
     orbit_t currentOrbit;
-    bool haveOrbit = false;
     QTimer timer;
     ColorConfig colors;
 
-    bool   realTime = true;
-    bool   haveALOS = false;
+    bool haveOrbit = false;
+    bool realTime  = true;
+    bool haveALOS  = false;
+    bool haveQth   = false;
+
     xyz_t  rxSite;
     struct timeval losTime;
     struct timeval aosTime;
@@ -70,13 +72,24 @@ namespace SigDigger {
     void paintTextAt(QPainter &, int x, int y, QString text);
 
   public:
+    // Setters
     void setColorConfig(ColorConfig const &colors);
     void setFrequency(SUFREQ freq);
     void setTimestamp(struct timeval const &timestamp);
+    void resetTimestamp(struct timeval const &timestamp);
     void setQth(xyz_t const &qth);
     void setRealTime(bool);
+    void setCorrectionEnabled(bool);
+    void setCorrectionFromSatellite(bool);
+    void setCurrentSatellite(QString);
+    void setCurrentTLE(QString);
 
+    // Getters
     bool isCorrectionEnabled(void) const;
+    bool isCorrectionFromSatellite(void) const;
+    QString getCurrentSatellite(void) const;
+    QString getCurrentTLE(void) const;
+
     Suscan::Orbit getOrbit(void) const;
 
     explicit FrequencyCorrectionDialog(

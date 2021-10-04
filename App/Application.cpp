@@ -981,6 +981,13 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
               this->delayedDemod,
               this->delayedEnableSql,
               this->delayedSqlLevel);
+
+        /* Enable Doppler correction */
+        if (this->mediator->isAudioDopplerCorrectionEnabled())
+          this->analyzer->setInspectorDopplerCorrection(
+              this->audioInspHandle,
+              this->mediator->getAudioOrbit(),
+              0);
       } else if (msg.getClass() == "raw") {
           this->rawInspHandle = msg.getHandle();
           this->rawInspectorOpened = true;
@@ -1039,12 +1046,14 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
       break;
 
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_TLE:
-      if (msg.isTLEEnabled())
-        this->mediator->notifyDisableCorrection();
+      if (!msg.isTLEEnabled())
+        this->mediator->notifyDisableCorrection(msg.getInspectorId());
       break;
 
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_ORBIT_REPORT:
-      this->mediator->notifyOrbitReport(msg.getOrbitReport());
+      this->mediator->notifyOrbitReport(
+            msg.getInspectorId(),
+            msg.getOrbitReport());
       break;
 
     default:

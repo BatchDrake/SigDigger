@@ -55,6 +55,13 @@ namespace SigDigger {
       void feed(const SUCOMPLEX *data, unsigned int size);
       void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
       void updateEstimator(Suscan::EstimatorId id, float val);
+      void notifyOrbitReport(Suscan::OrbitReport const &);
+      void disableCorrection(void);
+      void setTunerFrequency(SUFREQ freq);
+      void setRealTime(bool);
+      void setTimeStamp(struct timeval const &);
+      void setQth(xyz_t const &qth);
+
       void showEvent(QShowEvent *event);
 
       explicit Inspector(
@@ -71,6 +78,8 @@ namespace SigDigger {
       void onBandwidthChanged(void);
       void onToggleEstimator(Suscan::EstimatorId, bool);
       void onApplyEstimation(QString, float);
+      void onDopplerCorrection(Suscan::Orbit);
+      void onDisableCorrection(void);
   };
 }
 

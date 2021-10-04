@@ -98,8 +98,8 @@ namespace SigDigger {
     State getState(void) const;
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
     void notifyTimeStamp(struct timeval const &timestamp);
-    void notifyOrbitReport(Suscan::OrbitReport const &report);
-    void notifyDisableCorrection(void);
+    void notifyOrbitReport(Suscan::InspectorId, Suscan::OrbitReport const &report);
+    void notifyDisableCorrection(Suscan::InspectorId);
 
     // Recent list handling
     void clearRecent(void);
@@ -141,6 +141,8 @@ namespace SigDigger {
     Suscan::AnalyzerParams *getAnalyzerParams(void) const;
     bool getAudioRecordState(void) const;
     std::string getAudioRecordSavePath(void) const;
+    bool isAudioDopplerCorrectionEnabled(void) const;
+    Suscan::Orbit getAudioOrbit(void) const;
 
     bool getPanSpectrumDevice(Suscan::Source::Device &) const;
     bool getPanSpectrumRange(qint64 &min, qint64 &max) const;

@@ -451,18 +451,34 @@ void
 UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 {
   this->ui->audioPanel->setTimeStamp(timestamp);
+  for (auto i : this->ui->inspectorTable)
+    i.second->setTimeStamp(timestamp);
 }
 
 void
-UIMediator::notifyOrbitReport(Suscan::OrbitReport const &report)
+UIMediator::notifyOrbitReport(
+    Suscan::InspectorId id,
+    Suscan::OrbitReport const &report)
 {
-  this->ui->audioPanel->notifyOrbitReport(report);
+  if (id == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
+    this->ui->audioPanel->notifyOrbitReport(report);
+  } else {
+    Inspector *insp;
+    if ((insp = this->lookupInspector(id)) != nullptr)
+      insp->notifyOrbitReport(report);
+  }
 }
 
 void
-UIMediator::notifyDisableCorrection(void)
+UIMediator::notifyDisableCorrection(Suscan::InspectorId id)
 {
-  this->ui->audioPanel->notifyDisableCorrection();
+  if (id == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
+    this->ui->audioPanel->notifyDisableCorrection();
+  } else {
+    Inspector *insp;
+    if ((insp = this->lookupInspector(id)) != nullptr)
+      insp->disableCorrection();
+  }
 }
 
 
@@ -611,6 +627,18 @@ UIMediator::getAudioRecordSavePath(void) const
 }
 
 bool
+UIMediator::isAudioDopplerCorrectionEnabled(void) const
+{
+  return this->ui->audioPanel->isCorrectionEnabled();
+}
+
+Suscan::Orbit
+UIMediator::getAudioOrbit(void) const
+{
+  return this->ui->audioPanel->getOrbit();
+}
+
+bool
 UIMediator::getPanSpectrumDevice(Suscan::Source::Device &dev) const
 {
   return this->ui->panoramicDialog->getSelectedDevice(dev);
@@ -703,6 +731,10 @@ UIMediator::addInspectorTab(
   oId = this->ui->lastId++;
 
   insp->setId(oId);
+  insp->setRealTime(
+        this->appConfig->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE
+        && this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR);
+  insp->setTunerFrequency(this->ui->spectrum->getCenterFreq());
 
   index = this->ui->main->mainTab->addTab(
         insp,
@@ -772,7 +804,7 @@ UIMediator::refreshProfile(void)
       min = SIGDIGGER_MIN_RADIO_FREQ;
       max = SIGDIGGER_MAX_RADIO_FREQ;
 
-      this->ui->audioPanel->setTimeStamp(
+      this->ui->audioPanel->resetTimeStamp(
             this->appConfig->profile.getStartTime());
       this->ui->audioPanel->setRealTime(false);
     }
@@ -783,7 +815,7 @@ UIMediator::refreshProfile(void)
     max = SIGDIGGER_MAX_RADIO_FREQ;
 
     gettimeofday(&tv, nullptr);
-    this->ui->audioPanel->setTimeStamp(tv);
+    this->ui->audioPanel->resetTimeStamp(tv);
     this->ui->audioPanel->setRealTime(false);
   }
 
@@ -959,9 +991,11 @@ UIMediator::onTriggerSetup(bool)
       this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
     }
 
-    if (this->ui->configDialog->locationChanged())
-      sus->setQth(
-            this->ui->configDialog->getLocation());
+    if (this->ui->configDialog->locationChanged()) {
+      Suscan::Location loc = this->ui->configDialog->getLocation();
+      sus->setQth(loc);
+      this->ui->audioPanel->setQth(loc.getQth());
+    }
   }
 }
 

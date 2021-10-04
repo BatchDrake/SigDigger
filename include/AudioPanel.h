@@ -39,13 +39,18 @@ namespace SigDigger {
     bool enabled = false;
     std::string demod;
     std::string savePath;
-    unsigned int rate = 44100;
-    SUFLOAT cutOff = 15000;
-    SUFLOAT volume = -6;
+    unsigned int rate   = 44100;
+    SUFLOAT cutOff      = 15000;
+    SUFLOAT volume      = -6;
 
-    bool squelch = false;
-    SUFLOAT amSquelch = .1f;
-    SUFLOAT ssbSquelch = 1e-3f;
+    bool squelch        = false;
+    SUFLOAT amSquelch   = .1f;
+    SUFLOAT ssbSquelch  = 1e-3f;
+
+    bool tleCorrection  = false;
+    bool isSatellite    = false;
+    std::string satName = "ISS (ZARYA)";
+    std::string tleData = "";
 
     // Overriden methods
     void deserialize(Suscan::Object const &conf) override;
@@ -92,8 +97,10 @@ namespace SigDigger {
     void setDemod(enum AudioDemod);
     void setSampleRate(unsigned int);
     void setTimeStamp(struct timeval const &);
+    void resetTimeStamp(struct timeval const &);
     void setCutOff(SUFLOAT);
     void setVolume(SUFLOAT);
+    void setQth(xyz_t const &);
     void setMuted(bool);
     void setColorConfig(ColorConfig const &);
     void setSquelchEnabled(bool);
@@ -121,6 +128,7 @@ namespace SigDigger {
     bool    isCorrectionEnabled(void) const;
     bool    getSquelchEnabled(void) const;
     SUFLOAT getSquelchLevel(void) const;
+    Suscan::Orbit getOrbit(void) const;
 
     // Overriden getters
     bool getRecordState(void) const override;

@@ -19,6 +19,7 @@
 
 #include <Suscan/Library.h>
 #include <Suscan/MultitaskController.h>
+#include <suscan.h>
 #include <analyzer/version.h>
 #include <QtGui>
 
@@ -436,6 +437,7 @@ Singleton::setQth(Location const &loc)
 {
   this->qth = loc;
   this->have_qth = true;
+  suscan_set_qth(&loc.site);
 }
 
 void

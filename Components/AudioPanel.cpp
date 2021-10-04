@@ -23,6 +23,8 @@
 #include <QFileDialog>
 #include <FrequencyCorrectionDialog.h>
 #include <SuWidgetsHelpers.h>
+#include <suscan.h>
+#include <QMessageBox>
 
 using namespace SigDigger;
 
@@ -50,6 +52,10 @@ AudioPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(squelch);
   LOAD(amSquelch);
   LOAD(ssbSquelch);
+  LOAD(tleCorrection);
+  LOAD(isSatellite);
+  LOAD(satName);
+  LOAD(tleData);
 }
 
 Suscan::Object &&
@@ -68,6 +74,10 @@ AudioPanelConfig::serialize(void)
   STORE(squelch);
   STORE(amSquelch);
   STORE(ssbSquelch);
+  STORE(tleCorrection);
+  STORE(isSatellite);
+  STORE(satName);
+  STORE(tleData);
 
   return this->persist(obj);
 }
@@ -176,6 +186,12 @@ AudioPanel::connectAll(void)
         SIGNAL(clicked(bool)),
         this,
         SLOT(onOpenDopplerSettings(void)));
+
+  connect(
+        this->fcDialog,
+        SIGNAL(accepted()),
+        this,
+        SLOT(onAcceptCorrectionSetting(void)));
 }
 
 void
@@ -250,6 +266,11 @@ AudioPanel::AudioPanel(QWidget *parent) :
 
   this->setRecordSavePath(QDir::currentPath().toStdString());
 
+  this->fcDialog = new FrequencyCorrectionDialog(
+      this,
+      this->demodFreq,
+      this->colorConfig);
+
   this->assertConfig();
   this->populateRates();
   this->connectAll();
@@ -281,27 +302,28 @@ void
 AudioPanel::setDemodFreq(qint64 freq)
 {
   this->demodFreq = static_cast<SUFREQ>(freq);
-
-  if (this->fcDialog != nullptr)
-    this->fcDialog->setFrequency(this->demodFreq);
+  this->fcDialog->setFrequency(this->demodFreq);
 }
 
 void
 AudioPanel::setRealTime(bool realTime)
 {
   this->isRealTime = realTime;
-
-  if (this->fcDialog != nullptr)
-    this->fcDialog->setRealTime(this->isRealTime);
+  this->fcDialog->setRealTime(this->isRealTime);
 }
 
 void
 AudioPanel::setTimeStamp(struct timeval const &tv)
 {
   this->timeStamp = tv;
+  this->fcDialog->setTimestamp(tv);
+}
 
-  if (this->fcDialog != nullptr)
-    this->fcDialog->setTimestamp(tv);
+void
+AudioPanel::resetTimeStamp(struct timeval const &tv)
+{
+  this->timeStamp = tv;
+  this->fcDialog->resetTimestamp(tv);
 }
 
 void
@@ -356,6 +378,12 @@ AudioPanel::setVolume(SUFLOAT volume)
 }
 
 void
+AudioPanel::setQth(xyz_t const &qth)
+{
+  this->fcDialog->setQth(qth);
+}
+
+void
 AudioPanel::setMuted(bool muted)
 {
   this->ui->muteButton->setChecked(muted);
@@ -365,9 +393,7 @@ void
 AudioPanel::setColorConfig(ColorConfig const &colors)
 {
   this->colorConfig = colors;
-
-  if (this->fcDialog != nullptr)
-    this->fcDialog->setColorConfig(colors);
+  this->fcDialog->setColorConfig(colors);
 }
 
 void
@@ -531,6 +557,12 @@ AudioPanel::isMuted(void) const
 }
 
 bool
+AudioPanel::isCorrectionEnabled(void) const
+{
+  return this->fcDialog->isCorrectionEnabled();
+}
+
+bool
 AudioPanel::getSquelchEnabled(void) const
 {
   return this->ui->sqlButton->isChecked();
@@ -554,6 +586,11 @@ AudioPanel::getSquelchLevel(void) const
   return 0;
 }
 
+Suscan::Orbit
+AudioPanel::getOrbit(void) const
+{
+  return this->fcDialog->getOrbit();
+}
 
 // Overriden getters
 bool
@@ -585,6 +622,15 @@ AudioPanel::applyConfig(void)
   this->setEnabled(this->panelConfig->enabled);
   this->setSquelchEnabled(this->panelConfig->squelch);
 
+  // Frequency correction dialog
+  this->fcDialog->setCorrectionEnabled(this->panelConfig->tleCorrection);
+  this->fcDialog->setCorrectionFromSatellite(this->panelConfig->isSatellite);
+  this->fcDialog->setCurrentSatellite(
+        QString::fromStdString(this->panelConfig->satName));
+  this->fcDialog->setCurrentTLE(
+        QString::fromStdString(this->panelConfig->tleData));
+
+  // Recorder
   if (this->panelConfig->savePath.size() > 0)
     this->setRecordSavePath(this->panelConfig->savePath);
 }
@@ -693,29 +739,32 @@ AudioPanel::onSquelchLevelChanged(void)
 void
 AudioPanel::onOpenDopplerSettings(void)
 {
-  if (this->fcDialog == nullptr) {
-    this->fcDialog = new FrequencyCorrectionDialog(
-        this,
-        this->demodFreq,
-        this->colorConfig);
-    this->fcDialog->setTimestamp(this->timeStamp);
-    this->fcDialog->setRealTime(this->isRealTime);
+  xyz_t site;
 
-    connect(
-          this->fcDialog,
-          SIGNAL(accepted()),
+  if (suscan_get_qth(&site)) {
+    this->fcDialog->setQth(site);
+    this->fcDialog->show();
+  } else {
+    QMessageBox::warning(
           this,
-          SLOT(onAcceptCorrectionSetting(void)));
-  }
+          "Doppler settings",
+          "Doppler settings require RX location to be properly initialized. "
+          "Plase set a receiver location in the settings dialog.");
 
-  this->fcDialog->show();
+  }
 }
 
 void
 AudioPanel::onAcceptCorrectionSetting(void)
 {
-  if (this->fcDialog->isCorrectionEnabled())
+  this->panelConfig->tleCorrection = this->fcDialog->isCorrectionEnabled();
+  this->panelConfig->isSatellite   = this->fcDialog->isCorrectionFromSatellite();
+  this->panelConfig->satName       = this->fcDialog->getCurrentSatellite().toStdString();
+  this->panelConfig->tleData       = this->fcDialog->getCurrentTLE().toStdString();
+
+  if (this->fcDialog->isCorrectionEnabled()) {
     emit setCorrection(this->fcDialog->getOrbit());
-  else
+  } else {
     emit disableCorrection();
+  }
 }

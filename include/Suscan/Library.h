@@ -75,6 +75,18 @@ namespace Suscan {
             this->name + ", " + this->country);
     }
 
+    inline xyz_t
+    getQth(void) const
+    {
+      xyz_t qth;
+
+      qth.lat    = SU_DEG2RAD(this->site.lat);
+      qth.lon    = SU_DEG2RAD(this->site.lon);
+      qth.height = this->site.height;
+
+      return qth;
+    }
+
     // Overriden methods
     void deserialize(Suscan::Object const &conf) override;
     Suscan::Object &&serialize(void) override;
