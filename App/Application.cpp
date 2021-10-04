@@ -1038,6 +1038,15 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
 
       break;
 
+    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_TLE:
+      if (msg.isTLEEnabled())
+        this->mediator->notifyDisableCorrection();
+      break;
+
+    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_ORBIT_REPORT:
+      this->mediator->notifyOrbitReport(msg.getOrbitReport());
+      break;
+
     default:
       // printf("Ignored inspector message of type %d\n", msg.getKind());
       break;

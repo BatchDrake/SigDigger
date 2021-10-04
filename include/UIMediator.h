@@ -98,6 +98,8 @@ namespace SigDigger {
     State getState(void) const;
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
     void notifyTimeStamp(struct timeval const &timestamp);
+    void notifyOrbitReport(Suscan::OrbitReport const &report);
+    void notifyDisableCorrection(void);
 
     // Recent list handling
     void clearRecent(void);

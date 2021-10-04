@@ -454,6 +454,19 @@ UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 }
 
 void
+UIMediator::notifyOrbitReport(Suscan::OrbitReport const &report)
+{
+  this->ui->audioPanel->notifyOrbitReport(report);
+}
+
+void
+UIMediator::notifyDisableCorrection(void)
+{
+  this->ui->audioPanel->notifyDisableCorrection();
+}
+
+
+void
 UIMediator::setPanSpectrumRunning(bool running)
 {
   this->ui->panoramicDialog->setRunning(running);

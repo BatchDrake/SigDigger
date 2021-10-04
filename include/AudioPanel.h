@@ -98,6 +98,8 @@ namespace SigDigger {
     void setColorConfig(ColorConfig const &);
     void setSquelchEnabled(bool);
     void setSquelchLevel(SUFLOAT);
+    void notifyOrbitReport(Suscan::OrbitReport const &);
+    void notifyDisableCorrection(void);
 
     // Overriden setters
     void setRecordSavePath(std::string const &) override;
@@ -116,9 +118,8 @@ namespace SigDigger {
     bool    isMuted(void) const;
     SUFLOAT getMuteableVolume(void) const;
 
-    bool isCorrectionEnabled(void) const;
-
-    bool getSquelchEnabled(void) const;
+    bool    isCorrectionEnabled(void) const;
+    bool    getSquelchEnabled(void) const;
     SUFLOAT getSquelchLevel(void) const;
 
     // Overriden getters

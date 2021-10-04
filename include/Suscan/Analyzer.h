@@ -166,54 +166,6 @@ namespace Suscan {
     }
   };
 
-  struct OrbitReport {
-    bool loan = false;
-    struct suscan_orbit_report local_info;
-    struct suscan_orbit_report *c_info = nullptr;
-
-    OrbitReport()
-    {
-      this->c_info = &this->local_info;
-    }
-
-    OrbitReport(struct suscan_orbit_report *ptr, bool loan = false)
-    {
-      this->loan = loan;
-
-      if (loan) {
-        this->c_info = ptr;
-      } else {
-        this->local_info = *ptr;
-        this->c_info = &this->local_info;
-      }
-    }
-
-    struct timeval const &
-    getRxTime(void) const
-    {
-      return this->c_info->rx_time;
-    }
-
-    xyz_t const &
-    getAzel(void) const
-    {
-      return this->c_info->satpos;
-    }
-
-    SUFLOAT
-    getFrequencyCorrection(void) const
-    {
-      return this->c_info->freq_corr;
-    }
-
-    SUDOUBLE
-    getVlosVelocity(void) const
-    {
-      return this->c_info->vlos_vel;
-    }
-  };
-
-
   struct Orbit {
     bool loan = false;
     orbit_t local_info;

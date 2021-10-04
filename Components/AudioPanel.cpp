@@ -22,6 +22,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <FrequencyCorrectionDialog.h>
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -395,6 +396,23 @@ AudioPanel::setSquelchLevel(SUFLOAT val)
   }
 
   this->refreshUi();
+}
+
+void
+AudioPanel::notifyOrbitReport(Suscan::OrbitReport const &report)
+{
+  this->ui->correctionLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(report.getFrequencyCorrection()),
+          4,
+          "Hz",
+          true));
+}
+
+void
+AudioPanel::notifyDisableCorrection(void)
+{
+  this->ui->correctionLabel->setText("None");
 }
 
 // Overriden setters

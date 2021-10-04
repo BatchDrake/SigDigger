@@ -55,6 +55,10 @@ InspectorMessage::InspectorMessage(struct suscan_analyzer_inspector_msg *msg) :
       }
       break;
 
+    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_ORBIT_REPORT:
+      this->report = OrbitReport(&msg->orbit_report, true);
+      break;
+
      default:
       ;
   }
@@ -199,4 +203,19 @@ InspectorMessage::getChannel(void) const
   }
 
   return ch;
+}
+
+OrbitReport const &
+InspectorMessage::getOrbitReport(void) const
+{
+  return this->report;
+}
+
+bool
+InspectorMessage::isTLEEnabled(void) const
+{
+  if (this->message != nullptr)
+    return this->message->tle_enable;
+
+  return false;
 }
