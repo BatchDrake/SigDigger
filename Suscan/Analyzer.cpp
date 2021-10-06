@@ -133,6 +133,12 @@ Analyzer::setGain(std::string const &name, SUFLOAT value)
 }
 
 void
+Analyzer::seek(struct timeval const &tv)
+{
+  SU_ATTEMPT(suscan_analyzer_seek(this->instance, &tv));
+}
+
+void
 Analyzer::setAntenna(std::string const &name)
 {
   SU_ATTEMPT(suscan_analyzer_set_antenna(this->instance, name.c_str()));

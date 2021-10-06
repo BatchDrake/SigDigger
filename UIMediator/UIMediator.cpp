@@ -444,6 +444,11 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
         static_cast<qint64>(info.getLnbFrequency()),
         true); // Silent update (important!)
 
+  if (info.isSeekable()) {
+    this->ui->spectrum->setSourceTimeStart(info.getSourceStartTime());
+    this->ui->spectrum->setSourceTimeEnd(info.getSourceEndTime());
+  }
+
   this->ui->sourcePanel->applySourceInfo(info);
 }
 
@@ -451,6 +456,8 @@ void
 UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 {
   this->ui->audioPanel->setTimeStamp(timestamp);
+  this->ui->spectrum->setTimeStamp(timestamp);
+
   for (auto i : this->ui->inspectorTable)
     i.second->setTimeStamp(timestamp);
 }
@@ -593,7 +600,8 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
   this->ui->spectrum->feed(
         this->averager.get(),
         static_cast<int>(this->averager.size()),
-        msg.getTimeStamp());
+        msg.getTimeStamp(),
+        msg.hasLooped());
 }
 
 void
@@ -806,6 +814,7 @@ UIMediator::refreshProfile(void)
 
       this->ui->audioPanel->resetTimeStamp(
             this->appConfig->profile.getStartTime());
+
       this->ui->audioPanel->setRealTime(false);
     }
   } else {

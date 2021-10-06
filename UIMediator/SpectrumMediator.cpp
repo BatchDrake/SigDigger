@@ -66,6 +66,12 @@ UIMediator::connectSpectrum(void)
         SIGNAL(newBandPlan(QString)),
         this,
         SLOT(onNewBandPlan(QString)));
+
+  connect(
+        this->ui->spectrum,
+        SIGNAL(seek(struct timeval)),
+        this,
+        SIGNAL(seek(struct timeval)));
 }
 
 void

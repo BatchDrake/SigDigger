@@ -70,6 +70,15 @@ PSDMessage::getTimeStamp(void) const
   return msg->timestamp;
 }
 
+bool
+PSDMessage::hasLooped(void) const
+{
+  const struct suscan_analyzer_psd_msg *msg
+      = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
+
+  return msg->looped;
+}
+
 SUFREQ
 PSDMessage::getFrequency(void) const
 {

@@ -29,6 +29,8 @@
 
 #define SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS 1000
 
+class QTimeSlider;
+
 namespace Ui {
   class MainSpectrum;
 }
@@ -58,6 +60,7 @@ namespace SigDigger {
     Ui::MainSpectrum *ui = nullptr;
     std::vector<FrequencyAllocationTable *> FATs;
     SuscanBookmarkSource *bookmarkSource = nullptr;
+    QTimeSlider *timeSlider = nullptr;
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
@@ -87,7 +90,12 @@ namespace SigDigger {
     ~MainSpectrum();
 
     // Actions
-    void feed(float *data, int size, struct timeval const &tv);
+    void feed(
+        float *data,
+        int size,
+        struct timeval const &tv,
+        bool looped = false);
+
     void deserializeFATs(void);
 
     // Setters
@@ -114,6 +122,9 @@ namespace SigDigger {
     void setZoom(unsigned int zoom);
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
+    void setSourceTimeStart(struct timeval const &);
+    void setSourceTimeEnd(struct timeval const &);
+    void setTimeStamp(struct timeval const &);
     void setGracePeriod(qint64 ms);
 
     void setShowFATs(bool);
@@ -151,6 +162,7 @@ namespace SigDigger {
     void zoomChanged(float);
     void newBandPlan(QString);
     void modulationChanged(QString);
+    void seek(struct timeval);
 
   public slots:
     void onRangeChanged(float, float);
@@ -162,6 +174,7 @@ namespace SigDigger {
     void onNewZoomLevel(float);
     void onNewModulation(QString);
     void onLnbFrequencyChanged(void);
+    void onTimeStampChanged(void);
   };
 }
 

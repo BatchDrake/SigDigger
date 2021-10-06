@@ -1,5 +1,5 @@
 //
-//    PSDMessage.h: PSD Message
+//    filename: description
 //    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,31 +16,42 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef MESSAGES_PSD_MESSAGE_H
-#define MESSAGES_PSD_MESSAGE_H
+#ifndef QTIMESLIDER_H
+#define QTIMESLIDER_H
 
-#include <Suscan/Compat.h>
-#include <Suscan/Message.h>
+#include <QSlider>
+#include <QDateTime>
 
-#include <analyzer/analyzer.h>
+class QTimeSlider : public QSlider
+{
+  Q_OBJECT
 
-namespace Suscan {
-  class PSDMessage: public Message {
-  private:
-    struct suscan_analyzer_psd_msg *message = nullptr; // Convenience reference
+  bool ticksAreSamples = false;
+  qint64 sampleRate = 1000000;
+  struct timeval startTime;
+  struct timeval endTime;
+
+  void adjustTickInterval(void);
+
+  protected:
+    void paintEvent(QPaintEvent *) override;
+    void resizeEvent(QResizeEvent *) override;
 
   public:
-    SUSCOUNT size(void) const;
-    SUFREQ getFrequency(void) const;
-    unsigned int getSampleRate(void) const;
-    unsigned int getMeasuredSampleRate(void) const;
-    bool hasLooped(void) const;
-    struct timeval getTimeStamp(void) const;
-    const SUFLOAT *get(void) const;
+    QTimeSlider(QWidget *parent = nullptr);
 
-    PSDMessage();
-    PSDMessage(struct suscan_analyzer_psd_msg *msg);
-  };
+    void setSampleRate(quint64);
+    void setStartTime(QDateTime const &);
+    void setStartTime(struct timeval const &);
+
+    void setEndTime(QDateTime const &);
+    void setEndTime(struct timeval const &);
+
+    void setTimeStamp(struct timeval const &);
+
+    QDateTime getDateTime(void) const;
+    struct timeval getTimeStamp(void) const;
+    qint64 getSample(void) const;
 };
 
-#endif // MESSAGES_PSD_MESSAGE_H
+#endif // QTIMESLIDER_H

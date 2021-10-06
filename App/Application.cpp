@@ -415,6 +415,12 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
+        SIGNAL(seek(struct timeval)),
+        this,
+        SLOT(onSeek(struct timeval)));
+
+  connect(
+        this->mediator,
         SIGNAL(gainChanged(QString, float)),
         this,
         SLOT(onGainChanged(QString, float)));
@@ -1313,6 +1319,13 @@ Application::onToggleRecord(void)
     this->mediator->setCaptureSize(0);
     this->ui.sourcePanel->setRecordState(false);
   }
+}
+
+void
+Application::onSeek(struct timeval tv)
+{
+  if (this->mediator->getState() == UIMediator::RUNNING)
+    this->analyzer->seek(tv);
 }
 
 void

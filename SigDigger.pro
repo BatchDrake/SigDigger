@@ -82,6 +82,7 @@ SOURCES += \
     Components/MainWindow.cpp \
     Components/PersistentWidget.cpp \
     Components/ProfileConfigTab.cpp \
+    Components/QTimeSlider.cpp \
     Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
@@ -178,6 +179,7 @@ HEADERS += \
     include/LocationConfigTab.h \
     include/PortAudioPlayer.h \
     include/ProfileConfigTab.h \
+    include/QTimeSlider.h \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
     include/SigDiggerHelpers.h \

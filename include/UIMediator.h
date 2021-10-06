@@ -186,6 +186,7 @@ namespace SigDigger {
     void frequencyChanged(qint64, qint64);
     void loChanged(qint64);
     void channelBandwidthChanged(qreal bw);
+    void seek(struct timeval tv);
 
     void toggleRecord(void);
     void throttleConfigChanged(void);

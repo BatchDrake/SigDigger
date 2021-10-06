@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="mainSpectrumGrid">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -139,27 +139,6 @@ font-weight: bold;</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="3">
-    <widget class="QLabel" name="captureModeLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: #1d1d1f;
-color: #b7e869;
-font-size: 12px;
-font-family: Monospace;
-font-weight: bold;
-</string>
-     </property>
-     <property name="text">
-      <string>  Capture mode: N/A</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
     <widget class="QLabel" name="loLabel">
      <property name="sizePolicy">
@@ -222,6 +201,30 @@ font-weight: bold;</string>
      </property>
     </widget>
    </item>
+   <item row="2" column="0" colspan="4">
+    <widget class="Waterfall" name="mainSpectrum"/>
+   </item>
+   <item row="0" column="3">
+    <widget class="QLabel" name="captureModeLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: #1d1d1f;
+color: #b7e869;
+font-size: 12px;
+font-family: Monospace;
+font-weight: bold;
+</string>
+     </property>
+     <property name="text">
+      <string>  Capture mode: N/A</string>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="3">
     <widget class="QLabel" name="throttlingLabel">
      <property name="sizePolicy">
@@ -242,9 +245,6 @@ font-weight: bold;
       <string>  Throttling: OFF</string>
      </property>
     </widget>
-   </item>
-   <item row="2" column="0" colspan="4">
-    <widget class="Waterfall" name="mainSpectrum"/>
    </item>
   </layout>
  </widget>

@@ -29,6 +29,17 @@
 
 using namespace SigDigger;
 
+QPointF
+FrequencyCorrectionDialog::azElToPoint(xyz_t const &p)
+{
+  qreal z = .5 * M_PI - p.elevation; // Zenith distance
+  qreal k = 2 * this->azElAxesRadius / M_PI;
+
+  return QPointF(
+        this->azElCenterX - z * k * cos(-.5 * M_PI + p.azimuth),
+        this->azElCenterY + z * k * sin(-.5 * M_PI + p.azimuth));
+}
+
 void
 FrequencyCorrectionDialog::paintAzimuthElevationMap(QPixmap &pixmap)
 {
@@ -36,19 +47,26 @@ FrequencyCorrectionDialog::paintAzimuthElevationMap(QPixmap &pixmap)
   QPen pen(
         this->colors.constellationAxes,
         FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING);
-  qreal x_c, y_c;
-  qreal radius, deltaR, deltaAz = 2 * M_PI  / FREQUENCY_AZ_TICKS;
   int i;
 
-  x_c = .5 * pixmap.width();
-  y_c = .5 * pixmap.height();
-
-  radius = .9 * MIN(x_c, y_c);
-  deltaR = radius / FREQUENCY_EV_TICKS;
 
   if (azElAxesPixmap.size() != pixmap.size()) {
-    azElAxesPixmap = QPixmap(pixmap.size());
+    this->azElAxesPixmap = QPixmap(pixmap.size());
     QPainter p(&this->azElAxesPixmap);
+    QPointF center;
+    qreal deltaEl;
+    qreal deltaAz;
+    xyz_t azEl = xyz_INITIALIZER;
+
+    // Init parameters
+    this->azElCenterX = .5 * pixmap.width();
+    this->azElCenterY = .5 * pixmap.height();
+    this->azElAxesRadius = .8 * MIN(this->azElCenterX, this->azElCenterY);
+
+    azEl.elevation = .5 * M_PI;
+    deltaEl  = this->azElAxesRadius / FREQUENCY_EV_TICKS;
+    deltaAz = 2 * M_PI  / FREQUENCY_AZ_TICKS;
+    center  = this->azElToPoint(azEl);
 
     p.fillRect(
           0, // x
@@ -57,23 +75,38 @@ FrequencyCorrectionDialog::paintAzimuthElevationMap(QPixmap &pixmap)
           pixmap.height(),
           QBrush(this->colors.constellationBackground));
 
-    // Draw elevation circles
+    // Paint cardinal points
     p.setPen(pen);
-    p.drawEllipse(QPointF(x_c, y_c), radius, radius);
+    azEl.azimuth = 0;
+    azEl.elevation = -.5 * M_PI / FREQUENCY_EV_TICKS;
+
+    this->paintTextAt(p, this->azElToPoint(azEl), "N", true);
+
+    azEl.azimuth = .5 * M_PI;
+    this->paintTextAt(p, this->azElToPoint(azEl), "E", true);
+
+    azEl.azimuth = M_PI;
+    this->paintTextAt(p, this->azElToPoint(azEl), "S", true);
+
+    azEl.azimuth = 1.5 * M_PI;
+    this->paintTextAt(p, this->azElToPoint(azEl), "W", true);
+
+    // Draw elevation circles
+    p.drawEllipse(center, this->azElAxesRadius, this->azElAxesRadius);
 
     pen.setStyle(Qt::DashLine);
     p.setPen(pen);
 
+    // TODO: draw individual lines.
     for (i = 1; i < FREQUENCY_EV_TICKS; ++i)
-      p.drawEllipse(QPointF(x_c, y_c), i * deltaR, i * deltaR);
+      p.drawEllipse(center, i * deltaEl, i * deltaEl);
 
     // Draw azimuth lines
-    for (i = 0; i < FREQUENCY_AZ_TICKS; ++i)
-      p.drawLine(QLineF(
-            x_c,
-            y_c,
-            x_c + radius * cos(i * deltaAz),
-            y_c + radius * sin(i * deltaAz)));
+    azEl.elevation = 0;
+    for (i = 0; i < FREQUENCY_AZ_TICKS; ++i) {
+      azEl.azimuth = i * deltaAz;
+      p.drawLine(QLineF(center, this->azElToPoint(azEl)));
+    }
   }
 
   p.drawPixmap(0, 0, this->azElAxesPixmap);
@@ -82,9 +115,9 @@ FrequencyCorrectionDialog::paintAzimuthElevationMap(QPixmap &pixmap)
 void
 FrequencyCorrectionDialog::paintTextAt(
     QPainter &p,
-    int x,
-    int y,
-    QString text)
+    QPointF where,
+    QString text,
+    bool center)
 {
   int tw, th;
   QFont font;
@@ -103,7 +136,19 @@ FrequencyCorrectionDialog::paintTextAt(
         tw = metrics.width(text);
 #endif // QT_VERSION_CHECK
 
-  rect.setRect(x, y - th / 2, tw, th);
+  if (center)
+    rect.setRect(
+          static_cast<int>(where.x() - .5 * tw),
+          static_cast<int>(where.y() - .5 * th),
+          tw,
+          th);
+  else
+    rect.setRect(
+        static_cast<int>(where.x()),
+        static_cast<int>(where.y() - .5 * th),
+        tw,
+        th);
+
   p.setFont(font);
   p.drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, text);
 }
@@ -112,13 +157,6 @@ void
 FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
 {
   QPainter p(&pixmap);
-  qreal x_c, y_c;
-  qreal radius, k;
-
-  x_c = .5 * pixmap.width();
-  y_c = .5 * pixmap.height();
-
-  radius = .9 * MIN(x_c, y_c);
 
   QPen pen(
         this->colors.constellationForeground,
@@ -126,14 +164,14 @@ FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
 
 
   if (this->haveALOS) {
-    qreal delta, z = 0., prevZ;
+    qreal delta;
     struct timeval diff;
     struct timeval tdelta;
     struct timeval t;
     struct tm losTm, aosTm;
     bool visible;
     QVector<qreal> dashes;
-    xyz_t azel, prevAzel = {{0}, {0}, {0}};
+    xyz_t azel, pAzEl = {{0}, {0}, {0}};
     xyz_t firstAzel = {{0}, {0}, {0}};
 
     localtime_r(&this->losTime.tv_sec, &losTm);
@@ -151,8 +189,6 @@ FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
 
     t = this->aosTime;
 
-    k = 2 * radius / M_PI;
-
     visible = timercmp(&this->timeStamp, &this->aosTime, >);
 
     if (visible) {
@@ -168,28 +204,21 @@ FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
     for (auto i = 0; i <= SAT_PATH_POINTS; ++i) {
       if (visible && !timercmp(&this->timeStamp, &t, >)) {
         // Have we just left the satellite behind?
-        int mkwidth = static_cast<int>(
-              (radius / 40) * FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING);
+        qreal mkwidth =
+              (this->azElAxesRadius / 40) * FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING;
 
         sgdp4_prediction_update(&this->prediction, &this->timeStamp);
         sgdp4_prediction_get_azel(&this->prediction, &azel);
 
 
         // Yes, paint it.
-        prevZ = .5 * M_PI - prevAzel.elevation;
-        z = .5 * M_PI - azel.elevation;
 
-        p.drawLine(
-              QLineF(
-                x_c + prevZ * k * cos(prevAzel.azimuth),
-                y_c + prevZ * k * sin(prevAzel.azimuth),
-                x_c + z * k * cos(azel.azimuth),
-                y_c + z * k * sin(azel.azimuth)));
+        if (i > 0)
+          p.drawLine(QLineF(this->azElToPoint(pAzEl), this->azElToPoint(azel)));
 
         p.setBrush(Qt::cyan);
         p.drawEllipse(
-              static_cast<int>(x_c + z * k * cos(azel.azimuth)) - mkwidth / 2,
-              static_cast<int>(y_c + z * k * sin(azel.azimuth)) - mkwidth / 2,
+              this->azElToPoint(azel) + QPointF(mkwidth/2, mkwidth/2),
               mkwidth,
               mkwidth);
 
@@ -198,12 +227,11 @@ FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
 
         this->paintTextAt(
               p,
-              static_cast<int>(x_c + z * k * cos(azel.azimuth)),
-              static_cast<int>(y_c + z * k * sin(azel.azimuth)),
-              "  " + QString(this->currentOrbit.name == nullptr
-              ? "NO NAME"
-              : this->currentOrbit.name));
-
+              this->azElToPoint(azel),
+              "  " + QString(
+                this->currentOrbit.name == nullptr
+                ? "NO NAME"
+                : this->currentOrbit.name));
 
         // Back to the dashes. Also, this iteration does not count.
         --i;
@@ -218,39 +246,26 @@ FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
         sgdp4_prediction_get_azel(&this->prediction, &azel);
       }
 
-      if (i > 0) {
-        prevZ = .5 * M_PI - prevAzel.elevation;
-        z     = .5 * M_PI - azel.elevation;
-
-        p.drawLine(
-              QLineF(
-                x_c + prevZ * k * cos(prevAzel.azimuth),
-                y_c + prevZ * k * sin(prevAzel.azimuth),
-                x_c + z * k * cos(azel.azimuth),
-                y_c + z * k * sin(azel.azimuth)));
-      } else {
+      if (i > 0)
+        p.drawLine(QLineF(this->azElToPoint(pAzEl), this->azElToPoint(azel)));
+      else
         firstAzel = azel;
-      }
 
-      prevAzel = azel;
+      pAzEl = azel;
       timeradd(&t, &tdelta, &t);
     }
 
     pen.setStyle(Qt::SolidLine);
     p.setPen(pen);
 
-    prevZ = .5 * M_PI - firstAzel.elevation;
-
     this->paintTextAt(
           p,
-          static_cast<int>(x_c + prevZ * k * cos(firstAzel.azimuth)),
-          static_cast<int>(y_c + prevZ * k * sin(firstAzel.azimuth)),
+          this->azElToPoint(firstAzel),
           QString::asprintf("%02u:%02u", aosTm.tm_hour, aosTm.tm_min));
 
     this->paintTextAt(
           p,
-          static_cast<int>(x_c + z * k * cos(azel.azimuth)),
-          static_cast<int>(y_c + z * k * sin(azel.azimuth)),
+          this->azElToPoint(azel),
           QString::asprintf("%02u:%02u", losTm.tm_hour, losTm.tm_min));
   }
 }

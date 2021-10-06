@@ -161,6 +161,7 @@ namespace SigDigger {
     void onOpenRawInspector(void);
     void onCloseRawInspector(void);
     void onThrottleConfigChanged(void);
+    void onSeek(struct timeval);
     void onToggleRecord(void);
     void onToggleDCRemove(void);
     void onToggleIQReverse(void);

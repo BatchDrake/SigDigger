@@ -145,6 +145,25 @@ namespace Suscan {
       return this->c_info->agc != SU_FALSE;
     }
 
+    inline bool
+    isSeekable(void) const
+    {
+      return this->c_info->seekable != SU_FALSE;
+    }
+
+    inline struct timeval
+    getSourceStartTime(void) const
+    {
+      return this->c_info->source_start;
+    }
+
+    inline struct timeval
+    getSourceEndTime(void) const
+    {
+      return this->c_info->source_end;
+    }
+
+
     inline void
     getGainInfo(std::vector<Source::GainDescription> &vec) const
     {
@@ -254,6 +273,7 @@ namespace Suscan {
     void registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t, void *);
     void setFrequency(SUFREQ freq, SUFREQ lnbFreq = 0);
     void setGain(std::string const &name, SUFLOAT val);
+    void seek(struct timeval const &tv);
     void setSweepStrategy(SweepStrategy);
     void setSpectrumPartitioning(SpectrumPartitioning);
     void setAntenna(std::string const &name);

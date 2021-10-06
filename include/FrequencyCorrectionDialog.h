@@ -59,7 +59,11 @@ namespace SigDigger {
     struct timeval timeStamp;
 
     QPixmap azElAxesPixmap;
+    qreal   azElAxesRadius;
+    qreal   azElCenterX;
+    qreal   azElCenterY;
 
+    QPointF azElToPoint(xyz_t const &p);
     void paintAzimuthElevationMap(QPixmap &pixmap);
     void paintAzimuthElevationSatPath(QPixmap &pixmap);
     void repaintSatellitePlot(void);
@@ -69,7 +73,11 @@ namespace SigDigger {
     void connectAll(void);
     void refreshUiState(void);
     void setCurrentOrbit(orbit_t *);
-    void paintTextAt(QPainter &, int x, int y, QString text);
+    void paintTextAt(
+        QPainter &p,
+        QPointF where,
+        QString text,
+        bool center = false);
 
   public:
     // Setters
