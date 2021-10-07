@@ -350,9 +350,18 @@ ProfileConfigTab::refreshProfileUi(void)
   }
 
   if (adjustableSourceTime) {
-    this->ui->sourceTimeEdit->setDateTime(
-          QDateTime::fromTime_t(
-            static_cast<unsigned int>(this->profile.getStartTime().tv_sec)));
+    struct timeval startTime = this->profile.getStartTime();
+    qint64 epochMsec = startTime.tv_sec * 1000 + startTime.tv_usec / 1000;
+    QDateTime dateTime;
+    dateTime.setTimeSpec(
+          this->ui->sourceTimeIsUTCCheck->isChecked()
+          ? Qt::TimeSpec::UTC
+          : Qt::TimeSpec::LocalTime);
+
+    dateTime.setMSecsSinceEpoch(epochMsec);
+
+    this->ui->sourceTimeEdit->setTimeSpec(dateTime.timeSpec());
+    this->ui->sourceTimeEdit->setDateTime(dateTime);
   } else {
     this->ui->sourceTimeEdit->setDateTime(
           QDateTime::fromTime_t(
@@ -961,9 +970,8 @@ ProfileConfigTab::onSpinsChanged(void)
     if (this->profile.getStartTime().tv_sec != timeStamp
         || this->profile.getStartTime().tv_usec != timeStampUsec) {
       struct timeval tv;
-      tv.tv_sec = timeStamp;
+      tv.tv_sec  = timeStamp;
       tv.tv_usec = timeStampUsec;
-
       this->profile.setStartTime(tv);
       this->configChanged(true);
     }
@@ -1070,13 +1078,18 @@ ProfileConfigTab::guessParamsFromFileName(void)
     }
 
     if (isUTC) {
-      char *tz;
-      tz = getenv("TZ");
+      char *tz = getenv("TZ");
+      std::string oldTz;
+
+      if (tz != nullptr)
+        oldTz = tz;
+
+      tm.tm_isdst = 0;
       setenv("TZ", "", 1);
       tzset();
       tv.tv_sec = mktime(&tm);
-      if (tz)
-        setenv("TZ", tz, 1);
+      if (tz != nullptr)
+        setenv("TZ", oldTz.c_str(), 1);
       else
         unsetenv("TZ");
       tzset();
@@ -1103,6 +1116,7 @@ ProfileConfigTab::onBrowseCaptureFile(void)
 {
   QString format;
   QString title;
+  QFileInfo fi(this->ui->pathEdit->text());
 
   switch (this->profile.getFormat()) {
     case SUSCAN_SOURCE_FORMAT_AUTO:
@@ -1129,9 +1143,8 @@ ProfileConfigTab::onBrowseCaptureFile(void)
   QString path = QFileDialog::getOpenFileName(
          this,
          title,
-         QString(),
+         fi.absolutePath(),
          format);
-
 
   if (!path.isEmpty()) {
     this->ui->pathEdit->setText(path);
@@ -1236,8 +1249,16 @@ ProfileConfigTab::onRemoteProfileSelected(void)
 void
 ProfileConfigTab::onChangeSourceTimeUTC(void)
 {
-  this->ui->sourceTimeEdit->setTimeSpec(
+  QDateTime dateTime = this->ui->sourceTimeEdit->dateTime();
+  qint64 epochMsec   = dateTime.toMSecsSinceEpoch();
+
+  dateTime.setTimeSpec(
         this->ui->sourceTimeIsUTCCheck->isChecked()
         ? Qt::TimeSpec::UTC
         : Qt::TimeSpec::LocalTime);
+
+  dateTime.setMSecsSinceEpoch(epochMsec);
+
+  this->ui->sourceTimeEdit->setTimeSpec(dateTime.timeSpec());
+  this->ui->sourceTimeEdit->setDateTime(dateTime);
 }
