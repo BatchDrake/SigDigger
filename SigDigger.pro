@@ -65,8 +65,6 @@ SOURCES += \
     Audio/GenericAudioPlayer.cpp \
     Components/AboutDialog.cpp \
     Components/AudioPanel.cpp \
-    Components/ColorConfigTab.cpp \
-    Components/ConfigDialog.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
     Components/DopplerDialog.cpp \
@@ -74,14 +72,11 @@ SOURCES += \
     Components/FrequencyCorrectionDialog.cpp \
     Components/GainSlider.cpp \
     Components/GenericDataSaverUI.cpp \
-    Components/GuiConfigTab.cpp \
     Components/HistogramDialog.cpp \
     Components/InspectorPanel.cpp \
-    Components/LocationConfigTab.cpp \
     Components/MainSpectrum.cpp \
     Components/MainWindow.cpp \
     Components/PersistentWidget.cpp \
-    Components/ProfileConfigTab.cpp \
     Components/QTimeSlider.cpp \
     Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
@@ -103,6 +98,12 @@ SOURCES += \
     Misc/Palette.cpp \
     Misc/SNREstimator.cpp \
     Misc/SigDiggerHelpers.cpp \
+    Settings/ColorConfigTab.cpp \
+    Settings/ConfigDialog.cpp \
+    Settings/ConfigTab.cpp \
+    Settings/GuiConfigTab.cpp \
+    Settings/LocationConfigTab.cpp \
+    Settings/ProfileConfigTab.cpp \
     Suscan/CancellableTask.cpp \
     Suscan/Messages/ChannelMessage.cpp \
     Suscan/Messages/GenericMessage.cpp \
@@ -134,6 +135,7 @@ SOURCES += \
     UIMediator/PanoramicDialogMediator.cpp \
     UIMediator/SourceMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
+    UIMediator/TimeSliderMediator.cpp \
     UIMediator/UIMediator.cpp \
     main.cpp \
     Components/EstimatorControl.cpp \
@@ -168,6 +170,7 @@ HEADERS += \
     include/CarrierDetector.h \
     include/CarrierXlator.h \
     include/ColorConfigTab.h \
+    include/ConfigTab.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
     include/FrequencyCorrectionDialog.h \

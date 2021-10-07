@@ -22,6 +22,26 @@
 #include <stdlib.h>
 #include <cmath>
 #include <QStyle>
+#include <QMouseEvent>
+#include <QStyleOptionSlider>
+#include <QProxyStyle>
+
+class AbsolutePositioningStyle : public QProxyStyle
+{
+public:
+    using QProxyStyle::QProxyStyle;
+
+    int styleHint(
+        QStyle::StyleHint hint,
+        const QStyleOption* option = nullptr,
+        const QWidget* widget = nullptr,
+        QStyleHintReturn* returnData = nullptr) const override
+    {
+        if (hint == QStyle::SH_Slider_AbsoluteSetButtons)
+            return (Qt::LeftButton | Qt::MidButton | Qt::RightButton);
+        return QProxyStyle::styleHint(hint, option, widget, returnData);
+    }
+};
 
 QTimeSlider::QTimeSlider(QWidget *parent) : QSlider(parent)
 {
@@ -30,6 +50,7 @@ QTimeSlider::QTimeSlider(QWidget *parent) : QSlider(parent)
   this->setTickInterval(1);
 
   gettimeofday(&this->startTime, nullptr);
+  this->startTime.tv_usec = 0;
   timeradd(&this->startTime, &delta, &this->endTime);
 
   this->setTickPosition(TickPosition::NoTicks);
@@ -40,6 +61,7 @@ QTimeSlider::QTimeSlider(QWidget *parent) : QSlider(parent)
   this->setMinimumHeight(32);
   this->setTickInterval(this->maximum());
 
+  this->setStyle(new AbsolutePositioningStyle(this->style()));
 
   QSizePolicy sizePolicy2(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
   sizePolicy2.setHorizontalStretch(0);
@@ -68,8 +90,9 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
     qreal tickStepMsec = 1;
     qreal tickSubStepMsec = .1;
     qreal startMsec, alignStartMsec;
-    qreal saneTimeSteps[] = {1e-2, 1e-1, 1, 10, 1e3, 5e3, 10e3, 30e3, 60e3,
-     300e3, 900e3, 1800e3, 36000e3};
+    qreal saneTimeSteps[] = {
+      1e-2, 1e-1, .25, .5, 1, 10, 25, 50, 1e2, 250, 500,
+      1e3, 5e3, 10e3, 30e3, 60e3, 300e3, 900e3, 1800e3, 36000e3};
 
     qint64 minTicks = 10;
     qint64 maxTicks = this->width() / 2;
@@ -110,8 +133,10 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
     }
 
     // Calculate the right format
-    if (tickStepMsec < 1000)
+    if (tickStepMsec < 100)
       tickFormat = "hh:mm:ss.zzz";
+    else if (tickStepMsec < 1000)
+      tickFormat = "hh:mm:ss.z";
     else if (tickStepMsec < 60e3)
       tickFormat = "hh:mm:ss";
     else
@@ -134,6 +159,7 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
     i = -i;
 
     p.setPen(QPen(tickColor));
+    p.setRenderHint(QPainter::Antialiasing);
 
     while (x < this->width()) {
       if (i % 10 == 0) {
@@ -172,8 +198,6 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
       ++i;
       x += pxPerTick;
     }
-
-    p.setRenderHint(QPainter::Antialiasing);
   }
 
   QSlider::paintEvent(ev);

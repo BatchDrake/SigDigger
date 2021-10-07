@@ -26,6 +26,7 @@
 #include <Waterfall.h>
 #include <Palette.h>
 #include <QElapsedTimer>
+#include <QToolBar>
 
 #define SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS 1000
 
@@ -60,7 +61,6 @@ namespace SigDigger {
     Ui::MainSpectrum *ui = nullptr;
     std::vector<FrequencyAllocationTable *> FATs;
     SuscanBookmarkSource *bookmarkSource = nullptr;
-    QTimeSlider *timeSlider = nullptr;
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
@@ -122,9 +122,6 @@ namespace SigDigger {
     void setZoom(unsigned int zoom);
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
-    void setSourceTimeStart(struct timeval const &);
-    void setSourceTimeEnd(struct timeval const &);
-    void setTimeStamp(struct timeval const &);
     void setGracePeriod(qint64 ms);
 
     void setShowFATs(bool);
@@ -174,7 +171,6 @@ namespace SigDigger {
     void onNewZoomLevel(float);
     void onNewModulation(QString);
     void onLnbFrequencyChanged(void);
-    void onTimeStampChanged(void);
   };
 }
 

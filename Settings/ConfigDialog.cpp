@@ -41,30 +41,6 @@ ConfigDialog::connectAll(void)
          SIGNAL(accepted(void)),
          this,
          SLOT(onAccepted(void)));
-
-  connect(
-        this->profileTab,
-        SIGNAL(changed(void)),
-        this,
-        SLOT(onProfileChanged(void)));
-
-  connect(
-        this->locationTab,
-        SIGNAL(changed(void)),
-        this,
-        SLOT(onLocationChanged(void)));
-
-  connect(
-        this->colorTab,
-        SIGNAL(changed(void)),
-        this,
-        SLOT(onLocationChanged(void)));
-
-  connect(
-        this->guiTab,
-        SIGNAL(changed(void)),
-        this,
-        SLOT(onGuiChanged(void)));
 }
 
 void
@@ -198,6 +174,18 @@ ConfigDialog::run(void)
   return this->accepted;
 }
 
+void
+ConfigDialog::appendConfigTab(ConfigTab *tab)
+{
+  this->ui->tabWidget->addTab(tab, tab->getName());
+
+  connect(
+        tab,
+        SIGNAL(changed(void)),
+        this,
+        SLOT(onTabConfigChanged(void)));
+}
+
 ConfigDialog::ConfigDialog(QWidget *parent) :
   QDialog(parent)
 {
@@ -212,10 +200,10 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
   this->guiTab      = new GuiConfigTab(this);
   this->locationTab = new LocationConfigTab(this);
 
-  this->ui->tabWidget->addTab(this->profileTab,  "Source");
-  this->ui->tabWidget->addTab(this->colorTab,    "Colors");
-  this->ui->tabWidget->addTab(this->guiTab,      "GUI behavior");
-  this->ui->tabWidget->addTab(this->locationTab, "Location");
+  this->appendConfigTab(this->profileTab);
+  this->appendConfigTab(this->colorTab);
+  this->appendConfigTab(this->guiTab);
+  this->appendConfigTab(this->locationTab);
 
   this->connectAll();
 }
@@ -229,36 +217,19 @@ ConfigDialog::~ConfigDialog()
 void
 ConfigDialog::onAccepted(void)
 {
-  this->guiTab->save();
-  this->colorTab->save();
-  this->locationTab->save();
+  int i;
 
-  // warning: it will trigger reconfiguring device
-  // and gui refresh from stored variables
-  this->profileTab->save();
+  for (i = 0; i < this->ui->tabWidget->count(); ++i) {
+    ConfigTab *tab =
+        static_cast<ConfigTab *>(this->ui->tabWidget->widget(i));
+    tab->save();
+  }
+
   this->accepted = true;
 }
 
 void
-ConfigDialog::onProfileChanged(void)
-{
-  this->setWindowTitle("Settings [changed]");
-}
-
-void
-ConfigDialog::onLocationChanged(void)
-{
-  this->setWindowTitle("Settings [changed]");
-}
-
-void
-ConfigDialog::onColorsChanged(void)
-{
-  this->setWindowTitle("Settings [changed]");
-}
-
-void
-ConfigDialog::onGuiChanged(void)
+ConfigDialog::onTabConfigChanged(void)
 {
   this->setWindowTitle("Settings [changed]");
 }

@@ -325,6 +325,8 @@ namespace Suscan {
     bool getDCRemove(void) const;
     bool getIQBalance(void) const;
     struct timeval getStartTime(void) const;
+    struct timeval getEndTime(void) const;
+    bool fileIsValid(void) const;
     std::string getInterface(void) const;
     SUFLOAT getBandwidth(void) const;
     SUFLOAT getGain(const std::string &) const;

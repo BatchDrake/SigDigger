@@ -361,6 +361,26 @@ Source::Config::getStartTime(void) const
   return tv;
 }
 
+struct timeval
+Source::Config::getEndTime(void) const
+{
+  struct timeval tv = {0, 0};
+
+  if (this->instance != nullptr)
+    if (!suscan_source_config_get_end_time(this->instance, &tv))
+      suscan_source_config_get_start_time(this->instance, &tv);
+
+  return tv;
+}
+
+bool
+Source::Config::fileIsValid(void) const
+{
+  if (this->instance != nullptr)
+    return suscan_source_config_file_is_valid(this->instance) != SU_FALSE;
+
+  return false;
+}
 
 std::string
 Source::Config::getInterface(void) const

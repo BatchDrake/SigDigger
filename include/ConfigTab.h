@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    ConfigTab.h: Base class for configuration tabs
+//    Copyright (C) 2021 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,41 +16,28 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef GUICONFIGTAB_H
-#define GUICONFIGTAB_H
+#ifndef SETTINGS_CONFIGTAB_H
+#define SETTINGS_CONFIGTAB_H
 
-#include <ConfigTab.h>
-#include <GuiConfig.h>
-
-namespace Ui {
-  class GuiConfigTab;
-}
+#include <QWidget>
 
 namespace SigDigger {
-  class GuiConfigTab : public ConfigTab
-  {
+  class ConfigTab : public QWidget {
     Q_OBJECT
 
-    GuiConfig guiConfig;
-    bool modified = false;
-    void refreshUi();
-    void connectAll(void);
+    QString tabName;
 
   public:
-    void save(void) override;
-    bool hasChanged(void) const override;
-    void setGuiConfig(const GuiConfig &config);
-    GuiConfig getGuiConfig() const;
+    explicit ConfigTab(QWidget *parent = nullptr, QString name = "");
+    ~ConfigTab();
 
-    explicit GuiConfigTab(QWidget *parent = nullptr);
-    ~GuiConfigTab();
+    virtual QString getName(void) const;
+    virtual bool hasChanged(void) const;
+    virtual void save(void);
 
-  public slots:
-    void onConfigChanged(void);
-
-  private:
-    Ui::GuiConfigTab *ui;
+  signals:
+    void changed(void);
   };
 }
 
-#endif // GUICONFIGTAB_H
+#endif // SETTINGS_CONFIGTAB_H

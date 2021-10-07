@@ -64,7 +64,7 @@ GuiConfigTab::connectAll(void)
 }
 
 GuiConfigTab::GuiConfigTab(QWidget *parent) :
-  QWidget(parent),
+  ConfigTab(parent, "GUI behavior"),
   ui(new Ui::GuiConfigTab)
 {
   ui->setupUi(this);

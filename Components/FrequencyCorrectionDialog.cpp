@@ -316,6 +316,15 @@ FrequencyCorrectionDialog::refreshUiState(void)
 }
 
 void
+FrequencyCorrectionDialog::refreshOrbit(void)
+{
+  if (this->ui->correctionTypeCombo->currentIndex() == 1) {
+    if (!this->ui->satRadio->isChecked())
+      this->parseCurrentTLE();
+  }
+}
+
+void
 FrequencyCorrectionDialog::recalcALOS(void)
 {
   if (!this->haveOrbit) {
@@ -552,6 +561,7 @@ FrequencyCorrectionDialog::setCorrectionEnabled(bool enabled)
 {
   this->ui->correctionTypeCombo->setCurrentIndex(enabled ? 1 : 0);
   this->refreshUiState();
+  this->refreshOrbit();
 }
 
 void
@@ -561,6 +571,7 @@ FrequencyCorrectionDialog::setCorrectionFromSatellite(bool enabled)
   this->ui->tleRadio->setChecked(!enabled);
 
   this->refreshUiState();
+  this->refreshOrbit();
 }
 
 void
@@ -576,6 +587,7 @@ void
 FrequencyCorrectionDialog::setCurrentTLE(QString data)
 {
   this->ui->tleEdit->setPlainText(data);
+  this->refreshOrbit();
 }
 
 void
@@ -643,37 +655,11 @@ FrequencyCorrectionDialog::setQth(xyz_t const &qth)
 {
   this->rxSite = qth;
   this->haveQth = true;
-
-  if (this->haveOrbit)
-    this->setCurrentOrbit(&this->currentOrbit);
-}
-
-FrequencyCorrectionDialog::~FrequencyCorrectionDialog()
-{
-  delete ui;
-}
-
-////////////////////////////////////// Slots ///////////////////////////////////
-void
-FrequencyCorrectionDialog::onSwitchCorrectionType(void)
-{
-  this->refreshUiState();
+  this->refreshOrbit();
 }
 
 void
-FrequencyCorrectionDialog::onSwitchSatellite(void)
-{
-
-}
-
-void
-FrequencyCorrectionDialog::onToggleOrbitType(void)
-{
-  this->refreshUiState();
-}
-
-void
-FrequencyCorrectionDialog::onTLEEdit(void)
+FrequencyCorrectionDialog::parseCurrentTLE(void)
 {
   QString tleData = this->ui->tleEdit->toPlainText();
   std::string asStdString = tleData.toStdString();
@@ -696,6 +682,38 @@ FrequencyCorrectionDialog::onTLEEdit(void)
       this->ui->tleStatusLabel->setText("TLE has errors");
     }
   }
+}
+
+FrequencyCorrectionDialog::~FrequencyCorrectionDialog()
+{
+  delete ui;
+}
+
+////////////////////////////////////// Slots ///////////////////////////////////
+void
+FrequencyCorrectionDialog::onSwitchCorrectionType(void)
+{
+  this->refreshUiState();
+  this->refreshOrbit();
+}
+
+void
+FrequencyCorrectionDialog::onSwitchSatellite(void)
+{
+  this->refreshOrbit();
+}
+
+void
+FrequencyCorrectionDialog::onToggleOrbitType(void)
+{
+  this->refreshUiState();
+  this->refreshOrbit();
+}
+
+void
+FrequencyCorrectionDialog::onTLEEdit(void)
+{
+  this->refreshOrbit();
 }
 
 void

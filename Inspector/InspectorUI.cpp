@@ -1085,7 +1085,7 @@ InspectorUI::setOrbitReport(Suscan::OrbitReport const &report)
         SuWidgetsHelpers::formatQuantity(
           1 / cos(.5 * PI - report.getAzel().elevation),
           3,
-          "Hz",
+          "",
           true));
 
   this->ui->visibleLabel->setText(

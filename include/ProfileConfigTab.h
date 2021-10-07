@@ -19,7 +19,7 @@
 #ifndef PROFILECONFIGTAB_H
 #define PROFILECONFIGTAB_H
 
-#include <QWidget>
+#include <ConfigTab.h>
 #include <Suscan/AnalyzerParams.h>
 #include <Suscan/Source.h>
 
@@ -34,7 +34,7 @@ namespace Ui {
 }
 
 namespace SigDigger {
-  class ProfileConfigTab : public QWidget
+  class ProfileConfigTab : public ConfigTab
   {
     Q_OBJECT
 
@@ -72,10 +72,10 @@ namespace SigDigger {
     static QString getBaseName(const QString &string);
 
   public:
-    void save(void);
+    void save(void) override;
 
     void setUnchanged(void);
-    bool hasChanged(void) const;
+    bool hasChanged(void) const override;
     bool shouldRestart(void) const;
 
     void setProfile(const Suscan::Source::Config &profile);
@@ -113,9 +113,6 @@ namespace SigDigger {
 
       combo->setCurrentIndex(index);
     }
-
-  signals:
-    void changed(void);
 
   public slots:
     void onLoadProfileClicked(void);

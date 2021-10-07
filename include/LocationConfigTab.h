@@ -19,7 +19,7 @@
 #ifndef LOCATIONCONFIGTAB_H
 #define LOCATIONCONFIGTAB_H
 
-#include <QWidget>
+#include <ConfigTab.h>
 #include <QMap>
 #include <QListWidgetItem>
 #include <Suscan/Library.h>
@@ -29,7 +29,7 @@ namespace Ui {
 }
 
 namespace SigDigger {
-  class LocationConfigTab : public QWidget
+  class LocationConfigTab : public ConfigTab
   {
     Q_OBJECT
 
@@ -42,8 +42,8 @@ namespace SigDigger {
     void connectAll(void);
 
   public:
-    void save();
-    bool hasChanged(void) const;
+    void save() override;
+    bool hasChanged(void) const override;
 
     Suscan::Location getLocation(void) const;
     void setLocation(Suscan::Location const &);
@@ -59,9 +59,6 @@ namespace SigDigger {
     void onLocationSelected(QListWidgetItem *item);
     void onLocationChanged(void);
     void onRegisterLocation(void);
-
-  signals:
-    void changed(void);
 
   };
 }

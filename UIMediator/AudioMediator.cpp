@@ -21,6 +21,48 @@
 
 using namespace SigDigger;
 
+bool
+UIMediator::getAudioRecordState(void) const
+{
+  return this->ui->audioPanel->getRecordState();
+}
+
+std::string
+UIMediator::getAudioRecordSavePath(void) const
+{
+  return this->ui->audioPanel->getRecordSavePath();
+}
+
+bool
+UIMediator::isAudioDopplerCorrectionEnabled(void) const
+{
+  return this->ui->audioPanel->isCorrectionEnabled();
+}
+
+Suscan::Orbit
+UIMediator::getAudioOrbit(void) const
+{
+  return this->ui->audioPanel->getOrbit();
+}
+
+void
+UIMediator::setAudioRecordState(bool state)
+{
+  this->ui->audioPanel->setRecordState(state);
+}
+
+void
+UIMediator::setAudioRecordSize(quint64 size)
+{
+  this->ui->audioPanel->setCaptureSize(size);
+}
+
+void
+UIMediator::setAudioRecordIORate(qreal rate)
+{
+  this->ui->audioPanel->setIORate(rate);
+}
+
 void
 UIMediator::connectAudioPanel(void)
 {

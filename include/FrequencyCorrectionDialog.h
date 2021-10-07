@@ -67,11 +67,13 @@ namespace SigDigger {
     void paintAzimuthElevationMap(QPixmap &pixmap);
     void paintAzimuthElevationSatPath(QPixmap &pixmap);
     void repaintSatellitePlot(void);
-
+    void parseCurrentTLE(void);
     void updatePrediction(void);
     void recalcALOS(void);
     void connectAll(void);
     void refreshUiState(void);
+    void refreshOrbit(void);
+
     void setCurrentOrbit(orbit_t *);
     void paintTextAt(
         QPainter &p,

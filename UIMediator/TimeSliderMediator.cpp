@@ -1,5 +1,5 @@
 //
-//    ColorConfigTab.h: configure SigDigger colors
+//    TimeSliderMediator.cpp: Coordinate time slider mediator signals
 //    Copyright (C) 2021 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,43 +16,43 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef COLORCONFIGTAB_H
-#define COLORCONFIGTAB_H
 
-#include <ConfigTab.h>
-#include <ColorConfig.h>
+#include "UIMediator.h"
+#include <QTimeSlider.h>
 
-namespace Ui {
-  class ColorConfigTab;
+using namespace SigDigger;
+
+void
+UIMediator::setSourceTimeStart(struct timeval const &tv)
+{
+  this->ui->timeSlider->setStartTime(tv);
 }
 
-namespace SigDigger {
-  class ColorConfigTab : public ConfigTab
-  {
-    Q_OBJECT
-
-    ColorConfig colors;
-    bool modified = false;
-
-    void refreshUi(void);
-    void connectAll(void);
-
-  public:
-    bool hasChanged(void) const override;
-    void save(void) override;
-
-    void setColorConfig(const ColorConfig &config);
-    ColorConfig getColorConfig(void) const;
-
-    explicit ColorConfigTab(QWidget *parent = nullptr);
-    ~ColorConfigTab();
-
-  public slots:
-    void onColorChanged(void);
-
-  private:
-    Ui::ColorConfigTab *ui;
-  };
+void
+UIMediator::setSourceTimeEnd(struct timeval const &tv)
+{
+  this->ui->timeSlider->setEndTime(tv);
 }
 
-#endif // COLORCONFIGTAB_H
+void
+UIMediator::setTimeStamp(struct timeval const &tv)
+{
+  this->ui->timeSlider->setTimeStamp(tv);
+}
+
+void
+UIMediator::connectTimeSlider(void)
+{
+  connect(
+        this->ui->timeSlider,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onTimeStampChanged(void)));
+}
+
+void
+UIMediator::onTimeStampChanged(void)
+{
+  emit seek(this->ui->timeSlider->getTimeStamp());
+}
+

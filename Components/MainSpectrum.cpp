@@ -56,15 +56,12 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   ui(new Ui::MainSpectrum)
 {
   ui->setupUi(this);
-  this->timeSlider = new QTimeSlider(this);
-  this->timeSlider->setVisible(false);
 
   this->connectAll();
 
   this->setFreqs(0, 0);
   this->setShowFATs(true);
   this->lastFreqUpdate.start();
-  this->ui->mainSpectrumGrid->addWidget(this->timeSlider, 3, 0, 1, 4);
   this->bookmarkSource = new SuscanBookmarkSource();
 
   this->ui->mainSpectrum->setBookmarkSource(this->bookmarkSource);
@@ -136,12 +133,6 @@ MainSpectrum::connectAll(void)
         SIGNAL(newModulation(QString)),
         this,
         SLOT(onNewModulation(QString)));
-
-  connect(
-        this->timeSlider,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onTimeStampChanged(void)));
 }
 
 void
@@ -185,7 +176,6 @@ void
 MainSpectrum::refreshUi(void)
 {
   QString modeText = "  Capture mode: ";
-  bool sliderVisible = false;
 
   switch (this->mode) {
     case UNAVAILABLE:
@@ -198,35 +188,15 @@ MainSpectrum::refreshUi(void)
 
     case REPLAY:
       modeText += "REPLAY";
-      sliderVisible = true;
       break;
   }
 
   this->ui->captureModeLabel->setText(modeText);
-  this->timeSlider->setVisible(sliderVisible);
 
   if (this->throttling)
     this->ui->throttlingLabel->setText("  Throttling: ON");
   else
     this->ui->throttlingLabel->setText("  Throttling: OFF");
-}
-
-void
-MainSpectrum::setSourceTimeStart(struct timeval const &tv)
-{
-  this->timeSlider->setStartTime(tv);
-}
-
-void
-MainSpectrum::setSourceTimeEnd(struct timeval const &tv)
-{
-  this->timeSlider->setEndTime(tv);
-}
-
-void
-MainSpectrum::setTimeStamp(struct timeval const &tv)
-{
-  this->timeSlider->setTimeStamp(tv);
 }
 
 void
@@ -710,11 +680,5 @@ void
 MainSpectrum::onNewModulation(QString modulation)
 {
   emit modulationChanged(modulation);
-}
-
-void
-MainSpectrum::onTimeStampChanged(void)
-{
-  emit seek(this->timeSlider->getTimeStamp());
 }
 

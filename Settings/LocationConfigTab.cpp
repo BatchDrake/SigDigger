@@ -180,7 +180,7 @@ LocationConfigTab::save(void)
 }
 
 LocationConfigTab::LocationConfigTab(QWidget *parent) :
-  QWidget(parent),
+  ConfigTab(parent, "Location"),
   ui(new Ui::LocationConfigTab)
 {
   ui->setupUi(this);

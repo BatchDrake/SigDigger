@@ -27,6 +27,7 @@
 #include <GuiConfig.h>
 #include <SaveProfileDialog.h>
 #include <Suscan/Library.h>
+#include <ConfigTab.h>
 
 namespace SigDigger {
   class ProfileConfigTab;
@@ -52,6 +53,7 @@ namespace SigDigger {
 
     Ui_Config *ui = nullptr;
 
+    void appendConfigTab(ConfigTab *);
     void connectAll(void);
 
   public:
@@ -86,11 +88,8 @@ namespace SigDigger {
     ~ConfigDialog();
 
   public slots:
-    void onProfileChanged(void);
-    void onLocationChanged(void);
-    void onColorsChanged(void);
-    void onGuiChanged(void);
     void onAccepted(void);
+    void onTabConfigChanged(void);
   };
 };
 

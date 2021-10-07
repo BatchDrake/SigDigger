@@ -128,7 +128,7 @@ ColorConfigTab::hasChanged(void) const
 }
 
 ColorConfigTab::ColorConfigTab(QWidget *parent) :
-  QWidget(parent),
+  ConfigTab(parent, "Colors"),
   ui(new Ui::ColorConfigTab)
 {
   ui->setupUi(this);

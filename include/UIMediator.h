@@ -74,6 +74,7 @@ namespace SigDigger {
 
     // Private methods
     void connectMainWindow(void);
+    void connectTimeSlider(void);
     void connectSpectrum(void);
     void connectSourcePanel(void);
     void connectFftPanel(void);
@@ -169,6 +170,10 @@ namespace SigDigger {
     void resetRawInspector(qreal fs);
     void feedRawInspector(const SUCOMPLEX *, size_t size);
 
+    void setSourceTimeStart(struct timeval const &);
+    void setSourceTimeEnd(struct timeval const &);
+    void setTimeStamp(struct timeval const &);
+
     // Overriden methods
     Suscan::Serializable *allocConfig() override;
     void applyConfig(void) override;
@@ -251,6 +256,9 @@ namespace SigDigger {
     void onOpenBookmarkManager(void);
     void onJumpToBookmark(BookmarkInfo);
     void onBookmarkChanged(void);
+
+    // Time Slider slots
+    void onTimeStampChanged(void);
 
     // Spectrum slots
     void onSpectrumBandwidthChanged(void);

@@ -23,6 +23,19 @@
 using namespace SigDigger;
 
 void
+UIMediator::feedPSD(const Suscan::PSDMessage &msg)
+{
+  this->setSampleRate(msg.getSampleRate());
+  this->setProcessRate(msg.getMeasuredSampleRate());
+  this->averager.feed(msg);
+  this->ui->spectrum->feed(
+        this->averager.get(),
+        static_cast<int>(this->averager.size()),
+        msg.getTimeStamp(),
+        msg.hasLooped());
+}
+
+void
 UIMediator::connectSpectrum(void)
 {
   connect(

@@ -16,41 +16,34 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef GUICONFIGTAB_H
-#define GUICONFIGTAB_H
 
 #include <ConfigTab.h>
-#include <GuiConfig.h>
 
-namespace Ui {
-  class GuiConfigTab;
+using namespace SigDigger;
+
+ConfigTab::ConfigTab(QWidget *parent, QString name) : QWidget(parent)
+{
+  this->tabName = name;
 }
 
-namespace SigDigger {
-  class GuiConfigTab : public ConfigTab
-  {
-    Q_OBJECT
+ConfigTab::~ConfigTab()
+{
 
-    GuiConfig guiConfig;
-    bool modified = false;
-    void refreshUi();
-    void connectAll(void);
-
-  public:
-    void save(void) override;
-    bool hasChanged(void) const override;
-    void setGuiConfig(const GuiConfig &config);
-    GuiConfig getGuiConfig() const;
-
-    explicit GuiConfigTab(QWidget *parent = nullptr);
-    ~GuiConfigTab();
-
-  public slots:
-    void onConfigChanged(void);
-
-  private:
-    Ui::GuiConfigTab *ui;
-  };
 }
 
-#endif // GUICONFIGTAB_H
+QString
+ConfigTab::getName(void) const
+{
+  return this->tabName;
+}
+
+bool
+ConfigTab::hasChanged(void) const
+{
+  return true;
+}
+
+void
+ConfigTab::save(void)
+{
+}

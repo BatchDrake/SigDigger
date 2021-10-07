@@ -21,6 +21,88 @@
 
 using namespace SigDigger;
 
+bool
+UIMediator::getPanSpectrumDevice(Suscan::Source::Device &dev) const
+{
+  return this->ui->panoramicDialog->getSelectedDevice(dev);
+}
+
+bool
+UIMediator::getPanSpectrumRange(qint64 &min, qint64 &max) const
+{
+  if (!this->ui->panoramicDialog->invalidRange()) {
+    min = static_cast<qint64>(this->ui->panoramicDialog->getMinFreq());
+    max = static_cast<qint64>(this->ui->panoramicDialog->getMaxFreq());
+    return true;
+  }
+
+  return false;
+}
+
+unsigned int
+UIMediator::getPanSpectrumRttMs(void) const
+{
+  return this->ui->panoramicDialog->getRttMs();
+}
+
+float
+UIMediator::getPanSpectrumRelBw(void) const
+{
+  return this->ui->panoramicDialog->getRelBw();
+}
+
+float
+UIMediator::getPanSpectrumGain(QString const &name) const
+{
+  return this->ui->panoramicDialog->getGain(name);
+}
+
+SUFREQ
+UIMediator::getPanSpectrumLnbOffset(void) const
+{
+  return this->ui->panoramicDialog->getLnbOffset();
+}
+
+float
+UIMediator::getPanSpectrumPreferredSampleRate(void) const
+{
+  return this->ui->panoramicDialog->getPreferredSampleRate();
+}
+
+QString
+UIMediator::getPanSpectrumStrategy(void) const
+{
+  return this->ui->panoramicDialog->getStrategy();
+}
+
+QString
+UIMediator::getPanSpectrumPartition(void) const
+{
+  return this->ui->panoramicDialog->getPartitioning();
+}
+
+void
+UIMediator::setMinPanSpectrumBw(quint64 bw)
+{
+  this->ui->panoramicDialog->setMinBwForZoom(bw);
+}
+
+void
+UIMediator::feedPanSpectrum(
+    quint64 minFreq,
+    quint64 maxFreq,
+    float *data,
+    size_t size)
+{
+  this->ui->panoramicDialog->feed(minFreq, maxFreq, data, size);
+}
+
+void
+UIMediator::setPanSpectrumRunning(bool running)
+{
+  this->ui->panoramicDialog->setRunning(running);
+}
+
 void
 UIMediator::connectPanoramicDialog(void)
 {

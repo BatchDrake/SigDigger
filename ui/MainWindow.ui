@@ -117,6 +117,9 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+   <property name="windowTitle">
+    <string>Main toolbar</string>
+   </property>
    <property name="movable">
     <bool>false</bool>
    </property>

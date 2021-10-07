@@ -29,6 +29,7 @@
 #include <QDockWidget>
 #include <QMessageBox>
 #include <QScreen>
+#include <QTimeSlider.h>
 
 #include <fstream>
 
@@ -100,7 +101,7 @@ UIMediator::refreshUI(void)
 {
   QString stateString;
   QString sourceDesc;
-
+  bool    enableTimeSlider = false;
   Suscan::Source::Config *config = this->getProfile();
   const Suscan::Source::Device &dev = config->getDevice();
 
@@ -139,6 +140,9 @@ UIMediator::refreshUI(void)
       this->ui->panoramicDialog->setBannedDevice(
             QString::fromStdString(
               this->appConfig->profile.getDevice().getDesc()));
+
+      enableTimeSlider =
+          this->ui->spectrum->getCaptureMode() == MainSpectrum::REPLAY;
       break;
 
     case RESTARTING:
@@ -172,6 +176,8 @@ UIMediator::refreshUI(void)
     this->ui->spectrum->setGracePeriod(
           SIGDIGGER_UI_MEDIATOR_LOCAL_GRACE_PERIOD_MS);
   }
+
+  this->ui->timeSlider->setEnabled(enableTimeSlider);
 
   this->owner->setWindowTitle(
         "SigDigger - "
@@ -363,6 +369,7 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->connectInspectorPanel();
   this->connectDeviceDialog();
   this->connectPanoramicDialog();
+  this->connectTimeSlider();
 }
 
 void
@@ -402,24 +409,6 @@ UIMediator::setSampleRate(unsigned int rate)
 }
 
 void
-UIMediator::setAudioRecordState(bool state)
-{
-  this->ui->audioPanel->setRecordState(state);
-}
-
-void
-UIMediator::setAudioRecordSize(quint64 size)
-{
-  this->ui->audioPanel->setCaptureSize(size);
-}
-
-void
-UIMediator::setAudioRecordIORate(qreal rate)
-{
-  this->ui->audioPanel->setIORate(rate);
-}
-
-void
 UIMediator::setState(State state)
 {
   this->state = state;
@@ -445,8 +434,8 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
         true); // Silent update (important!)
 
   if (info.isSeekable()) {
-    this->ui->spectrum->setSourceTimeStart(info.getSourceStartTime());
-    this->ui->spectrum->setSourceTimeEnd(info.getSourceEndTime());
+    this->setSourceTimeStart(info.getSourceStartTime());
+    this->setSourceTimeEnd(info.getSourceEndTime());
   }
 
   this->ui->sourcePanel->applySourceInfo(info);
@@ -456,7 +445,7 @@ void
 UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 {
   this->ui->audioPanel->setTimeStamp(timestamp);
-  this->ui->spectrum->setTimeStamp(timestamp);
+  this->setTimeStamp(timestamp);
 
   for (auto i : this->ui->inspectorTable)
     i.second->setTimeStamp(timestamp);
@@ -486,42 +475,6 @@ UIMediator::notifyDisableCorrection(Suscan::InspectorId id)
     if ((insp = this->lookupInspector(id)) != nullptr)
       insp->disableCorrection();
   }
-}
-
-
-void
-UIMediator::setPanSpectrumRunning(bool running)
-{
-  this->ui->panoramicDialog->setRunning(running);
-}
-
-void
-UIMediator::resetRawInspector(qreal fs)
-{
-  this->ui->inspectorPanel->resetRawInspector(fs);
-}
-
-void
-UIMediator::feedRawInspector(const SUCOMPLEX *data, size_t size)
-{
-  this->ui->inspectorPanel->feedRawInspector(data, size);
-}
-
-
-void
-UIMediator::setMinPanSpectrumBw(quint64 bw)
-{
-  this->ui->panoramicDialog->setMinBwForZoom(bw);
-}
-
-void
-UIMediator::feedPanSpectrum(
-    quint64 minFreq,
-    quint64 maxFreq,
-    float *data,
-    size_t size)
-{
-  this->ui->panoramicDialog->feed(minFreq, maxFreq, data, size);
 }
 
 void
@@ -592,177 +545,9 @@ UIMediator::notifyStartupErrors(void)
 }
 
 void
-UIMediator::feedPSD(const Suscan::PSDMessage &msg)
-{
-  this->setSampleRate(msg.getSampleRate());
-  this->setProcessRate(msg.getMeasuredSampleRate());
-  this->averager.feed(msg);
-  this->ui->spectrum->feed(
-        this->averager.get(),
-        static_cast<int>(this->averager.size()),
-        msg.getTimeStamp(),
-        msg.hasLooped());
-}
-
-void
 UIMediator::setCaptureSize(quint64 size)
 {
   this->ui->sourcePanel->setCaptureSize(size);
-}
-
-Inspector *
-UIMediator::lookupInspector(Suscan::InspectorId handle) const
-{
-  Inspector *entry = nullptr;
-
-  try {
-    entry = this->ui->inspectorTable.at(handle);
-  } catch (std::out_of_range &) { }
-
-  return entry;
-}
-
-bool
-UIMediator::getAudioRecordState(void) const
-{
-  return this->ui->audioPanel->getRecordState();
-}
-
-std::string
-UIMediator::getAudioRecordSavePath(void) const
-{
-  return this->ui->audioPanel->getRecordSavePath();
-}
-
-bool
-UIMediator::isAudioDopplerCorrectionEnabled(void) const
-{
-  return this->ui->audioPanel->isCorrectionEnabled();
-}
-
-Suscan::Orbit
-UIMediator::getAudioOrbit(void) const
-{
-  return this->ui->audioPanel->getOrbit();
-}
-
-bool
-UIMediator::getPanSpectrumDevice(Suscan::Source::Device &dev) const
-{
-  return this->ui->panoramicDialog->getSelectedDevice(dev);
-}
-
-bool
-UIMediator::getPanSpectrumRange(qint64 &min, qint64 &max) const
-{
-  if (!this->ui->panoramicDialog->invalidRange()) {
-    min = static_cast<qint64>(this->ui->panoramicDialog->getMinFreq());
-    max = static_cast<qint64>(this->ui->panoramicDialog->getMaxFreq());
-    return true;
-  }
-
-  return false;
-}
-
-unsigned int
-UIMediator::getPanSpectrumRttMs(void) const
-{
-  return this->ui->panoramicDialog->getRttMs();
-}
-
-float
-UIMediator::getPanSpectrumRelBw(void) const
-{
-  return this->ui->panoramicDialog->getRelBw();
-}
-
-float
-UIMediator::getPanSpectrumGain(QString const &name) const
-{
-  return this->ui->panoramicDialog->getGain(name);
-}
-
-SUFREQ
-UIMediator::getPanSpectrumLnbOffset(void) const
-{
-  return this->ui->panoramicDialog->getLnbOffset();
-}
-
-float
-UIMediator::getPanSpectrumPreferredSampleRate(void) const
-{
-  return this->ui->panoramicDialog->getPreferredSampleRate();
-}
-
-QString
-UIMediator::getPanSpectrumStrategy(void) const
-{
-  return this->ui->panoramicDialog->getStrategy();
-}
-
-QString
-UIMediator::getPanSpectrumPartition(void) const
-{
-  return this->ui->panoramicDialog->getPartitioning();
-}
-
-QString
-UIMediator::getInspectorTabTitle(Suscan::InspectorMessage const &msg)
-{
-  QString result = " in "
-      + SuWidgetsHelpers::formatQuantity(
-        msg.getChannel().fc + msg.getChannel().ft,
-        "Hz");
-
-  if (msg.getClass() == "psk")
-    return "PSK inspector" + result;
-  else if (msg.getClass() == "fsk")
-    return "FSK inspector" + result;
-  else if (msg.getClass() == "ask")
-    return "ASK inspector" + result;
-
-  return "Generic inspector" + result;
-}
-
-Inspector *
-UIMediator::addInspectorTab(
-    Suscan::InspectorMessage const &msg,
-    Suscan::InspectorId &oId)
-{
-
-  int index;
-  Inspector *insp = new Inspector(
-        this->ui->main->mainTab,
-        msg,
-        *this->appConfig);
-
-  oId = this->ui->lastId++;
-
-  insp->setId(oId);
-  insp->setRealTime(
-        this->appConfig->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE
-        && this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR);
-  insp->setTunerFrequency(this->ui->spectrum->getCenterFreq());
-
-  index = this->ui->main->mainTab->addTab(
-        insp,
-        UIMediator::getInspectorTabTitle(msg));
-
-  this->ui->inspectorTable[oId] = insp;
-  this->ui->main->mainTab->setCurrentIndex(index);
-
-  return insp;
-}
-
-void
-UIMediator::detachAllInspectors()
-{
-  for (auto p = this->ui->inspectorTable.begin();
-       p != this->ui->inspectorTable.end();
-       ++p) {
-    p->second->setAnalyzer(nullptr);
-    p->second = nullptr;
-  }
 }
 
 void
@@ -798,6 +583,8 @@ void
 UIMediator::refreshProfile(void)
 {
   qint64 min = 0, max = 0;
+  bool isRealTime = false;
+  struct timeval tv;
   this->ui->sourcePanel->setProfile(&this->appConfig->profile);
   this->ui->configDialog->setProfile(this->appConfig->profile);
 
@@ -807,15 +594,13 @@ UIMediator::refreshProfile(void)
             this->appConfig->profile.getDevice().getMinFreq());
       max = static_cast<qint64>(
             this->appConfig->profile.getDevice().getMaxFreq());
-        this->ui->audioPanel->setRealTime(true);
+        isRealTime = true;
     } else {
       min = SIGDIGGER_MIN_RADIO_FREQ;
       max = SIGDIGGER_MAX_RADIO_FREQ;
 
       this->ui->audioPanel->resetTimeStamp(
             this->appConfig->profile.getStartTime());
-
-      this->ui->audioPanel->setRealTime(false);
     }
   } else {
     struct timeval tv;
@@ -825,7 +610,6 @@ UIMediator::refreshProfile(void)
 
     gettimeofday(&tv, nullptr);
     this->ui->audioPanel->resetTimeStamp(tv);
-    this->ui->audioPanel->setRealTime(false);
   }
 
   // Dummy device should not accept modifications if we don't accept
@@ -836,6 +620,35 @@ UIMediator::refreshProfile(void)
   //   max = SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ;
   // }
 
+  if (isRealTime) {
+    gettimeofday(&tv, nullptr);
+    this->ui->timeSlider->setEnabled(false);
+    tv.tv_sec -= 1;
+    tv.tv_usec = 0;
+    this->ui->timeSlider->setStartTime(tv);
+    tv.tv_sec += 2;
+    this->ui->timeSlider->setEndTime(tv);
+    tv.tv_sec -= 2;
+    this->ui->timeSlider->setTimeStamp(tv);
+  } else {
+    if (this->appConfig->profile.fileIsValid()) {
+      this->ui->timeSlider->setStartTime(
+            this->appConfig->profile.getStartTime());
+      this->ui->timeSlider->setEndTime(
+            this->appConfig->profile.getEndTime());
+      this->ui->timeSlider->setTimeStamp(
+            this->appConfig->profile.getStartTime());
+    } else {
+      tv = this->appConfig->profile.getStartTime();
+      this->ui->timeSlider->setStartTime(tv);
+      tv.tv_sec += 1;
+      this->ui->timeSlider->setEndTime(tv);
+      tv.tv_sec -= 1;
+      this->ui->timeSlider->setTimeStamp(tv);
+    }
+  }
+
+  this->ui->audioPanel->setRealTime(isRealTime);
   this->ui->spectrum->setFrequencyLimits(min, max);
   this->ui->spectrum->setFreqs(
         static_cast<qint64>(this->appConfig->profile.getFreq()),
@@ -1032,32 +845,6 @@ UIMediator::onToggleAbout(bool)
   this->ui->aboutDialog->exec();
 }
 
-void
-UIMediator::closeInspectorTab(Inspector *insp)
-{
-  if (insp != nullptr) {
-    Suscan::Analyzer *analyzer = insp->getAnalyzer();
-    if (analyzer != nullptr) {
-      analyzer->closeInspector(insp->getHandle(), 0);
-    } else {
-      this->ui->main->mainTab->removeTab(
-            this->ui->main->mainTab->indexOf(insp));
-      this->ui->inspectorTable.erase(insp->getId());
-      delete insp;
-    }
-  }
-}
-
-void
-UIMediator::onCloseInspectorTab(int ndx)
-{
-  QWidget *widget = this->ui->main->mainTab->widget(ndx);
-
-  if (widget != nullptr && widget != this->ui->spectrum) {
-    Inspector *insp = static_cast<Inspector *>(widget);
-    this->closeInspectorTab(insp);
-  }
-}
 
 void
 UIMediator::onTriggerStart(bool)

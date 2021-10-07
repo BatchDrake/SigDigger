@@ -660,7 +660,7 @@ ProfileConfigTab::updateRemoteParams(void)
   this->profile.setParam("label", "User-defined remote profile");
 }
 
-ProfileConfigTab::ProfileConfigTab(QWidget *parent) : QWidget(parent),
+ProfileConfigTab::ProfileConfigTab(QWidget *parent) : ConfigTab(parent, "Source"),
   profile(SUSCAN_SOURCE_TYPE_FILE, SUSCAN_SOURCE_FORMAT_AUTO)
 {
   this->ui = new Ui::ProfileConfigTab;
