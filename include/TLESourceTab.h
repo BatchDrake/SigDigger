@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    TLESourceTab.h: TLE source tab
+//    Copyright (C) 2021 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,41 +16,58 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef GUICONFIGTAB_H
-#define GUICONFIGTAB_H
+#ifndef TLESOURCETAB_H
+#define TLESOURCETAB_H
 
+#include <QWidget>
 #include <ConfigTab.h>
-#include <GuiConfig.h>
+#include <TLESourceConfig.h>
+#include <AddTLESourceDialog.h>
+
+#if HAVE_CURL
+#include <TLEDownloaderTask.h>
+#endif // HAVE_CURL
 
 namespace Ui {
-  class GuiConfigTab;
+  class TLESourceTab;
 }
 
 namespace SigDigger {
-  class GuiConfigTab : public ConfigTab
+  class TLESourceTab : public ConfigTab
   {
     Q_OBJECT
 
-    GuiConfig guiConfig;
+    AddTLESourceDialog *addDialog = nullptr;
+    TLESourceConfig tleSourceConfig;
     bool modified = false;
-    void refreshUi();
+
+    bool downloading = false;
+
+#if HAVE_CURL
+#endif // HAVE_CURL
+
+    void populateTLESourceTable(void);
+    void refreshUi(void);
     void connectAll(void);
 
   public:
     void save(void) override;
     bool hasChanged(void) const override;
-    void setGuiConfig(const GuiConfig &config);
-    GuiConfig getGuiConfig() const;
-
-    explicit GuiConfigTab(QWidget *parent = nullptr);
-    ~GuiConfigTab() override;
+    explicit TLESourceTab(QWidget *parent = nullptr);
+    ~TLESourceTab() override;
+    void setTleSourceConfig(const TLESourceConfig &config);
+    TLESourceConfig getTleSourceConfig() const;
 
   public slots:
     void onConfigChanged(void);
+    void onAddTLESource(void);
+    void onRemoveTLESource(void);
+    void onTLESelectionChanged(void);
 
   private:
-    Ui::GuiConfigTab *ui;
+    Ui::TLESourceTab *ui;
   };
-}
 
-#endif // GUICONFIGTAB_H
+};
+
+#endif // TLESOURCETAB_H

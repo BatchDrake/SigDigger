@@ -788,6 +788,7 @@ UIMediator::onTriggerSetup(bool)
   this->ui->configDialog->setProfile(*this->getProfile());
   this->ui->configDialog->setAnalyzerParams(*this->getAnalyzerParams());
   this->ui->configDialog->setColors(this->appConfig->colors);
+  this->ui->configDialog->setTleSourceConfig(this->appConfig->tleSourceConfig);
 
   if (sus->haveQth())
     this->ui->configDialog->setLocation(sus->getQth());
@@ -813,6 +814,10 @@ UIMediator::onTriggerSetup(bool)
       this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
     }
 
+    if (this->ui->configDialog->tleSourceConfigChanged()) {
+      this->appConfig->tleSourceConfig =
+          this->ui->configDialog->getTleSourceConfig();
+    }
     if (this->ui->configDialog->locationChanged()) {
       Suscan::Location loc = this->ui->configDialog->getLocation();
       sus->setQth(loc);

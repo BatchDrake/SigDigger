@@ -1,6 +1,6 @@
 //
-//    GuiConfig.h: Gui configuration object
-//    Copyright (C) 2021 Jaroslav Šafka
+//    filename: description
+//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,30 +16,25 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-
-#ifndef GUICONFIG_H
-#define GUICONFIG_H
+#ifndef TLESOURCECONFIG_H
+#define TLESOURCECONFIG_H
 
 #include <Suscan/Serializable.h>
 
-namespace SigDigger {
-  class GuiConfig : public Suscan::Serializable
+namespace SigDigger{
+  class TLESourceConfig : public Suscan::Serializable
   {
-    public:
-        /**
-         * @brief use left mouse button to drag
-         * drag / change center frequency on FFT spectrum area
-         */
-        bool useLMBdrag;
+  public:
+    bool autoDownloadOnStartup = false;
 
-      GuiConfig();
-      GuiConfig(Suscan::Object const &conf);
+    TLESourceConfig();
+    TLESourceConfig(Suscan::Object const &conf);
 
-      // Overriden methods
-      void loadDefaults(void);
-      void deserialize(Suscan::Object const &conf) override;
-      Suscan::Object &&serialize(void) override;
+    // Overriden methods
+    void loadDefaults(void);
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize(void) override;
   };
 }
 
-#endif // GUICONFIG_H
+#endif // TLESOURCECONFIG_H

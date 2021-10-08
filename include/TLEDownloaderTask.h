@@ -16,41 +16,39 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef GUICONFIGTAB_H
-#define GUICONFIGTAB_H
+#ifndef TLEDOWNLOADERTASK_H
+#define TLEDOWNLOADERTASK_H
 
-#include <ConfigTab.h>
-#include <GuiConfig.h>
-
-namespace Ui {
-  class GuiConfigTab;
-}
+#include <Suscan/CancellableTask.h>
+#include <curl/curl.h>
 
 namespace SigDigger {
-  class GuiConfigTab : public ConfigTab
-  {
+  class TLEDownloaderTask : public Suscan::CancellableTask {
     Q_OBJECT
 
-    GuiConfig guiConfig;
-    bool modified = false;
-    void refreshUi();
-    void connectAll(void);
+    CURLM *multi = nullptr;
+    CURL  *curl = nullptr;
+    FILE  *fp = nullptr;
+    bool   ok = false;
+
+    static int curl_progress(
+        void *self,
+        double dltotal,
+        double dlnow,
+        double ultotal,
+        double ulnow);
 
   public:
-    void save(void) override;
-    bool hasChanged(void) const override;
-    void setGuiConfig(const GuiConfig &config);
-    GuiConfig getGuiConfig() const;
+    TLEDownloaderTask(
+        QString url,
+        QObject *parent = nullptr);
 
-    explicit GuiConfigTab(QWidget *parent = nullptr);
-    ~GuiConfigTab() override;
+    virtual ~TLEDownloaderTask() override;
 
-  public slots:
-    void onConfigChanged(void);
-
-  private:
-    Ui::GuiConfigTab *ui;
+    virtual bool work(void) override;
+    virtual void cancel(void) override;
   };
 }
 
-#endif // GUICONFIGTAB_H
+
+#endif // TLEDOWNLOADERTASK_H

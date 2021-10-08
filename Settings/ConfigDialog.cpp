@@ -24,6 +24,7 @@
 #include <ProfileConfigTab.h>
 #include <ColorConfigTab.h>
 #include <GuiConfigTab.h>
+#include <TLESourceTab.h>
 #include <LocationConfigTab.h>
 #include <time.h>
 #include "ConfigDialog.h"
@@ -103,6 +104,13 @@ ConfigDialog::setColors(ColorConfig const &config)
   this->colorTab->setColorConfig(config);
 }
 
+void
+ConfigDialog::setTleSourceConfig(const TLESourceConfig &config)
+{
+  return this->tleSourceTab->setTleSourceConfig(config);
+}
+
+
 ColorConfig
 ConfigDialog::getColors(void) const
 {
@@ -121,6 +129,12 @@ ConfigDialog::getGuiConfig() const
   return this->guiTab->getGuiConfig();
 }
 
+TLESourceConfig
+ConfigDialog::getTleSourceConfig(void) const
+{
+  return this->tleSourceTab->getTleSourceConfig();
+}
+
 bool
 ConfigDialog::profileChanged(void) const
 {
@@ -137,6 +151,12 @@ bool
 ConfigDialog::guiChanged(void) const
 {
   return this->guiTab->hasChanged();
+}
+
+bool
+ConfigDialog::tleSourceConfigChanged(void) const
+{
+  return this->tleSourceTab->hasChanged();
 }
 
 bool
@@ -195,14 +215,16 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
     this->windowFlags() & ~Qt::WindowMaximizeButtonHint);
   this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 
-  this->profileTab  = new ProfileConfigTab(this);
-  this->colorTab    = new ColorConfigTab(this);
-  this->guiTab      = new GuiConfigTab(this);
-  this->locationTab = new LocationConfigTab(this);
+  this->profileTab   = new ProfileConfigTab(this);
+  this->colorTab     = new ColorConfigTab(this);
+  this->guiTab       = new GuiConfigTab(this);
+  this->locationTab  = new LocationConfigTab(this);
+  this->tleSourceTab = new TLESourceTab(this);
 
   this->appendConfigTab(this->profileTab);
   this->appendConfigTab(this->colorTab);
   this->appendConfigTab(this->guiTab);
+  this->appendConfigTab(this->tleSourceTab);
   this->appendConfigTab(this->locationTab);
 
   this->connectAll();

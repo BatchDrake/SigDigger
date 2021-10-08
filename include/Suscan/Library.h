@@ -56,6 +56,15 @@ namespace Suscan {
     int entry = -1;
   };
 
+  struct TLESource : public Serializable{
+    std::string name;
+    std::string url;
+    bool user = false;
+
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize(void) override;
+  };
+
   struct SpectrumUnit {
     std::string name = "dBFS";
     float dBPerUnit  = 1.0f;
@@ -107,6 +116,7 @@ namespace Suscan {
 
     Location qth;
     QMap<QString, Location> locations;
+    QMap<std::string, TLESource> tleSources;
     QMap<qint64, Bookmark> bookmarks;
     QMap<std::string, SpectrumUnit> spectrumUnits;
     QHash<QString, Source::Config> networkProfiles;
@@ -128,8 +138,10 @@ namespace Suscan {
     void syncUI(void);
     void syncRecent(void);
     void syncLocations(void);
+    void syncTLESources(void);
     void syncBookmarks(void);
     void initLocationsFromContext(ConfigContext &ctx, bool user);
+    void initTLESourcesFromContext(ConfigContext &ctx, bool user);
 
   public:
     void init_codecs(void);
@@ -144,6 +156,7 @@ namespace Suscan {
     void init_recent_list(void);
     void init_locations(void);
     void init_bookmarks(void);
+    void init_tle_sources(void);
     void detect_devices(void);
 
     void sync(void);
@@ -166,6 +179,8 @@ namespace Suscan {
     void removeBookmark(qint64);
 
     bool registerLocation(Location const& loc);
+    bool registerTLESource(TLESource const &tleSource);
+    bool removeTLESource(std::string const &);
 
     bool registerSpectrumUnit(std::string const &, float, float);
     void replaceSpectrumUnit(std::string const &, float, float);
@@ -204,6 +219,10 @@ namespace Suscan {
     QMap<QString, Location> const &getLocationMap(void) const;
     QMap<QString, Location>::const_iterator getFirstLocation(void) const;
     QMap<QString, Location>::const_iterator getLastLocation(void) const;
+
+    QMap<std::string, TLESource> const &getTLESourceMap(void) const;
+    QMap<std::string, TLESource>::const_iterator getFirstTLESource(void) const;
+    QMap<std::string, TLESource>::const_iterator getLastTLESource(void) const;
 
     QMap<std::string, SpectrumUnit> const &getSpectrumUnitMap(void) const;
     QMap<std::string, SpectrumUnit>::const_iterator getFirstSpectrumUnit(void) const;

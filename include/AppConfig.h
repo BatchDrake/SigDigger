@@ -27,6 +27,7 @@
 
 #include "Version.h"
 #include "ColorConfig.h"
+#include "TLESourceConfig.h"
 
 #define SIGDIGGER_FFT_WINDOW_SIZE  4096u
 #define SIGDIGGER_FFT_REFRESH_RATE 25u
@@ -49,6 +50,7 @@ namespace SigDigger {
       Suscan::AnalyzerParams analyzerParams;
       ColorConfig colors;
       GuiConfig guiConfig;
+      TLESourceConfig tleSourceConfig;
       Suscan::Serializable *sourceConfig = nullptr;
       Suscan::Serializable *fftConfig = nullptr;
       Suscan::Serializable *inspectorConfig = nullptr;

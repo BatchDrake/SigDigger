@@ -58,6 +58,7 @@ AppConfig::serialize(void)
   obj.setField("analyzerParams", this->analyzerParams.serialize());
   obj.setField("colors", this->colors.serialize());
   obj.setField("guiConfig", this->guiConfig.serialize());
+  obj.setField("tleSourceConfig", this->tleSourceConfig.serialize());
   obj.setField("sourcePanel", this->sourceConfig->serialize());
   obj.setField("fftPanel", this->fftConfig->serialize());
   obj.setField("audioPanel", this->audioConfig->serialize());
@@ -106,6 +107,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->analyzerParams.deserialize(conf.getField("analyzerParams")));
     TRYSILENT(this->colors.deserialize(conf.getField("colors")));
     TRYSILENT(this->guiConfig.deserialize(conf.getField("guiConfig")));
+    TRYSILENT(this->tleSourceConfig.deserialize(conf.getField("tleSourceConfig")));
     TRYSILENT(this->sourceConfig->deserialize(conf.getField("sourcePanel")));
     TRYSILENT(this->fftConfig->deserialize(conf.getField("fftPanel")));
     TRYSILENT(this->audioConfig->deserialize(conf.getField("audioPanel")));

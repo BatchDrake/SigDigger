@@ -1,6 +1,6 @@
 //
-//    GuiConfig.h: Gui configuration object
-//    Copyright (C) 2021 Jaroslav Šafka
+//    filename: description
+//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,30 +16,37 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+#ifndef ADDTLESOURCEDIALOG_H
+#define ADDTLESOURCEDIALOG_H
 
-#ifndef GUICONFIG_H
-#define GUICONFIG_H
+#include <QDialog>
+#include <Suscan/Library.h>
 
-#include <Suscan/Serializable.h>
+namespace Ui {
+  class AddTLESourceDialog;
+}
 
 namespace SigDigger {
-  class GuiConfig : public Suscan::Serializable
+  class AddTLESourceDialog : public QDialog
   {
-    public:
-        /**
-         * @brief use left mouse button to drag
-         * drag / change center frequency on FFT spectrum area
-         */
-        bool useLMBdrag;
+    Q_OBJECT
 
-      GuiConfig();
-      GuiConfig(Suscan::Object const &conf);
+    static bool urlIsValid(QString const &);
+    void connectAll(void);
 
-      // Overriden methods
-      void loadDefaults(void);
-      void deserialize(Suscan::Object const &conf) override;
-      Suscan::Object &&serialize(void) override;
+  public:
+    explicit AddTLESourceDialog(QWidget *parent = nullptr);
+    ~AddTLESourceDialog();
+    bool run(void);
+    void reset(void);
+    Suscan::TLESource getTLESource(void) const;
+
+  private:
+    Ui::AddTLESourceDialog *ui;
+
+  public slots:
+    void onFieldsChanged(void);
   };
 }
 
-#endif // GUICONFIG_H
+#endif // ADDTLESOURCEDIALOG_H

@@ -60,10 +60,12 @@ SOURCES += \
     App/ColorConfig.cpp \
     App/GuiConfig.cpp \
     App/Loader.cpp \
+    App/TLESourceConfig.cpp \
     Audio/AudioFileSaver.cpp \
     Audio/AudioPlayback.cpp \
     Audio/GenericAudioPlayer.cpp \
     Components/AboutDialog.cpp \
+    Components/AddTLESourceDialog.cpp \
     Components/AudioPanel.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
@@ -104,6 +106,7 @@ SOURCES += \
     Settings/GuiConfigTab.cpp \
     Settings/LocationConfigTab.cpp \
     Settings/ProfileConfigTab.cpp \
+    Settings/TLESourceTab.cpp \
     Suscan/CancellableTask.cpp \
     Suscan/Messages/ChannelMessage.cpp \
     Suscan/Messages/GenericMessage.cpp \
@@ -165,6 +168,7 @@ SOURCES += \
 
 
 HEADERS += \
+    include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
     include/AudioFileSaver.h \
     include/CarrierDetector.h \
@@ -242,6 +246,8 @@ HEADERS += \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
     include/SourcePanel.h \
+    include/TLESourceConfig.h \
+    include/TLESourceTab.h \
     include/TVProcessorWorker.h \
     include/TimeWindow.h \
     include/ToneControl.h \
@@ -275,6 +281,7 @@ HEADERS += \
 
 FORMS += \
     ui/AboutDialog.ui \
+    ui/AddTLESourceDialog.ui \
     ui/AfcControl.ui \
     ui/AskControl.ui \
     ui/AudioPanel.ui \
@@ -300,6 +307,7 @@ FORMS += \
     ui/ProfileConfigTab.ui \
     ui/SamplerDialog.ui \
     ui/SourcePanel.ui \
+    ui/TLESourceTab.ui \
     ui/TimeWindow.ui \
     ui/ToneControl.ui \
     ui/SaveProfileDialog.ui \
@@ -325,6 +333,13 @@ RESOURCES += \
 
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += suscan fftw3f
+
+packagesExist(libcurl) {
+  PKGCONFIG += libcurl
+  QMAKE_CXXFLAGS += -DHAVE_CURL
+  HEADERS += include/TLEDownloaderTask.h
+  SOURCES += Tasks/TLEDownloaderTask.cpp
+}
 
 packagesExist(volk) {
   PKGCONFIG += volk

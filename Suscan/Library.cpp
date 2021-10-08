@@ -63,6 +63,26 @@ Location::serialize(void)
   return this->persist(obj);
 }
 
+void
+TLESource::deserialize(Suscan::Object const &conf)
+{
+  LOAD(name);
+  LOAD(url);
+}
+
+Suscan::Object &&
+TLESource::serialize(void)
+{
+  Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+
+  obj.setClass("tle_source");
+
+  STORE(name);
+  STORE(url);
+
+  return this->persist(obj);
+}
+
 uint
 Suscan::qHash(const Suscan::Source::Device &dev)
 {
@@ -405,6 +425,36 @@ Singleton::init_locations(void)
 }
 
 void
+Singleton::initTLESourcesFromContext(ConfigContext &ctx, bool user)
+{
+  Object list = ctx.listObject();
+  unsigned int i, count;
+  TLESource src;
+
+  count = list.length();
+
+  src.user = user;
+
+  for (i = 0; i < count; ++i) {
+    src.deserialize(list[i]);
+    this->tleSources[src.name] = src;
+  }
+}
+
+void
+Singleton::init_tle_sources(void)
+{
+  ConfigContext globalCtx("tle");
+  ConfigContext userCtx("user_tle");
+
+  globalCtx.setSave(false);
+  userCtx.setSave(true);
+
+  initTLESourcesFromContext(globalCtx, false);
+  initTLESourcesFromContext(userCtx, true);
+}
+
+void
 Singleton::refreshDevices(void)
 {
   this->devices.clear();
@@ -528,6 +578,25 @@ Singleton::syncLocations(void)
 }
 
 void
+Singleton::syncTLESources(void)
+{
+  ConfigContext ctx("user_tle");
+  Object list = ctx.listObject();
+
+  // Save all user TLE sources
+  list.clear();
+
+  for (auto p : this->tleSources) {
+    try {
+      if (p.user)
+        list.append(p.serialize());
+    } catch (Suscan::Exception const &) {
+      // Don't even bother to warn
+    }
+  }
+}
+
+void
 Singleton::syncUI(void)
 {
   unsigned int i, count;
@@ -590,6 +659,7 @@ Singleton::sync(void)
   this->syncUI();
   this->syncBookmarks();
   this->syncLocations();
+  this->syncTLESources();
 }
 
 // Singleton methods
@@ -702,6 +772,37 @@ Singleton::registerLocation(Location const& loc)
   newLoc.userLocation = true;
 
   this->locations[newLoc.getLocationName()] = newLoc;
+
+  return true;
+}
+
+bool
+Singleton::registerTLESource(TLESource const& tleSrc)
+{
+  if (this->tleSources.find(tleSrc.name) != this->tleSources.end())
+    return false;
+
+  TLESource newSrc;
+
+  newSrc = tleSrc;
+  newSrc.user = true;
+
+  this->tleSources[newSrc.name] = newSrc;
+
+  return true;
+}
+
+bool
+Singleton::removeTLESource(std::string const &name)
+{
+  if (this->tleSources.find(name) == this->tleSources.end())
+    return false;
+
+  // Non-user TLEs cannot be removed
+  if (!this->tleSources[name].user)
+    return false;
+
+  this->tleSources.remove(name);
 
   return true;
 }
@@ -887,6 +988,24 @@ QMap<QString, Location>::const_iterator
 Singleton::getLastLocation(void) const
 {
   return this->locations.cend();
+}
+
+QMap<std::string, TLESource> const &
+Singleton::getTLESourceMap(void) const
+{
+  return this->tleSources;
+}
+
+QMap<std::string, TLESource>::const_iterator
+Singleton::getFirstTLESource(void) const
+{
+  return this->tleSources.cbegin();
+}
+
+QMap<std::string, TLESource>::const_iterator
+Singleton::getLastTLESource(void) const
+{
+  return this->tleSources.cend();
 }
 
 QMap<std::string, SpectrumUnit> const &

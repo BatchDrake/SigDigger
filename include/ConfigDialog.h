@@ -25,6 +25,7 @@
 #include <Suscan/Source.h>
 #include <ColorConfig.h>
 #include <GuiConfig.h>
+#include <TLESourceConfig.h>
 #include <SaveProfileDialog.h>
 #include <Suscan/Library.h>
 #include <ConfigTab.h>
@@ -34,6 +35,7 @@ namespace SigDigger {
   class ColorConfigTab;
   class GuiConfigTab;
   class LocationConfigTab;
+  class TLESourceTab;
 
   class ConfigDialog : public QDialog
   {
@@ -48,7 +50,7 @@ namespace SigDigger {
     ColorConfigTab    *colorTab    = nullptr;
     GuiConfigTab      *guiTab      = nullptr;
     LocationConfigTab *locationTab = nullptr;
-
+    TLESourceTab      *tleSourceTab   = nullptr;
     bool accepted = false;
 
     Ui_Config *ui = nullptr;
@@ -61,6 +63,7 @@ namespace SigDigger {
     void setProfile(const Suscan::Source::Config &profile);
     void setAnalyzerParams(const Suscan::AnalyzerParams &params);
     void setColors(const ColorConfig &config);
+    void setTleSourceConfig(const TLESourceConfig &config);
     void setGuiConfig(const GuiConfig &config);
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
@@ -69,6 +72,7 @@ namespace SigDigger {
     bool profileChanged(void) const;
     bool locationChanged(void) const;
     bool colorsChanged(void) const;
+    bool tleSourceConfigChanged(void) const;
     bool guiChanged(void) const;
 
     Suscan::Location getLocation(void) const;
@@ -79,7 +83,8 @@ namespace SigDigger {
     float getGain(std::string const &name) const;
     Suscan::Source::Config getProfile(void) const;
     ColorConfig getColors(void) const;
-    GuiConfig getGuiConfig() const;
+    GuiConfig getGuiConfig(void) const;
+    TLESourceConfig getTleSourceConfig(void) const;
     Suscan::AnalyzerParams getAnalyzerParams(void) const;
 
     bool run(void);
