@@ -308,7 +308,7 @@ TLESourceTab::onAddTLESource(void)
             1,
             new QTableWidgetItem(QString::fromStdString(src.url)));
 
-      this->ui->tleSourceTable->resizeColumnsToContents();
+      this->ui->tleSourceTable->resizeColumnToContents(0);
       this->ui->tleSourceTable->horizontalHeader()->setStretchLastSection(true);
       this->ui->tleSourceTable->scrollToBottom();
       this->refreshUi();
