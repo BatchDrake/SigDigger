@@ -61,6 +61,7 @@ namespace SigDigger {
     struct timeval timeStamp;
 
     QString desiredSelected;
+    bool    desiredFromSat = true;
     QPixmap azElAxesPixmap;
     qreal   azElAxesRadius;
     qreal   azElCenterX;

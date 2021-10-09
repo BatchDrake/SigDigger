@@ -172,6 +172,9 @@ FrequencyCorrectionDialog::findNewSatellites(void)
   }
 
   this->ui->satRadio->setEnabled(this->ui->satCombo->count() > 0);
+
+  if (this->ui->satCombo->count() > 0)
+    this->ui->satRadio->setChecked(this->desiredFromSat);
 }
 
 void
@@ -346,7 +349,18 @@ FrequencyCorrectionDialog::refreshUiState(void)
         this->ui->correctionTypeCombo->currentIndex());
 
   if (this->ui->satCombo->count() == 0) {
+    bool tleSig, satSig;
+    tleSig = this->ui->tleRadio->signalsBlocked();
+    satSig = this->ui->satRadio->signalsBlocked();
+
+    this->ui->tleRadio->blockSignals(true);
+    this->ui->satRadio->blockSignals(true);
+
     this->ui->tleRadio->setChecked(true);
+
+    this->ui->tleRadio->blockSignals(tleSig);
+    this->ui->satRadio->blockSignals(satSig);
+
     this->ui->satRadio->setEnabled(false);
   } else {
     this->ui->satRadio->setEnabled(false);
@@ -686,8 +700,12 @@ FrequencyCorrectionDialog::setCorrectionEnabled(bool enabled)
 void
 FrequencyCorrectionDialog::setCorrectionFromSatellite(bool enabled)
 {
-  this->ui->satRadio->setChecked(enabled);
-  this->ui->tleRadio->setChecked(!enabled);
+  this->desiredFromSat = enabled;
+
+  if (this->ui->satCombo->count() > 0) {
+    this->ui->satRadio->setChecked(enabled);
+    this->ui->tleRadio->setChecked(!enabled);
+  }
 
   this->refreshUiState();
   this->refreshOrbit();
@@ -835,6 +853,8 @@ FrequencyCorrectionDialog::onSwitchSatellite(void)
 void
 FrequencyCorrectionDialog::onToggleOrbitType(void)
 {
+  this->desiredFromSat = this->ui->satRadio->isChecked();
+
   this->refreshUiState();
   this->refreshOrbit();
 }
