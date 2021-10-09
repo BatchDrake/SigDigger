@@ -38,7 +38,7 @@ namespace Suscan {
 
   public:
     explicit CancellableTask(QObject *parent = nullptr);
-    virtual ~CancellableTask(void);
+    virtual ~CancellableTask(void) override;
 
     virtual bool work(void) = 0;
     virtual void cancel(void) = 0;

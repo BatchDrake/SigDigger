@@ -31,7 +31,8 @@ TLEDownloaderTask::curl_progress(
 {
   TLEDownloaderTask *task = reinterpret_cast<TLEDownloaderTask *>(self);
 
-  emit task->progress(dlnow / dltotal, "Downloading data");
+  task->setStatus("Downloading data");
+  task->setProgress(dlnow / dltotal);
 
   return 0;
 }
@@ -49,13 +50,16 @@ TLEDownloaderTask::TLEDownloaderTask(
 
     curl_easy_setopt(this->curl, CURLOPT_USERAGENT, "SigDigger TLE Downloader/curl");
     curl_easy_setopt(this->curl, CURLOPT_CONNECTTIMEOUT, 10);
-    curl_easy_setopt(this->curl, CURLOPT_URL, url.data());
+    curl_easy_setopt(this->curl, CURLOPT_URL, url.toStdString().c_str());
     curl_easy_setopt(this->curl, CURLOPT_NOPROGRESS, 0);
     curl_easy_setopt(this->curl, CURLOPT_PROGRESSFUNCTION, TLEDownloaderTask::curl_progress);
     curl_easy_setopt(this->curl, CURLOPT_PROGRESSDATA, this);
   }
 
   curl_multi_add_handle(this->multi, this->curl);
+
+  this->setProgress(0);
+  this->setStatus("Performing request...");
 
   this->ok = true;
 }
@@ -64,7 +68,7 @@ bool
 TLEDownloaderTask::work(void)
 {
   int running = 0;
-  bool done = false;
+  bool downloadFinished = false;
   CURLMcode mc;
   CURLMsg *msg;
   int left;
@@ -84,14 +88,15 @@ TLEDownloaderTask::work(void)
 
     while ((msg = curl_multi_info_read(this->multi, &left)))
       if (msg->msg == CURLMSG_DONE)
-        done = true;
+        downloadFinished = true;
   }
 
   if (!running) {
-    if (!done) {
+    if (!downloadFinished) {
       emit error("Download aborted");
     } else {
       // Process data. Don't care to block
+      emit done();
     }
   }
   return running != 0;

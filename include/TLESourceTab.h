@@ -23,10 +23,8 @@
 #include <ConfigTab.h>
 #include <TLESourceConfig.h>
 #include <AddTLESourceDialog.h>
-
-#if HAVE_CURL
-#include <TLEDownloaderTask.h>
-#endif // HAVE_CURL
+#include <Suscan/CancellableTask.h>
+#include <QMap>
 
 namespace Ui {
   class TLESourceTab;
@@ -37,15 +35,24 @@ namespace SigDigger {
   {
     Q_OBJECT
 
+    // UI objects
     AddTLESourceDialog *addDialog = nullptr;
     TLESourceConfig tleSourceConfig;
     bool modified = false;
-
     bool downloading = false;
 
-#if HAVE_CURL
-#endif // HAVE_CURL
+    // Background tasks
+    Suscan::CancellableController *taskController;
+    unsigned srcCount;
+    unsigned srcNum = 0;
+    unsigned srcFailed = 0;
+    QMap<std::string, Suscan::TLESource>::const_iterator currSrc;
+    QMap<std::string, Suscan::TLESource>::const_iterator endSrc;
 
+    bool pushDownloadTask(void);
+    void triggerDownloadTLEs(void);
+    void downloadNext(void);
+    void refreshDownloadStatus(void);
     void populateTLESourceTable(void);
     void refreshUi(void);
     void connectAll(void);
@@ -63,6 +70,15 @@ namespace SigDigger {
     void onAddTLESource(void);
     void onRemoveTLESource(void);
     void onTLESelectionChanged(void);
+    void onDownloadStart(void);
+    void onDownloadCancel(void);
+
+    // Download task controller slots
+    void onTaskCancelling(void);
+    void onTaskProgress(qreal, QString);
+    void onTaskDone(void);
+    void onTaskCancelled(void);
+    void onTaskError(QString);
 
   private:
     Ui::TLESourceTab *ui;

@@ -43,7 +43,7 @@ namespace SigDigger {
         QString url,
         QObject *parent = nullptr);
 
-    virtual ~TLEDownloaderTask() override;
+    ~TLEDownloaderTask() override;
 
     virtual bool work(void) override;
     virtual void cancel(void) override;
