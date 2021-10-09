@@ -566,6 +566,14 @@ InspectorUI::setTimeStamp(struct timeval const &tv)
   this->fcDialog->setTimestamp(tv);
 }
 
+void
+InspectorUI::setTimeLimits(
+    struct timeval const &start,
+    struct timeval const &end)
+{
+  this->fcDialog->setTimeLimits(start, end);
+}
+
 bool
 InspectorUI::installDataSaver(void)
 {

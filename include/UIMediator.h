@@ -63,6 +63,11 @@ namespace SigDigger {
     QDockWidget *audioPanelDock = nullptr;
     std::map<std::string, QAction *> bandPlanMap;
 
+    // Cached members
+    bool isRealTime;
+    struct timeval profileStart;
+    struct timeval profileEnd;
+
     // UI Data
     Averager averager;
     unsigned int rate = 0;

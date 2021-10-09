@@ -59,6 +59,9 @@ namespace SigDigger {
       void disableCorrection(void);
       void setTunerFrequency(SUFREQ freq);
       void setRealTime(bool);
+      void setTimeLimits(
+          struct timeval const &start,
+          struct timeval const &end);
       void setTimeStamp(struct timeval const &);
       void setQth(xyz_t const &qth);
 

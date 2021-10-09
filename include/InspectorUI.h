@@ -175,6 +175,9 @@ namespace SigDigger {
       void setTunerFrequency(SUFREQ freq);
       void setRealTime(bool);
       void setTimeStamp(struct timeval const &);
+      void setTimeLimits(
+          struct timeval const &start,
+          struct timeval const &end);
       bool installNetForwarder(void);
       void uninstallNetForwarder(void);
       void setBasebandRate(unsigned int);

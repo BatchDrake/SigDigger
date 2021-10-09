@@ -175,26 +175,23 @@ FrequencyCorrectionDialog::findNewSatellites(void)
 }
 
 void
-FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
+FrequencyCorrectionDialog::paintAzimuthElevationPass(QPainter &p)
 {
-  QPainter p(&pixmap);
-
+  qreal delta;
+  struct timeval diff;
+  struct timeval tdelta;
+  struct timeval t;
+  struct tm losTm, aosTm;
+  bool visible;
+  QVector<qreal> dashes;
+  xyz_t pAzEl = {{0}, {0}, {0}};
+  xyz_t firstAzel = {{0}, {0}, {0}};
+  xyz_t azel;
   QPen pen(
         this->colors.constellationForeground,
         FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING);
 
-
   if (this->haveALOS) {
-    qreal delta;
-    struct timeval diff;
-    struct timeval tdelta;
-    struct timeval t;
-    struct tm losTm, aosTm;
-    bool visible;
-    QVector<qreal> dashes;
-    xyz_t azel, pAzEl = {{0}, {0}, {0}};
-    xyz_t firstAzel = {{0}, {0}, {0}};
-
     localtime_r(&this->losTime.tv_sec, &losTm);
     localtime_r(&this->aosTime.tv_sec, &aosTm);
 
@@ -223,36 +220,13 @@ FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
     p.setPen(pen);
 
     for (auto i = 0; i <= SAT_PATH_POINTS; ++i) {
+      // Have we just left the satellite behind?
       if (visible && !timercmp(&this->timeStamp, &t, >)) {
-        // Have we just left the satellite behind?
-        qreal mkwidth =
-              (this->azElAxesRadius / 40) * FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING;
-
-        sgdp4_prediction_update(&this->prediction, &this->timeStamp);
-        sgdp4_prediction_get_azel(&this->prediction, &azel);
-
-
-        // Yes, paint it.
-
-        if (i > 0)
+        if (i > 0) {
+          sgdp4_prediction_update(&this->prediction, &this->timeStamp);
+          sgdp4_prediction_get_azel(&this->prediction, &azel);
           p.drawLine(QLineF(this->azElToPoint(pAzEl), this->azElToPoint(azel)));
-
-        p.setBrush(Qt::cyan);
-        p.drawEllipse(
-              this->azElToPoint(azel) + QPointF(mkwidth/2, mkwidth/2),
-              mkwidth,
-              mkwidth);
-
-        pen.setColor(this->colors.spectrumText);
-        p.setPen(pen);
-
-        this->paintTextAt(
-              p,
-              this->azElToPoint(azel),
-              "  " + QString(
-                this->currentOrbit.name == nullptr
-                ? "NO NAME"
-                : this->currentOrbit.name));
+        }
 
         // Back to the dashes. Also, this iteration does not count.
         --i;
@@ -261,8 +235,7 @@ FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
         pen.setDashPattern(dashes);
         pen.setWidth(FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING);
         p.setPen(pen);
-      } else {
-        // No.
+      } else { // No.
         sgdp4_prediction_update(&this->prediction, &t);
         sgdp4_prediction_get_azel(&this->prediction, &azel);
       }
@@ -288,6 +261,46 @@ FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
           p,
           this->azElToPoint(azel),
           QString::asprintf("%02u:%02u", losTm.tm_hour, losTm.tm_min));
+  }
+}
+
+void
+FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
+{
+  QPainter p(&pixmap);
+  xyz_t azel;
+
+  QPen pen(
+        this->colors.constellationForeground,
+        FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING);
+
+  if (this->haveOrbit) {
+    qreal mkwidth =
+          (this->azElAxesRadius / 40) * FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING;
+
+    this->paintAzimuthElevationPass(p);
+
+    sgdp4_prediction_update(&this->prediction, &this->timeStamp);
+    sgdp4_prediction_get_azel(&this->prediction, &azel);
+
+    if (azel.elevation > 0) {
+      p.setBrush(Qt::cyan);
+      p.drawEllipse(
+            this->azElToPoint(azel) + QPointF(mkwidth/2, mkwidth/2),
+            mkwidth,
+            mkwidth);
+
+      pen.setColor(this->colors.spectrumText);
+      p.setPen(pen);
+
+      this->paintTextAt(
+            p,
+            this->azElToPoint(azel),
+            "  " + QString(
+              this->currentOrbit.name == nullptr
+              ? "NO NAME"
+              : this->currentOrbit.name));
+    }
   }
 }
 
@@ -373,49 +386,103 @@ FrequencyCorrectionDialog::recalcALOS(void)
     if (!this->haveALOS
         || timercmp(&this->timeStamp, &this->losTime, >=)) {
       xyz_t azel;
-      sgdp4_prediction_update(&this->prediction, &this->timeStamp);
+      SUFREQ window;
+      struct timeval delta, search;
+      this->haveALOS = false;
+
+
+      // Get current prediction
+      if (!sgdp4_prediction_update(&this->prediction, &this->timeStamp))
+        return;
+
       sgdp4_prediction_get_azel(&this->prediction, &azel);
 
-      if (azel.elevation > 0) {
-        struct timeval delta, search;
+      if (this->realTime) {
+        window = FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW;
+      } else {
+        timersub(&this->endTime, &this->timeStamp, &delta);
+        window = static_cast<SUFREQ>(delta.tv_sec);
+      }
 
-        sgdp4_prediction_find_los(
+      if (azel.elevation > 0) {
+        // For visible satellites, the strategy is as follows:
+        //   1. In the current timeStamp, look for the next LOS event.
+        //   2. Compute the lapse between the current timeStamp and the LOS
+        //   3. Perform exponentially bigger backward time steps, of initial
+        //      length equal to that length
+        //   4. If the satellite is now invisible, assume that the next
+        //      AOS event is the corresponding to the current pass.
+
+        // Step 1
+        if (!sgdp4_prediction_find_los(
               &this->prediction,
               &this->timeStamp,
-              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
-              &this->losTime);
+              window,
+              &this->losTime))
+          return; // Something went wrong
 
+        // Step 2
         timersub(&this->losTime, &this->timeStamp, &delta);
+        delta.tv_sec += 1;
 
-        delta.tv_sec += 20 * 60;
+        // Step
+        do {
+          timersub(&this->losTime, &delta, &search);
+          delta.tv_sec <<= 1;
 
-        timersub(&this->timeStamp, &delta, &search);
+          if (!sgdp4_prediction_update(&this->prediction, &search))
+            break;
 
+          sgdp4_prediction_get_azel(&this->prediction, &azel);
+        } while (azel.elevation > 0
+                 && static_cast<qreal>(delta.tv_sec) < FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW);
+
+        // Check if the satellite now is belon the horizon
+        if (azel.elevation > 0)
+          return; // Nope. Something went wrong.
+
+
+        // Okay, now if we find the next AOS, it should be our rise time
         this->haveALOS =
             sgdp4_prediction_find_aos(
               &this->prediction,
               &search,
               FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
-              &this->aosTime)
-            && sgdp4_prediction_find_los(
+              &this->aosTime);
+
+        if (!this->haveALOS)
+          return;
+
+        this->haveALOS =
+            sgdp4_prediction_find_los(
               &this->prediction,
-              &this->aosTime,
+              &search,
               FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
               &this->losTime);
       } else {
+        // For non-visible satellites, the strategy is as follows:
+        //   1. In the current timeStamp, look for the next AOS event.
+        //   2. After that AOS, compute the next LOS event
+        //   3. If both events were found, assume it belongs to the next pass
         this->haveALOS =
             sgdp4_prediction_find_aos(
               &this->prediction,
               &this->timeStamp,
-              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
-              &this->aosTime)
-            && sgdp4_prediction_find_los(
+              window,
+              &this->aosTime);
+
+        if (!this->haveALOS)
+          return;
+
+        this->haveALOS = sgdp4_prediction_find_los(
               &this->prediction,
-              &this->aosTime,
+              &this->timeStamp,
               FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
               &this->losTime);
       }
     }
+
+    sgdp4_prediction_update(&this->prediction, &this->timeStamp);
   }
 }
 
@@ -472,6 +539,18 @@ FrequencyCorrectionDialog::resetTimestamp(struct timeval const &tv)
     this->haveALOS = false;
     this->updatePrediction();
   }
+}
+
+void
+FrequencyCorrectionDialog::setTimeLimits(
+    struct timeval const &start,
+    struct timeval const &end)
+{
+  this->startTime = start;
+  this->endTime   = end;
+
+  this->haveALOS = false;
+  this->updatePrediction();
 }
 
 bool

@@ -68,9 +68,9 @@ UIMediator::addInspectorTab(
   oId = this->ui->lastId++;
 
   insp->setId(oId);
-  insp->setRealTime(
-        this->appConfig->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE
-        && this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR);
+  insp->setRealTime(this->isRealTime);
+  insp->setTimeLimits(this->profileStart, this->profileEnd);
+
   insp->setTunerFrequency(this->ui->spectrum->getCenterFreq());
 
   index = this->ui->main->mainTab->addTab(

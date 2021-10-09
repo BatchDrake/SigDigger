@@ -584,7 +584,7 @@ UIMediator::refreshProfile(void)
 {
   qint64 min = 0, max = 0;
   bool isRealTime = false;
-  struct timeval tv;
+  struct timeval tv, start, end;
   this->ui->sourcePanel->setProfile(&this->appConfig->profile);
   this->ui->configDialog->setProfile(this->appConfig->profile);
 
@@ -622,33 +622,42 @@ UIMediator::refreshProfile(void)
 
   if (isRealTime) {
     gettimeofday(&tv, nullptr);
-    this->ui->timeSlider->setEnabled(false);
-    tv.tv_sec -= 1;
-    tv.tv_usec = 0;
-    this->ui->timeSlider->setStartTime(tv);
-    tv.tv_sec += 2;
-    this->ui->timeSlider->setEndTime(tv);
-    tv.tv_sec -= 2;
-    this->ui->timeSlider->setTimeStamp(tv);
+
+    start = tv;
+    start.tv_sec -= 1;
+    start.tv_usec = 0;
+
+    end = tv;
+    end.tv_sec += 1;
+    end.tv_usec = 0;
   } else {
     if (this->appConfig->profile.fileIsValid()) {
-      this->ui->timeSlider->setStartTime(
-            this->appConfig->profile.getStartTime());
-      this->ui->timeSlider->setEndTime(
-            this->appConfig->profile.getEndTime());
-      this->ui->timeSlider->setTimeStamp(
-            this->appConfig->profile.getStartTime());
+      start = this->appConfig->profile.getStartTime();
+      end   = this->appConfig->profile.getEndTime();
     } else {
-      tv = this->appConfig->profile.getStartTime();
-      this->ui->timeSlider->setStartTime(tv);
-      tv.tv_sec += 1;
-      this->ui->timeSlider->setEndTime(tv);
-      tv.tv_sec -= 1;
-      this->ui->timeSlider->setTimeStamp(tv);
+      start = this->appConfig->profile.getStartTime();
+      end   = start;
+      end.tv_sec += 1;
     }
+    tv = start;
   }
 
+  // Set cached members
+  this->profileStart = start;
+  this->profileEnd   = end;
+  this->isRealTime   = isRealTime;
+
+  // Configure timeslider
+  this->ui->timeSlider->setEnabled(!isRealTime);
+  this->ui->timeSlider->setStartTime(start);
+  this->ui->timeSlider->setEndTime(end);
+  this->ui->timeSlider->setTimeStamp(tv);
+
+  // Configure audio panel
   this->ui->audioPanel->setRealTime(isRealTime);
+  this->ui->audioPanel->setTimeLimits(start, end);
+
+  // Configure spectrum
   this->ui->spectrum->setFrequencyLimits(min, max);
   this->ui->spectrum->setFreqs(
         static_cast<qint64>(this->appConfig->profile.getFreq()),

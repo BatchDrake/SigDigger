@@ -320,6 +320,14 @@ AudioPanel::setTimeStamp(struct timeval const &tv)
 }
 
 void
+AudioPanel::setTimeLimits(
+    struct timeval const &start,
+    struct timeval const &end)
+{
+  this->fcDialog->setTimeLimits(start, end);
+}
+
+void
 AudioPanel::resetTimeStamp(struct timeval const &tv)
 {
   this->timeStamp = tv;

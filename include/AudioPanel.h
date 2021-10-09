@@ -97,6 +97,9 @@ namespace SigDigger {
     void setDemod(enum AudioDemod);
     void setSampleRate(unsigned int);
     void setTimeStamp(struct timeval const &);
+    void setTimeLimits(
+        struct timeval const &start,
+        struct timeval const &end);
     void resetTimeStamp(struct timeval const &);
     void setCutOff(SUFLOAT);
     void setVolume(SUFLOAT);

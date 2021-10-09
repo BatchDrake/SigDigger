@@ -166,6 +166,14 @@ Inspector::setTimeStamp(struct timeval const &tv)
   this->ui->setTimeStamp(tv);
 }
 
+void
+Inspector::setTimeLimits(
+    struct timeval const &start,
+    struct timeval const &end)
+{
+  this->ui->setTimeLimits(start, end);
+}
+
 Inspector::~Inspector()
 {
 

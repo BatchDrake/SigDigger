@@ -26,7 +26,7 @@
 #include <QTimer>
 
 // 10 days
-#define FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW 864000.0
+#define FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW (3 * 864000.0)
 
 namespace Ui {
   class FrequencyCorrectionDialog;
@@ -56,6 +56,8 @@ namespace SigDigger {
     xyz_t  rxSite;
     struct timeval losTime;
     struct timeval aosTime;
+    struct timeval startTime;
+    struct timeval endTime;
     struct timeval timeStamp;
 
     QString desiredSelected;
@@ -66,6 +68,7 @@ namespace SigDigger {
 
     QPointF azElToPoint(xyz_t const &p);
     void paintAzimuthElevationMap(QPixmap &pixmap);
+    void paintAzimuthElevationPass(QPainter &p);
     void paintAzimuthElevationSatPath(QPixmap &pixmap);
     void repaintSatellitePlot(void);
     void parseCurrentTLE(void);
@@ -89,6 +92,9 @@ namespace SigDigger {
     void setFrequency(SUFREQ freq);
     void setTimestamp(struct timeval const &timestamp);
     void resetTimestamp(struct timeval const &timestamp);
+    void setTimeLimits(
+        struct timeval const &start,
+        struct timeval const &end);
     void setQth(xyz_t const &qth);
     void setRealTime(bool);
     void setCorrectionEnabled(bool);
