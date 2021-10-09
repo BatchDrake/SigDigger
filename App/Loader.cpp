@@ -61,6 +61,8 @@ InitThread::run()
     sing->init_locations();
     emit change("Loading TLE sources");
     sing->init_tle_sources();
+    emit change("Loading satellites from TLE");
+    sing->init_tle();
     emit change("Loading auto gains");
     sing->init_autogains();
     emit change("Loading UI config");

@@ -154,6 +154,27 @@ FrequencyCorrectionDialog::paintTextAt(
 }
 
 void
+FrequencyCorrectionDialog::findNewSatellites(void)
+{
+  auto sus = Suscan::Singleton::get_instance();
+
+  if (this->ui->satCombo->count() != sus->getSatelliteMap().count()) {
+    this->ui->satCombo->clear();
+    for (auto p : sus->getSatelliteMap())
+      this->ui->satCombo->addItem(p.nameToQString());
+
+    if (this->desiredSelected != "") {
+      this->setCurrentSatellite(this->desiredSelected);
+    } else {
+      if (this->ui->satCombo->currentIndex() > 0)
+        this->setCurrentSatellite(this->ui->satCombo->currentText());
+    }
+  }
+
+  this->ui->satRadio->setEnabled(this->ui->satCombo->count() > 0);
+}
+
+void
 FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
 {
   QPainter p(&pixmap);
@@ -311,6 +332,13 @@ FrequencyCorrectionDialog::refreshUiState(void)
   this->ui->detailsStackedWidget->setCurrentIndex(
         this->ui->correctionTypeCombo->currentIndex());
 
+  if (this->ui->satCombo->count() == 0) {
+    this->ui->tleRadio->setChecked(true);
+    this->ui->satRadio->setEnabled(false);
+  } else {
+    this->ui->satRadio->setEnabled(false);
+  }
+
   this->ui->satCombo->setEnabled(this->ui->satRadio->isChecked());
   this->ui->tleEdit->setEnabled(this->ui->tleRadio->isChecked());
 }
@@ -318,9 +346,21 @@ FrequencyCorrectionDialog::refreshUiState(void)
 void
 FrequencyCorrectionDialog::refreshOrbit(void)
 {
+  auto sus = Suscan::Singleton::get_instance();
+
   if (this->ui->correctionTypeCombo->currentIndex() == 1) {
-    if (!this->ui->satRadio->isChecked())
+    // TLE-based correction
+    if (this->ui->satRadio->isChecked()) {
+      // Take TLE from satellite
+      if (sus->getSatelliteMap().find(this->desiredSelected) !=
+          sus->getLastSatellite()) {
+        this->setCurrentOrbit(
+            &sus->getSatelliteMap()[this->desiredSelected].getCOrbit());
+      }
+    } else {
+      // Take TLE from textbox
       this->parseCurrentTLE();
+    }
   }
 }
 
@@ -380,7 +420,7 @@ FrequencyCorrectionDialog::recalcALOS(void)
 }
 
 void
-FrequencyCorrectionDialog::setCurrentOrbit(orbit_t *orbit)
+FrequencyCorrectionDialog::setCurrentOrbit(const orbit_t *orbit)
 {
   if (this->haveOrbit) {
     if (&this->currentOrbit != orbit) {
@@ -579,8 +619,16 @@ FrequencyCorrectionDialog::setCurrentSatellite(QString sat)
 {
   int ndx;
 
-  if ((ndx = this->ui->satCombo->findText(sat)) > 0)
+  this->desiredSelected = sat;
+
+  if ((ndx = this->ui->satCombo->findText(sat)) > 0) {
+    bool blocking = this->ui->satCombo->signalsBlocked();
+    this->ui->satCombo->blockSignals(true);
     this->ui->satCombo->setCurrentIndex(ndx);
+    this->ui->satCombo->blockSignals(blocking);
+  }
+
+  this->refreshOrbit();
 }
 
 void
@@ -647,6 +695,7 @@ FrequencyCorrectionDialog::FrequencyCorrectionDialog(
   this->timer.start(250);
   this->updatePrediction();
   this->setFrequency(centerFreq);
+  this->findNewSatellites();
   this->refreshUiState();
 }
 
@@ -700,7 +749,8 @@ FrequencyCorrectionDialog::onSwitchCorrectionType(void)
 void
 FrequencyCorrectionDialog::onSwitchSatellite(void)
 {
-  this->refreshOrbit();
+  if (this->ui->satCombo->currentIndex() > 0)
+    this->setCurrentSatellite(this->ui->satCombo->currentText());
 }
 
 void
@@ -719,6 +769,8 @@ FrequencyCorrectionDialog::onTLEEdit(void)
 void
 FrequencyCorrectionDialog::onTick(void)
 {
+  this->findNewSatellites();
+
   if (this->realTime) {
     struct timeval tv;
     gettimeofday(&tv, nullptr);

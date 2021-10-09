@@ -20,6 +20,7 @@
 #include <iostream>
 
 #include <QMetaType>
+#include <Suscan/Library.h>
 #include <Suscan/Analyzer.h>
 
 Q_DECLARE_METATYPE(Suscan::Message);

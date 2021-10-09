@@ -41,6 +41,8 @@
 #include <analyzer/analyzer.h>
 
 namespace Suscan {
+  struct Orbit;
+
   struct AnalyzerSourceInfo {
     bool loan = false;
     struct suscan_analyzer_source_info local_info;
@@ -183,47 +185,6 @@ namespace Suscan {
       for (i = 0; i < this->c_info->antenna_count; ++i)
         vec.push_back(this->c_info->antenna_list[i]);
     }
-  };
-
-  struct Orbit {
-    bool loan = false;
-    orbit_t local_info;
-    const orbit_t *c_info = nullptr;
-
-    Orbit()
-    {
-      memset(&local_info, 0, sizeof(orbit_t));
-      this->c_info = &this->local_info;
-    }
-
-    Orbit(const orbit_t *ptr, bool loan = false)
-    {
-      this->loan = loan;
-
-      if (loan) {
-        this->c_info = ptr;
-      } else {
-        this->local_info = *ptr;
-        this->local_info.name = strdup(ptr->name);
-        this->c_info = &this->local_info;
-      }
-    }
-
-    Orbit(Orbit const &orbit) : Orbit(orbit.c_info) { }
-
-    ~Orbit()
-    {
-      if (!this->loan)
-        free(local_info.name);
-    }
-
-    orbit_t const &
-    getCOrbit(void) const
-    {
-      return *this->c_info;
-    }
-
-    void debug(void) const;
   };
 
   class Analyzer: public QObject {

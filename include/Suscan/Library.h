@@ -101,6 +101,104 @@ namespace Suscan {
     Suscan::Object &&serialize(void) override;
   };
 
+  struct Orbit {
+    bool loan = false;
+    orbit_t local_info = orbit_INITIALIZER;
+    const orbit_t *c_info = nullptr;
+
+    Orbit()
+    {
+      memset(&local_info, 0, sizeof(orbit_t));
+      this->c_info = &this->local_info;
+    }
+
+    Orbit(const orbit_t *ptr, bool loan = false)
+    {
+      this->loan = loan;
+
+      if (loan) {
+        this->c_info = ptr;
+      } else {
+        this->local_info = *ptr;
+        if (ptr->name)
+          this->local_info.name = strdup(ptr->name);
+        this->c_info = &this->local_info;
+      }
+    }
+
+    constexpr Suscan::Orbit&
+    operator=(const Suscan::Orbit &lvalue)
+    {
+      if (!this->loan)
+        orbit_finalize(&this->local_info);
+
+      this->local_info = *lvalue.c_info;
+      if (lvalue.c_info->name)
+        this->local_info.name = strdup(lvalue.c_info->name);
+      this->c_info = &this->local_info;
+
+      return *this;
+    }
+
+    bool
+    loadFromTLE(std::string const &data)
+    {
+      orbit_t newOrbit = orbit_INITIALIZER;
+
+      if (this->loan)
+        return false;
+
+      if (orbit_init_from_data(&newOrbit, data.c_str(), data.size()) > 0) {
+        orbit_finalize(&this->local_info);
+        this->local_info = newOrbit;
+
+        return true;
+      }
+
+      return false;
+    }
+
+    bool
+    loadFromFile(const char *path)
+    {
+      orbit_t newOrbit = orbit_INITIALIZER;
+
+      if (this->loan)
+        return false;
+
+      if (orbit_init_from_file(&newOrbit, path) > 0) {
+        orbit_finalize(&this->local_info);
+        this->local_info = newOrbit;
+
+        return true;
+      }
+
+      return false;
+    }
+
+    Orbit(Orbit const &orbit) : Orbit(orbit.c_info) { }
+
+    ~Orbit()
+    {
+      if (!this->loan)
+        orbit_finalize(&this->local_info);
+    }
+
+    orbit_t const &
+    getCOrbit(void) const
+    {
+      return *this->c_info;
+    }
+
+    QString
+    nameToQString(void) const
+    {
+      return this->c_info->name;
+    }
+
+    void debug(void) const;
+  };
+
   class Singleton {
     static Singleton *instance;
     static Logger *logger;
@@ -115,6 +213,7 @@ namespace Suscan {
     std::vector<Object> FATs;
 
     Location qth;
+    QMap<QString, Orbit> satellites;
     QMap<QString, Location> locations;
     QMap<std::string, TLESource> tleSources;
     QMap<qint64, Bookmark> bookmarks;
@@ -143,6 +242,8 @@ namespace Suscan {
     void initLocationsFromContext(ConfigContext &ctx, bool user);
     void initTLESourcesFromContext(ConfigContext &ctx, bool user);
 
+    static QString normalizeTLEName(QString const &);
+
   public:
     void init_codecs(void);
     void init_sources(void);
@@ -157,6 +258,7 @@ namespace Suscan {
     void init_locations(void);
     void init_bookmarks(void);
     void init_tle_sources(void);
+    void init_tle(void);
     void detect_devices(void);
 
     void sync(void);
@@ -189,6 +291,8 @@ namespace Suscan {
     void refreshDevices(void);
     void refreshNetworkProfiles(void);
 
+    bool registerTLE(std::string const &);
+
     bool haveQth() const;
     Location getQth(void) const;
     void setQth(Location const &);
@@ -219,6 +323,10 @@ namespace Suscan {
     QMap<QString, Location> const &getLocationMap(void) const;
     QMap<QString, Location>::const_iterator getFirstLocation(void) const;
     QMap<QString, Location>::const_iterator getLastLocation(void) const;
+
+    QMap<QString, Orbit> const &getSatelliteMap(void) const;
+    QMap<QString, Orbit>::const_iterator getFirstSatellite(void) const;
+    QMap<QString, Orbit>::const_iterator getLastSatellite(void) const;
 
     QMap<std::string, TLESource> const &getTLESourceMap(void) const;
     QMap<std::string, TLESource>::const_iterator getFirstTLESource(void) const;

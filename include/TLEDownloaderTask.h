@@ -22,6 +22,8 @@
 #include <Suscan/CancellableTask.h>
 #include <curl/curl.h>
 
+#define TLE_DOWNLOADER_MAX_MEMORY_SIZE (1 << 24) // 16 MiB
+
 namespace SigDigger {
   class TLEDownloaderTask : public Suscan::CancellableTask {
     Q_OBJECT
@@ -30,6 +32,13 @@ namespace SigDigger {
     CURL  *curl = nullptr;
     FILE  *fp = nullptr;
     bool   ok = false;
+    std::string data;
+
+    static size_t curl_save_data(
+        void *ptr,
+        size_t,
+        size_t nmemb,
+        TLEDownloaderTask *self);
 
     static int curl_progress(
         void *self,
@@ -38,6 +47,7 @@ namespace SigDigger {
         double ultotal,
         double ulnow);
 
+    void extractTLEs(void);
   public:
     TLEDownloaderTask(
         QString url,

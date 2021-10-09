@@ -454,6 +454,28 @@ Singleton::init_tle_sources(void)
   initTLESourcesFromContext(userCtx, true);
 }
 
+
+void
+Singleton::init_tle(void)
+{
+  const char *userTLEDir;
+
+  if ((userTLEDir = suscan_confdb_get_local_tle_path()) != nullptr) {
+    QDirIterator it(userTLEDir, QDirIterator::NoIteratorFlags);
+
+    while (it.hasNext()) {
+      QFile f(it.next());
+      QFileInfo fi(f);
+
+      if (fi.completeSuffix().toLower() == "tle") {
+        Orbit orbit;
+        if (orbit.loadFromFile(f.fileName().toStdString().c_str()))
+          this->satellites[orbit.nameToQString()] = orbit;
+      }
+    }
+  }
+}
+
 void
 Singleton::refreshDevices(void)
 {
@@ -776,6 +798,52 @@ Singleton::registerLocation(Location const& loc)
   return true;
 }
 
+QString
+Singleton::normalizeTLEName(QString const &name)
+{
+  QString normalized = name;
+
+  return name.trimmed().replace(QRegExp("[^-a-zA-Z0-9()]"), "_");
+}
+
+bool
+Singleton::registerTLE(std::string const &tleData)
+{
+  Orbit newOrbit;
+  const char *userTLEDir;
+  QString fullTLEPath;
+
+  if (newOrbit.loadFromTLE(tleData)) {
+    // Valid TLE file, overwrite current TLE
+    if ((userTLEDir = suscan_confdb_get_local_tle_path()) == nullptr)
+      return false;
+
+    fullTLEPath =
+        userTLEDir + QString("/")
+        + normalizeTLEName(newOrbit.nameToQString()) + ".tle";
+
+    // Attempt to save it. If we could
+    QFile qFile(fullTLEPath);
+    if (qFile.open(QIODevice::WriteOnly)) {
+      bool ok;
+      QTextStream out(&qFile);
+      out << QString::fromStdString(tleData);
+      out.flush();
+
+      ok = !qFile.error();
+
+      qFile.close();
+
+      if (ok) {
+        this->satellites[newOrbit.nameToQString()] = newOrbit;
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 bool
 Singleton::registerTLESource(TLESource const& tleSrc)
 {
@@ -988,6 +1056,25 @@ QMap<QString, Location>::const_iterator
 Singleton::getLastLocation(void) const
 {
   return this->locations.cend();
+}
+
+QMap<QString, Orbit> const &
+Singleton::getSatelliteMap(void) const
+{
+  return this->satellites;
+}
+
+
+QMap<QString, Orbit>::const_iterator
+Singleton::getFirstSatellite(void) const
+{
+  return this->satellites.cbegin();
+}
+
+QMap<QString, Orbit>::const_iterator
+Singleton::getLastSatellite(void) const
+{
+return this->satellites.cend();
 }
 
 QMap<std::string, TLESource> const &

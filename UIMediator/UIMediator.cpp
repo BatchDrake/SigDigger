@@ -722,6 +722,7 @@ UIMediator::applyConfig(void)
   // not owned by them. We need to set them manually.
   this->ui->configDialog->setColors(this->appConfig->colors);
   this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
+  this->ui->configDialog->setTleSourceConfig(this->appConfig->tleSourceConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
   this->ui->audioPanel->setColorConfig(this->appConfig->colors);

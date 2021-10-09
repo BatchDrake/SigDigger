@@ -40,6 +40,7 @@ namespace SigDigger {
     TLESourceConfig tleSourceConfig;
     bool modified = false;
     bool downloading = false;
+    bool configApplied = false;
 
     // Background tasks
     Suscan::CancellableController *taskController;

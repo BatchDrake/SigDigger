@@ -58,6 +58,7 @@ namespace SigDigger {
     struct timeval aosTime;
     struct timeval timeStamp;
 
+    QString desiredSelected;
     QPixmap azElAxesPixmap;
     qreal   azElAxesRadius;
     qreal   azElCenterX;
@@ -73,8 +74,9 @@ namespace SigDigger {
     void connectAll(void);
     void refreshUiState(void);
     void refreshOrbit(void);
+    void findNewSatellites(void);
 
-    void setCurrentOrbit(orbit_t *);
+    void setCurrentOrbit(const orbit_t *);
     void paintTextAt(
         QPainter &p,
         QPointF where,

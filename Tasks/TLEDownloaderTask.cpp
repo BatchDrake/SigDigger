@@ -18,8 +18,29 @@
 //
 
 #include <TLEDownloaderTask.h>
+#include <Suscan/Library.h>
 
 using namespace SigDigger;
+
+size_t
+TLEDownloaderTask::curl_save_data(
+    void *ptr,
+    size_t size,
+    size_t nmemb,
+    TLEDownloaderTask *self)
+{
+  size_t chunksize = size * nmemb;
+
+  if (self->data.size() + chunksize > TLE_DOWNLOADER_MAX_MEMORY_SIZE)
+    chunksize = TLE_DOWNLOADER_MAX_MEMORY_SIZE - self->data.size();
+
+  if (chunksize > 0) {
+    const char *asStr = reinterpret_cast<const char *>(ptr);
+    self->data.append(asStr, chunksize);
+  }
+
+  return nmemb;
+}
 
 int
 TLEDownloaderTask::curl_progress(
@@ -37,7 +58,6 @@ TLEDownloaderTask::curl_progress(
   return 0;
 }
 
-
 TLEDownloaderTask::TLEDownloaderTask(
     QString url,
     QObject *parent) : Suscan::CancellableTask(parent)
@@ -54,6 +74,8 @@ TLEDownloaderTask::TLEDownloaderTask(
     curl_easy_setopt(this->curl, CURLOPT_NOPROGRESS, 0);
     curl_easy_setopt(this->curl, CURLOPT_PROGRESSFUNCTION, TLEDownloaderTask::curl_progress);
     curl_easy_setopt(this->curl, CURLOPT_PROGRESSDATA, this);
+    curl_easy_setopt(this->curl, CURLOPT_WRITEFUNCTION, TLEDownloaderTask::curl_save_data);
+    curl_easy_setopt(this->curl, CURLOPT_WRITEDATA, this);
   }
 
   curl_multi_add_handle(this->multi, this->curl);
@@ -62,6 +84,25 @@ TLEDownloaderTask::TLEDownloaderTask(
   this->setStatus("Performing request...");
 
   this->ok = true;
+}
+
+void
+TLEDownloaderTask::extractTLEs(void)
+{
+  SUSDIFF got;
+  const char *data = this->data.data();
+  size_t size = this->data.size();
+  orbit_t orbit = orbit_INITIALIZER;
+  auto sus = Suscan::Singleton::get_instance();
+
+  while ((got = orbit_init_from_data(&orbit, data, size)) > 0) {
+    std::string chunk;
+    orbit_finalize(&orbit);
+    chunk.append(data, static_cast<size_t>(got));
+    (void) sus->registerTLE(chunk);
+    data += got;
+    size -= static_cast<size_t>(got);
+  }
 }
 
 bool
@@ -95,7 +136,7 @@ TLEDownloaderTask::work(void)
     if (!downloadFinished) {
       emit error("Download aborted");
     } else {
-      // Process data. Don't care to block
+      this->extractTLEs();
       emit done();
     }
   }

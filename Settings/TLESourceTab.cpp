@@ -51,6 +51,12 @@ TLESourceTab::setTleSourceConfig(TLESourceConfig const &config)
   this->tleSourceConfig = config;
   this->refreshUi();
   this->modified = false;
+
+  if (!this->configApplied) {
+    this->configApplied = true;
+    if (this->tleSourceConfig.autoDownloadOnStartup)
+      this->triggerDownloadTLEs();
+  }
 }
 
 TLESourceConfig
