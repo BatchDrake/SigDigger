@@ -197,6 +197,7 @@ TLESourceTab::downloadNext(void)
     ++this->currSrc;
 
   if (this->currSrc != this->endSrc) {
+    ++this->srcNum;
     this->pushDownloadTask();
     this->refreshDownloadStatus();
     this->ui->downloadProgress->setFormat("Connecting to next server");
@@ -209,12 +210,12 @@ TLESourceTab::downloadNext(void)
       this->ui->downloadStatusLabel->setText(
             QString::number(this->srcNum - this->srcFailed) +
             " of " + QString::number(this->srcCount) +
-            " sources downloaded, " + QString::number(this->srcFailed) + " failed");
+            " sources updated, " + QString::number(this->srcFailed) + " failed");
     } else {
       this->ui->downloadStatusLabel->setText(
             QString::number(this->srcNum) +
             " of " + QString::number(this->srcCount) +
-            " sources downloaded");
+            " sources updated");
     }
 
     this->ui->downloadProgress->setFormat("%p%");
@@ -252,13 +253,13 @@ TLESourceTab::refreshDownloadStatus(void)
     this->ui->downloadStatusLabel->setText(
           "Downloading " + QString::number(this->srcNum) +
           " of " + QString::number(this->srcCount) +
-          "(" + QString::fromStdString(this->currSrc->name) + "), " +
+          " (" + QString::fromStdString(this->currSrc->name) + "), " +
           QString::number(this->srcFailed) + " failed");
   } else {
     this->ui->downloadStatusLabel->setText(
           "Downloading " + QString::number(this->srcNum) +
           " of " + QString::number(this->srcCount) +
-          "(" + QString::fromStdString(this->currSrc->name) + ")");
+          " (" + QString::fromStdString(this->currSrc->name) + ")");
   }
 }
 TLESourceTab::TLESourceTab(QWidget *parent) :
