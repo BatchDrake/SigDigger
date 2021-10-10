@@ -25,7 +25,7 @@
 #include <ColorConfig.h>
 #include <Suscan/Analyzer.h>
 #include <Suscan/Library.h>
-#include <suscan/sgdp4/sgdp4-types.h>
+#include <sgdp4/sgdp4-types.h>
 
 namespace Ui {
   class AudioPanel;
