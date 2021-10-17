@@ -177,7 +177,10 @@ DataSaverUI::onChangeSavePath(void)
   if (dialog.exec()) {
     QString path = dialog.selectedFiles().first();
     this->ui->savePath->setText(path);
-    this->config->path = path.toStdString();
+
+    if (this->config != nullptr)
+      this->config->path = path.toStdString();
+
     this->refreshDiskUsage();
     emit recordSavePathChanged(path);
   }
