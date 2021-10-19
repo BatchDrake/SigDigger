@@ -99,8 +99,10 @@ UIMediator::detachAllInspectors()
   for (auto p = this->ui->inspectorTable.begin();
        p != this->ui->inspectorTable.end();
        ++p) {
-    p->second->setAnalyzer(nullptr);
-    p->second = nullptr;
+    if (p->second) {
+      p->second->setAnalyzer(nullptr);
+      p->second = nullptr;
+    }
   }
 }
 
