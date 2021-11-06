@@ -138,7 +138,7 @@ namespace SigDigger {
     void refreshVScrollBar(void) const;
     void refreshHScrollBar(void) const;
     void redrawMeasures(void);
-
+    void addForwarderWidget(QWidget *widget);
     int fd = -1;
 
     float zeroPointToDb(void) const

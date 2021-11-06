@@ -57,7 +57,7 @@ QToolBox::tab:hover {
        <number>0</number>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <property name="tabSpacing">
        <number>0</number>
@@ -67,7 +67,7 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>214</width>
+         <width>256</width>
          <height>858</height>
         </rect>
        </property>
@@ -388,7 +388,7 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>214</width>
+         <width>256</width>
          <height>858</height>
         </rect>
        </property>
@@ -427,7 +427,7 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>214</width>
+             <width>256</width>
              <height>858</height>
             </rect>
            </property>
@@ -461,7 +461,7 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>214</width>
+         <width>256</width>
          <height>858</height>
         </rect>
        </property>
@@ -524,7 +524,7 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>214</width>
+             <width>256</width>
              <height>858</height>
             </rect>
            </property>
@@ -583,7 +583,7 @@ QToolBox::tab:hover {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>214</width>
+         <width>256</width>
          <height>858</height>
         </rect>
        </property>
@@ -612,6 +612,113 @@ QToolBox::tab:hover {
         <property name="spacing">
          <number>0</number>
         </property>
+        <item row="0" column="0" colspan="2">
+         <widget class="QFrame" name="frame_4">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <property name="leftMargin">
+            <number>6</number>
+           </property>
+           <property name="topMargin">
+            <number>6</number>
+           </property>
+           <property name="rightMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
+            <number>6</number>
+           </property>
+           <property name="spacing">
+            <number>3</number>
+           </property>
+           <item row="3" column="1">
+            <widget class="QComboBox" name="dataVarCombo">
+             <item>
+              <property name="text">
+               <string>Decision</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Baseband I/Q data</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QLabel" name="label_16">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Data properties</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_18">
+             <property name="text">
+              <string>Type</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_14">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Variable</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="dataTypeCombo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <item>
+              <property name="text">
+               <string>32 bit float (LE)</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>

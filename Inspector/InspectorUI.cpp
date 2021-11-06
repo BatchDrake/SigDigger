@@ -686,24 +686,36 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
     this->wfTab->feed(data, size);
 
   if (this->recording || this->forwarding) {
-    if (this->decider.getDecisionMode() == Decider::MODULUS) {
-      if (this->recording)
-        this->dataSaver->write(data, size);
+    const SUCOMPLEX *chunk;
 
-      if (this->forwarding)
-        this->socketForwarder->write(data, size);
-    } else {
+    if (this->ui->dataVarCombo->currentIndex() == 0) {
+      // Decision space
       if (this->buffer.size() < size)
         this->buffer.resize(size);
 
-      for (unsigned i = 0; i < size; ++i)
-        this->buffer[i] = SU_C_ARG(I * data[i]) / PI;
+      switch (this->decider.getDecisionMode()) {
+        case Decider::MODULUS:
+          for (unsigned i = 0; i < size; ++i)
+            this->buffer[i] = SU_C_ABS(data[i]);
+          break;
 
-      if (this->recording)
-        this->dataSaver->write(this->buffer.data(), size);
-      if (this->forwarding)
-        this->socketForwarder->write(this->buffer.data(), size);
+        case Decider::ARGUMENT:
+          for (unsigned i = 0; i < size; ++i)
+            this->buffer[i] = SU_C_ARG(I * data[i]) / PI;
+          break;
+      }
+
+      chunk = this->buffer.data();
+    } else {
+      // Raw I/Q data
+      chunk = data;
     }
+
+    if (this->recording)
+      this->dataSaver->write(chunk, size);
+
+    if (this->forwarding)
+      this->socketForwarder->write(chunk, size);
   }
 }
 
@@ -795,6 +807,14 @@ InspectorUI::populateUnits(void)
 }
 
 void
+InspectorUI::addForwarderWidget(QWidget *widget)
+{
+  int row = this->ui->forwarderGrid->rowCount();
+
+  this->ui->forwarderGrid->addWidget(widget, row, 0, 1, 2, Qt::AlignTop);
+}
+
+void
 InspectorUI::populate(void)
 {
   this->ui->controlsGrid->setAlignment(Qt::AlignTop);
@@ -819,7 +839,7 @@ InspectorUI::populate(void)
 
   this->saverUI = new DataSaverUI(this->owner);
 
-  this->ui->forwarderGrid->addWidget(this->saverUI, 0, 0, Qt::AlignTop);
+  this->addForwarderWidget(this->saverUI);
 
   connect(
         this->saverUI,
@@ -829,7 +849,7 @@ InspectorUI::populate(void)
 
   this->netForwarderUI = new NetForwarderUI(this->owner);
 
-  this->ui->forwarderGrid->addWidget(this->netForwarderUI, 1, 0, Qt::AlignTop);
+  this->addForwarderWidget(this->netForwarderUI);
 
   connect(
         this->netForwarderUI,
@@ -1098,6 +1118,8 @@ InspectorUI::setOrbitReport(Suscan::OrbitReport const &report)
 
   this->ui->visibleLabel->setText(
         report.getAzel().elevation < 0 ? "No" : "Yes");
+
+  this->fcDialog->setTimestamp(report.getRxTime());
 }
 
 void

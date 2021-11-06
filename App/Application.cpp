@@ -98,7 +98,7 @@ Application::run(Suscan::Object const &config)
 
   this->uiTimer.start(250);
 
-  this->mediator->notifyStartupErrors();
+  //this->mediator->notifyStartupErrors();
 }
 
 FileDataSaver *
