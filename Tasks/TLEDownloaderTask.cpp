@@ -22,6 +22,10 @@
 
 using namespace SigDigger;
 
+#if LIBCURL_VERSION_MAJOR <= 7 && LIBCURL_VERSION_MINOR < 66
+#  define curl_multi_poll curl_multi_wait
+#endif
+
 size_t
 TLEDownloaderTask::curl_save_data(
     void *ptr,
