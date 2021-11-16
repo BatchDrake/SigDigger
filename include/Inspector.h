@@ -83,6 +83,11 @@ namespace SigDigger {
       void onApplyEstimation(QString, float);
       void onDopplerCorrection(Suscan::Orbit);
       void onDisableCorrection(void);
+      void onOpenInspector(
+          QString inspClass,
+          qint64 freq,
+          qreal bw,
+          bool precise);
   };
 }
 

@@ -252,6 +252,12 @@ namespace Suscan {
     // Analyzer asynchronous requests
     void open(std::string const &inspClass, Channel const &ch, RequestId id);
     void openPrecise(std::string const &inspClass, Channel const &ch, RequestId id);
+    void openEx(
+        std::string const &inspClass,
+        Channel const &ch,
+        bool precise,
+        Handle parent,
+        RequestId id);
 
     void setInspectorConfig(Handle handle, Config const &cfg, RequestId id);
     void setInspectorId(Handle handle, InspectorId id, RequestId req_id);

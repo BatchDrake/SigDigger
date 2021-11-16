@@ -87,6 +87,12 @@ Inspector::Inspector(
         this,
         SLOT(onDisableCorrection(void)));
 
+  connect(
+        this->ui.get(),
+        SIGNAL(openInspector(QString, qint64, qreal, bool)),
+        this,
+        SLOT(onOpenInspector(QString, qint64, qreal, bool)));
+
   for (auto p = msg.getSpectrumSources().begin();
        p != msg.getSpectrumSources().end();
        ++p)
@@ -259,3 +265,26 @@ Inspector::onDisableCorrection(void)
   if (this->analyzer != nullptr)
     this->analyzer->disableDopplerCorrection(this->handle, 0);
 }
+void
+Inspector::onOpenInspector(
+    QString inspClass,
+    qint64 freq,
+    qreal bw,
+    bool precise)
+{
+  Suscan::Channel ch;
+
+  ch.bw    = bw;
+  ch.ft    = 0;
+  ch.fc    = static_cast<SUFREQ>(freq);
+  ch.fLow  = - .5 * ch.bw;
+  ch.fHigh = + .5 * ch.bw;
+
+  this->analyzer->openEx(
+        inspClass.toStdString(),
+        ch,
+        precise,
+        this->handle,
+        0);
+}
+

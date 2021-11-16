@@ -219,6 +219,11 @@ namespace SigDigger {
       void onNewOffset(void);
       void onNewBandwidth(int, int);
 
+      // Subcarrier slots
+      void onScFrequencyChanged(void);
+      void onScBandwidthChanged(void);
+      void onScOpenInspector(void);
+
       // DataSaver slots
       void onSaveError(void);
       void onSaveSwamped(void);
@@ -241,6 +246,11 @@ namespace SigDigger {
       void applyEstimation(QString, float);
       void disableCorrection(void);
       void setCorrection(Suscan::Orbit);
+      void openInspector(
+          QString inspClass,
+          qint64 freq,
+          qreal bw,
+          bool precise);
   };
 }
 

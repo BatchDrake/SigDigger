@@ -191,6 +191,10 @@ InspectorUI::setBasebandRate(unsigned int rate)
   this->basebandSampleRate = rate;
   this->ui->loLcd->setMin(-static_cast<int>(rate) / 2);
   this->ui->loLcd->setMax(static_cast<int>(rate) / 2);
+
+  this->ui->scFreqSpin->setMinimum(-static_cast<qreal>(rate) / 2);
+  this->ui->scFreqSpin->setMaximum(static_cast<qreal>(rate) / 2);
+  this->ui->scBandwidth->setMaximum(static_cast<qreal>(rate));
 }
 
 void
@@ -432,6 +436,24 @@ InspectorUI::connectAll()
         SIGNAL(accepted(void)),
         this,
         SLOT(onDopplerAccepted(void)));
+
+  connect(
+        this->ui->scFreqSpin,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onScFrequencyChanged(void)));
+
+  connect(
+        this->ui->scBandwidth,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onScBandwidthChanged(void)));
+
+  connect(
+        this->ui->scOpenButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onScOpenInspector(void)));
 }
 
 void
@@ -869,12 +891,19 @@ InspectorUI::redrawMeasures(void)
           6,
           "Hz",
           true));
+  this->ui->scFreqSpin->setValue(
+        static_cast<qreal>(
+          this->ui->wfSpectrum->getFilterOffset()));
 
   this->ui->bwLabel->setText(
         SuWidgetsHelpers::formatQuantity(
           static_cast<qreal>(this->ui->wfSpectrum->getFilterBw()),
           6,
           "Hz"));
+  this->ui->scBandwidth->setValue(
+        static_cast<qreal>(
+          this->ui->wfSpectrum->getFilterBw()));
+
 }
 
 void
@@ -1449,4 +1478,40 @@ InspectorUI::onDopplerAccepted(void)
   }
 }
 
+void
+InspectorUI::onScFrequencyChanged(void)
+{
+  this->ui->wfSpectrum->setFilterOffset(
+        static_cast<qint64>(
+          this->ui->scFreqSpin->value()));
 
+}
+
+void
+InspectorUI::onScBandwidthChanged(void)
+{
+  this->ui->wfSpectrum->setHiLowCutFrequencies(
+        -static_cast<qint64>(
+          this->ui->scBandwidth->value() / 2),
+        +static_cast<qint64>(
+          this->ui->scBandwidth->value() / 2));
+}
+
+void
+InspectorUI::onScOpenInspector(void)
+{
+  QString inspClass;
+
+  if (this->ui->scASKRadio->isChecked())
+    inspClass = "ask";
+  else  if (this->ui->scFSKRadio->isChecked())
+    inspClass = "fsk";
+  else
+    inspClass = "psk";
+
+  emit openInspector(
+        inspClass,
+        static_cast<qint64>(this->ui->scFreqSpin->value()),
+        this->ui->scBandwidth->value(),
+        this->ui->scPreciseCheck->isChecked());
+}

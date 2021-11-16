@@ -372,6 +372,34 @@ Analyzer::openPrecise(
           inspClass.c_str(),
           &c_ch,
           SU_TRUE,
+          -1,
+          id));
+}
+
+void
+Analyzer::openEx(
+    std::string const &inspClass,
+    Channel const &ch,
+    bool precise,
+    Handle parent,
+    RequestId id)
+{
+  struct sigutils_channel c_ch =
+      sigutils_channel_INITIALIZER;
+
+  c_ch.fc   = static_cast<float>(ch.fc);
+  c_ch.ft   = static_cast<float>(ch.ft);
+  c_ch.f_lo = static_cast<float>(ch.fLow);
+  c_ch.f_hi = static_cast<float>(ch.fHigh);
+  c_ch.bw   = static_cast<float>(ch.fHigh - ch.fLow);
+
+  SU_ATTEMPT(
+        suscan_analyzer_open_ex_async(
+          this->instance,
+          inspClass.c_str(),
+          &c_ch,
+          precise ? SU_TRUE : SU_FALSE,
+          parent,
           id));
 }
 
