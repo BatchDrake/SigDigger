@@ -37,6 +37,7 @@
 #include <SuWidgetsHelpers.h>
 #include <SigDiggerHelpers.h>
 #include <FrequencyCorrectionDialog.h>
+#include <QInputDialog>
 #include <QMessageBox>
 #include <suscan.h>
 #include <iomanip>
@@ -46,10 +47,12 @@ using namespace SigDigger;
 
 InspectorUI::InspectorUI(
     QWidget *owner,
+    QString name,
     Suscan::Config *config)
 {
   struct timeval tv;
 
+  this->name = name;
   this->ui = new Ui::Inspector();
   this->config = config;
   this->owner  = owner;
@@ -66,6 +69,13 @@ InspectorUI::InspectorUI(
 
   this->tvTab = new TVProcessorTab(this->ui->toolTab, this->getBaudRateFloat());
   this->ui->toolTab->addTab(this->tvTab, "Analog TV");
+
+  this->inspectorMenu = new QMenu(owner);
+  this->renameInspectorTab = new QAction("&Rename...");
+  this->closeInspectorTab = new QAction("&Close");
+  this->inspectorMenu->addAction(this->renameInspectorTab);
+  this->inspectorMenu->addSeparator();
+  this->inspectorMenu->addAction(this->closeInspectorTab);
 
   this->fcDialog = new FrequencyCorrectionDialog(
         owner,
@@ -210,6 +220,15 @@ InspectorUI::setSampleRate(float rate)
   this->ui->bwLcd->setMin(0);
   this->ui->bwLcd->setMax(static_cast<qint64>(rate));
 
+  this->ui->wfSpectrum->setClickResolution(1);
+  this->ui->wfSpectrum->setFilterClickResolution(1);
+  this->ui->wfSpectrum->setDemodRanges(
+        static_cast<int>(-rate / 2),
+        1,
+        1,
+        static_cast<int>(+rate / 2),
+        true);
+
   if (this->config->hasPrefix("fsk"))
     this->ui->histogram->overrideDisplayRange(static_cast<qreal>(rate));
 
@@ -243,6 +262,12 @@ InspectorUI::refreshInspectorCtls(void)
 {
   for (auto p : this->controls)
     p->refreshUi();
+}
+
+void
+InspectorUI::popupContextMenu(void)
+{
+  this->inspectorMenu->popup(QCursor::pos());
 }
 
 unsigned int
@@ -454,6 +479,18 @@ InspectorUI::connectAll()
         SIGNAL(clicked(bool)),
         this,
         SLOT(onScOpenInspector(void)));
+
+  connect(
+        this->renameInspectorTab,
+        SIGNAL(triggered()),
+        this,
+        SLOT(onInspectorRename()));
+
+  connect(
+        this->closeInspectorTab,
+        SIGNAL(triggered()),
+        this,
+        SIGNAL(closeRequested()));
 }
 
 void
@@ -757,8 +794,15 @@ InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
         static_cast<int>(len));
 
   if (this->lastLen != len) {
-    this->ui->wfSpectrum->resetHorizontalZoom();
+    int res = static_cast<int>(
+          round(static_cast<qreal>(rate) / static_cast<qreal>(len)));
+    if (res < 1)
+      res = 1;
+
     this->lastLen = len;
+    this->ui->wfSpectrum->resetHorizontalZoom();
+    this->ui->wfSpectrum->setClickResolution(res);
+    this->ui->wfSpectrum->setFilterClickResolution(res);
   }
 }
 
@@ -1514,4 +1558,22 @@ InspectorUI::onScOpenInspector(void)
         static_cast<qint64>(this->ui->scFreqSpin->value()),
         this->ui->scBandwidth->value(),
         this->ui->scPreciseCheck->isChecked());
+}
+
+void
+InspectorUI::onInspectorRename(void)
+{
+  bool ok;
+  QString text = QInputDialog::getText(
+        this->owner,
+        "Change inspector name",
+        "New inspector name:",
+        QLineEdit::Normal,
+        this->getName(),
+        &ok);
+
+  if (ok && !text.isEmpty()) {
+    this->name = text;
+    emit nameChanged();
+  }
 }

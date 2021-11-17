@@ -65,6 +65,8 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   this->bookmarkSource = new SuscanBookmarkSource();
 
   this->ui->mainSpectrum->setBookmarkSource(this->bookmarkSource);
+  this->ui->mainSpectrum->setClickResolution(1);
+  this->ui->mainSpectrum->setFilterClickResolution(1);
 }
 
 MainSpectrum::~MainSpectrum()
@@ -143,6 +145,16 @@ MainSpectrum::feed(float *data, int size, struct timeval const &tv, bool looped)
   dateTime.setMSecsSinceEpoch(tv.tv_sec * 1000 + tv.tv_usec / 1000);
 
   this->ui->mainSpectrum->setNewFftData(data, size, dateTime, looped);
+
+  if (!this->resAdjusted) {
+    this->resAdjusted = true;
+    int res = static_cast<int>(
+          round(static_cast<qreal>(this->cachedRate) / size));
+    if (res < 1)
+      res = 1;
+    this->ui->mainSpectrum->setClickResolution(res);
+    this->ui->mainSpectrum->setFilterClickResolution(res);
+  }
 }
 
 void
@@ -241,6 +253,9 @@ void
 MainSpectrum::notifyHalt(void)
 {
   this->ui->mainSpectrum->setRunningState(false);
+  this->ui->mainSpectrum->setClickResolution(1);
+  this->ui->mainSpectrum->setFilterClickResolution(1);
+  this->resAdjusted = false;
 }
 
 void
@@ -485,6 +500,7 @@ MainSpectrum::setSampleRate(unsigned int rate)
     this->ui->loLcd->setMax(freq / 2 + this->getCenterFreq());
 
     this->cachedRate = rate;
+    this->resAdjusted = false;
   }
 }
 

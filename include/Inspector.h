@@ -26,6 +26,9 @@ namespace SigDigger {
       Suscan::Analyzer *analyzer = nullptr;
       bool adjusted = false;
 
+      static QString getInspectorTabTitle(
+          Suscan::InspectorMessage const &msg);
+
     public:
       Suscan::InspectorId
       getId(void) const
@@ -51,6 +54,18 @@ namespace SigDigger {
         return this->handle;
       }
 
+      QString
+      getName(void) const
+      {
+        return this->ui->getName();
+      }
+
+      void
+      popupContextMenu(void) const
+      {
+        this->ui->popupContextMenu();
+      }
+
       void setAnalyzer(Suscan::Analyzer *analyzer);
       void feed(const SUCOMPLEX *data, unsigned int size);
       void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
@@ -73,6 +88,10 @@ namespace SigDigger {
           AppConfig const &config);
 
       ~Inspector();
+
+    signals:
+      void nameChanged(void);
+      void closeRequested(void);
 
     public slots:
       void onConfigChanged(void);

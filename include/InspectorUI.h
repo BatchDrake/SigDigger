@@ -23,6 +23,7 @@
 #include <QWidget>
 #include <QVector>
 #include <QThread>
+#include <QMenu>
 #include <memory>
 #include <map>
 #include <InspectorCtl.h>
@@ -100,12 +101,15 @@ namespace SigDigger {
 
     ThrottleControl throttle;
     Ui::Inspector *ui = nullptr;
+    QString name;
+    QMenu *inspectorMenu = nullptr;
+    QAction *closeInspectorTab = nullptr;
+    QAction *renameInspectorTab = nullptr;
     std::vector<InspectorCtl *> controls;
     DataSaverUI *saverUI = nullptr;
     NetForwarderUI *netForwarderUI = nullptr;
     FileDataSaver *dataSaver = nullptr;
     SocketForwarder *socketForwarder = nullptr;
-
     TVProcessorTab *tvTab = nullptr;
     WaveformTab *wfTab = nullptr;
     SymViewTab *symViewTab = nullptr;
@@ -141,12 +145,14 @@ namespace SigDigger {
     void addForwarderWidget(QWidget *widget);
     int fd = -1;
 
-    float zeroPointToDb(void) const
+    float
+    zeroPointToDb(void) const
     {
       return this->getZeroPoint() * this->currentUnit.dBPerUnit;
     }
 
-    float dbToZeroPoint(float dB) const
+    float
+    dbToZeroPoint(float dB) const
     {
       return dB / this->currentUnit.dBPerUnit;
     }
@@ -154,8 +160,15 @@ namespace SigDigger {
     public:
       InspectorUI(
           QWidget *owner,
+          QString name,
           Suscan::Config *config);
       ~InspectorUI();
+
+      QString
+      getName(void) const
+      {
+        return this->name;
+      }
 
       void feed(const SUCOMPLEX *data, unsigned int size);
       void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
@@ -184,6 +197,7 @@ namespace SigDigger {
       void setSampleRate(float rate);
       void setBandwidth(unsigned int bw);
       void setLo(int lo);
+      void popupContextMenu(void);
       void refreshInspectorCtls(void);
       unsigned int getBandwidth(void) const;
       int getLo(void) const;
@@ -211,6 +225,7 @@ namespace SigDigger {
       void onApplyEstimation(QString, float);
       void onOpenDopplerSettings(void);
       void onDopplerAccepted(void);
+      void onInspectorRename(void);
 
       // Spectrum slots
       void onUnitChanged(void);
@@ -238,6 +253,8 @@ namespace SigDigger {
       void onNetCommit(void);
 
     signals:
+      void nameChanged(void);
+      void closeRequested(void);
       void configChanged(void);
       void setSpectrumSource(unsigned int index);
       void loChanged(void);

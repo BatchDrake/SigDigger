@@ -96,7 +96,6 @@ namespace SigDigger {
     void refreshProfile(void);
 
     void setCurrentAutoGain(void);
-    static QString getInspectorTabTitle(Suscan::InspectorMessage const &msg);
 
   public:
     // UI State
@@ -261,6 +260,9 @@ namespace SigDigger {
     void onOpenBookmarkManager(void);
     void onJumpToBookmark(BookmarkInfo);
     void onBookmarkChanged(void);
+    void onInspectorMenuRequested(const QPoint &);
+    void onInspectorNameChanged(void);
+    void onInspectorCloseRequested(void);
 
     // Time Slider slots
     void onTimeStampChanged(void);

@@ -26,22 +26,20 @@ using namespace SigDigger;
 
 AppUI::AppUI(QMainWindow *owner)
 {
-  QToolBar *timeToolbar;
-
   this->main = new Ui_MainWindow();
 
   this->main->setupUi(owner);
 
-  timeToolbar = new QToolBar("Time controls");
+  this->timeToolbar = new QToolBar("Time controls");
   this->timeSlider = new QTimeSlider(nullptr);
 
-  timeToolbar->setAllowedAreas(Qt::ToolBarArea::AllToolBarAreas);
-  timeToolbar->setMovable(false);
+  this->timeToolbar->setAllowedAreas(Qt::ToolBarArea::AllToolBarAreas);
+  this->timeToolbar->setMovable(false);
 
   owner->addToolBarBreak(Qt::TopToolBarArea);
   owner->addToolBar(Qt::TopToolBarArea, timeToolbar);
 
-  timeToolbar->addWidget(this->timeSlider);
+  this->timeToolbar->addWidget(this->timeSlider);
 
   // In MacOS X there is already a system feature to show windows in full
   // screen, and therefore this option is not needed.

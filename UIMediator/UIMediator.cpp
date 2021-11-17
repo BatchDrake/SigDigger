@@ -102,6 +102,8 @@ UIMediator::refreshUI(void)
   QString stateString;
   QString sourceDesc;
   bool    enableTimeSlider = false;
+  bool    isRealTime = false;
+
   Suscan::Source::Config *config = this->getProfile();
   const Suscan::Source::Device &dev = config->getDevice();
 
@@ -169,6 +171,7 @@ UIMediator::refreshUI(void)
   } else {
     if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {
       sourceDesc = QString::fromStdString(dev.getDesc());
+      isRealTime = true;
     } else {
       QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
       sourceDesc = fi.fileName();
@@ -178,6 +181,7 @@ UIMediator::refreshUI(void)
   }
 
   this->ui->timeSlider->setEnabled(enableTimeSlider);
+  this->ui->timeToolbar->setVisible(!isRealTime);
 
   this->owner->setWindowTitle(
         "SigDigger - "
@@ -316,6 +320,14 @@ UIMediator::connectMainWindow(void)
         this,
         SLOT(onModulationChanged(QString)));
 
+  this->ui->main->mainTab->tabBar()->setContextMenuPolicy(
+        Qt::CustomContextMenu);
+
+  connect(
+        this->ui->main->mainTab->tabBar(),
+        SIGNAL(customContextMenuRequested(const QPoint &)),
+        this,
+        SLOT(onInspectorMenuRequested(const QPoint &)));
 
 }
 
@@ -1142,7 +1154,8 @@ UIMediator::onBookmarkChanged(void)
   this->ui->spectrum->updateOverlay();
 }
 
-void UIMediator::onModulationChanged(QString newModulation)
+void
+UIMediator::onModulationChanged(QString newModulation)
 {
   this->ui->audioPanel->setDemod(AudioPanel::strToDemod(newModulation.toStdString()));
 }

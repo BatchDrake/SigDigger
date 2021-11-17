@@ -19,6 +19,7 @@
 
 #include "InspectorUI.h"
 #include "Inspector.h"
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -29,10 +30,11 @@ Inspector::Inspector(
   QWidget(parent),
   config(msg.getCConfig())
 {
+  QString name = getInspectorTabTitle(msg);
   this->handle = msg.getHandle();
   this->analyzer = nullptr;
 
-  this->ui = std::make_unique<InspectorUI>(this, &this->config);
+  this->ui = std::make_unique<InspectorUI>(this, name, &this->config);
   this->ui->setAppConfig(config);
   this->ui->setBasebandRate(msg.getBasebandRate());
   this->ui->setSampleRate(msg.getEquivSampleRate());
@@ -93,6 +95,18 @@ Inspector::Inspector(
         this,
         SLOT(onOpenInspector(QString, qint64, qreal, bool)));
 
+  connect(
+        this->ui.get(),
+        SIGNAL(nameChanged()),
+        this,
+        SIGNAL(nameChanged()));
+
+  connect(
+        this->ui.get(),
+        SIGNAL(closeRequested()),
+        this,
+        SIGNAL(closeRequested()));
+
   for (auto p = msg.getSpectrumSources().begin();
        p != msg.getSpectrumSources().end();
        ++p)
@@ -102,6 +116,24 @@ Inspector::Inspector(
        p != msg.getEstimators().end();
        ++p)
     this->ui->addEstimator(*p);
+}
+
+QString
+Inspector::getInspectorTabTitle(Suscan::InspectorMessage const &msg)
+{
+  QString result = " in "
+      + SuWidgetsHelpers::formatQuantity(
+        msg.getChannel().fc + msg.getChannel().ft,
+        "Hz");
+
+  if (msg.getClass() == "psk")
+    return "PSK inspector" + result;
+  else if (msg.getClass() == "fsk")
+    return "FSK inspector" + result;
+  else if (msg.getClass() == "ask")
+    return "ASK inspector" + result;
+
+  return "Generic inspector" + result;
 }
 
 void

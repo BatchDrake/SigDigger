@@ -57,6 +57,7 @@ namespace SigDigger {
     BackgroundTasksDialog *backgroundTasksDialog = nullptr;
     AddBookmarkDialog *addBookmarkDialog = nullptr;
     BookmarkManagerDialog *bookmarkManagerDialog = nullptr;
+    QToolBar *timeToolbar;
     QTimeSlider *timeSlider = nullptr;
     std::map<Suscan::InspectorId, Inspector *> inspectorTable;
     Suscan::InspectorId lastId = 0;

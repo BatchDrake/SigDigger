@@ -35,24 +35,6 @@ UIMediator::lookupInspector(Suscan::InspectorId handle) const
   return entry;
 }
 
-QString
-UIMediator::getInspectorTabTitle(Suscan::InspectorMessage const &msg)
-{
-  QString result = " in "
-      + SuWidgetsHelpers::formatQuantity(
-        msg.getChannel().fc + msg.getChannel().ft,
-        "Hz");
-
-  if (msg.getClass() == "psk")
-    return "PSK inspector" + result;
-  else if (msg.getClass() == "fsk")
-    return "FSK inspector" + result;
-  else if (msg.getClass() == "ask")
-    return "ASK inspector" + result;
-
-  return "Generic inspector" + result;
-}
-
 Inspector *
 UIMediator::addInspectorTab(
     Suscan::InspectorMessage const &msg,
@@ -75,7 +57,19 @@ UIMediator::addInspectorTab(
 
   index = this->ui->main->mainTab->addTab(
         insp,
-        UIMediator::getInspectorTabTitle(msg));
+        insp->getName());
+
+  connect(
+        insp,
+        SIGNAL(nameChanged()),
+        this,
+        SLOT(onInspectorNameChanged()));
+
+  connect(
+        insp,
+        SIGNAL(closeRequested()),
+        this,
+        SLOT(onInspectorCloseRequested()));
 
   this->ui->inspectorTable[oId] = insp;
   this->ui->main->mainTab->setCurrentIndex(index);
@@ -187,4 +181,42 @@ UIMediator::onCloseInspectorTab(int ndx)
     Inspector *insp = static_cast<Inspector *>(widget);
     this->closeInspectorTab(insp);
   }
+}
+
+
+void
+UIMediator::onInspectorMenuRequested(const QPoint &point)
+{
+  int index;
+
+  if (point.isNull())
+    return;
+
+  index = this->ui->main->mainTab->tabBar()->tabAt(point);
+
+  QWidget *widget = this->ui->main->mainTab->widget(index);
+
+  if (widget != nullptr && widget != this->ui->spectrum) {
+    Inspector *insp = static_cast<Inspector *>(widget);
+    insp->popupContextMenu();
+  }
+}
+
+void
+UIMediator::onInspectorNameChanged(void)
+{
+  Inspector *insp = static_cast<Inspector *>(QObject::sender());
+  int index = this->ui->main->mainTab->indexOf(insp);
+
+  if (index >= 0)
+    this->ui->main->mainTab->setTabText(
+        index,
+        insp->getName());
+}
+
+void
+UIMediator::onInspectorCloseRequested(void)
+{
+  Inspector *insp = static_cast<Inspector *>(QObject::sender());
+  this->closeInspectorTab(insp);
 }
