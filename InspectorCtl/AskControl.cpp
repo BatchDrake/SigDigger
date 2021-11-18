@@ -30,10 +30,11 @@ AskControl::AskControl(QWidget *parent, Suscan::Config *config) :
 
   this->refreshUi();
 
-  this->registerWidget(this->ui->bitsSpin,      SIGNAL(valueChanged(int)));
-  this->registerWidget(this->ui->pllCheck,      SIGNAL(stateChanged(int)));
-  this->registerWidget(this->ui->pllCutoffSpin, SIGNAL(valueChanged(double)));
-  this->registerWidget(this->ui->pllCutoffSpin, SIGNAL(valueChanged(double)));
+  this->registerWidget(this->ui->bitsSpin,       SIGNAL(valueChanged(int)));
+  this->registerWidget(this->ui->componentCombo, SIGNAL(activated(int)));
+  this->registerWidget(this->ui->pllCheck,       SIGNAL(stateChanged(int)));
+  this->registerWidget(this->ui->pllCutoffSpin,  SIGNAL(valueChanged(double)));
+  this->registerWidget(this->ui->pllCutoffSpin,  SIGNAL(valueChanged(double)));
 }
 
 bool
@@ -55,7 +56,8 @@ AskControl::refreshUi(void)
   this->ui->bitsSpin->setValue(bps);
   this->ui->pllCutoffSpin->setValue(this->getFloat("ask.loop-bw"));
   this->ui->pllOffsetSpin->setValue(this->getFloat("ask.offset"));
-
+  this->ui->componentCombo->setCurrentIndex(
+        static_cast<int>(this->getUint64("ask.channel")));
   this->ui->pllCheck->setChecked(usePll);
   this->ui->pllCutoffSpin->setEnabled(usePll);
   this->ui->pllOffsetSpin->setEnabled(usePll);
@@ -70,6 +72,9 @@ AskControl::parseConfig(void)
   this->refreshEntry("ask.use-pll", this->ui->pllCheck->isChecked());
   this->refreshEntry("ask.loop-bw", this->ui->pllCutoffSpin->value());
   this->refreshEntry("ask.offset", this->ui->pllOffsetSpin->value());
+  this->refreshEntry(
+        "ask.channel",
+        static_cast<uint64_t>(this->ui->componentCombo->currentIndex()));
 }
 
 AskControl::~AskControl()

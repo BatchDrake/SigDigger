@@ -211,6 +211,8 @@ void
 InspectorUI::setSampleRate(float rate)
 {
   this->sampleRate = rate;
+  this->ui->scBandwidth->setValue(static_cast<qreal>(rate) / 20);
+
   this->ui->sampleRateLabel->setText(
         "Sample rate: "
         + SuWidgetsHelpers::formatQuantity(
