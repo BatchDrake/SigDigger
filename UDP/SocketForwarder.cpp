@@ -64,7 +64,7 @@ SocketDataWriter::SocketDataWriter(
     uint16_t port,
     unsigned int size,
     bool tcp) :
-  host(host), port(port), tcp(tcp), size(size / sizeof(SUCOMPLEX))
+  host(host), port(port), tcp(tcp), size(size)
 {
   this->pad[0] = this->pad2[0] = 0; // Shut up
 }
