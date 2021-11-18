@@ -22,6 +22,23 @@
 
 using namespace SigDigger;
 
+//
+// TODO: Current GenericDataSaver is unaware of the datatype in its buffers
+// This must be changed in some way
+//
+#define TEMPLATE_INSTANCE_FOR_WRITE_NO_MATTER_WHAT(typename_T) \
+ssize_t                                                        \
+GenericDataWriter::write(const typename_T *data, size_t len)   \
+{                                                              \
+  return this->write(                                          \
+        reinterpret_cast<const void *>(data),                  \
+    len * sizeof(typename_T));                                 \
+}
+
+TEMPLATE_INSTANCE_FOR_WRITE_NO_MATTER_WHAT(uint8_t);
+TEMPLATE_INSTANCE_FOR_WRITE_NO_MATTER_WHAT(SUFLOAT);
+TEMPLATE_INSTANCE_FOR_WRITE_NO_MATTER_WHAT(SUCOMPLEX);
+
 GenericDataWriter::~GenericDataWriter()
 {
   // ?
@@ -56,9 +73,9 @@ GenericDataWorker::onCommit(void)
     struct timeval tv, otv, sub;
     ssize_t dumped;
     size_t allocation = this->instance->allocation;
-    std::vector<SUCOMPLEX> *thisBuf =
+    std::vector<uint8_t> *thisBuf =
         &this->instance->buffers[1 - this->instance->buffer];
-    SUCOMPLEX *buffer = thisBuf->data();
+    uint8_t *buffer = thisBuf->data();
     int remaining = static_cast<int>(this->instance->commitedSize);
 
     locker.unlock();
@@ -206,13 +223,13 @@ GenericDataSaver::setBufferSize(unsigned int size)
   this->buffers[1].resize(size);
 }
 
-void
-GenericDataSaver::write(const SUCOMPLEX *data, size_t size)
+template<typename T> void
+GenericDataSaver::write(const T *data, size_t size)
 {
   if (this->writer->canWrite()) {
     QMutexLocker locker(&this->dataMutex);
-    size_t totalSize = this->buffers[this->buffer].size();
-    size_t avail = totalSize - this->ptr;
+    size_t totalBytes = this->buffers[this->buffer].size();
+    size_t avail = (totalBytes - this->ptr) / sizeof(T);
 
     this->dataWritten = true;
 
@@ -225,16 +242,21 @@ GenericDataSaver::write(const SUCOMPLEX *data, size_t size)
     memcpy(
       this->buffers[this->buffer].data() + this->ptr,
       data,
-      size * sizeof(SUCOMPLEX));
+      size * sizeof(T));
 
-    this->ptr += size;
+    this->ptr += size * sizeof(T);
 
-    if (this->ptr > totalSize / 2) {
+    if (this->ptr > totalBytes / 2) {
       // Buffer starts to get filled up, issue commit request
       this->doCommit();
     }
   }
 }
+
+// Explicit instantiation of these ones
+template void GenericDataSaver::write<SUCOMPLEX>(const SUCOMPLEX *, size_t);
+template void GenericDataSaver::write<SUFLOAT>(const SUFLOAT *, size_t);
+template void GenericDataSaver::write<uint8_t>(const uint8_t *, size_t);
 
 quint64
 GenericDataSaver::getSize(void) const

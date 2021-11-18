@@ -52,6 +52,12 @@ namespace Ui {
   class Inspector;
 }
 
+#define SIGDIGGER_INSPECTOR_UI_DECISION_SPACE 0
+#define SIGDIGGER_INSPECTOR_UI_SOFT_BITS      1
+#define SIGDIGGER_INSPECTOR_UI_SOFT_BITS_I    2
+#define SIGDIGGER_INSPECTOR_UI_SOFT_BITS_Q    3
+#define SIGDIGGER_INSPECTOR_UI_SYMBOLS        4
+
 namespace SigDigger {
   class FrequencyCorrectionDialog;
   class AppConfig;
@@ -59,13 +65,19 @@ namespace SigDigger {
   class InspectorUI : public QObject {
     Q_OBJECT
 
-    public:
+  public:
     enum State {
       DETACHED,
       ATTACHED
     };
 
-    private:
+    enum DataType {
+      SYMBOL,
+      FLOAT,
+      COMPLEX
+    };
+
+  private:
 
     unsigned int basebandSampleRate;
     float sampleRate;
@@ -89,8 +101,8 @@ namespace SigDigger {
 
     bool estimating = false;
     struct timeval last_estimator_update;
-    std::vector<SUCOMPLEX> buffer;
-    std::vector<SUFLOAT> fftData;
+    std::vector<SUFLOAT>  floatBuffer;
+    std::vector<SUFLOAT>  fftData;
 
     // UI objects
     std::vector<Suscan::Estimator> estimators;

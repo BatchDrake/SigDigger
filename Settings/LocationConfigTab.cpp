@@ -118,7 +118,7 @@ LocationConfigTab::populateLocations(void)
 void
 LocationConfigTab::paintMapCoords(double lat, double lon)
 {
-  QPixmap bg = QPixmap(QString::fromUtf8(":/images/earthmap.png"));
+  QPixmap bg = QPixmap(":/icons/earthmap.png");
   QSize dim = bg.size();
   QPainter painter(&bg);
   int x, y;

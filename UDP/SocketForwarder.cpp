@@ -53,7 +53,7 @@ namespace SigDigger {
     bool prepare(void) override;
     std::string getError(void) const override;
     bool canWrite(void) const override;
-    ssize_t write(const SUCOMPLEX *data, size_t len) override;
+    ssize_t write(const void *data, size_t len) override;
     bool close(void) override;
     ~SocketDataWriter() override;
   };
@@ -121,7 +121,7 @@ SocketDataWriter::canWrite(void) const
 }
 
 ssize_t
-SocketDataWriter::write(const SUCOMPLEX *data, size_t len)
+SocketDataWriter::write(const void *data, size_t len)
 {
   ssize_t sent;
 
@@ -131,17 +131,13 @@ SocketDataWriter::write(const SUCOMPLEX *data, size_t len)
   sent = sendto(
           this->fd,
           data,
-          static_cast<size_t>(len) * sizeof(SUCOMPLEX),
+          len,
           MSG_NOSIGNAL,
           reinterpret_cast<struct sockaddr *>(&this->addr),
           sizeof(struct sockaddr_in));
 
   if (sent < 1)
     this->lastError = std::string(strerror(errno));
-
-
-  sent /= static_cast<ssize_t>(sizeof(SUCOMPLEX));
-
 
   return sent;
 }

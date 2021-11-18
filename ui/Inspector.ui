@@ -63,7 +63,7 @@ QToolBox::tab:hover {
        <number>0</number>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>4</number>
       </property>
       <property name="tabSpacing">
        <number>0</number>
@@ -900,14 +900,32 @@ font-weight: bold;</string>
            </property>
            <item row="3" column="1">
             <widget class="QComboBox" name="dataVarCombo">
+             <property name="currentIndex">
+              <number>1</number>
+             </property>
              <item>
               <property name="text">
-               <string>Decision</string>
+               <string>Decision space</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>Baseband I/Q data</string>
+               <string>Complex soft bits (IQ)</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Soft bits (I)</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Soft bits (Q)</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Symbols</string>
               </property>
              </item>
             </widget>

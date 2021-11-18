@@ -707,7 +707,13 @@ InspectorUI::onResetSNR(void)
 
 void
 InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
-{  
+{
+  bool dataForwarding = this->recording || this->forwarding;
+  bool symbolForwarding =
+      this->ui->dataVarCombo->currentIndex() == SIGDIGGER_INSPECTOR_UI_SYMBOLS;
+  bool decisionNeeded =
+      (dataForwarding && symbolForwarding) || this->symViewTab->isRecording();
+  bool haveDecision = false;
   this->ui->constellation->feed(data, size);
   this->ui->histogram->feed(data, size);
 
@@ -729,12 +735,15 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
   }
 
   // Decision happens here.
-  if (this->symViewTab->isRecording()) {
+  if (decisionNeeded) {
     if (this->decider.getBps() > 0) {
       this->decider.feed(data, size);
+      haveDecision = true;
 
-      this->symViewTab->feed(this->decider.get());
-      this->ui->transition->feed(this->decider.get());
+      if (this->symViewTab->isRecording()) {
+        this->symViewTab->feed(this->decider.get());
+        this->ui->transition->feed(this->decider.get());
+      }
     }
   }
 
@@ -744,37 +753,82 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
   if (this->wfTab->isRecording())
     this->wfTab->feed(data, size);
 
-  if (this->recording || this->forwarding) {
-    const SUCOMPLEX *chunk;
+  if (dataForwarding) {
+    switch (this->ui->dataVarCombo->currentIndex()) {
+      case SIGDIGGER_INSPECTOR_UI_DECISION_SPACE:
+        if (this->floatBuffer.size() < size)
+          this->floatBuffer.resize(size);
 
-    if (this->ui->dataVarCombo->currentIndex() == 0) {
-      // Decision space
-      if (this->buffer.size() < size)
-        this->buffer.resize(size);
+        switch (this->decider.getDecisionMode()) {
+          case Decider::MODULUS:
+            for (unsigned i = 0; i < size; ++i)
+              this->floatBuffer[i] = SU_C_ABS(data[i]);
+            break;
 
-      switch (this->decider.getDecisionMode()) {
-        case Decider::MODULUS:
-          for (unsigned i = 0; i < size; ++i)
-            this->buffer[i] = SU_C_ABS(data[i]);
-          break;
+          case Decider::ARGUMENT:
+            for (unsigned i = 0; i < size; ++i)
+              this->floatBuffer[i] = SU_C_ARG(I * data[i]) / PI;
+            break;
+        }
 
-        case Decider::ARGUMENT:
-          for (unsigned i = 0; i < size; ++i)
-            this->buffer[i] = SU_C_ARG(I * data[i]) / PI;
-          break;
-      }
+        // Decision space: deliver floats
+        if (this->recording)
+          this->dataSaver->write(this->floatBuffer.data(), size);
 
-      chunk = this->buffer.data();
-    } else {
-      // Raw I/Q data
-      chunk = data;
+        if (this->forwarding)
+          this->socketForwarder->write(this->floatBuffer.data(), size);
+
+        break;
+
+      case SIGDIGGER_INSPECTOR_UI_SOFT_BITS:
+        // Pure softbits: deliver complex I/Q samples
+        if (this->recording)
+          this->dataSaver->write(data, size);
+
+        if (this->forwarding)
+          this->socketForwarder->write(data, size);
+        break;
+
+      case SIGDIGGER_INSPECTOR_UI_SOFT_BITS_I:
+        if (this->floatBuffer.size() < size)
+          this->floatBuffer.resize(size);
+        for (unsigned i = 0; i < size; ++i)
+          this->floatBuffer[i] = SU_C_REAL(data[i]);
+
+        if (this->recording)
+          this->dataSaver->write(this->floatBuffer.data(), size);
+
+        if (this->forwarding)
+          this->socketForwarder->write(this->floatBuffer.data(), size);
+        break;
+
+      case SIGDIGGER_INSPECTOR_UI_SOFT_BITS_Q:
+        if (this->floatBuffer.size() < size)
+          this->floatBuffer.resize(size);
+        for (unsigned i = 0; i < size; ++i)
+          this->floatBuffer[i] = SU_C_IMAG(data[i]);
+
+        if (this->recording)
+          this->dataSaver->write(this->floatBuffer.data(), size);
+
+        if (this->forwarding)
+          this->socketForwarder->write(this->floatBuffer.data(), size);
+        break;
+
+      case SIGDIGGER_INSPECTOR_UI_SYMBOLS:
+        if (haveDecision) {
+          if (this->recording)
+            this->dataSaver->write(
+                this->decider.get().data(),
+                this->decider.get().size());
+
+          if (this->forwarding)
+            this->socketForwarder->write(
+                this->decider.get().data(),
+                this->decider.get().size());
+        }
+        break;
     }
-
-    if (this->recording)
-      this->dataSaver->write(chunk, size);
-
-    if (this->forwarding)
-      this->socketForwarder->write(chunk, size);
   }
 }
 
