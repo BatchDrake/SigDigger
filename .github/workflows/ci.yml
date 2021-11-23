@@ -29,8 +29,9 @@ jobs:
     - name: Install sndfile
       run: sudo apt-get install libsndfile1-dev
 
+    # libvolk2-dev is not available in Ubuntu 18.04
     - name: Install Volk
-      run: sudo apt-get install libvolk2-dev
+      run: sudo apt-get install libvolk1-dev
 
     - name: Install FFTW3
       run: sudo apt-get install libfftw3-dev
