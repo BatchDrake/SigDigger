@@ -23,6 +23,9 @@ jobs:
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+
     - name: Install sndfile
       run: sudo apt-get install libsndfile1-dev
 
@@ -79,6 +82,9 @@ jobs:
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
       
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+
     - name: Install sndfile
       run: brew install libsndfile
 
