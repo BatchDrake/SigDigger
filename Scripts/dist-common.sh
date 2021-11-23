@@ -62,7 +62,11 @@ function try()
     
     if [ $? != 0 ]; then
 	echo -e "\r[ \033[1;31mFAILED\033[0m ]"
-	echo
+	echo 
+  echo '--------------8<----------------------------------------'
+  cat "$STDERR"
+  echo '--------------8<----------------------------------------'
+  echo
 	echo "Standard output and error were saved respectively in:"
 	echo " - $STDOUT"
 	echo " - $STDERR"
