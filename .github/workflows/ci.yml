@@ -54,13 +54,17 @@ jobs:
       run: wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
     
     - name: Install linuxdeployqt system-wide
-      run: sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
-    
+      run: |
+        sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
+        sudo chmod a+x /usr/bin/linuxdeployqt
+
     - name: Download appimagetool
       run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
     
     - name: Install appimagetool system-wide
-      run: sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
+      run: |
+        sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
+        sudo chmod a+x /usr/bin/appimagetool
     
     - name: Checkout (SigDigger)
       uses: actions/checkout@v2
