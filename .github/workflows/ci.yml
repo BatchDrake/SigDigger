@@ -74,6 +74,9 @@ jobs:
         ref: refs/heads/develop
         path: SigDigger
 
+    - name: Debug build
+      uses: mxschmitt/action-tmate@v3
+
     - name: Build & Distribute (SigDigger)
       run: |
         cd SigDigger/Scripts
@@ -135,6 +138,9 @@ jobs:
         repository: BatchDrake/SigDigger
         ref: refs/heads/develop
         path: SigDigger
+
+    - name: Debug build
+      uses: mxschmitt/action-tmate@v3
 
     - name: Build & Distribute (SigDigger)
       run: |
