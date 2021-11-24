@@ -58,7 +58,8 @@ function try()
     
     STDOUT="$DISTROOT/$1-$$-stdout.log"
     STDERR="$DISTROOT/$1-$$-stderr.log"
-    "$@" > "$STDOUT" 2> "$STDERR"
+    echo "Try: $@"    >> "$STDERR"
+    "$@" > "$STDOUT" 2>> "$STDERR"
     
     if [ $? != 0 ]; then
 	echo -e "\r[ \033[1;31mFAILED\033[0m ]"

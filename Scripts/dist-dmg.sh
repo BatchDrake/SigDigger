@@ -91,6 +91,20 @@ function excluded()
     return 1
 }
 
+function find_lib()
+{
+  SANE_DIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64"
+    
+  for i in $SANE_DIRS; do
+	  if [ -f "$i/$1" ]; then
+      echo "$i/$1"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 function embed_soapysdr()
 {
     export SOAPYSDRVER=`pkg-config SoapySDR --modversion | sed 's/\([0-9]*\.[0-9]*\)\..*/\1/g'`
@@ -106,19 +120,25 @@ function embed_soapysdr()
     MY_RPATH=/usr/local/lib # FIXME
     
     for i in $RADIODEPS; do
-	name=`basename "$i"`
-	dirname=`dirname "$i"`
-	
-	if [ "$dirname" == "@rpath" ]; then
-            i="$MY_RPATH/$name"
+      name=`basename "$i"`
+      dirname=`dirname "$i"`
+      
+      if [ "$dirname" == "@rpath" ]; then
+        i="$MY_RPATH/$name"
+      elif [ "$dirname" == "." ]; then
+        i=`find_lib "$name"`
+        if [ "$i" == "" ]; then
+          echo -e "[ \033[1;31mFAILED\033[0m ] Could not locate $name"
+          return 1
         fi
+      fi
 
-	if [ ! -f "$LIBPATH"/"$name" ] && ! excluded "$name"; then
-	    try "Bringing $name..." cp -L "$i" "$LIBPATH"
-	else
-	    rm -f "$LIBPATH"/"$name"
-	    skip "Skipping $name..."
-	fi
+      if [ ! -f "$LIBPATH"/"$name" ] && ! excluded "$name"; then
+          try "Bringing $name..." cp -L "$i" "$LIBPATH"
+      else
+          rm -f "$LIBPATH"/"$name"
+          skip "Skipping $name..."
+      fi
     done
     
     return 0

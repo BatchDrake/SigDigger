@@ -79,6 +79,8 @@ function assert_symlink()
 
 function embed_suscli_deps()
 {
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DEPLOYROOT/usr/lib"
+
     DEPS=`ldd "$DEPLOYROOT"/usr/bin/suscli | grep '=>' | sed 's/^.*=> \(.*\) .*$/\1/g' | tr -d '[ \t]' | sort | uniq`
 
     for i in $DEPS; do
@@ -92,8 +94,20 @@ function embed_suscli_deps()
     done
 }
 
+function build_fixups()
+{
+  if [ "$OSTYPE" == "Linux" ]; then
+    cp -f "$BUILDROOT/"sigutils/build/libsigutils.so.* "$DEPLOYROOT/usr/lib"
+    cp -f "$BUILDROOT/"suscan/build/libsuscan.so.*     "$DEPLOYROOT/usr/lib"
+  fi
+
+  return 0
+}
+
 function embed_soapysdr()
 {
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DEPLOYROOT/usr/lib"
+    
     SOAPYSDRVER=`ldd $DEPLOYROOT/usr/bin/SigDigger | grep Soapy | sed 's/ =>.*$//g' | sed 's/^.*\.so\.//g'`
     try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
     try "Testing SoapySDR dir..." find_soapysdr
@@ -152,6 +166,7 @@ fi
 
 embed_suscli_deps
 
+try "Executing build fixups..." build_fixups
 try "Calling linuxdeployqt..." linuxdeployqt "$DEPLOYROOT"/usr/share/applications/SigDigger.desktop -bundle-non-qt-libs
 try "Moving SigDigger binary..." mv "$DEPLOYROOT"/usr/bin/SigDigger "$DEPLOYROOT"/usr/bin/SigDigger.app
 try "Copying wrapper script..." cp AppRun "$DEPLOYROOT"/usr/bin/SigDigger
