@@ -80,6 +80,13 @@ jobs:
         chmod a+x dist-appimage.sh
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
         SIGDIGGER_EMBED_SOAPYSDR=1 ./dist-appimage.sh 
+        cd ../..
+
+    - name: Archive AppImage files
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-latest-appimage
+          path: SigDigger/Scripts/*.AppImage
 
   build-macos:
     runs-on: macos-latest
@@ -115,13 +122,12 @@ jobs:
     - name: Build and install SoapySDR module for SDRPlay
       run: git clone https://github.com/pothosware/SoapySDRPlay3 && cd SoapySDRPlay3 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j3 && sudo make install && cd ../../
 
-    # soapyaudio removed from due to deprecated hamlib API
     # soapyosmo  removed because of random compilation errors
     # soapyuhd   removed for the same reason
     - name: Install SoapySDR modules (Pothos)
       run: |
         sudo chmod -R a+rw /usr/local/lib/SoapySDR/modules0.8
-        brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyairspyhf soapyredpitaya soapyiris limesuite soapyplutosdr
+        brew install soapyaudio soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyairspyhf soapyredpitaya soapyiris limesuite soapyplutosdr
 
     - name: Install libxml2
       run: brew install libxml2
@@ -141,3 +147,10 @@ jobs:
         cd SigDigger/Scripts
         chmod a+x dist-dmg.sh
         SIGDIGGER_EMBED_SOAPYSDR=1 ./dist-dmg.sh
+        cd ../..
+
+    - name: Archive .DMG files
+        uses: actions/upload-artifact@v2
+        with:
+          name: macos-latest-dmg
+          path: SigDigger/Scripts/*.dmg
