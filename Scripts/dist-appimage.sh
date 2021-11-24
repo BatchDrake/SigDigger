@@ -169,7 +169,7 @@ embed_suscli_deps
 try "Executing build fixups..." build_fixups
 try "Calling linuxdeployqt..." linuxdeployqt "$DEPLOYROOT"/usr/share/applications/SigDigger.desktop -bundle-non-qt-libs
 try "Moving SigDigger binary..." mv "$DEPLOYROOT"/usr/bin/SigDigger "$DEPLOYROOT"/usr/bin/SigDigger.app
-try "Copying wrapper script..." cp AppRun "$DEPLOYROOT"/usr/bin/SigDigger
+try "Copying wrapper script..." cp "$DISTROOT"/AppRun "$DEPLOYROOT"/usr/bin/SigDigger
 try "Setting permissions to wrapper script..." chmod a+x "$DEPLOYROOT"/usr/bin/SigDigger
 try "Calling AppImageTool and finishing..." appimagetool "$DEPLOYROOT"
 try "Renaming to $APPIMAGE_NAME..." mv "$SRC_APPIMAGE_NAME" "$DISTROOT/$APPIMAGE_NAME"

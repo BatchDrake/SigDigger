@@ -29,7 +29,7 @@ DISTROOT="$PWD"
 BRANCH=develop
 OSTYPE=`uname -s`
 ARCH=`uname -m`
-RELEASE="0.2.0"
+RELEASE="0.3.0"
 DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
 PKGVERSION=""
 
@@ -59,6 +59,8 @@ function try()
     STDOUT="$DISTROOT/$1-$$-stdout.log"
     STDERR="$DISTROOT/$1-$$-stderr.log"
     echo "Try: $@"    >> "$STDERR"
+    echo "CWD: $PWD"  >> "$STDERR"
+    
     "$@" > "$STDOUT" 2>> "$STDERR"
     
     if [ $? != 0 ]; then
