@@ -109,7 +109,7 @@ jobs:
       run: brew install volk
 
     - name: Install cURL
-      run: brew install libcurl
+      run: brew install curl
 
     - name: Install FFTW3
       run: brew install fftw
