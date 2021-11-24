@@ -35,7 +35,7 @@ jobs:
       run: sudo apt-get install libvolk1-dev
 
     - name: Install cURL
-      run: sudo apt-get install libcurl-dev
+      run: sudo apt-get install libcurl4-openssl-dev
       
     - name: Install FFTW3
       run: sudo apt-get install libfftw3-dev
@@ -110,7 +110,7 @@ jobs:
 
     - name: Install cURL
       run: brew install libcurl
-      
+
     - name: Install FFTW3
       run: brew install fftw
 
