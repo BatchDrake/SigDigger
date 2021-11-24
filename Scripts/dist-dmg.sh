@@ -181,7 +181,7 @@ function create_dmg()
   try "Cleaning up old files..." rm -Rfv "$STAGINGDIR"
   try "Creating staging directory..." mkdir -p "$STAGINGDIR"
   try "Copying bundle to staging dir..."   cp -Rfv "$BUNDLEPATH" "$STAGINGDIR"
-  try "Creating .dmg file and finishing..." hdiutil -verbose create -volname SigDigger -srcfolder "$STAGINGDIR" -ov -format UDZO "$DISTROOT/$DMG_NAME"
+  try "Creating .dmg file and finishing..." hdiutil create -verbose -volname SigDigger -srcfolder "$STAGINGDIR" -ov -format UDZO "$DISTROOT/$DMG_NAME"
 }
 
 function fix_plist()
