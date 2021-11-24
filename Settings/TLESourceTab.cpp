@@ -240,8 +240,8 @@ TLESourceTab::pushDownloadTask(void)
 #else  // HAVE_CURL
   QMessageBox::critical(
         this,
-        "Download support was disabled at compile time.",
-        "Download TLEs");
+        "Download TLEs",
+        "Download support was disabled at compile time.");
   return false;
 #endif // HAVE_CURL
 }
