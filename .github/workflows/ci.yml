@@ -83,10 +83,10 @@ jobs:
         cd ../..
 
     - name: Archive AppImage files
-        uses: actions/upload-artifact@v2
-        with:
-          name: linux-latest-appimage
-          path: SigDigger/Scripts/*.AppImage
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-latest-appimage
+        path: SigDigger/Scripts/*.AppImage
 
   build-macos:
     runs-on: macos-latest
@@ -150,7 +150,7 @@ jobs:
         cd ../..
 
     - name: Archive .DMG files
-        uses: actions/upload-artifact@v2
-        with:
-          name: macos-latest-dmg
-          path: SigDigger/Scripts/*.dmg
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos-latest-dmg
+        path: SigDigger/Scripts/*.dmg
