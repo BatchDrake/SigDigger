@@ -57,10 +57,6 @@ namespace SigDigger {
     QMainWindow *owner = nullptr;
     AppUI *ui = nullptr;
 
-    QDockWidget *sourcePanelDock = nullptr;
-    QDockWidget *inspectorPanelDock = nullptr;
-    QDockWidget *fftPanelDock = nullptr;
-    QDockWidget *audioPanelDock = nullptr;
     std::map<std::string, QAction *> bandPlanMap;
 
     // Cached members

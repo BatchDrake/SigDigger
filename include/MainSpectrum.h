@@ -72,6 +72,7 @@ namespace SigDigger {
     QElapsedTimer lastFreqUpdate;
     qint64 freqGracePeriod =
         SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS;
+    int maxToolWidth = 0;
 
     // Cached members (for UI update, etc)
     unsigned int cachedRate = 0;
@@ -136,6 +137,8 @@ namespace SigDigger {
     void setZeroPoint(float);
     void setUnits(QString const &, float, float);
 
+    void addToolWidget(QWidget *widget, QString const &);
+
     // Getters
     bool getThrottling(void) const;
     CaptureMode getCaptureMode(void) const;
@@ -145,6 +148,7 @@ namespace SigDigger {
     unsigned int getBandwidth(void) const;
     unsigned int getZoom(void) const;
     FrequencyAllocationTable *getFAT(QString const &) const;
+    void adjustSizes(void);
 
     static int getFrequencyUnits(qint64 frew);
 
