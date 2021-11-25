@@ -85,7 +85,7 @@ LocationConfigTab::repaintCountryList(QString searchText)
 
   for (auto i = sus->getFirstLocation(); i != sus->getLastLocation(); ++i) {
     QString locName = i->getLocationName();
-    if (locName.contains(searchText)) {
+    if (locName.contains(searchText, Qt::CaseInsensitive)) {
       QListWidgetItem *item = new QListWidgetItem(locName);
       this->ui->cityListWidget->addItem(item);
     }
