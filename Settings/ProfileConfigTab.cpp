@@ -1007,8 +1007,11 @@ ProfileConfigTab::guessParamsFromFileName(void)
   bool haveDate = false;
   bool haveTime = false;
   bool isUTC    = false;
+  bool haveTm   = false;
   struct tm tm;
   struct timeval tv = {0, 0};
+
+  memset(&tm, 0, sizeof(struct tm));
 
   if (sscanf(
         baseName.c_str(),
@@ -1060,11 +1063,26 @@ ProfileConfigTab::guessParamsFromFileName(void)
     haveDate = true;
     haveTime = true;
     isUTC    = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "baseband_%lgHz_%02d-%02d-%02d_%02d-%02d-%04d",
+        &fc,
+        &tm.tm_hour,
+        &tm.tm_min,
+        &tm.tm_sec,
+        &tm.tm_mday,
+        &tm.tm_mon,
+        &tm.tm_year) == 7) {
+    tm.tm_year -= 1900;
+    tm.tm_mon  -= 1;
+
+    haveFc   = true;
+    haveTm   = true;
+    isUTC    = true;
   }
 
   if (haveDate || haveTime) {
-    memset(&tm, 0, sizeof(struct tm));
-
+    haveTm = true;
     if (haveDate) {
       tm.tm_year = date / 10000 - 1900;
       tm.tm_mon  = ((date / 100) % 100) - 1;
@@ -1076,7 +1094,9 @@ ProfileConfigTab::guessParamsFromFileName(void)
       tm.tm_min  = (time / 100) % 100;
       tm.tm_sec  = time % 100;
     }
+  }
 
+  if (haveTm) {
     if (isUTC) {
       char *tz = getenv("TZ");
       std::string oldTz;
@@ -1107,7 +1127,7 @@ ProfileConfigTab::guessParamsFromFileName(void)
   if (haveFc)
     this->profile.setFreq(fc);
 
-  if (haveFs || haveFc || haveDate || haveTime)
+  if (haveFs || haveFc || haveTm)
     this->refreshUi();
 }
 
