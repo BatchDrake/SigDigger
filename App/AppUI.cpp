@@ -49,10 +49,10 @@ AppUI::AppUI(QMainWindow *owner)
 #endif // __APPLE__
   
   this->spectrum = new MainSpectrum(owner);
-  this->sourcePanel = new SourcePanel(owner);
-  this->inspectorPanel = new InspectorPanel(owner);
-  this->fftPanel = new FftPanel(owner);
-  this->audioPanel = new AudioPanel(owner);
+  this->sourcePanel = new SourcePanel(nullptr);
+  this->inspectorPanel = new InspectorPanel(nullptr);
+  this->fftPanel = new FftPanel(nullptr);
+  this->audioPanel = new AudioPanel(nullptr);
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);
   this->panoramicDialog = new PanoramicDialog(owner);
@@ -73,6 +73,8 @@ AppUI::postLoadInit(QMainWindow *owner)
   this->sourcePanel->deserializeAutoGains();
   this->spectrum->deserializeFATs();
   this->inspectorPanel->postLoadInit();
+
+  this->spectrum->adjustSizes();
 }
 
 AppUI::~AppUI(void)

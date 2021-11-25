@@ -336,34 +336,13 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->owner = owner;
   this->ui = ui;
 
-  // Configure audio preview
-  this->audioPanelDock = new QDockWidget("Audio preview", owner);
-  this->audioPanelDock->setWidget(this->ui->audioPanel);
-  owner->addDockWidget(Qt::RightDockWidgetArea, this->audioPanelDock);
-
-  // Configure Source Panel
-  this->sourcePanelDock = new QDockWidget("Source", owner);
-  this->sourcePanelDock->setWidget(this->ui->sourcePanel);
-  owner->addDockWidget(Qt::RightDockWidgetArea, this->sourcePanelDock);
-
-  // Configure Inspector Panel
-  this->inspectorPanelDock = new QDockWidget("Inspection", owner);
-  this->inspectorPanelDock->setWidget(this->ui->inspectorPanel);
-  owner->addDockWidget(Qt::RightDockWidgetArea, this->inspectorPanelDock);
-
-  // Configure FFT
-  this->fftPanelDock = new QDockWidget("FFT", owner);
-  this->fftPanelDock->setWidget(this->ui->fftPanel);
-  owner->addDockWidget(Qt::RightDockWidgetArea, this->fftPanelDock);
+  this->ui->spectrum->addToolWidget(this->ui->audioPanel, "Audio preview");
+  this->ui->spectrum->addToolWidget(this->ui->sourcePanel, "Signal source");
+  this->ui->spectrum->addToolWidget(this->ui->inspectorPanel, "Inspection");
+  this->ui->spectrum->addToolWidget(this->ui->fftPanel, "FFT");
 
   // Add baseband analyzer tab
   this->ui->main->mainTab->addTab(this->ui->spectrum, "Radio spectrum");
-
-  // Sort panels
-  owner->tabifyDockWidget(this->sourcePanelDock, this->inspectorPanelDock);
-  owner->tabifyDockWidget(this->inspectorPanelDock, this->fftPanelDock);
-
-  this->sourcePanelDock->raise();
 
   // Configure main spectrum
   this->ui->spectrum->setPaletteGradient(

@@ -67,6 +67,8 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   this->ui->mainSpectrum->setBookmarkSource(this->bookmarkSource);
   this->ui->mainSpectrum->setClickResolution(1);
   this->ui->mainSpectrum->setFilterClickResolution(1);
+
+  this->ui->toolBox->removeItem(0);
 }
 
 MainSpectrum::~MainSpectrum()
@@ -135,6 +137,17 @@ MainSpectrum::connectAll(void)
         SIGNAL(newModulation(QString)),
         this,
         SLOT(onNewModulation(QString)));
+}
+
+void
+MainSpectrum::addToolWidget(QWidget *widget, QString const &title)
+{
+  int widthHint = widget->sizeHint().width();
+
+  this->ui->toolBox->addItem(widget, " ▾ " + title);
+
+  if (this->maxToolWidth < widthHint)
+    this->maxToolWidth = widthHint;
 }
 
 void
@@ -563,6 +576,22 @@ MainSpectrum::getFAT(QString const &name) const
       return p;
 
   return nullptr;
+}
+
+void
+MainSpectrum::adjustSizes(void)
+{
+  QList<int> sizes;
+  int width = this->maxToolWidth - 25;
+
+  if (width > 160)
+    width = 160;
+
+  // Adjust splitter
+  sizes.append(this->ui->splitter->width() - width);
+  sizes.append(width);
+
+  this->ui->splitter->setSizes(sizes);
 }
 
 void
