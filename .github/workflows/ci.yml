@@ -53,6 +53,7 @@ jobs:
     - name: Install SoapySDR modules
       run: |
         sudo add-apt-repository -y ppa:myriadrf/drivers
+        sudo apt-get update
         sudo apt-get install soapysdr-module-all
 
     - name: Install SoapySDR development files
