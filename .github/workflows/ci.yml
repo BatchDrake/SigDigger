@@ -18,7 +18,7 @@ jobs:
   # miss that much by particularizing this in a per-OS basis.
   
   build-linux-appimage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
@@ -32,7 +32,7 @@ jobs:
 
     # libvolk2-dev is not available in Ubuntu 18.04
     - name: Install Volk
-      run: sudo apt-get install libvolk2-dev
+      run: sudo apt-get install libvolk1-dev
 
     - name: Install cURL
       run: sudo apt-get install libcurl4-openssl-dev
@@ -42,12 +42,16 @@ jobs:
 
     - name: Install SoapySDR modules
       run: |
-        sudo add-apt-repository -y ppa:myriadrf/drivers
-        sudo apt-get update
-        sudo apt-get install soapysdr-module-all
-
-    - name: Install SoapySDR development files
-      run: sudo apt-get install libsoapysdr-dev
+        wget https://github.com/pothosware/SoapySDR/archive/refs/tags/soapy-sdr-0.7.2.zip
+        sudo apt-get install zip
+        unzip soapy-sdr-0.7.2.zip
+        cd soapy-sdr-0.7.2
+        mkdir build
+        cd build
+        cmake ..
+        make
+        sudo make install
+        sudo ldconfig
 
     - name: Install libxml2
       run: sudo apt-get install libxml2-dev
