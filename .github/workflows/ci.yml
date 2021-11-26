@@ -52,6 +52,22 @@ jobs:
         make
         sudo make install
         sudo ldconfig
+        git clone https://github.com/osmocom/rtl-sdr.git
+        cd rtl-sdr
+        mkdir build
+        cd build
+        cmake ..
+        make 
+        sudo make install
+        sudo ldconfig
+        git clone https://github.com/pothosware/SoapyRTLSDR.git
+        cd SoapyRTLSDR
+        mkdir build
+        cd build
+        cmake ..
+        make 
+        sudo make install
+        sudo ldconfig
 
     - name: Install libxml2
       run: sudo apt-get install libxml2-dev
@@ -90,7 +106,7 @@ jobs:
         cd SigDigger/Scripts
         chmod a+x dist-appimage.sh
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
-        ./dist-appimage.sh 
+        SIGDIGGER_EMBED_SOAPYSDR=1 ./dist-appimage.sh 
         cd ../..
 
     - name: Archive AppImage files
