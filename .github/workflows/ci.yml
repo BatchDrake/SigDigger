@@ -42,16 +42,15 @@ jobs:
 
     - name: Install SoapySDR modules
       run: |
-        wget https://github.com/pothosware/SoapySDR/archive/refs/tags/soapy-sdr-0.7.2.zip
-        sudo apt-get install zip
-        unzip soapy-sdr-0.7.2.zip
-        cd SoapySDR-soapy-sdr-0.7.2
+        git clone https://github.com/pothosware/SoapySDR.git
+        cd SoapySDR
         mkdir build
         cd build
         cmake ..
         make
         sudo make install
         sudo ldconfig
+        cd ../../
         sudo apt-get install libusb-1.0-0-dev
         git clone https://github.com/osmocom/rtl-sdr.git
         cd rtl-sdr
@@ -61,6 +60,7 @@ jobs:
         make 
         sudo make install
         sudo ldconfig
+        cd ../../
         git clone https://github.com/pothosware/SoapyRTLSDR.git
         cd SoapyRTLSDR
         mkdir build
