@@ -51,8 +51,9 @@ jobs:
       run: sudo apt-get install libfftw3-dev
 
     - name: Install SoapySDR modules
-      run: sudo add-apt-repository -y ppa:myriadrf/drivers
-           sudo apt-get install soapysdr-module-all
+      run: |
+        sudo add-apt-repository -y ppa:myriadrf/drivers
+        sudo apt-get install soapysdr-module-all
 
     - name: Install SoapySDR development files
       run: sudo apt-get install libsoapysdr-dev
