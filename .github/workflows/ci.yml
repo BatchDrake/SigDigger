@@ -18,7 +18,7 @@ jobs:
   # miss that much by particularizing this in a per-OS basis.
   
   build-linux-appimage:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
@@ -27,7 +27,7 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
-        version: 5.15.2
+        version: 5.14.2
         target: desktop
         install-deps: true
         cached: false
@@ -51,7 +51,8 @@ jobs:
       run: sudo apt-get install libfftw3-dev
 
     - name: Install SoapySDR modules
-      run: sudo apt-get install soapysdr-module-all
+      run: sudo add-apt-repository -y ppa:myriadrf/drivers
+           sudo apt-get install soapysdr-module-all
 
     - name: Install SoapySDR development files
       run: sudo apt-get install libsoapysdr-dev
