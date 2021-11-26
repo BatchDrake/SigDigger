@@ -44,32 +44,46 @@ jobs:
       run: |
         git clone https://github.com/pothosware/SoapySDR.git
         cd SoapySDR
-        mkdir build
-        cd build
+        mkdir build; cd build
         cmake ..
-        make
         sudo make install
         sudo ldconfig
         cd ../../
         sudo apt-get install libusb-1.0-0-dev
         git clone https://github.com/osmocom/rtl-sdr.git
         cd rtl-sdr
-        mkdir build
-        cd build
+        mkdir build; cd build
         cmake ..
-        make 
         sudo make install
         sudo ldconfig
         cd ../../
         git clone https://github.com/pothosware/SoapyRTLSDR.git
         cd SoapyRTLSDR
-        mkdir build
-        cd build
+        mkdir build; cd build
         cmake ..
-        make 
         sudo make install
         sudo ldconfig
-
+        cd ../../
+        git clone git clone https://github.com/mossmann/hackrf.git
+        cd hackrf/host
+        mkdir build; cd build
+        cmake ..
+        sudo make install
+        sudo ldconfig
+        cd ../../../
+        git clone https://github.com/pothosware/SoapyHackRF.git
+        cd SoapyHackRF
+        mkdir build; cd build
+        cmake ..
+        sudo make install
+        cd ../../
+        git clone https://github.com/myriadrf/LimeSuite.git
+        cd LimeSuite
+        mkdir builddir; cd builddir
+        cmake ..
+        sudo make install
+        cd ../../
+        
     - name: Install libxml2
       run: sudo apt-get install libxml2-dev
 
