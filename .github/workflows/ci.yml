@@ -52,6 +52,7 @@ jobs:
         make
         sudo make install
         sudo ldconfig
+        sudo apt-get install libusb-1.0-0-dev
         git clone https://github.com/osmocom/rtl-sdr.git
         cd rtl-sdr
         mkdir build
