@@ -26,6 +26,16 @@ jobs:
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
+      with:
+        version: 5.15.2
+        target: desktop
+        install-deps: true
+        cached: false
+        setup-python: true
+        set-env: true
+        tools-only: false
+        aqtversion: ==1.2.5
+        py7zrversion: ==0.16.1
 
     - name: Install sndfile
       run: sudo apt-get install libsndfile1-dev
