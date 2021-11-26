@@ -18,7 +18,7 @@ jobs:
   # miss that much by particularizing this in a per-OS basis.
   
   build-linux-appimage:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04.3
     steps:
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
@@ -32,7 +32,7 @@ jobs:
 
     # libvolk2-dev is not available in Ubuntu 18.04
     - name: Install Volk
-      run: sudo apt-get install libvolk1-dev
+      run: sudo apt-get install libvolk2-dev
 
     - name: Install cURL
       run: sudo apt-get install libcurl4-openssl-dev
