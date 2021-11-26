@@ -74,7 +74,7 @@ jobs:
     - name: Checkout (SigDigger)
       uses: actions/checkout@v2
       with:
-        repository: BatchDrake/SigDigger
+        repository: alphafox02/SigDigger
         ref: refs/heads/develop
         path: SigDigger
 
