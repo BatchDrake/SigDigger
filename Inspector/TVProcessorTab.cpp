@@ -33,9 +33,10 @@ TVProcessorTab::TVProcessorTab(QWidget *parent, qreal rate) :
   QWidget(parent),
   ui(new Ui::TVProcessorTab)
 {
+  this->sampleRate = rate;
+
   ui->setupUi(this);
 
-  this->sampleRate = rate;
   this->tvThread = new QThread();
   this->tvWorker = new TVProcessorWorker();
   this->tvWorker->moveToThread(this->tvThread);

@@ -61,13 +61,16 @@ InspectorUI::InspectorUI(
 
   this->haveQth = suscan_get_qth(&this->qth);
 
+  this->facTab = new FACTab(this->ui->toolTab);
+  this->ui->toolTab->addTab(this->facTab, "Symbol autocorrelation");
+
   this->symViewTab = new SymViewTab(this->ui->toolTab);
   this->ui->toolTab->addTab(this->symViewTab, "Symbol stream");
 
   this->wfTab = new WaveformTab(this->ui->toolTab);
   this->ui->toolTab->addTab(this->wfTab, "Waveform");
 
-  this->tvTab = new TVProcessorTab(this->ui->toolTab, this->getBaudRateFloat());
+  this->tvTab = new TVProcessorTab(this->ui->toolTab, 0);
   this->ui->toolTab->addTab(this->tvTab, "Analog TV");
 
   this->inspectorMenu = new QMenu(owner);
@@ -153,6 +156,7 @@ InspectorUI::initUi(void)
   this->throttle.setCpuBurn(false);
   this->ui->constellation->setThrottleControl(&this->throttle);
   this->symViewTab->setThrottleControl(&this->throttle);
+  this->facTab->setThrottleControl(&this->throttle);
   this->wfTab->setThrottleControl(&this->throttle);
   this->ui->transition->setThrottleControl(&this->throttle);
   this->ui->histogram->setThrottleControl(&this->throttle);
@@ -749,6 +753,9 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
     }
   }
 
+  if (this->facTab->isRecording())
+    this->facTab->feed(data, size);
+
   if (this->tvTab->isEnabled())
     this->tvTab->feed(data, size);
 
@@ -1101,6 +1108,7 @@ InspectorUI::onInspectorControlChanged(void)
   if (newRate != oldRate) {
     this->tvTab->setSampleRate(this->getBaudRateFloat());
     this->wfTab->setSampleRate(this->getBaudRateFloat());
+    this->facTab->setSampleRate(this->getBaudRateFloat());
 
     if (this->recording) {
       this->recording = false;
@@ -1194,6 +1202,9 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   this->wfTab->setPalette(panelConfig.palette);
   this->wfTab->setPaletteOffset(panelConfig.paletteOffset);
   this->wfTab->setPaletteContrast(panelConfig.paletteContrast);
+
+  // Set FAC colors
+  this->facTab->setColorConfig(colors);
 
   // Set palette
   (void) this->setPalette(fftConfig.palette);

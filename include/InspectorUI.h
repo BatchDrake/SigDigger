@@ -47,6 +47,7 @@
 #include "SymViewTab.h"
 #include "TVProcessorTab.h"
 #include "WaveformTab.h"
+#include "FACTab.h"
 
 namespace Ui {
   class Inspector;
@@ -123,6 +124,7 @@ namespace SigDigger {
     FileDataSaver *dataSaver = nullptr;
     SocketForwarder *socketForwarder = nullptr;
     TVProcessorTab *tvTab = nullptr;
+    FACTab *facTab = nullptr;
     WaveformTab *wfTab = nullptr;
     SymViewTab *symViewTab = nullptr;
 
