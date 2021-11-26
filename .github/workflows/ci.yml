@@ -45,7 +45,7 @@ jobs:
         wget https://github.com/pothosware/SoapySDR/archive/refs/tags/soapy-sdr-0.7.2.zip
         sudo apt-get install zip
         unzip soapy-sdr-0.7.2.zip
-        cd soapy-sdr-0.7.2
+        cd SoapySDR-soapy-sdr-0.7.2
         mkdir build
         cd build
         cmake ..
