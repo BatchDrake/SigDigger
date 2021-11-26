@@ -56,11 +56,11 @@ jobs:
       run: sudo apt-get install libasound2-dev
     
     - name: Download linuxdeployqt AppImage
-      run: wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+      run: wget https://github.com/probonopd/linuxdeployqt/releases/download/5/linuxdeployqt-5-x86_64.AppImage
     
     - name: Install linuxdeployqt system-wide
       run: |
-        sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
+        sudo mv linuxdeployqt-5-x86_64.AppImage /usr/bin/linuxdeployqt
         sudo chmod a+x /usr/bin/linuxdeployqt
 
     - name: Download appimagetool
