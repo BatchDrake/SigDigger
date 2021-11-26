@@ -64,7 +64,7 @@ jobs:
         sudo make install
         sudo ldconfig
         cd ../../
-        git clone git clone https://github.com/mossmann/hackrf.git
+        git clone https://github.com/mossmann/hackrf.git
         cd hackrf/host
         mkdir build; cd build
         cmake ..
