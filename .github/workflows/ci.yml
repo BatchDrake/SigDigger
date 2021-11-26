@@ -18,7 +18,7 @@ jobs:
   # miss that much by particularizing this in a per-OS basis.
   
   build-linux-appimage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
