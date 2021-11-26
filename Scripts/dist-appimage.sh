@@ -167,7 +167,7 @@ fi
 embed_suscli_deps
 
 try "Executing build fixups..." build_fixups
-try "Calling linuxdeployqt..." linuxdeployqt "$DEPLOYROOT"/usr/share/applications/SigDigger.desktop -bundle-non-qt-libs
+try "Calling linuxdeployqt..." linuxdeployqt "$DEPLOYROOT"/usr/share/applications/SigDigger.desktop -bundle-non-qt-libs -unsupported-allow-new-glibc
 try "Moving SigDigger binary..." mv "$DEPLOYROOT"/usr/bin/SigDigger "$DEPLOYROOT"/usr/bin/SigDigger.app
 try "Copying wrapper script..." cp "$DISTROOT"/AppRun "$DEPLOYROOT"/usr/bin/SigDigger
 try "Setting permissions to wrapper script..." chmod a+x "$DEPLOYROOT"/usr/bin/SigDigger
