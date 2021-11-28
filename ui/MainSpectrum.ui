@@ -51,6 +51,58 @@
        <property name="spacing">
         <number>0</number>
        </property>
+       <item row="0" column="1">
+        <widget class="QLabel" name="lnbLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: #1d1d1f;
+color: #b7e869;
+font-size: 12px;
+font-family: Monospace;
+font-weight: bold;</string>
+         </property>
+         <property name="text">
+          <string> LNB </string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="loLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>96</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: #1d1d1f;
+color: #b7e869;
+font-size: 12px;
+font-family: Monospace;
+font-weight: bold;</string>
+         </property>
+         <property name="text">
+          <string> DEMOD </string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="0" rowspan="2">
         <widget class="LCD" name="fcLcd">
          <property name="sizePolicy">
@@ -99,10 +151,10 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="lnbLabel">
+       <item row="1" column="3">
+        <widget class="QLabel" name="throttlingLabel">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -112,13 +164,35 @@
 color: #b7e869;
 font-size: 12px;
 font-family: Monospace;
-font-weight: bold;</string>
+font-weight: bold;
+</string>
          </property>
          <property name="text">
-          <string> LNB </string>
+          <string>  Throttling: OFF</string>
          </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="4">
+        <widget class="Waterfall" name="mainSpectrum"/>
+       </item>
+       <item row="0" column="3">
+        <widget class="QLabel" name="captureModeLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: #1d1d1f;
+color: #b7e869;
+font-size: 12px;
+font-family: Monospace;
+font-weight: bold;
+</string>
+         </property>
+         <property name="text">
+          <string>  Capture mode: N/A</string>
          </property>
         </widget>
        </item>
@@ -161,56 +235,6 @@ font-weight: bold;</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="3">
-        <widget class="QLabel" name="captureModeLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: #1d1d1f;
-color: #b7e869;
-font-size: 12px;
-font-family: Monospace;
-font-weight: bold;
-</string>
-         </property>
-         <property name="text">
-          <string>  Capture mode: N/A</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="loLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>96</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: #1d1d1f;
-color: #b7e869;
-font-size: 12px;
-font-family: Monospace;
-font-weight: bold;</string>
-         </property>
-         <property name="text">
-          <string> DEMOD </string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="2">
         <widget class="LCD" name="loLcd">
          <property name="minimumSize">
@@ -244,69 +268,9 @@ font-weight: bold;</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="3">
-        <widget class="QLabel" name="throttlingLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: #1d1d1f;
-color: #b7e869;
-font-size: 12px;
-font-family: Monospace;
-font-weight: bold;
-</string>
-         </property>
-         <property name="text">
-          <string>  Throttling: OFF</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" colspan="4">
-        <widget class="Waterfall" name="mainSpectrum"/>
-       </item>
       </layout>
-    </widget>
-         <widget class="QToolBox" name="toolBox">
-      <property name="styleSheet">
-       <string notr="true">QToolBox::tab {
-    color: white;
-    font-weight: bold;
-    background: qlineargradient( x1:0 y1:0, x2:0 y2:1, stop:0 #808080, stop:1 black);
-    border-radius: 5px;
-    border: 1px solid transparent;
-}
-
-QToolBox::tab:hover {
-    background: qlineargradient( x1:0 y1:0, x2:0 y2:1, stop:0 #a0a0a0, stop:1 black);
-    border-color: black;
-}
-</string>
-      </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <property name="tabSpacing">
-       <number>0</number>
-      </property>
-      <widget class="QWidget" name="page_4">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>126</width>
-         <height>573</height>
-        </rect>
-       </property>
-       <attribute name="label">
-        <string>Page 2</string>
-       </attribute>
-      </widget>
      </widget>
-
+     <widget class="MultiToolBox" name="multiToolBox"/>
     </widget>
    </item>
   </layout>
@@ -323,6 +287,11 @@ QToolBox::tab:hover {
    <extends>QFrame</extends>
    <header>Waterfall.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MultiToolBox</class>
+   <extends>QWidget</extends>
+   <header>MultiToolBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
