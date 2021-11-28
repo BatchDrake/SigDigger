@@ -84,6 +84,7 @@ SOURCES += \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
     Components/TimeWindow.cpp \
+    Inspector/FACTab.cpp \
     Inspector/Inspector.cpp \
     Inspector/InspectorUI.cpp \
     Inspector/TVProcessorWorker.cpp \
@@ -177,6 +178,7 @@ HEADERS += \
     include/ConfigTab.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
+    include/FACTab.h \
     include/FrequencyCorrectionDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
@@ -292,6 +294,7 @@ FORMS += \
     ui/DeviceGain.ui \
     ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
+    ui/FACTab.ui \
     ui/FftPanel.ui \
     ui/FrequencyCorrectionDialog.ui \
     ui/GainControl.ui \

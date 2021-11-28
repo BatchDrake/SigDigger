@@ -94,11 +94,8 @@ WaveformTab::feed(const SUCOMPLEX *data, unsigned int size)
   qreal prevDuration = prevSize / this->fs;
   qreal currDuration;
 
-  std::copy(
-        data,
-        data + size,
-        std::back_inserter(this->buffer));
-
+  this->buffer.resize(prevSize + size);
+  memcpy(this->buffer.data() + prevSize, data, size * sizeof (SUCOMPLEX));
 
   currDuration = this->buffer.size() / this->fs;
 

@@ -19,7 +19,6 @@ namespace SigDigger {
 
     qreal fs = 1;
     std::vector<SUCOMPLEX> buffer;
-
     bool recording = false;
 
     bool hadSelectionBefore = true; // Yep. This must be true.

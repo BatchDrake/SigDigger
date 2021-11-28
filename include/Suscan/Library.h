@@ -74,7 +74,7 @@ namespace Suscan {
   struct Location : public Serializable {
     std::string name;
     std::string country;
-    xyz_t site;
+    xyz_t site = {{0.}, {0.}, {0.}};
     bool userLocation = false;
 
     inline QString
