@@ -13,74 +13,36 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_11">
+  <layout class="QGridLayout" name="gridLayout_8">
+   <property name="leftMargin">
+    <number>6</number>
+   </property>
+   <property name="topMargin">
+    <number>6</number>
+   </property>
+   <property name="rightMargin">
+    <number>6</number>
+   </property>
+   <property name="bottomMargin">
+    <number>6</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
    <item row="0" column="0">
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <property name="opaqueResize">
-      <bool>true</bool>
-     </property>
-     <property name="childrenCollapsible">
-      <bool>true</bool>
-     </property>
-     <widget class="QToolBox" name="toolBox">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QToolBox::tab {
-    color: white;
-    font-weight: bold;
-    background: qlineargradient( x1:0 y1:0, x2:0 y2:1, stop:0 #808080, stop:1 black);
-    border-radius: 5px;
-    border: 1px solid transparent;
-}
-
-QToolBox::tab:hover {
-    background: qlineargradient( x1:0 y1:0, x2:0 y2:1, stop:0 #a0a0a0, stop:1 black);
-    border-color: black;
-}
-</string>
-      </property>
-      <property name="midLineWidth">
-       <number>0</number>
-      </property>
+     <widget class="MultiToolBox" name="multiToolBox">
       <property name="currentIndex">
-       <number>2</number>
-      </property>
-      <property name="tabSpacing">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="page">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>198</width>
-         <height>835</height>
-        </rect>
+      <widget class="QWidget" name="multiToolBoxPage">
+       <property name="windowTitle">
+        <string>Channel properties</string>
        </property>
-       <attribute name="label">
-        <string> ▾  Channel properties</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_9">
+       <layout class="QGridLayout" name="gridLayout_16">
         <property name="leftMargin">
          <number>6</number>
         </property>
@@ -96,7 +58,40 @@ QToolBox::tab:hover {
         <property name="spacing">
          <number>3</number>
         </property>
-        <item row="4" column="1" colspan="2">
+        <item row="1" column="1">
+         <widget class="LCD" name="loLcd">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="segScale">
+           <double>0.900000000000000</double>
+          </property>
+          <property name="thickness">
+           <double>0.300000000000000</double>
+          </property>
+          <property name="zoom">
+           <double>0.600000000000000</double>
+          </property>
+          <property name="backgroundColor">
+           <color>
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </property>
+          <property name="foregroundColor">
+           <color>
+            <red>144</red>
+            <green>177</green>
+            <blue>86</blue>
+           </color>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
          <widget class="LCD" name="bwLcd">
           <property name="minimumSize">
            <size>
@@ -129,7 +124,7 @@ QToolBox::tab:hover {
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="2" column="0">
          <widget class="QLabel" name="label_8">
           <property name="text">
            <string>Bandwidth (Hz)</string>
@@ -139,19 +134,12 @@ QToolBox::tab:hover {
           </property>
          </widget>
         </item>
-        <item row="0" column="0" colspan="3">
-         <widget class="QLabel" name="sampleRateLabel">
-          <property name="text">
-           <string>Sample rate: XXX</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="0" colspan="3">
-         <widget class="QGroupBox" name="groupBox_4">
+        <item row="3" column="0" colspan="2">
+         <widget class="QGroupBox" name="groupBox">
           <property name="title">
            <string>Doppler correction</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_5">
+          <layout class="QGridLayout" name="gridLayout_15">
            <property name="leftMargin">
             <number>6</number>
            </property>
@@ -192,7 +180,7 @@ QToolBox::tab:hover {
             </widget>
            </item>
            <item row="0" column="0">
-            <widget class="QLabel" name="label_13">
+            <widget class="QLabel" name="label_41">
              <property name="text">
               <string>Satellite</string>
              </property>
@@ -211,7 +199,7 @@ QToolBox::tab:hover {
             </widget>
            </item>
            <item row="3" column="0">
-            <widget class="QLabel" name="label_19">
+            <widget class="QLabel" name="label_42">
              <property name="text">
               <string>Elevation</string>
              </property>
@@ -230,7 +218,7 @@ QToolBox::tab:hover {
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="label_15">
+            <widget class="QLabel" name="label_43">
              <property name="text">
               <string>Visible</string>
              </property>
@@ -249,14 +237,14 @@ QToolBox::tab:hover {
             </widget>
            </item>
            <item row="4" column="0">
-            <widget class="QLabel" name="label_25">
+            <widget class="QLabel" name="label_44">
              <property name="text">
               <string>Airmass</string>
              </property>
             </widget>
            </item>
            <item row="5" column="0">
-            <widget class="QLabel" name="label_21">
+            <widget class="QLabel" name="label_45">
              <property name="text">
               <string>VLOS speed</string>
              </property>
@@ -289,14 +277,14 @@ QToolBox::tab:hover {
             </widget>
            </item>
            <item row="6" column="0">
-            <widget class="QLabel" name="label_11">
+            <widget class="QLabel" name="label_46">
              <property name="text">
               <string>Distance</string>
              </property>
             </widget>
            </item>
            <item row="7" column="0">
-            <widget class="QLabel" name="label_23">
+            <widget class="QLabel" name="label_47">
              <property name="text">
               <string>Doppler</string>
              </property>
@@ -322,7 +310,7 @@ QToolBox::tab:hover {
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="label_17">
+            <widget class="QLabel" name="label_48">
              <property name="text">
               <string>Azimuth</string>
              </property>
@@ -341,86 +329,45 @@ QToolBox::tab:hover {
           </property>
          </widget>
         </item>
-        <item row="9" column="0" colspan="3">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="1" colspan="2">
-         <widget class="LCD" name="loLcd">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>32</height>
-           </size>
-          </property>
-          <property name="segScale">
-           <double>0.900000000000000</double>
-          </property>
-          <property name="thickness">
-           <double>0.300000000000000</double>
-          </property>
-          <property name="zoom">
-           <double>0.600000000000000</double>
-          </property>
-          <property name="backgroundColor">
-           <color>
-            <red>0</red>
-            <green>0</green>
-            <blue>0</blue>
-           </color>
-          </property>
-          <property name="foregroundColor">
-           <color>
-            <red>144</red>
-            <green>177</green>
-            <blue>86</blue>
-           </color>
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="sampleRateLabel">
+          <property name="text">
+           <string>Sample rate: XXX</string>
           </property>
          </widget>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_3">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>198</width>
-         <height>835</height>
-        </rect>
+      <widget class="QWidget" name="page_6">
+       <property name="windowTitle">
+        <string>Parameter estimation</string>
        </property>
-       <attribute name="label">
-        <string> ▾  Parameter estimation</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_10">
+       <layout class="QGridLayout" name="gridLayout_17">
         <property name="leftMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="topMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="rightMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="bottomMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="spacing">
-         <number>0</number>
+         <number>3</number>
         </property>
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollArea_2">
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
           <property name="widgetResizable">
            <bool>true</bool>
@@ -433,8 +380,8 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>198</width>
-             <height>835</height>
+             <width>184</width>
+             <height>441</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="estimatorsGrid">
@@ -462,39 +409,25 @@ QToolBox::tab:hover {
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_2">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>198</width>
-         <height>835</height>
-        </rect>
+      <widget class="QWidget" name="page_7">
+       <property name="windowTitle">
+        <string>Demodulator controls</string>
        </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <attribute name="label">
-        <string> ▾  Demodulator controls</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_8">
+       <layout class="QGridLayout" name="gridLayout_5">
         <property name="leftMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="topMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="rightMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="bottomMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="spacing">
-         <number>0</number>
+         <number>3</number>
         </property>
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollArea">
@@ -513,8 +446,11 @@ QToolBox::tab:hover {
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
           <property name="horizontalScrollBarPolicy">
-           <enum>Qt::ScrollBarAsNeeded</enum>
+           <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
           <property name="sizeAdjustPolicy">
            <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
@@ -530,8 +466,8 @@ QToolBox::tab:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>198</width>
-             <height>835</height>
+             <width>184</width>
+             <height>395</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -584,19 +520,11 @@ QToolBox::tab:hover {
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_5">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>198</width>
-         <height>835</height>
-        </rect>
+      <widget class="QWidget" name="page_8">
+       <property name="windowTitle">
+        <string>Subcarrier inspection</string>
        </property>
-       <attribute name="label">
-        <string> ▾  Subcarrier inspection</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_13">
+       <layout class="QGridLayout" name="gridLayout_11">
         <property name="leftMargin">
          <number>6</number>
         </property>
@@ -651,11 +579,8 @@ QToolBox::tab:hover {
               </sizepolicy>
              </property>
              <property name="text">
-              <string>&amp;ASK inspector</string>
+              <string>AS&amp;K inspector</string>
              </property>
-             <attribute name="buttonGroup">
-              <string notr="true">buttonGroup</string>
-             </attribute>
             </widget>
            </item>
            <item row="0" column="0">
@@ -701,9 +626,6 @@ QToolBox::tab:hover {
              <property name="checked">
               <bool>true</bool>
              </property>
-             <attribute name="buttonGroup">
-              <string notr="true">buttonGroup</string>
-             </attribute>
             </widget>
            </item>
            <item row="6" column="0" colspan="2">
@@ -762,9 +684,6 @@ font-weight: bold;</string>
              <property name="text">
               <string>&amp;FSK inspector</string>
              </property>
-             <attribute name="buttonGroup">
-              <string notr="true">buttonGroup</string>
-             </attribute>
             </widget>
            </item>
            <item row="1" column="0">
@@ -783,56 +702,29 @@ font-weight: bold;</string>
           </layout>
          </widget>
         </item>
-        <item row="1" column="0">
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_4">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>216</width>
-         <height>821</height>
-        </rect>
+      <widget class="QWidget" name="page_9">
+       <property name="windowTitle">
+        <string>Data forwarding</string>
        </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <attribute name="label">
-        <string> ▾  Data forwarding</string>
-       </attribute>
-       <layout class="QGridLayout" name="forwarderGrid">
+       <layout class="QGridLayout" name="gridLayout_14">
         <property name="leftMargin">
-         <number>3</number>
+         <number>6</number>
         </property>
         <property name="topMargin">
-         <number>3</number>
+         <number>6</number>
         </property>
         <property name="rightMargin">
-         <number>3</number>
+         <number>6</number>
         </property>
         <property name="bottomMargin">
-         <number>3</number>
+         <number>6</number>
         </property>
         <property name="spacing">
-         <number>0</number>
+         <number>3</number>
         </property>
-        <item row="0" column="0" colspan="2">
+        <item row="0" column="0">
          <widget class="QFrame" name="frame_4">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -846,7 +738,7 @@ font-weight: bold;</string>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <layout class="QGridLayout" name="gridLayout_7">
+          <layout class="QGridLayout" name="forwarderGrid">
            <property name="leftMargin">
             <number>6</number>
            </property>
@@ -1544,6 +1436,13 @@ font-family: Monospace;</string>
    <class>FrequencySpinBox</class>
    <extends>QWidget</extends>
    <header>FrequencySpinBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MultiToolBox</class>
+   <extends>QWidget</extends>
+   <header>MultiToolBox.h</header>
+   <addpagemethod>addPage</addpagemethod>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
