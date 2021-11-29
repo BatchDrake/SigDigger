@@ -31,6 +31,7 @@ using namespace SigDigger;
 void
 FftPanelConfig::deserialize(Suscan::Object const &conf)
 {
+  LOAD(collapsed);
   LOAD(averaging);
   LOAD(panWfRatio);
   LOAD(peakDetect);
@@ -57,6 +58,7 @@ FftPanelConfig::serialize(void)
 
   obj.setClass("FftPanelConfig");
 
+  STORE(collapsed);
   STORE(averaging);
   STORE(panWfRatio);
   STORE(peakDetect);
@@ -107,6 +109,21 @@ FftPanel::applyConfig(void)
   this->setUnitName(QString::fromStdString(savedConfig.unitName));
   this->setZeroPoint(savedConfig.zeroPoint);
   this->setGain(savedConfig.gain);
+  this->setProperty("collapsed", savedConfig.collapsed);
+}
+
+bool
+FftPanel::event(QEvent *event)
+{
+  if (event->type() == QEvent::DynamicPropertyChange) {
+    QDynamicPropertyChangeEvent *const propEvent =
+        static_cast<QDynamicPropertyChangeEvent*>(event);
+    QString propName = propEvent->propertyName();
+    if (propName == "collapsed")
+      this->panelConfig->collapsed = this->property("collapsed").value<bool>();
+  }
+
+  return PersistentWidget::event(event);
 }
 
 void
@@ -264,6 +281,8 @@ FftPanel::FftPanel(QWidget *parent) :
   this->populateUnits();
 
   this->connectAll();
+
+  this->setProperty("collapsed", this->panelConfig->collapsed);
 }
 
 void

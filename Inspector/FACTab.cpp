@@ -61,7 +61,6 @@ FACTab::resizeFAC(int size)
         FFTW_BACKWARD,
         FFTW_ESTIMATE));
 
-
   this->ui->facWaveform->zoomHorizontal(
         static_cast<qint64>(0),
         static_cast<qint64>(size / 2));
@@ -85,9 +84,10 @@ FACTab::FACTab(QWidget *parent) :
   this->ui->facSizeCombo->setCurrentIndex(16 - 9);
 
   this->ui->facWaveform->setRealComponent(true);
+  this->onUnitsChanged();
+
   this->onChangeFACSize();
   this->onAdjustAveraging();
-  this->onUnitsChanged();
   this->onChangePeakDetect();
 
   this->ui->facWaveform->zoomVertical(

@@ -63,7 +63,7 @@ namespace SigDigger {
       bool fullScreen = false;
       int x = -1;
       int y = -1;
-
+      qreal sidePanelRatio = .16;
       bool disableHighRateWarning = false;
 
       int loFreq = 0;

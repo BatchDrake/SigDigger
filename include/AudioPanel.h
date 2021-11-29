@@ -37,6 +37,7 @@ namespace SigDigger {
   class AudioPanelConfig : public Suscan::Serializable {
   public:
     bool enabled = false;
+    bool collapsed = false;
     std::string demod;
     std::string savePath;
     unsigned int rate   = 44100;
@@ -140,6 +141,7 @@ namespace SigDigger {
     // Overriden methods
     Suscan::Serializable *allocConfig(void) override;
     void applyConfig(void) override;
+    bool event(QEvent *) override;
 
   public slots:
     void onDemodChanged(void);

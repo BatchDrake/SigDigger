@@ -138,6 +138,8 @@ namespace SigDigger {
     void setUnits(QString const &, float, float);
 
     void addToolWidget(QWidget *widget, QString const &);
+    void setSidePanelWidth(int);
+    void setSidePanelRatio(qreal);
 
     // Getters
     bool getThrottling(void) const;
@@ -149,6 +151,8 @@ namespace SigDigger {
     unsigned int getZoom(void) const;
     FrequencyAllocationTable *getFAT(QString const &) const;
     void adjustSizes(void);
+    int sidePanelWidth(void) const;
+    qreal sidePanelRatio(void) const;
 
     static int getFrequencyUnits(qint64 frew);
 

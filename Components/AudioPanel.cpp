@@ -25,6 +25,7 @@
 #include <SuWidgetsHelpers.h>
 #include <suscan.h>
 #include <QMessageBox>
+#include <QDynamicPropertyChangeEvent>
 
 using namespace SigDigger;
 
@@ -44,6 +45,7 @@ void
 AudioPanelConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(enabled);
+  LOAD(collapsed);
   LOAD(demod);
   LOAD(rate);
   LOAD(cutOff);
@@ -66,6 +68,7 @@ AudioPanelConfig::serialize(void)
   obj.setClass("AudioPanelConfig");
 
   STORE(enabled);
+  STORE(collapsed);
   STORE(demod);
   STORE(rate);
   STORE(cutOff);
@@ -274,6 +277,8 @@ AudioPanel::AudioPanel(QWidget *parent) :
   this->assertConfig();
   this->populateRates();
   this->connectAll();
+
+  this->setProperty("collapsed", this->panelConfig->collapsed);
 }
 
 AudioPanel::~AudioPanel()
@@ -629,6 +634,7 @@ AudioPanel::applyConfig(void)
   this->setDemod(strToDemod(this->panelConfig->demod));
   this->setEnabled(this->panelConfig->enabled);
   this->setSquelchEnabled(this->panelConfig->squelch);
+  this->setProperty("collapsed", this->panelConfig->collapsed);
 
   // Frequency correction dialog
   this->fcDialog->setCorrectionEnabled(this->panelConfig->tleCorrection);
@@ -643,6 +649,19 @@ AudioPanel::applyConfig(void)
     this->setRecordSavePath(this->panelConfig->savePath);
 }
 
+bool
+AudioPanel::event(QEvent *event)
+{
+  if (event->type() == QEvent::DynamicPropertyChange) {
+    QDynamicPropertyChangeEvent *const propEvent =
+        static_cast<QDynamicPropertyChangeEvent*>(event);
+    QString propName = propEvent->propertyName();
+    if (propName == "collapsed")
+      this->panelConfig->collapsed = this->property("collapsed").value<bool>();
+  }
+
+  return GenericDataSaverUI::event(event);
+}
 //////////////////////////////// Slots ////////////////////////////////////////
 void
 AudioPanel::onDemodChanged(void)

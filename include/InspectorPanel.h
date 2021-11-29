@@ -35,6 +35,7 @@ namespace SigDigger {
 
   class InspectorPanelConfig : public Suscan::Serializable {
   public:
+    bool collapsed = true;
     std::string inspectorClass = "psk";
     std::string palette = "Suscan";
     SUFLOAT autoSquelchTriggerSNR = SIGDIGGER_DEFAULT_SQUELCH_TRIGGER;
@@ -121,6 +122,7 @@ namespace SigDigger {
     // Overriden methods
     Suscan::Serializable *allocConfig(void) override;
     void applyConfig(void) override;
+    bool event(QEvent *) override;
 
   public slots:
     void onOpenInspector(void);

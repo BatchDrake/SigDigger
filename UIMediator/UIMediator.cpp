@@ -687,6 +687,7 @@ UIMediator::saveUIConfig(void)
   this->appConfig->y = this->owner->geometry().y();
   this->appConfig->width  = this->owner->geometry().width();
   this->appConfig->height = this->owner->geometry().height();
+  this->appConfig->sidePanelRatio = this->ui->spectrum->sidePanelRatio();
 
   this->appConfig->enabledBandPlans.clear();
 
@@ -717,6 +718,9 @@ UIMediator::applyConfig(void)
   if (this->appConfig->fullScreen)
     this->owner->setWindowState(
         this->owner->windowState() | Qt::WindowFullScreen);
+
+  if (this->appConfig->sidePanelRatio >= 0)
+    this->ui->spectrum->setSidePanelRatio(this->appConfig->sidePanelRatio);
 
   // The following controls reflect elements of the configuration that are
   // not owned by them. We need to set them manually.

@@ -178,13 +178,16 @@ InspectorUI::initUi(void)
 
   // Refresh Bps
   this->setBps(1);
+
+  // Show only demodulator controls
+  this->ui->multiToolBox->setCurrentIndex(2);
 }
 
 void
 InspectorUI::adjustSizes(void)
 {
   QList<int> sizes;
-  int width = this->ui->scrollAreaWidgetContents->sizeHint().width() - 25;
+  int width = this->ui->controlsGrid->sizeHint().width() - 25;
 
   // Adjust splitter
   sizes.append(width);
