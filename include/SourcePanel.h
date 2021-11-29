@@ -35,6 +35,7 @@ namespace SigDigger {
   class SourcePanelConfig : public Suscan::Serializable {
     public:
       Suscan::Serializable *dataSaverConfig = nullptr;
+      bool collapsed = false;
       bool throttle = false;
       bool dcRemove = false;
       bool iqRev = false;
@@ -180,6 +181,7 @@ namespace SigDigger {
       // Overriden methods
       Suscan::Serializable *allocConfig(void) override;
       void applyConfig(void) override;
+      bool event(QEvent *) override;
 
     signals:
       void toggleRecord(void);

@@ -37,6 +37,7 @@ using namespace SigDigger;
 void
 SourcePanelConfig::deserialize(Suscan::Object const &conf)
 {
+  LOAD(collapsed);
   LOAD(throttle);
   LOAD(throttleRate);
   LOAD(dcRemove);
@@ -59,6 +60,7 @@ SourcePanelConfig::serialize(void)
 
   obj.setClass("SourcePanelConfig");
 
+  STORE(collapsed);
   STORE(throttle);
   STORE(throttleRate);
   STORE(dcRemove);
@@ -86,6 +88,8 @@ SourcePanel::SourcePanel(QWidget *parent) :
 
   this->assertConfig();
   this->connectAll();
+
+  this->setProperty("collapsed", this->panelConfig->collapsed);
 }
 
 void
@@ -522,6 +526,20 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   this->refreshing = oldRefreshing;
 }
 
+bool
+SourcePanel::event(QEvent *event)
+{
+  if (event->type() == QEvent::DynamicPropertyChange) {
+    QDynamicPropertyChangeEvent *const propEvent =
+        static_cast<QDynamicPropertyChangeEvent*>(event);
+    QString propName = propEvent->propertyName();
+    if (propName == "collapsed")
+      this->panelConfig->collapsed = this->property("collapsed").value<bool>();
+  }
+
+  return PersistentWidget::event(event);
+}
+
 void
 SourcePanel::applyCurrentAutogain(void)
 {
@@ -561,6 +579,7 @@ SourcePanel::applyConfig(void)
   this->ui->swapIQCheck->setChecked(this->panelConfig->iqRev);
   this->ui->agcEnabledCheck->setChecked(this->panelConfig->agcEnabled);
   this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
+  this->setProperty("collapsed", this->panelConfig->collapsed);
 
   this->saverUI->applyConfig();
 

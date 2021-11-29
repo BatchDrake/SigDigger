@@ -33,6 +33,7 @@ namespace Ui {
 namespace SigDigger {
   class FftPanelConfig : public Suscan::Serializable {
   public:
+    bool collapsed = true;
     float averaging = 1;
     float panWfRatio = 0.3f;
     bool peakDetect = false;
@@ -172,6 +173,7 @@ namespace SigDigger {
     // Overriden methods
     Suscan::Serializable *allocConfig(void) override;
     void applyConfig(void) override;
+    bool event(QEvent *) override;
 
   public slots:
     void onPandRangeChanged(int min, int max);

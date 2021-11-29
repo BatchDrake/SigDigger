@@ -141,11 +141,13 @@ void
 MainSpectrum::addToolWidget(QWidget *widget, QString const &title)
 {
   int widthHint = widget->sizeHint().width();
+  bool collapsed = widget->property("collapsed").value<bool>();
 
   this->ui->multiToolBox->addItem(
         new MultiToolBoxItem(
           title,
-          widget));
+          widget,
+          !collapsed));
 
   if (this->maxToolWidth < widthHint)
     this->maxToolWidth = widthHint;
@@ -582,17 +584,46 @@ MainSpectrum::getFAT(QString const &name) const
 void
 MainSpectrum::adjustSizes(void)
 {
+  this->setSidePanelWidth(qBound(0, this->maxToolWidth, 220));
+}
+
+qreal
+MainSpectrum::sidePanelRatio(void) const
+{
+  int fullWidth = this->ui->splitter->width();
+
+  return static_cast<qreal>(this->ui->splitter->sizes()[1])
+      / static_cast<qreal>(fullWidth);
+}
+
+void
+MainSpectrum::setSidePanelWidth(int width)
+{
   QList<int> sizes;
-  int width = this->maxToolWidth - 25;
+  int fullWidth = this->ui->splitter->width();
 
-  if (width > 220)
-    width = 220;
+  if (fullWidth > 0) {
+    sizes.append(fullWidth - width);
+    sizes.append(width);
 
-  // Adjust splitter
-  sizes.append(this->ui->splitter->width() - width);
-  sizes.append(width);
+    this->ui->splitter->setSizes(sizes);
+  }
+}
 
-  this->ui->splitter->setSizes(sizes);
+int
+MainSpectrum::sidePanelWidth(void) const
+{
+  return this->ui->splitter->sizes()[1];
+}
+
+void
+MainSpectrum::setSidePanelRatio(qreal ratio)
+{
+  int fullWidth = this->ui->splitter->width();
+
+  int width = static_cast<int>(ratio * fullWidth);
+
+  this->setSidePanelWidth(width);
 }
 
 void

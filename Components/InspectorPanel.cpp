@@ -32,6 +32,7 @@ using namespace SigDigger;
 void
 InspectorPanelConfig::deserialize(Suscan::Object const &conf)
 {
+  LOAD(collapsed);
   LOAD(inspectorClass);
   LOAD(precise);
   LOAD(palette);
@@ -47,6 +48,7 @@ InspectorPanelConfig::serialize(void)
 
   obj.setClass("InspectorPanelConfig");
 
+  STORE(collapsed);
   STORE(inspectorClass);
   STORE(precise);
   STORE(palette);
@@ -77,12 +79,28 @@ InspectorPanel::applyConfig(void)
   this->ui->triggerSpin->setValue(
         static_cast<qreal>(this->panelConfig->autoSquelchTriggerSNR));
 
+  this->setProperty("collapsed", this->panelConfig->collapsed);
+
   // Track changes now
   connect(
         this->timeWindow,
         SIGNAL(configChanged(void)),
         this,
         SLOT(onTimeWindowConfigChanged(void)));
+}
+
+bool
+InspectorPanel::event(QEvent *event)
+{
+  if (event->type() == QEvent::DynamicPropertyChange) {
+    QDynamicPropertyChangeEvent *const propEvent =
+        static_cast<QDynamicPropertyChangeEvent*>(event);
+    QString propName = propEvent->propertyName();
+    if (propName == "collapsed")
+      this->panelConfig->collapsed = this->property("collapsed").value<bool>();
+  }
+
+  return PersistentWidget::event(event);
 }
 
 void
@@ -479,6 +497,8 @@ InspectorPanel::InspectorPanel(QWidget *parent) :
   this->setState(DETACHED);
   this->refreshUi();
   this->connectAll();
+
+  this->setProperty("collapsed", this->panelConfig->collapsed);
 }
 
 InspectorPanel::~InspectorPanel()
