@@ -121,6 +121,12 @@ InspectorMessage::getEstimatorId(void) const
   return this->message->estimator_id;
 }
 
+uint32_t
+InspectorMessage::getSpectrumSourceId(void) const
+{
+  return this->message->spectsrc_id;
+}
+
 SUFLOAT
 InspectorMessage::getEstimation(void) const
 {

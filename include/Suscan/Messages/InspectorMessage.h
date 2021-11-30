@@ -91,6 +91,7 @@ namespace Suscan {
     suscan_config_t const *getCConfig(void) const;
     RequestId getRequestId(void) const;
     InspectorId getInspectorId(void) const;
+    uint32_t getSpectrumSourceId(void) const;
     Handle getHandle(void) const;
     SUFLOAT *getSpectrumData(void) const;
     SUSCOUNT getSpectrumLength(void) const;

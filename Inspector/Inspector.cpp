@@ -153,8 +153,17 @@ Inspector::feed(const SUCOMPLEX *data, unsigned int size)
 }
 
 void
-Inspector::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
+Inspector::feedSpectrum(
+    const SUFLOAT *data,
+    SUSCOUNT len,
+    SUSCOUNT rate,
+    uint32_t id)
 {
+  if (id != this->lastSpectrumId) {
+    this->lastSpectrumId = id;
+    this->ui->resetSpectrumLimits();
+  }
+
   if (len > 0)
     this->ui->feedSpectrum(data, len, rate);
 }
