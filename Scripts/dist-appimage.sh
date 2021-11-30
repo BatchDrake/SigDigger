@@ -161,7 +161,7 @@ if [ "$SIGDIGGER_EMBED_SOAPYSDR" != "" ]; then
     APPIMAGE_NAME="$DISTFILENAME-full".AppImage
     embed_soapysdr
 else
-    APPIMAGE_NAME="$DISTFILENAME-lite".AppImage
+    APPIMAGE_NAME="$DISTFILENAME-DragonOS".AppImage
 fi
 
 embed_suscli_deps
