@@ -627,12 +627,17 @@
             </item>
             <item>
              <property name="text">
-              <string>Raw float32 I/Q capture</string>
+              <string>Raw complex 32-bit float (CF32)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Raw unsigned8 I/Q capture</string>
+              <string>Raw complex 8-bit unsigned (CU8)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Raw complex 16-bit signed (CS16)</string>
              </property>
             </item>
             <item>
