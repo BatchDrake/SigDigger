@@ -159,6 +159,10 @@ LocationConfigTab::setLocation(Suscan::Location const &loc)
     this->ui->countryCombo->setCurrentIndex(
         this->countryList[QString::fromStdString(loc.country)]);
 
+  this->paintMapCoords(
+        this->ui->latitudeSpinBox->value(),
+        this->ui->longitudeSpinBox->value());
+
   this->modified = false;
 }
 
