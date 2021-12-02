@@ -144,6 +144,9 @@ jobs:
         sudo chmod -R a+rw /usr/local/lib/SoapySDR/modules0.8
         brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyairspyhf soapyredpitaya soapyiris limesuite soapyplutosdr
 
+    - name: Remove SoapySDR remote module to prevent crashes
+      run: sudo rm /usr/local/lib/SoapySDR/modules0.8/libremote*
+
     - name: Install libxml2
       run: brew install libxml2
 
