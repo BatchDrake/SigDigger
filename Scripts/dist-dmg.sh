@@ -2,11 +2,6 @@
 #
 #  dist-dmg.sh: Deploy SigDigger in MacOS disk image format
 #
-#  The following environment variables adjust the behavior of this script:
-#
-#    SIGDIGGER_EMBED_SOAPYSDR: Embeds SoapySDR to the resulting AppImage,
-#      along with all the modules installed in the deployment system.
-#
 #  Copyright (C) 2021 Gonzalo José Carracedo Carballal
 #
 #  This program is free software: you can redistribute it and/or modify

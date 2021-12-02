@@ -120,6 +120,11 @@ jobs:
     - name: Install SoapySDR (Pothos)
       run: brew install pothossoapy
 
+    - name: Fix brew/SoapySDR linking disaster
+      run: |
+        rm -f /usr/local/lib/libSoapySDR.0.8.dylib
+        ln -s /usr/local/lib/libSoapySDR.0.8.1.dylib /usr/local/lib/libSoapySDR.0.8.dylib
+    
     - name: Creating modules0.8
       run: sudo mkdir -p /usr/local/lib/SoapySDR/modules0.8
 
