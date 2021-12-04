@@ -859,6 +859,37 @@ InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
         static_cast<float *>(this->fftData.data()),
         static_cast<int>(len));
 
+  if (!this->haveSpectrumLimits) {
+    SUFLOAT min = +INFINITY;
+    SUFLOAT max = -INFINITY;
+
+    for (SUSCOUNT i = 0; i < len; ++i) {
+      if (min > data[i])
+        min = data[i];
+      if (max < data[i])
+        max = data[i];
+    }
+
+    if (!isinf(min) && !isinf(max)) {
+      unsigned int updates;
+      SUFLOAT range = max - min;
+      SUFLOAT spacing = .1f * range;
+      this->ui->gainSpinBox->setValue(-max);
+      this->ui->zeroPointSpin->setValue(-max);
+      this->ui->wfSpectrum->setPandapterRange(min - max - spacing, spacing);
+      this->ui->wfSpectrum->setWaterfallRange(min - max - spacing, spacing);
+
+      // The inspector spectrum size is len, with 100 ms update period.
+      // If the sample rate is fs, len / (fs * .1) is the number of intermediate
+      // updates we need to wait for the spectrum to stabilize.
+
+      updates = static_cast<unsigned>(len / (this->sampleRate * .1f));
+
+      if (this->spectrumAdjustCounter++ > updates)
+        this->haveSpectrumLimits = true;
+    }
+  }
+
   if (this->lastLen != len) {
     int res = static_cast<int>(
           round(static_cast<qreal>(rate) / static_cast<qreal>(len)));
@@ -870,6 +901,13 @@ InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
     this->ui->wfSpectrum->setClickResolution(res);
     this->ui->wfSpectrum->setFilterClickResolution(res);
   }
+}
+
+void
+InspectorUI::resetSpectrumLimits(void)
+{
+  this->haveSpectrumLimits = false;
+  this->spectrumAdjustCounter = 0;
 }
 
 void

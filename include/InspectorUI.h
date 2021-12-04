@@ -87,7 +87,10 @@ namespace SigDigger {
     bool forwarding = false;
     bool adjusting = false;
 
+    bool haveSpectrumLimits = false;
+
     unsigned int recordingRate = 0;
+    unsigned int spectrumAdjustCounter = 0;
 
     // Inspector config
     Suscan::Config *config; // Weak
@@ -212,6 +215,7 @@ namespace SigDigger {
       void setBandwidth(unsigned int bw);
       void setLo(int lo);
       void popupContextMenu(void);
+      void resetSpectrumLimits(void);
       void refreshInspectorCtls(void);
       unsigned int getBandwidth(void) const;
       int getLo(void) const;

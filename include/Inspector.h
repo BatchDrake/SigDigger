@@ -24,6 +24,7 @@ namespace SigDigger {
       Suscan::Handle handle;
       Suscan::InspectorId id;
       Suscan::Analyzer *analyzer = nullptr;
+      uint32_t lastSpectrumId = 0;
       bool adjusted = false;
 
       static QString getInspectorTabTitle(
@@ -68,7 +69,11 @@ namespace SigDigger {
 
       void setAnalyzer(Suscan::Analyzer *analyzer);
       void feed(const SUCOMPLEX *data, unsigned int size);
-      void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
+      void feedSpectrum(
+          const SUFLOAT *data,
+          SUSCOUNT len,
+          SUSCOUNT rate,
+          uint32_t id);
       void updateEstimator(Suscan::EstimatorId id, float val);
       void notifyOrbitReport(Suscan::OrbitReport const &);
       void disableCorrection(void);

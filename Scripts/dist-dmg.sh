@@ -2,11 +2,6 @@
 #
 #  dist-dmg.sh: Deploy SigDigger in MacOS disk image format
 #
-#  The following environment variables adjust the behavior of this script:
-#
-#    SIGDIGGER_EMBED_SOAPYSDR: Embeds SoapySDR to the resulting AppImage,
-#      along with all the modules installed in the deployment system.
-#
 #  Copyright (C) 2021 Gonzalo José Carracedo Carballal
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -166,7 +161,7 @@ function remove_full_path_stdin () {
 
 function ensure_rpath()
 {
-  for i in "$LIBPATH"/*.dylib "$LIBPATH/SoapySDR/modules"*/*.so "$BUNDLEPATH"/Contents/MacOS/SigDigger; do
+  for i in "$LIBPATH"/*.dylib "$LIBPATH/SoapySDR/modules"*/*.so "$BUNDLEPATH"/Contents/MacOS/*; do
       if ! [ -L "$i" ]; then
 	  chmod u+rw "$i"
 	  try "Fixing "`basename $i`"..." true
@@ -198,8 +193,9 @@ function deploy()
   locate_macdeploy
   try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH"
   try "Copying Suscan data directory to bundle..." cp -Rfv "$DEPLOYROOT/usr/share/suscan" "$RSRCPATH"
-  try "Copying Suscan CLI tool to bundle..." cp -Rfv "$DEPLOYROOT/usr/bin/suscli" "$BINPATH"
-  try "Bundling built libraries..." cp -Rfv "$DEPLOYROOT/usr/lib/"*.dylib "$LIBPATH"
+  try "Copying Suscan CLI tool (suscli) to bundle..." cp -fv "$DEPLOYROOT/usr/bin/suscli" "$BINPATH"
+  try "Copying SoapySDRUtil to bundle..." cp -fv `which SoapySDRUtil` "$BINPATH"
+  try "Bundling built libraries..." cp -fv "$DEPLOYROOT/usr/lib/"*.dylib "$LIBPATH"
 
   deploy_deps
   ensure_rpath

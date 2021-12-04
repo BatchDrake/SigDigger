@@ -159,6 +159,10 @@ LocationConfigTab::setLocation(Suscan::Location const &loc)
     this->ui->countryCombo->setCurrentIndex(
         this->countryList[QString::fromStdString(loc.country)]);
 
+  this->paintMapCoords(
+        this->ui->latitudeSpinBox->value(),
+        this->ui->longitudeSpinBox->value());
+
   this->modified = false;
 }
 
@@ -183,6 +187,8 @@ LocationConfigTab::LocationConfigTab(QWidget *parent) :
   ConfigTab(parent, "Location"),
   ui(new Ui::LocationConfigTab)
 {
+  Suscan::Location loc;
+
   ui->setupUi(this);
 
   // Configure search box
@@ -194,6 +200,14 @@ LocationConfigTab::LocationConfigTab(QWidget *parent) :
   // Populate combos
   this->populateLocations();
 
+  // Set some default location, just in case
+  loc.name        = "Default site";
+  loc.country     = "Spain";
+  loc.site.lat    = +43.38670853735826;
+  loc.site.lon    =  -8.4077228557;
+  loc.site.height = 26e-3;
+
+  this->setLocation(loc);
   this->connectAll();
 }
 

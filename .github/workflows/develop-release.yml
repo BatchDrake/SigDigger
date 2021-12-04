@@ -1,0 +1,187 @@
+name: "develop-release"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # Installation of dependencies is too OS-dependent now, we don't
+  # miss that much by particularizing this in a per-OS basis.
+  
+  build-linux-appimage:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Setup interactive shell session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+
+    - name: Install sndfile
+      run: sudo apt-get install libsndfile1-dev
+
+    # libvolk2-dev is not available in Ubuntu 18.04
+    - name: Install Volk
+      run: sudo apt-get install libvolk1-dev
+
+    - name: Install cURL
+      run: sudo apt-get install libcurl4-openssl-dev
+      
+    - name: Install FFTW3
+      run: sudo apt-get install libfftw3-dev
+
+    - name: Install SoapySDR modules
+      run: sudo apt-get install soapysdr-module-all
+
+    - name: Install SoapySDR development files
+      run: sudo apt-get install libsoapysdr-dev
+
+    - name: Install libxml2
+      run: sudo apt-get install libxml2-dev
+
+    - name: Install portaudio
+      run: sudo apt-get install portaudio19-dev
+
+    - name: Install ALSA libraries
+      run: sudo apt-get install libasound2-dev
+    
+    - name: Download linuxdeployqt AppImage
+      run: wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+    
+    - name: Install linuxdeployqt system-wide
+      run: |
+        sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
+        sudo chmod a+x /usr/bin/linuxdeployqt
+
+    - name: Download appimagetool
+      run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+    
+    - name: Install appimagetool system-wide
+      run: |
+        sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
+        sudo chmod a+x /usr/bin/appimagetool
+    
+    - name: Checkout (SigDigger)
+      uses: actions/checkout@v2
+      with:
+        repository: BatchDrake/SigDigger
+        ref: refs/heads/develop
+        path: SigDigger
+
+    - name: Build & Distribute (SigDigger)
+      run: |
+        cd SigDigger/Scripts
+        chmod a+x dist-appimage.sh
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
+        SIGDIGGER_EMBED_SOAPYSDR=1 ./dist-appimage.sh 
+        cd ../..
+
+    - name: Archive AppImage files
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-latest-appimage
+        path: SigDigger/Scripts/*.AppImage
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - name: Setup interactive shell session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+
+    - name: Install sndfile
+      run: brew install libsndfile
+
+    - name: Install Volk
+      run: brew install volk
+
+    - name: Install cURL
+      run: brew install curl
+
+    - name: Install FFTW3
+      run: brew install fftw
+
+    - name: Adding SoapySDR taps (Pothos)
+      run: brew tap pothosware/homebrew-pothos && brew update
+
+    - name: Install SoapySDR (Pothos)
+      run: brew install pothossoapy
+
+    - name: Fix brew/SoapySDR linking disaster
+      run: |
+        rm -f /usr/local/lib/libSoapySDR.0.8.dylib
+        ln -s /usr/local/lib/libSoapySDR.0.8.1.dylib /usr/local/lib/libSoapySDR.0.8.dylib
+    
+    - name: Creating modules0.8
+      run: sudo mkdir -p /usr/local/lib/SoapySDR/modules0.8
+
+    # - name: Install SDRPlay API
+    #  run: wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg && sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /
+
+    # - name: Build and install SoapySDR module for SDRPlay
+    #   run: git clone https://github.com/pothosware/SoapySDRPlay3 && cd SoapySDRPlay3 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j3 && sudo make install && cd ../../
+
+    # soapyosmo   removed because of random compilation errors
+    # soapyuhd    removed for the same reason
+    # soapyaudio  removed as it keeps breaking
+    # soapyremote removed because it crashes for whatever reason
+    # SDRPlay support removed becuase it hangs SoapySDR on startup
+    - name: Install SoapySDR modules (Pothos)
+      run: |
+        sudo chmod -R a+rw /usr/local/lib/SoapySDR/modules0.8
+        brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyairspyhf soapyredpitaya soapyiris limesuite soapyplutosdr
+
+    - name: Remove SoapySDR remote module to prevent crashes
+      run: sudo rm /usr/local/lib/SoapySDR/modules0.8/libremote*
+    
+    - name: Install libxml2
+      run: brew install libxml2
+
+    - name: Install portaudio
+      run: brew install portaudio
+
+    - name: Checkout (SigDigger)
+      uses: actions/checkout@v2
+      with:
+        repository: BatchDrake/SigDigger
+        ref: refs/heads/develop
+        path: SigDigger
+
+    - name: Build & Distribute (SigDigger)
+      run: |
+        cd SigDigger/Scripts
+        chmod a+x dist-dmg.sh
+        SIGDIGGER_EMBED_SOAPYSDR=1 ./dist-dmg.sh
+        cd ../..
+
+    - name: Archive .DMG files
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos-latest-dmg
+        path: SigDigger/Scripts/*.dmg
+
+  do_release:
+    needs: [ build-linux-appimage, build-macos ]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Download binaries
+        uses: actions/download-artifact@v2
+
+      - name: Deploy 'latest' release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "SigDigger Development Build (${{steps.date.outputs.date}})"
+          files: |
+            linux-latest-appimage/*.AppImage
+            macos-latest-dmg/*.dmg

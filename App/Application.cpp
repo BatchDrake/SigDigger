@@ -1029,7 +1029,11 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
            if (++p == len)
              p = 0;
          }
-         insp->feedSpectrum(data, len, msg.getSpectrumRate());
+         insp->feedSpectrum(
+               data,
+               len,
+               msg.getSpectrumRate(),
+               msg.getSpectrumSourceId());
        }
       break;
 
