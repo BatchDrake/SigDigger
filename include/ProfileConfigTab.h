@@ -34,14 +34,18 @@ namespace Ui {
 }
 
 namespace SigDigger {
+  class DeviceTweaks;
   class ProfileConfigTab : public ConfigTab
   {
     Q_OBJECT
 
     Ui::ProfileConfigTab *ui;
+    DeviceTweaks         *tweaks = nullptr;
     bool modified      = false;
     bool needsRestart  = false;
     bool refreshing    = true;
+    bool hasTweaks     = false;
+
     Suscan::Source::Config profile;
     Suscan::Source::Device remoteDevice;
 
@@ -63,6 +67,7 @@ namespace SigDigger {
     void guessParamsFromFileName(void);
     void updateRemoteParams(void);
     void configChanged(bool restart = false);
+    bool shouldDisregardTweaks(void);
 
     int  findRemoteProfileIndex(void);
     unsigned int getSelectedSampleRate(void) const;
@@ -131,6 +136,8 @@ namespace SigDigger {
     void onRefreshRemoteDevices(void);
     void onRemoteProfileSelected(void);
     void onChangeSourceTimeUTC(void);
+    void onDeviceTweaksClicked(void);
+    void onDeviceTweaksAccepted(void);
   };
 }
 

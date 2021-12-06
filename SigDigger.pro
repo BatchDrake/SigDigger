@@ -69,6 +69,7 @@ SOURCES += \
     Components/AudioPanel.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
+    Components/DeviceTweaks.cpp \
     Components/DopplerDialog.cpp \
     Components/FftPanel.cpp \
     Components/FrequencyCorrectionDialog.cpp \
@@ -176,6 +177,7 @@ HEADERS += \
     include/CarrierXlator.h \
     include/ColorConfigTab.h \
     include/ConfigTab.h \
+    include/DeviceTweaks.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
     include/FACTab.h \
@@ -292,6 +294,7 @@ FORMS += \
     ui/Config.ui \
     ui/DataSaverUI.ui \
     ui/DeviceGain.ui \
+    ui/DeviceTweaks.ui \
     ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
     ui/FACTab.ui \

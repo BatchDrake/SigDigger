@@ -450,6 +450,35 @@ Source::Config::getParam(const std::string &key) const
   return param;
 }
 
+SUBOOL
+Source::Config::walkParams(
+    const suscan_source_config_t *,
+    const char *key,
+    const char *value,
+    void *userdata)
+{
+  QList<QPair<std::string, std::string>> *dest =
+      reinterpret_cast<QList<QPair<std::string, std::string>> *>(userdata);
+
+  dest->append(QPair<std::string, std::string>(key, value));
+
+  return SU_TRUE;
+}
+
+QList<QPair<std::string, std::string>>
+Source::Config::getParamList(void) const
+{
+  QList<QPair<std::string, std::string>> list;
+
+  SU_ATTEMPT(
+        suscan_source_config_walk_params(
+          this->instance,
+          Source::Config::walkParams,
+          &list));
+
+  return list;
+}
+
 SUFLOAT
 Source::Config::getPPM(void) const
 {
@@ -536,6 +565,15 @@ Source::Config::setParam(std::string const &key, std::string const &val)
           this->instance,
           key.c_str(),
           val.c_str()));
+}
+
+void
+Source::Config::clearParams(void)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_clear_params(this->instance);
 }
 
 void

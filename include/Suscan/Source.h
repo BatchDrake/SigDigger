@@ -24,6 +24,7 @@
 
 #include <Suscan/Compat.h>
 #include <Suscan/Object.h>
+#include <QPair>
 #include <analyzer/source.h>
 
 struct suscan_analyzer_gain_info;
@@ -310,6 +311,12 @@ namespace Suscan {
     friend class Analyzer;
     friend class Source;
 
+    static SUBOOL walkParams(
+        const suscan_source_config_t *,
+        const char *,
+        const char *,
+        void *);
+
   public:
     suscan_source_config_t *instance;
     std::string label(void) const;
@@ -331,6 +338,8 @@ namespace Suscan {
     SUFLOAT getBandwidth(void) const;
     SUFLOAT getGain(const std::string &) const;
     std::string getParam(const std::string &key) const;
+    QList<QPair<std::string, std::string>> getParamList(void) const;
+
     SUFLOAT getPPM(void) const;
 
     const Source::Device &getDevice(void);
@@ -354,6 +363,8 @@ namespace Suscan {
     void setAntenna(const std::string &);    
     void setInterface(std::string const &interface);
     void setParam(std::string const &key, std::string const &param);
+    void clearParams(void);
+
     void setPPM(SUFLOAT);
 
     Config& operator=(const Config &);

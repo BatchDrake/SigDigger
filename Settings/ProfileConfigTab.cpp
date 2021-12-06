@@ -24,6 +24,7 @@
 #include <SuWidgetsHelpers.h>
 #include <time.h>
 #include "ProfileConfigTab.h"
+#include "DeviceTweaks.h"
 #include "ui_ProfileConfigTab.h"
 
 #define PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ 0
@@ -48,6 +49,26 @@ ProfileConfigTab::configChanged(bool restart)
   this->modified     = true;
   this->needsRestart = this->needsRestart || restart;
   emit changed();
+}
+
+bool
+ProfileConfigTab::shouldDisregardTweaks(void)
+{
+  QMessageBox::StandardButton reply;
+
+  if (this->hasTweaks) {
+    reply = QMessageBox::question(
+          this,
+          "Per-device tweaks",
+          "This action will clear currently defined device tweaks. Are you sure?",
+          QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+      return false;
+  }
+
+  this->hasTweaks = false;
+
+  return true;
 }
 
 void
@@ -401,12 +422,16 @@ ProfileConfigTab::save()
         ? SUSCAN_SOURCE_TYPE_SDR
         : SUSCAN_SOURCE_TYPE_FILE);
 
-  this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
+  if (!this->hasTweaks)
+    this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
+
   this->onFormatChanged(this->ui->formatCombo->currentIndex());
   this->onBandwidthChanged(this->ui->bandwidthSpinBox->value());
   this->onCheckButtonsToggled(false);
   this->onSpinsChanged();
-  this->onAnalyzerTypeChanged(this->ui->analyzerTypeCombo->currentIndex());
+
+  if (!this->hasTweaks)
+    this->onAnalyzerTypeChanged(this->ui->analyzerTypeCombo->currentIndex());
 
   this->modified     = modified;
   this->needsRestart = needsRestart;
@@ -614,14 +639,25 @@ ProfileConfigTab::connectAll(void)
         this,
         SLOT(onChangeSourceTimeUTC(void)));
 
-  // this->ui->sourceTimeEdit->setDateTime
+  connect(
+        this->ui->deviceTweaksButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onDeviceTweaksClicked(void)));
 
+  connect(
+        this->tweaks,
+        SIGNAL(accepted(void)),
+        this,
+        SLOT(onDeviceTweaksAccepted(void)));
 }
 
 void
 ProfileConfigTab::setProfile(const Suscan::Source::Config &profile)
 {
   this->profile = profile;
+  this->hasTweaks = false;
+
   this->refreshUi();
   this->setUnchanged();
 }
@@ -679,6 +715,9 @@ ProfileConfigTab::ProfileConfigTab(QWidget *parent) : ConfigTab(parent, "Source"
   this->ui = new Ui::ProfileConfigTab;
   this->ui->setupUi(this);
 
+  this->tweaks = new DeviceTweaks(this);
+  this->tweaks->setModal(true);
+
   // Setup remote device
   this->remoteDevice = Suscan::Source::Device(
           "Remote device",
@@ -727,8 +766,10 @@ ProfileConfigTab::onLoadProfileClicked(void)
 {
   QVariant data = this->ui->profileCombo->itemData(this->ui->profileCombo->currentIndex());
 
-  this->configChanged(true);
-  this->profile = data.value<Suscan::Source::Config>();
+  if (this->shouldDisregardTweaks()) {
+    this->configChanged(true);
+    this->profile = data.value<Suscan::Source::Config>();
+  }
 
   this->refreshUi();
 }
@@ -760,6 +801,11 @@ ProfileConfigTab::onDeviceChanged(int index)
     Suscan::Singleton *sus = Suscan::Singleton::get_instance();
     const Suscan::Source::Device *device;
 
+    if (!this->shouldDisregardTweaks()) {
+      this->refreshUi();
+      return;
+    }
+
     SU_ATTEMPT(
           device = sus->getDeviceAt(
             static_cast<unsigned int>(
@@ -767,6 +813,8 @@ ProfileConfigTab::onDeviceChanged(int index)
 
     this->configChanged(true);
     this->profile.setDevice(*device);
+    this->hasTweaks = false;
+
     auto begin = device->getFirstAntenna();
     auto end   = device->getLastAntenna();
 
@@ -831,6 +879,11 @@ void
 ProfileConfigTab::onAnalyzerTypeChanged(int index)
 {
   if (!this->refreshing) {
+    if (!this->shouldDisregardTweaks()) {
+      this->refreshUi();
+      return;
+    }
+
     switch (index) {
       case 0:
         this->profile.setInterface(SUSCAN_SOURCE_LOCAL_INTERFACE);
@@ -1301,4 +1354,21 @@ ProfileConfigTab::onChangeSourceTimeUTC(void)
 
   this->ui->sourceTimeEdit->setTimeSpec(dateTime.timeSpec());
   this->ui->sourceTimeEdit->setDateTime(dateTime);
+}
+
+void
+ProfileConfigTab::onDeviceTweaksClicked(void)
+{
+  this->tweaks->setProfile(&this->profile);
+  this->tweaks->exec();
+}
+
+void
+ProfileConfigTab::onDeviceTweaksAccepted(void)
+{
+  if (this->tweaks->hasChanged()) {
+    this->tweaks->commitConfig();
+    this->configChanged(true);
+    this->hasTweaks = true;
+  }
 }
