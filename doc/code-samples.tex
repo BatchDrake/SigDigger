@@ -1,0 +1,21 @@
+Code can be printed using the minted or listings packages, or several other tools.
+Listing~\ref{listing:octave} shows an example of typesetting code from an external file.
+
+\begin{listing}
+\inputminted{octave}{code/BitXorMatrix.m}
+\caption{Example from external file}
+\label{listing:octave}
+\end{listing}
+
+Alternatively, code can be written directly in your .tex files, as in Listing~\ref{listing:py}.
+It's also possible to typeset syntax-highlighted code inline with a number of code listing packages.
+Check the documentation for the package you're using for more details.
+For example, section~3.3 of the \doclink{http://texdoc.net/pkg/minted}{Minted package documentation} gives some examples and guidelines, as does our help article on \doclink{https://www.overleaf.com/learn/latex/Code_Highlighting_with_minted}{code highlighting with minted}. Forums such as \doclink{https://tex.stackexchange.com/}{TeX StackExchange} and \doclink{https://latex.org/forum/}{LaTeX Community} are also a great source of tips.
+
+\begin{listing}
+\begin{minted}{python}
+print("Hello World")
+\end{minted}
+\caption{Example Python code}
+\label{listing:py}
+\end{listing}
