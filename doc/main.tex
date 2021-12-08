@@ -15,12 +15,17 @@
 \usepackage{mdframed}
 \usepackage{listings}
 \usepackage{sectsty}
+\usepackage{graphicx}
+\usepackage{menukeys}
+\usepackage{float}
+
+\graphicspath{{pics/}}
 
 \lstset{
-basicstyle=\small\ttfamily\fontseries{regular}\selectfont,
-columns=flexible,
-breaklines=true,
-breakatwhitespace=true % Absolutely counterintuitive
+    basicstyle        = \small\ttfamily\fontseries{regular}\selectfont,
+    columns           = flexible,
+    breaklines        = true,
+    breakatwhitespace = true % Absolutely counterintuitive
 }
 
 \setminted{style=friendly,fontsize=\small}
@@ -202,7 +207,7 @@ $ chmod a+x blsd
 $ ./blsd
 \end{lstlisting}
 
-Once \texttt{blsd} has finished succesfully, navigate to the resulting folder to run SigDigger normally:
+Once \texttt{blsd} has finished successfully, navigate to the resulting folder to run SigDigger normally:
 
 \begin{lstlisting}
 $ cd blsd-dir/SigDigger
@@ -287,9 +292,52 @@ In case you wanted to install SigDigger somewhere else (e.g. \texttt{/usr}), you
 \end{protip}
 
 \chapter{Basic operation}
-TODO
+This chapter covers the features related to signal acquisition, visualization and storage. 
 \section{Interface overview}
+SigDigger's main window can be divided in 5 areas:
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\textwidth]{mainwindow}
+    \caption{Main window}
+    \label{fig:mainwindow}
+\end{figure}
+\begin{enumerate}
+    \item \textbf{The spectrum view}, displaying the power spectral density of the signal in real time. The spectrum view also enables the interactive selection of channels by means of an adjustable \textbf{filter box} (shaded green rectangle with a vertical red line). 
+    \item \textbf{The waterfall}, displaying a spectrogram of the latest seconds of the signal.
+    \item \textbf{The toolbar}, from which one can start/stop the signal capture, configure the application and manage bookmarks.
+    \item \textbf{The time slider}, which enables random positioning when the signal is being played back from a capture file (hidden in real-time signal sources)
+    \item \textbf{The side bar}, which provides different analysis and visualization functions related to the signal being captured.
+\end{enumerate}
+
+The toolbar hosts shortcut buttons to the most frequently used operations. From left to right, these operations are \textbf{Start/Stop capture}, \textbf{Settings}, \textbf{Add bookmark}, \textbf{Manage bookmarks} and \textbf{About SigDigger}.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=.3\textwidth]{toolbar}
+    \caption{Toolbar buttons}
+    \label{fig:toolbar}
+\end{figure}
+
+Other SigDigger functions are directly available from the side bar, grouped in 4 categories: \textbf{Audio preview} (used to play the channel defined by the filter box), \textbf{Signal source} (used to perform different adjustments to the signal source in real time), \textbf{Inspection} (used to inspect the contents of the selected channel in different ways) and \textbf{FFT} (used to adjust different parameters of the spectrum / waterfall view). 
+
+Since the side bar serves as a container for many different controls that cannot fit in a single window, each group can be expanded / collapsed by clicking on its title. Optionally, the side bar can be hidden completely by dragging its left side to the right.
+
 \section{Configuring the signal source}
+The first step prior to any signal analysis is telling SigDigger what the signal source will be. This can be done by opening the Settings dialog, either by clicking the corresponding button in the toolbar or by pressing \texttt{Ctrl+S} (\texttt{\cmd+S} in macOS).
+
+The settings dialog consists of several tabs: \textbf{Source}, \textbf{Colors}, \textbf{GUI behavior}, \textbf{TLE Sources} and \textbf{Location}. By default, the Source tab --corresponding to the configuration of the signal source-- is shown. 
+
+Any saved signal source configuration with a name is called a \textbf{profile}. By default, SigDigger uses a profile named \textbf{UI profile} to load and save its signal source configuration. The Source tab is simply an editor of this profile, with additional functions to make copies of it with different names (\texttt{Save as...}) and overwrite it with the contents of existing profiles (\texttt{Load profile}).
+
+\newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{settings-sdr}
+    \label{fig:settings-sdr}
+\end{figure}
+
+WIP
+
 \section{Starting a capture}
 \section{Real-time source tweaks}
 \section{Adjusting the FFT}
