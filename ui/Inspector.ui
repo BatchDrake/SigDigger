@@ -359,36 +359,26 @@
          <number>3</number>
         </property>
         <item row="0" column="0">
-          <widget class="QWidget" name="scrollAreaWidgetContents_2">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>429</width>
-             <height>836</height>
-            </rect>
-           </property>
-           <layout class="QGridLayout" name="estimatorsGrid">
-            <property name="leftMargin">
-             <number>3</number>
-            </property>
-            <property name="topMargin">
-             <number>3</number>
-            </property>
-            <property name="rightMargin">
-             <number>3</number>
-            </property>
-            <property name="bottomMargin">
-             <number>3</number>
-            </property>
-            <property name="spacing">
-             <number>3</number>
-            </property>
-            <item row="0" column="0">
-             <widget class="QWidget" name="widget" native="true"/>
-            </item>
-           </layout>
-         </widget>
+         <layout class="QGridLayout" name="estimatorsGrid">
+          <property name="leftMargin">
+           <number>3</number>
+          </property>
+          <property name="topMargin">
+           <number>3</number>
+          </property>
+          <property name="rightMargin">
+           <number>3</number>
+          </property>
+          <property name="bottomMargin">
+           <number>3</number>
+          </property>
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QWidget" name="widget" native="true"/>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -637,7 +627,7 @@ font-weight: bold;</string>
        <property name="windowTitle">
         <string>Data forwarding</string>
        </property>
-       <layout class="QGridLayout" name="gridLayout_14">
+       <layout class="QGridLayout" name="forwarderGrid">
         <property name="leftMargin">
          <number>6</number>
         </property>
@@ -667,7 +657,7 @@ font-weight: bold;</string>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <layout class="QGridLayout" name="forwarderGrid">
+          <layout class="QGridLayout" name="dataPropertiesGrid">
            <property name="leftMargin">
             <number>6</number>
            </property>
