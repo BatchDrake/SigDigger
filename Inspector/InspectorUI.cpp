@@ -1273,14 +1273,14 @@ InspectorUI::setOrbitReport(Suscan::OrbitReport const &report)
         SuWidgetsHelpers::formatQuantity(
           SU_RAD2DEG(report.getAzel().azimuth),
           0,
-          "º",
+          "deg",
           false));
 
   this->ui->elLabel->setText(
         SuWidgetsHelpers::formatQuantity(
           SU_RAD2DEG(report.getAzel().elevation),
           0,
-          "º",
+          "deg",
           true));
 
   this->ui->distanceLabel->setText(

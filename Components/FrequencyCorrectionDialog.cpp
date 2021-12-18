@@ -624,13 +624,13 @@ FrequencyCorrectionDialog::updatePrediction(void)
           SuWidgetsHelpers::formatQuantity(
             SU_RAD2DEG(azel.azimuth),
             0,
-            "º",
+            "deg",
             false));
     this->ui->elevationLabel->setText(
           SuWidgetsHelpers::formatQuantity(
             SU_RAD2DEG(azel.elevation),
             0,
-            "º",
+            "deg",
             false));
     this->ui->dopplerLabel->setText(
           SuWidgetsHelpers::formatQuantity(
