@@ -176,8 +176,12 @@ MainSpectrum::feed(float *data, int size, struct timeval const &tv, bool looped)
 void
 MainSpectrum::updateLimits(void)
 {
-  qint64 minLcd = this->minFreq + this->getLnbFreq();
-  qint64 maxLcd = this->maxFreq + this->getLnbFreq();
+  qint64 minFreq = this->noLimits ? 0         : this->minFreq;
+  qint64 maxFreq = this->noLimits ? 300000000 : this->maxFreq;
+
+  qint64 minLcd = minFreq + this->getLnbFreq();
+  qint64 maxLcd = maxFreq + this->getLnbFreq();
+
 
   // Center frequency LCD limits
   this->ui->fcLcd->setMinSilent(minLcd);
@@ -416,6 +420,11 @@ void
 MainSpectrum::setGuiConfig(GuiConfig const &cfg)
 {
   this->ui->mainSpectrum->setUseLBMdrag(cfg.useLMBdrag);
+
+  if (this->noLimits != cfg.noLimits) {
+    this->noLimits = cfg.noLimits;
+    this->updateLimits();
+  }
 }
 
 void

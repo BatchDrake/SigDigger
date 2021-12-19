@@ -21,7 +21,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <spacer name="verticalSpacer_3">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -33,6 +33,13 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="1" column="0">
+    <widget class="QCheckBox" name="noLimitsCheck">
+     <property name="text">
+      <string>Ignore hardware limits (use with caution)</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

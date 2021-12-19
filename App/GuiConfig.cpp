@@ -35,6 +35,7 @@ void
 GuiConfig::loadDefaults(void)
 {
   this->useLMBdrag = false;
+  this->noLimits   = false;
 }
 
 #define STRINGFY(x) #x
@@ -48,6 +49,7 @@ GuiConfig::serialize(void)
 
   obj.setClass("guicfg");
   STORE(useLMBdrag);
+  STORE(noLimits);
 
   return this->persist(obj);
 }
@@ -56,4 +58,5 @@ void
 GuiConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(useLMBdrag);
+  LOAD(noLimits);
 }

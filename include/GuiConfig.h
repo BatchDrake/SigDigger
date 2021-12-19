@@ -31,6 +31,7 @@ namespace SigDigger {
          * drag / change center frequency on FFT spectrum area
          */
         bool useLMBdrag;
+        bool noLimits;
 
       GuiConfig();
       GuiConfig(Suscan::Object const &conf);

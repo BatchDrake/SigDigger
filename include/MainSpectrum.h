@@ -67,6 +67,7 @@ namespace SigDigger {
     Skewness filterSkewness = SYMMETRIC;
     bool throttling = false;
     bool resAdjusted = false;
+    bool noLimits = false;
     qint64 minFreq = 0;
     qint64 maxFreq = 6000000000;
     QElapsedTimer lastFreqUpdate;
