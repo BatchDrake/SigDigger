@@ -1110,7 +1110,7 @@ InspectorUI::getClassName(void) const
 {
   if (this->config->hasPrefix("ask"))
     return "AM";
-  else if (this->config->hasPrefix("psk"))
+  else if (this->config->hasPrefix("afc"))
     return "PM";
   else if (this->config->hasPrefix("fsk"))
     return "FM";

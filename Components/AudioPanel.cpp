@@ -487,8 +487,7 @@ formatCaptureSize(quint64 size)
 void
 AudioPanel::setCaptureSize(quint64 size)
 {
-  this->ui->captureSizeLabel->setText(
-        formatCaptureSize(size * sizeof(float _Complex)));
+  this->ui->captureSizeLabel->setText(formatCaptureSize(size));
 }
 
 void

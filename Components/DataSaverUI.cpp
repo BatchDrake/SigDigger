@@ -86,7 +86,7 @@ DataSaverUI::setCaptureSize(quint64 size)
 {
   this->ui->captureSizeLabel->setText(
         SuWidgetsHelpers::formatBinaryQuantity(
-          static_cast<qint64>(size * sizeof(SUFLOAT))));
+          static_cast<qint64>(size)));
 }
 
 void

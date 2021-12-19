@@ -341,6 +341,10 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
   this->setBandwidth(bw);
   this->setPPM(this->profile->getPPM());
 
+  // Reset the autogain configuration if a new profile is chosen
+  this->ui->gainsFrame->setEnabled(true);
+  this->ui->gainPresetCheck->setChecked(false);
+
   this->refreshUi();
 
   this->refreshing = oldRefreshing;
