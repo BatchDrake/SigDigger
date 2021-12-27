@@ -341,25 +341,22 @@ ProfileConfigTab::refreshProfileUi(void)
     if (this->profile.getType() == SUSCAN_SOURCE_TYPE_FILE)
       adjustableSourceTime = true;
   } else {
-    std::string value;
+    std::string host, port, user, pass;
     int index;
+
+    host = this->profile.getParam("host");
+    port = this->profile.getParam("port");
+    user = this->profile.getParam("user");
+    pass = this->profile.getParam("password");
+
     // Set remote analyzer interface
-    value = this->profile.getParam("host");
-    this->ui->hostEdit->setText(value.c_str());
+    this->ui->hostEdit->setText(host.c_str());
 
     try {
-      value = this->profile.getParam("port").c_str();
-      this->ui->portEdit->setValue(std::stoi(value));
+      this->ui->portEdit->setValue(std::stoi(port));
     } catch (std::invalid_argument &) {
       this->ui->portEdit->setValue(28001);
     }
-
-    value = this->profile.getParam("user").c_str();
-    this->ui->userEdit->setText(value.c_str());
-
-
-    value = this->profile.getParam("password").c_str();
-    this->ui->passEdit->setText(value.c_str());
 
     this->ui->deviceCombo->setCurrentIndex(-1);
 
@@ -372,6 +369,9 @@ ProfileConfigTab::refreshProfileUi(void)
       this->ui->useHostPortRadio->setChecked(true);
       this->ui->useNetworkProfileRadio->setChecked(false);
     }
+
+    this->ui->userEdit->setText(user.c_str());
+    this->ui->passEdit->setText(pass.c_str());
   }
 
   if (adjustableSourceTime) {
@@ -1315,6 +1315,8 @@ ProfileConfigTab::onRefreshRemoteDevices(void)
   } else {
     this->refreshUiState();
   }
+
+  this->onRemoteParamsChanged();
 }
 
 void
@@ -1324,17 +1326,29 @@ ProfileConfigTab::onRemoteProfileSelected(void)
 
   if (this->ui->useNetworkProfileRadio->isChecked()) {
     QHash<QString, Suscan::Source::Config>::const_iterator it;
+    std::string user, pass;
 
     it = sus->getNetworkProfileFrom(this->ui->remoteDeviceCombo->currentText());
 
     if (it != sus->getLastNetworkProfile()) {
+      user = it->getParam("user");
+      pass = it->getParam("password");
+
+      if (user.length() == 0)
+        user = this->ui->userEdit->text().toStdString();
+      if (user.length() == 0)
+        user = "anonymous";
+
+      if (pass.length() == 0)
+        pass = this->ui->passEdit->text().toStdString();
+
       this->configChanged(true);
       this->setProfile(*it);
 
       // Provide a better hint for username if the server announced none
-      if (this->profile.getParam("user").length() == 0)
-        this->ui->userEdit->setText("anonymous");
-      this->updateRemoteParams();
+      this->ui->userEdit->setText(user.c_str());
+      this->ui->passEdit->setText(pass.c_str());
+      this->onRemoteParamsChanged();
     }
   }
 }

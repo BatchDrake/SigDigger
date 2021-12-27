@@ -576,7 +576,15 @@ UIMediator::refreshProfile(void)
   qint64 min = 0, max = 0;
   bool isRealTime = false;
   struct timeval tv, start, end;
+
   this->ui->sourcePanel->setProfile(&this->appConfig->profile);
+
+  std::string user, pass, interface;
+
+  user = this->getProfile()->getParam("user");
+  pass = this->getProfile()->getParam("password");
+  interface = this->getProfile()->getInterface();
+
   this->ui->configDialog->setProfile(this->appConfig->profile);
 
   if (this->appConfig->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
@@ -790,6 +798,7 @@ void
 UIMediator::onTriggerSetup(bool)
 {
   auto sus = Suscan::Singleton::get_instance();
+
   this->ui->configDialog->setProfile(*this->getProfile());
   this->ui->configDialog->setAnalyzerParams(*this->getAnalyzerParams());
   this->ui->configDialog->setColors(this->appConfig->colors);
