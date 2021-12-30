@@ -18,6 +18,8 @@
 //
 
 #include "UIMediator.h"
+#include "MainSpectrum.h"
+#include "SourcePanel.h"
 
 using namespace SigDigger;
 

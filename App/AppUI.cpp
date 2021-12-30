@@ -17,7 +17,31 @@
 //    <http://www.gnu.org/licenses/>
 //
 
+
+#include "AboutDialog.h"
+#include "SourcePanel.h"
+#include "InspectorPanel.h"
+#include "FftPanel.h"
+#include "AudioPanel.h"
+#include "MainSpectrum.h"
+#include "ConfigDialog.h"
+#include "Palette.h"
+#include "AutoGain.h"
+#include "Averager.h"
+#include "DeviceGain.h"
+#include "Inspector.h"
+#include "ui_MainWindow.h"
+#include "ConfigDialog.h"
+#include "DeviceDialog.h"
+#include "PanoramicDialog.h"
+#include "LogDialog.h"
+#include "BackgroundTasksDialog.h"
+#include "AddBookmarkDialog.h"
+#include "BookmarkManagerDialog.h"
+#include <QToolBar>
+#include "QTimeSlider.h"
 #include "AppUI.h"
+
 #include "SigDiggerHelpers.h"
 #include <QToolBar>
 #include <QTimeSlider.h>

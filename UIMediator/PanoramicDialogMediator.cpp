@@ -18,6 +18,7 @@
 //
 
 #include "UIMediator.h"
+#include "PanoramicDialog.h"
 
 using namespace SigDigger;
 

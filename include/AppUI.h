@@ -19,28 +19,30 @@
 #ifndef APPUI_H
 #define APPUI_H
 
-#include "AboutDialog.h"
-#include "SourcePanel.h"
-#include "InspectorPanel.h"
-#include "FftPanel.h"
-#include "AudioPanel.h"
-#include "MainSpectrum.h"
-#include "ConfigDialog.h"
-#include "Palette.h"
-#include "AutoGain.h"
-#include "Averager.h"
-#include "DeviceGain.h"
-#include "Inspector.h"
-#include "ui_MainWindow.h"
-#include "ConfigDialog.h"
-#include "DeviceDialog.h"
-#include "PanoramicDialog.h"
-#include "LogDialog.h"
-#include "BackgroundTasksDialog.h"
-#include "AddBookmarkDialog.h"
-#include "BookmarkManagerDialog.h"
+#include <Suscan/Analyzer.h>
+
+class QMainWindow;
+class Ui_MainWindow;
+class QToolBar;
 
 namespace SigDigger {
+  class ConfigDialog;
+  class DeviceDialog;
+  class PanoramicDialog;
+  class MainSpectrum;
+  class SourcePanel;
+  class InspectorPanel;
+  class FftPanel;
+  class AudioPanel;
+  class AboutDialog;
+  class DataSaverUI;
+  class LogDialog;
+  class BackgroundTasksDialog;
+  class AddBookmarkDialog;
+  class BookmarkManagerDialog;
+  class QTimeSlider;
+  class Inspector;
+
   struct AppUI {
     Ui_MainWindow *main = nullptr;
     ConfigDialog *configDialog = nullptr;

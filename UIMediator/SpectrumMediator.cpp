@@ -19,6 +19,11 @@
 
 #include "UIMediator.h"
 #include "MainWindow.h"
+#include "FftPanel.h"
+#include "MainSpectrum.h"
+#include "InspectorPanel.h"
+#include "AudioPanel.h"
+#include "Inspector.h"
 
 using namespace SigDigger;
 

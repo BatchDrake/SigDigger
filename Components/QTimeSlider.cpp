@@ -26,6 +26,8 @@
 #include <QStyleOptionSlider>
 #include <QProxyStyle>
 
+using namespace SigDigger;
+
 class AbsolutePositioningStyle : public QProxyStyle
 {
 public:

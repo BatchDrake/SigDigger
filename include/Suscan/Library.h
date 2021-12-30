@@ -35,7 +35,7 @@
 #include <analyzer/inspector/inspector.h>
 #include <analyzer/discovery.h>
 #include <sgdp4/sgdp4.h>
-#include <BookmarkInfo.h>
+#include <WFHelpers.h>
 
 #include <map>
 #include <list>

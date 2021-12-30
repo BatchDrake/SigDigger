@@ -22,36 +22,38 @@
 #include <QSlider>
 #include <QDateTime>
 
-class QTimeSlider : public QSlider
-{
-  Q_OBJECT
+namespace SigDigger {
+  class QTimeSlider : public QSlider
+  {
+    Q_OBJECT
 
-  bool ticksAreSamples = false;
-  qint64 sampleRate = 1000000;
-  struct timeval startTime;
-  struct timeval endTime;
+    bool ticksAreSamples = false;
+    qint64 sampleRate = 1000000;
+    struct timeval startTime;
+    struct timeval endTime;
 
-  void adjustTickInterval(void);
+    void adjustTickInterval(void);
 
-  protected:
-    void paintEvent(QPaintEvent *) override;
-    void resizeEvent(QResizeEvent *) override;
+    protected:
+      void paintEvent(QPaintEvent *) override;
+      void resizeEvent(QResizeEvent *) override;
 
-  public:
-    QTimeSlider(QWidget *parent = nullptr);
+    public:
+      QTimeSlider(QWidget *parent = nullptr);
 
-    void setSampleRate(quint64);
-    void setStartTime(QDateTime const &);
-    void setStartTime(struct timeval const &);
+      void setSampleRate(quint64);
+      void setStartTime(QDateTime const &);
+      void setStartTime(struct timeval const &);
 
-    void setEndTime(QDateTime const &);
-    void setEndTime(struct timeval const &);
+      void setEndTime(QDateTime const &);
+      void setEndTime(struct timeval const &);
 
-    void setTimeStamp(struct timeval const &);
+      void setTimeStamp(struct timeval const &);
 
-    QDateTime getDateTime(void) const;
-    struct timeval getTimeStamp(void) const;
-    qint64 getSample(void) const;
-};
+      QDateTime getDateTime(void) const;
+      struct timeval getTimeStamp(void) const;
+      qint64 getSample(void) const;
+  };
+}
 
 #endif // QTIMESLIDER_H

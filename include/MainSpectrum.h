@@ -23,7 +23,7 @@
 #include <Suscan/Messages/PSDMessage.h>
 #include <ColorConfig.h>
 #include <GuiConfig.h>
-#include <Waterfall.h>
+#include <WFHelpers.h>
 #include <Palette.h>
 #include <QElapsedTimer>
 #include <QToolBar>

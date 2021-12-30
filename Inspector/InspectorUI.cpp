@@ -43,6 +43,9 @@
 #include <iomanip>
 #include <fcntl.h>
 
+#include "InspectorPanel.h"
+#include "FftPanel.h"
+
 using namespace SigDigger;
 
 InspectorUI::InspectorUI(

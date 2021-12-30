@@ -19,6 +19,11 @@
 
 #include "UIMediator.h"
 #include <SuWidgetsHelpers.h>
+#include "Inspector.h"
+#include "ui_MainWindow.h"
+#include "MainSpectrum.h"
+#include "InspectorPanel.h"
+#include <QTabBar>
 
 using namespace SigDigger;
 

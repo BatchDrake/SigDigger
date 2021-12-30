@@ -33,6 +33,25 @@
 
 #include <fstream>
 
+// Ui control dependencies
+#include <QAction>
+#include "ui_MainWindow.h"
+#include "MainWindow.h"
+#include "MainSpectrum.h"
+#include "AudioPanel.h"
+#include "FftPanel.h"
+#include "InspectorPanel.h"
+#include "SourcePanel.h"
+#include "BookmarkManagerDialog.h"
+#include "BackgroundTasksDialog.h"
+#include "AddBookmarkDialog.h"
+#include "PanoramicDialog.h"
+#include "Inspector.h"
+#include "LogDialog.h"
+#include "ConfigDialog.h"
+#include "DeviceDialog.h"
+#include "AboutDialog.h"
+
 using namespace SigDigger;
 
 void

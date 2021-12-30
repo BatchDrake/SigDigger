@@ -17,6 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 
+#include <QApplication>
 #include <Suscan/Library.h>
 #include <fcntl.h>
 
@@ -24,6 +25,13 @@
 
 #include <QMessageBox>
 #include <SuWidgetsHelpers.h>
+
+// TODO: REMOVE DEPENDS
+#include "AudioPanel.h"
+#include "MainSpectrum.h"
+#include "SourcePanel.h"
+#include "Inspector.h"
+#include "InspectorPanel.h"
 
 using namespace SigDigger;
 

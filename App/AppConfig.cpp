@@ -18,6 +18,11 @@
 //
 
 #include "AppConfig.h"
+#include "SourcePanel.h"
+#include "FftPanel.h"
+#include "InspectorPanel.h"
+#include "AudioPanel.h"
+#include "PanoramicDialog.h"
 
 using namespace SigDigger;
 

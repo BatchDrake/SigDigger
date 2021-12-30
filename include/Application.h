@@ -22,6 +22,7 @@
 
 #include <Suscan/Source.h>
 #include <Suscan/Analyzer.h>
+#include <QTimer>
 
 /* Local includes */
 #include "AppConfig.h"
@@ -30,7 +31,7 @@
 #include "FileDataSaver.h"
 #include "AudioFileSaver.h"
 #include "Scanner.h"
-#include <BookmarkInfo.h>
+#include <WFHelpers.h>
 
 namespace SigDigger {
   class DeviceDetectWorker : public QObject {

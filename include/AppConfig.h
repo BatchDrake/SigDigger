@@ -23,6 +23,7 @@
 #include <Suscan/Source.h>
 #include <Suscan/Serializable.h>
 #include <Suscan/AnalyzerParams.h>
+#include <GuiConfig.h>
 #include <AppUI.h>
 
 #include "Version.h"

@@ -21,10 +21,13 @@
 
 #include <QMainWindow>
 #include <Suscan/Messages/PSDMessage.h>
+#include <Suscan/Library.h>
 #include <map>
 #include <AppConfig.h>
 #include <QMessageBox>
-#include <BookmarkInfo.h>
+#include <WFHelpers.h>
+#include <PersistentWidget.h>
+#include <Averager.h>
 
 #define SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ 0
 #define SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ 6000000000

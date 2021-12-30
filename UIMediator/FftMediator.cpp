@@ -18,6 +18,8 @@
 //
 
 #include "UIMediator.h"
+#include "FftPanel.h"
+#include "MainSpectrum.h"
 
 using namespace SigDigger;
 
