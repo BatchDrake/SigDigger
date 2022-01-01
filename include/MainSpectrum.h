@@ -36,6 +36,9 @@ namespace Ui {
   class MainSpectrum;
 }
 
+class Waterfall;
+class GLWaterfall;
+
 // Does it make sense to turn this into a PersistentWidget, anyways?
 namespace SigDigger {
   class SuscanBookmarkSource;
@@ -61,6 +64,9 @@ namespace SigDigger {
     Ui::MainSpectrum *ui = nullptr;
     std::vector<FrequencyAllocationTable *> FATs;
     SuscanBookmarkSource *bookmarkSource = nullptr;
+    Waterfall   *wf   = nullptr;
+    GLWaterfall *glWf = nullptr;
+    ColorConfig  lastColorConfig;
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
@@ -82,6 +88,8 @@ namespace SigDigger {
 
     // Private methods
     void connectAll(void);
+    void connectWf(void);
+    void connectGLWf(void);
     void refreshUi(void);
     void updateLimits(void);
 

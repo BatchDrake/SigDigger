@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>489</width>
     <height>300</height>
    </rect>
   </property>
@@ -21,7 +21,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <spacer name="verticalSpacer_3">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -37,7 +37,14 @@
    <item row="1" column="0">
     <widget class="QCheckBox" name="noLimitsCheck">
      <property name="text">
-      <string>Ignore hardware limits (use with caution)</string>
+      <string>Ignore &amp;hardware limits (use with caution)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QCheckBox" name="useGLWaterfallCheck">
+     <property name="text">
+      <string>Enable Open&amp;GL-based waterfall (needs restart, experimental)</string>
      </property>
     </widget>
    </item>

@@ -36,6 +36,7 @@ GuiConfig::loadDefaults(void)
 {
   this->useLMBdrag = false;
   this->noLimits   = false;
+  this->useGLWaterfall = false;
 }
 
 #define STRINGFY(x) #x
@@ -50,6 +51,7 @@ GuiConfig::serialize(void)
   obj.setClass("guicfg");
   STORE(useLMBdrag);
   STORE(noLimits);
+  STORE(useGLWaterfall);
 
   return this->persist(obj);
 }
@@ -59,4 +61,5 @@ GuiConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(useLMBdrag);
   LOAD(noLimits);
+  LOAD(useGLWaterfall);
 }

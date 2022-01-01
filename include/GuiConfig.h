@@ -32,6 +32,7 @@ namespace SigDigger {
          */
         bool useLMBdrag;
         bool noLimits;
+        bool useGLWaterfall;
 
       GuiConfig();
       GuiConfig(Suscan::Object const &conf);

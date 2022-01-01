@@ -24,8 +24,9 @@ using namespace SigDigger;
 void
 GuiConfigTab::save()
 {
-  this->guiConfig.useLMBdrag = this->ui->reverseDragBehaviorCheck->isChecked();
-  this->guiConfig.noLimits   = this->ui->noLimitsCheck->isChecked();
+  this->guiConfig.useLMBdrag     = this->ui->reverseDragBehaviorCheck->isChecked();
+  this->guiConfig.noLimits       = this->ui->noLimitsCheck->isChecked();
+  this->guiConfig.useGLWaterfall = this->ui->useGLWaterfallCheck->isChecked();
 }
 
 void
@@ -33,6 +34,7 @@ GuiConfigTab::refreshUi()
 {
   this->ui->reverseDragBehaviorCheck->setChecked(this->guiConfig.useLMBdrag);
   this->ui->noLimitsCheck->setChecked(this->guiConfig.noLimits);
+  this->ui->useGLWaterfallCheck->setChecked(this->guiConfig.useGLWaterfall);
 }
 
 void
@@ -66,6 +68,12 @@ GuiConfigTab::connectAll(void)
 
   connect(
         this->ui->noLimitsCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onConfigChanged(void)));
+
+  connect(
+        this->ui->useGLWaterfallCheck,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onConfigChanged(void)));
