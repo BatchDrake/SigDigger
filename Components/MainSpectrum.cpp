@@ -22,8 +22,8 @@
 #include <Suscan/Library.h>
 #include <QTimeSlider.h>
 
-#include <SuWidgets/Waterfall.h>
-#include <SuWidgets/GLWaterfall.h>
+#include "Waterfall.h"
+#include "GLWaterfall.h"
 
 using namespace SigDigger;
 
