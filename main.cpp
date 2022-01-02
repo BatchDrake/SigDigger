@@ -21,6 +21,7 @@
 #include <RMSViewer.h>
 #include <iostream>
 #include <QFont>
+#include <QSurface>
 #include "Loader.h"
 
 #include <sigutils/version.h>
@@ -49,6 +50,10 @@ runSigDigger(QApplication &app)
   int ret;
   Application main_app;
   Loader loader(&main_app);
+
+  QSurfaceFormat fmt;
+  fmt.setSamples(16);
+  QSurfaceFormat::setDefaultFormat(fmt);
 
   loader.load();
 

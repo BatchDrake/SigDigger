@@ -481,14 +481,12 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
 
   if (this->wf == nullptr && this->glWf == nullptr) {
     if (cfg.useGLWaterfall) {
-      printf("Use GL waterfall\n");
       // OpenGL waterfall
       this->glWf = new GLWaterfall(this);
       this->glWf->setObjectName(QStringLiteral("mainSpectrum"));
       this->ui->gridLayout->addWidget(this->glWf, 2, 0, 1, 4);
       this->connectGLWf();
     } else {
-      printf("Use normal waterfall\n");
       // Classic waterfall
       this->wf = new Waterfall(this);
       this->wf->setObjectName(QStringLiteral("mainSpectrum"));
@@ -502,6 +500,9 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
 
     this->setColorConfig(this->lastColorConfig);
   }
+
+  if (this->glWf != nullptr)
+    this->glWf->setMaxBlending(cfg.useMaxBlending);
 }
 
 void

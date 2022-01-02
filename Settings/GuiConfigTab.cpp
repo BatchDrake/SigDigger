@@ -27,6 +27,7 @@ GuiConfigTab::save()
   this->guiConfig.useLMBdrag     = this->ui->reverseDragBehaviorCheck->isChecked();
   this->guiConfig.noLimits       = this->ui->noLimitsCheck->isChecked();
   this->guiConfig.useGLWaterfall = this->ui->useGLWaterfallCheck->isChecked();
+  this->guiConfig.useMaxBlending = this->ui->useMaxBlendingCheck->isChecked();
 }
 
 void
@@ -35,6 +36,9 @@ GuiConfigTab::refreshUi()
   this->ui->reverseDragBehaviorCheck->setChecked(this->guiConfig.useLMBdrag);
   this->ui->noLimitsCheck->setChecked(this->guiConfig.noLimits);
   this->ui->useGLWaterfallCheck->setChecked(this->guiConfig.useGLWaterfall);
+  this->ui->useMaxBlendingCheck->setEnabled(
+        this->ui->useGLWaterfallCheck->isChecked());
+  this->ui->useMaxBlendingCheck->setChecked(this->guiConfig.useMaxBlending);
 }
 
 void
@@ -77,6 +81,12 @@ GuiConfigTab::connectAll(void)
         SIGNAL(toggled(bool)),
         this,
         SLOT(onConfigChanged(void)));
+
+  connect(
+        this->ui->useMaxBlendingCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onConfigChanged(void)));
 }
 
 GuiConfigTab::GuiConfigTab(QWidget *parent) :
@@ -97,6 +107,8 @@ GuiConfigTab::~GuiConfigTab()
 void
 GuiConfigTab::onConfigChanged(void)
 {
+  this->ui->useMaxBlendingCheck->setEnabled(
+        this->ui->useGLWaterfallCheck->isChecked());
   this->modified = true;
   emit changed();
 }

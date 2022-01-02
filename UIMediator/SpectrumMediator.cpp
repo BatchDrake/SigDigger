@@ -154,7 +154,11 @@ UIMediator::onRangeChanged(float min, float max)
 void
 UIMediator::onZoomChanged(float level)
 {
+  bool oldState = this->ui->fftPanel->signalsBlocked();
+
+  this->ui->fftPanel->blockSignals(true);
   this->ui->fftPanel->setFreqZoom(static_cast<int>(level));
+  this->ui->fftPanel->blockSignals(oldState);
 }
 
 void
