@@ -1096,6 +1096,8 @@ Application::onAnalyzerReadError(void)
 
 Application::~Application()
 {
+  this->uiTimer.stop();
+
   if (this->audioCfgTemplate != nullptr)
     suscan_config_destroy(this->audioCfgTemplate);
 
