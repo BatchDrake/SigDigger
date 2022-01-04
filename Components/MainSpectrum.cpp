@@ -472,8 +472,6 @@ MainSpectrum::setColorConfig(ColorConfig const &cfg)
 void
 MainSpectrum::setGuiConfig(GuiConfig const &cfg)
 {
-  WATERFALL_CALL(setUseLBMdrag(cfg.useLMBdrag));
-
   if (this->noLimits != cfg.noLimits) {
     this->noLimits = cfg.noLimits;
     this->updateLimits();
@@ -503,6 +501,8 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
 
   if (this->glWf != nullptr)
     this->glWf->setMaxBlending(cfg.useMaxBlending);
+
+  WATERFALL_CALL(setUseLBMdrag(cfg.useLMBdrag));
 }
 
 void
