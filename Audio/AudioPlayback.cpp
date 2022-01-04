@@ -35,13 +35,22 @@ using namespace SigDigger;
     throw std::runtime_error("Failed to " + std::string(what) + ": " + \
       std::string(snd_strerror(err)))
 
+
 ///////////////////////////// Playback worker /////////////////////////////////
 PlaybackWorker::PlaybackWorker(
     AudioBufferList *instance,
-    GenericAudioPlayer *player)
+    GenericAudioPlayer *player,
+    unsigned int bufferSize)
 {
-  this->player   = player;
-  this->instance = instance;
+  this->player     = player;
+  this->instance   = instance;
+  this->bufferSize = bufferSize;
+}
+
+unsigned int
+PlaybackWorker::getBufferSize(void) const
+{
+  return this->bufferSize;
 }
 
 void
@@ -59,10 +68,10 @@ PlaybackWorker::play(void)
   while (!this->halting && (buffer = this->instance->next()) != nullptr) {
     bool ok;
 
-    for (i = 0; i < SIGDIGGER_AUDIO_BUFFER_SIZE; ++i)
+    for (i = 0; i < this->bufferSize; ++i)
       buffer[i] *= this->gain;
 
-    ok = this->player->write(buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
+    ok = this->player->write(buffer, this->bufferSize);
 
     // Done with this buffer, mark as free.
     this->instance->release();
@@ -253,10 +262,19 @@ AudioBufferList::release(void)
 AudioPlayback::AudioPlayback(std::string const &dev, unsigned int rate)
   : bufferList(SIGDIGGER_AUDIO_BUFFER_NUM)
 {
+  this->bufferSize =
+      qBound(
+        static_cast<unsigned int>(SIGDIGGER_AUDIO_BUFFER_SIZE_MIN),
+        static_cast<unsigned int>(
+          SIGDIGGER_AUDIO_BUFFER_DELAY_MS
+          * 1e-3f
+          * static_cast<float>(rate)),
+        static_cast<unsigned int>(SIGDIGGER_AUDIO_BUFFER_SIZE));
+
 #ifdef SIGDIGGER_HAVE_ALSA
-  this->player = new AlsaPlayer(dev, rate, SIGDIGGER_AUDIO_BUFFER_SIZE);
+  this->player = new AlsaPlayer(dev, rate, this->bufferSize);
 #elif defined(SIGDIGGER_HAVE_PORTAUDIO)
-  this->player = new PortAudioPlayer(dev, rate, SIGDIGGER_AUDIO_BUFFER_SIZE);
+  this->player = new PortAudioPlayer(dev, rate, this->bufferSize);
 #else
   throw std::runtime_error(
       "Cannot create audio playback object: audio support disabled at compile time");
@@ -270,7 +288,11 @@ AudioPlayback::AudioPlayback(std::string const &dev, unsigned int rate)
 void
 AudioPlayback::startWorker()
 {
-  this->worker = new PlaybackWorker(&this->bufferList, this->player);
+  this->worker = new PlaybackWorker(
+        &this->bufferList,
+        this->player,
+        this->bufferSize);
+
   this->workerThread = new QThread();
 
   this->worker->moveToThread(this->workerThread);
@@ -388,6 +410,8 @@ AudioPlayback::setVolume(float vol)
 void
 AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
 {
+  unsigned int bufferSize = this->worker->getBufferSize();
+
   while (size > 0 && !failed) {
     SUSCOUNT chunk = size;
     SUSCOUNT remaining;
@@ -404,8 +428,8 @@ AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
 
     start = this->current_buffer + this->ptr;
 
-    if (chunk > SIGDIGGER_AUDIO_BUFFER_SIZE - this->ptr)
-      chunk = SIGDIGGER_AUDIO_BUFFER_SIZE - this->ptr;
+    if (chunk > bufferSize - this->ptr)
+      chunk = bufferSize - this->ptr;
     remaining = chunk;
 
     while (remaining-- > 0)
@@ -415,7 +439,7 @@ AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
     size -= chunk;
 
     // Buffer full, send to playback thread.
-    if (this->ptr == SIGDIGGER_AUDIO_BUFFER_SIZE) {
+    if (this->ptr == bufferSize) {
       this->current_buffer = nullptr;
       this->bufferList.commit();
 

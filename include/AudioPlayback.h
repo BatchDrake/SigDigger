@@ -36,6 +36,9 @@
 #define SIGDIGGER_AUDIO_BUFFER_MIN          5
 #define SIGDIGGER_AUDIO_BUFFERING_WATERMARK 2
 
+#define SIGDIGGER_AUDIO_BUFFER_SIZE_MIN     256
+#define SIGDIGGER_AUDIO_BUFFER_DELAY_MS     20
+
 namespace SigDigger {
   class AudioBufferList;
 
@@ -46,12 +49,15 @@ namespace SigDigger {
       GenericAudioPlayer *player = nullptr;  // Weak
       AudioBufferList *instance; // Weak
       float gain = 1;
+      unsigned int bufferSize;
 
     public:
       PlaybackWorker(
           AudioBufferList *instance = nullptr,
-          GenericAudioPlayer *player = nullptr);
+          GenericAudioPlayer *player = nullptr,
+          unsigned int bufferSize = 512);
       void setGain(float);
+      unsigned int getBufferSize(void) const;
 
     public slots:
       void play(void);
@@ -142,6 +148,7 @@ namespace SigDigger {
     unsigned int completed = 0;
     unsigned int ptr = 0;
     unsigned int sampRate;
+    unsigned int bufferSize;
 
     void startWorker(void);
 
