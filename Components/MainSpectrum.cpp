@@ -243,6 +243,9 @@ MainSpectrum::updateLimits(void)
 
   this->ui->loLcd->setMinSilent(minLcd);
   this->ui->loLcd->setMaxSilent(maxLcd);
+
+  WATERFALL_CALL(setFrequencyLimitsEnabled(!this->noLimits));
+  WATERFALL_CALL(setFrequencyLimits(minFreq, maxFreq));
 }
 
 void
