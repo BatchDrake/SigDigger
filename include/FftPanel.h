@@ -38,6 +38,7 @@ namespace SigDigger {
     float panWfRatio = 0.3f;
     bool peakDetect = false;
     bool peakHold = false;
+    bool filled = false;
 
     float panRangeMin = -60;
     float panRangeMax = -10;
@@ -134,6 +135,7 @@ namespace SigDigger {
     bool getRangeLock(void) const;
     bool getTimeStamps(void) const;
     bool getBookmarks(void) const;
+    bool getFilled(void) const;
 
     QString getUnitName(void) const;
     float getZeroPoint(void) const;
@@ -167,6 +169,7 @@ namespace SigDigger {
     void setZeroPoint(float);
     void setGain(float);
 
+    void setFilled(bool);
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
 
@@ -187,6 +190,7 @@ namespace SigDigger {
     void onRefreshRateChanged(void);
     void onRangeLockChanged(void);
     void onPeakChanged(void);
+    void onFilledChanged(void);
     void onWindowFunctionChanged(void);
     void onTimeStampsChanged(void);
     void onBookmarksChanged(void);

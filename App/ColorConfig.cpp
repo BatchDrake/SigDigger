@@ -58,6 +58,7 @@ ColorConfig::loadDefaults(void)
   this->symViewLow = SIGDIGGER_DEFAULT_SV_FG_LO;
 
   this->spectrumText = SIGDIGGER_DEFAULT_TEXT;
+  this->spectrumTimeStamps = SIGDIGGER_DEFAULT_TEXT;
   this->histogramModel = QColor(255, 255, 0, 255);
 
   this->selection = SIGDIGGER_DEFAULT_SELECTION;

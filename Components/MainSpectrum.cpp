@@ -421,6 +421,12 @@ MainSpectrum::setPeakDetect(bool det)
 }
 
 void
+MainSpectrum::setFilled(bool filled)
+{
+  WATERFALL_CALL(setFftFill(filled));
+}
+
+void
 MainSpectrum::setExpectedRate(int rate)
 {
   WATERFALL_CALL(setExpectedRate(rate));
@@ -467,6 +473,7 @@ MainSpectrum::setColorConfig(ColorConfig const &cfg)
   WATERFALL_CALL(setFftBgColor(cfg.spectrumBackground));
   WATERFALL_CALL(setFftTextColor(cfg.spectrumText));
   WATERFALL_CALL(setFilterBoxColor(cfg.filterBox));
+  WATERFALL_CALL(setTimeStampColor(cfg.spectrumTimeStamps));
 
   this->lastColorConfig = cfg;
 }

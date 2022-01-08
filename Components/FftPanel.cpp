@@ -36,6 +36,7 @@ FftPanelConfig::deserialize(Suscan::Object const &conf)
   LOAD(panWfRatio);
   LOAD(peakDetect);
   LOAD(peakHold);
+  LOAD(filled);
   LOAD(panRangeMin);
   LOAD(panRangeMax);
   LOAD(wfRangeMin);
@@ -63,6 +64,7 @@ FftPanelConfig::serialize(void)
   STORE(panWfRatio);
   STORE(peakDetect);
   STORE(peakHold);
+  STORE(filled);
   STORE(panRangeMin);
   STORE(panRangeMax);
   STORE(wfRangeMin);
@@ -102,6 +104,7 @@ FftPanel::applyConfig(void)
   this->setFreqZoom(savedConfig.zoom);
   this->setPeakHold(savedConfig.peakHold);
   this->setPeakDetect(savedConfig.peakDetect);
+  this->setFilled(savedConfig.filled);
   this->setRangeLock(savedConfig.rangeLock);
   this->setTimeSpan(savedConfig.timeSpan);
   this->setTimeStamps(savedConfig.timeStamps);
@@ -201,6 +204,12 @@ FftPanel::connectAll(void)
         SIGNAL(clicked(bool)),
         this,
         SLOT(onPeakChanged(void)));
+
+  connect(
+        this->ui->filledButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onFilledChanged(void)));
 
   connect(
         this->ui->timeStampsButton,
@@ -540,6 +549,12 @@ FftPanel::getBookmarks(void) const
   return this->ui->bookmarksButton->isChecked();
 }
 
+bool
+FftPanel::getFilled(void) const
+{
+  return this->ui->filledButton->isChecked();
+}
+
 enum Suscan::AnalyzerParams::WindowFunction
 FftPanel::getWindowFunction(void) const
 {
@@ -709,6 +724,13 @@ FftPanel::setPeakHold(bool hold)
 {
   this->ui->holdPeakButton->setChecked(hold);
   this->panelConfig->peakHold = hold;
+}
+
+void
+FftPanel::setFilled(bool filled)
+{
+  this->ui->filledButton->setChecked(filled);
+  this->panelConfig->filled = true;
 }
 
 void
@@ -889,6 +911,14 @@ FftPanel::onPeakChanged(void)
 {
   this->setPeakHold(this->getPeakHold());
   this->setPeakDetect(this->getPeakDetect());
+
+  emit rangesChanged();
+}
+
+void
+FftPanel::onFilledChanged(void)
+{
+  this->setFilled(this->getFilled());
 
   emit rangesChanged();
 }

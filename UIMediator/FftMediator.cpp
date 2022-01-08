@@ -124,6 +124,8 @@ UIMediator::onRangesChanged(void)
 
     this->ui->spectrum->setPeakDetect(this->ui->fftPanel->getPeakDetect());
     this->ui->spectrum->setPeakHold(this->ui->fftPanel->getPeakHold());
+    this->ui->spectrum->setFilled(this->ui->fftPanel->getFilled());
+
     this->settingRanges = false;
   }
 }

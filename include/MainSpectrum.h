@@ -128,6 +128,7 @@ namespace SigDigger {
     void setPeakHold(bool);
     void setPeakDetect(bool);
     void setExpectedRate(int);
+    void setFilled(bool);
     void setTimeStamps(bool);
     void setBookmarks(bool);
     void setZoom(unsigned int zoom);

@@ -38,6 +38,7 @@ ColorConfigTab::save(void)
   CCSAVE(spectrumBgColor, spectrumBackground);
   CCSAVE(spectrumAxesColor, spectrumAxes);
   CCSAVE(spectrumTextColor, spectrumText);
+  CCSAVE(timeStampColor, spectrumTimeStamps);
   CCSAVE(constellationFgColor, constellationForeground);
   CCSAVE(constellationBgColor, constellationBackground);
   CCSAVE(constellationAxesColor, constellationAxes);
@@ -64,6 +65,7 @@ ColorConfigTab::refreshUi(void)
   CCREFRESH(spectrumBgColor, spectrumBackground);
   CCREFRESH(spectrumAxesColor, spectrumAxes);
   CCREFRESH(spectrumTextColor, spectrumText);
+  CCREFRESH(timeStampColor, spectrumTimeStamps);
   CCREFRESH(constellationFgColor, constellationForeground);
   CCREFRESH(constellationBgColor, constellationBackground);
   CCREFRESH(constellationAxesColor, constellationAxes);
@@ -90,6 +92,7 @@ ColorConfigTab::connectAll(void)
   CCCONNECT(spectrumBgColor);
   CCCONNECT(spectrumAxesColor);
   CCCONNECT(spectrumTextColor);
+  CCCONNECT(timeStampColor);
   CCCONNECT(constellationFgColor);
   CCCONNECT(constellationBgColor);
   CCCONNECT(constellationAxesColor);
