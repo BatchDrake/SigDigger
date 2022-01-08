@@ -71,7 +71,6 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   this->connectAll();
 
   this->setFreqs(0, 0);
-  this->setShowFATs(true);
   this->lastFreqUpdate.start();
   this->bookmarkSource = new SuscanBookmarkSource();
 }
@@ -496,6 +495,7 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
     WATERFALL_CALL(setClickResolution(1));
     WATERFALL_CALL(setFilterClickResolution(1));
 
+    this->setShowFATs(true);
     this->setColorConfig(this->lastColorConfig);
   }
 
