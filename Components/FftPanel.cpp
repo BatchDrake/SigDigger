@@ -730,7 +730,7 @@ void
 FftPanel::setFilled(bool filled)
 {
   this->ui->filledButton->setChecked(filled);
-  this->panelConfig->filled = true;
+  this->panelConfig->filled = filled;
 }
 
 void
