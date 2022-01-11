@@ -60,6 +60,19 @@ Application::Application(QWidget *parent) : QMainWindow(parent), ui(this)
   this->deviceDetectWorker = new DeviceDetectWorker();
   this->deviceDetectWorker->moveToThread(this->deviceDetectThread);
   this->deviceDetectThread->start();
+
+  try {
+    this->playBack = std::make_unique<AudioPlayback>("default", 44100);
+    this->audioSampleRate = this->playBack->getSampleRate();
+  } catch (std::runtime_error &e) {
+    QMessageBox::warning(
+              this,
+              "Failed to open soundcard device",
+              "Cannot open audio device. Error was:<p /><pre>"
+              + QString(e.what())
+              + "</pre><p />Playback support will be disabled.",
+              QMessageBox::Ok);
+  }
 }
 
 Suscan::Object &&
@@ -273,16 +286,22 @@ Application::openAudio(unsigned int rate)
   bool opened = false;
 
   if (this->mediator->getState() == UIMediator::RUNNING) {
-    if (this->playBack == nullptr) {
+    if (this->playBack != nullptr) {
       try {
         Suscan::Channel ch;
         SUFREQ maxFc = this->analyzer->getSampleRate() / 2;
         SUFREQ bw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
 
+        // FIXME FIXME FIXME
         if (rate > bw)
           rate = static_cast<unsigned int>(floor(bw));
 
-        this->playBack = std::make_unique<AudioPlayback>("default", rate);
+        // Configure sample rate
+        this->playBack->setVolume(this->ui.audioPanel->getMuteableVolume());
+        this->playBack->setSampleRate(rate);
+        this->playBack->start();
+
+        // TODO: Recover true sample rate?
         this->audioSampleRate = this->playBack->getSampleRate();
         this->lastAudioLo = this->getAudioInspectorLo();
 
@@ -305,8 +324,6 @@ Application::openAudio(unsigned int rate)
               ch,
               SIGDIGGER_AUDIO_INSPECTOR_REQID);
 
-        this->playBack->setVolume(this->ui.audioPanel->getMuteableVolume());
-
         this->setAudioInspectorParams(
               this->audioSampleRate,
               this->ui.audioPanel->getCutOff(),
@@ -321,14 +338,7 @@ Application::openAudio(unsigned int rate)
                   "Failed to open inspector. Error was:<p /><pre>"
                   + QString(e.what()) + "</pre>",
                   QMessageBox::Ok);
-        this->playBack = nullptr;
-      } catch (std::runtime_error const &e) {
-        QMessageBox::warning(
-                  this,
-                  "Failed to open soundcard device",
-                  "Cannot open audio device. Error was:<p /><pre>"
-                  + QString(e.what()) + "</pre>",
-                  QMessageBox::Ok);
+        this->playBack->stop();
       }
     }
   }
@@ -340,13 +350,14 @@ void
 Application::closeAudio(void)
 {
   if (this->mediator->getState() == UIMediator::RUNNING
-      && this->audioInspectorOpened)
+      && this->audioInspectorOpened) {
     this->analyzer->closeInspector(this->audioInspHandle, 0);
+  }
   this->closeAudioFileSaver();
   this->audioInspectorOpened = false;
   this->audioSampleRate = 0;
   this->audioInspHandle = 0;
-  this->playBack = nullptr;
+  this->playBack->stop();
   this->audioConfigured = false;
 }
 
@@ -917,7 +928,7 @@ Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
   Inspector *insp;
 
   if (msg.getInspectorId() == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
-    if (this->playBack != nullptr)
+    if (this->playBack != nullptr && this->playBack->isRunning())
       this->playBack->write(msg.getSamples(), msg.getCount());
     if (this->audioFileSaver != nullptr)
       this->audioFileSaver->write(msg.getSamples(), msg.getCount());
@@ -1462,6 +1473,8 @@ Application::onChannelBandwidthChanged(qreal)
 void
 Application::onAudioChanged(void)
 {
+  bool audioEnabled = this->ui.audioPanel->getEnabled();
+
   if (this->mediator->getState() == UIMediator::RUNNING) {
     if (this->audioFileSaver != nullptr) {
       // If any parameter affecting the sample rate or even the name of
@@ -1477,34 +1490,32 @@ Application::onAudioChanged(void)
       }
     }
 
-    if (this->playBack == nullptr) {
-      if (this->ui.audioPanel->getEnabled()) {
-        // Audio enabled, open it.
-        (void) this->openAudio(this->ui.audioPanel->getSampleRate());
+    if (this->playBack != nullptr) {
+      if (!this->playBack->isRunning()) {
+        if (audioEnabled) {
+          // Somehow audio was not running. Open it.
+          (void) this->openAudio(this->ui.audioPanel->getSampleRate());
+        }
+      } else {
+        if (audioEnabled) {
+          // Audio enabled, update parameters
+          if (this->ui.audioPanel->getSampleRate() != this->audioSampleRate) {
+            // XXX: MEDIATE!!
+            this->audioSampleRate = this->ui.audioPanel->getSampleRate();
+            this->playBack->setSampleRate(this->audioSampleRate);
+          }
+
+          this->setAudioInspectorParams(
+                this->audioSampleRate,
+                this->ui.audioPanel->getCutOff(),
+                this->ui.audioPanel->getDemod() + 1,
+                this->ui.audioPanel->getSquelchEnabled(),
+                this->ui.audioPanel->getSquelchLevel());
+        } else {
+          // Disable audio
+          closeAudio();
+        }
       }
-    } else {
-     if (this->ui.audioPanel->getEnabled()) {
-       // Audio enabled, update parameters
-
-       if (this->ui.audioPanel->getSampleRate() != this->audioSampleRate) {
-         this->closeAudio();
-         this->openAudio(this->ui.audioPanel->getSampleRate());
-
-         // XXX: MEDIATE!!
-         if (this->ui.audioPanel->getSampleRate() != this->audioSampleRate)
-           this->ui.audioPanel->setSampleRate(this->audioSampleRate);
-       }
-
-       this->setAudioInspectorParams(
-             this->audioSampleRate,
-             this->ui.audioPanel->getCutOff(),
-             this->ui.audioPanel->getDemod() + 1,
-             this->ui.audioPanel->getSquelchEnabled(),
-             this->ui.audioPanel->getSquelchLevel());
-     } else {
-       // Disable audio
-       closeAudio();
-     }
     }
   }
 }

@@ -45,30 +45,38 @@ namespace SigDigger {
   class PlaybackWorker : public QObject {
       Q_OBJECT
 
-      bool halting = false;
-      GenericAudioPlayer *player = nullptr;  // Weak
+      GenericAudioPlayer *player = nullptr;  // Owned
       AudioBufferList *instance; // Weak
       float gain = 1;
       unsigned int bufferSize;
+      std::string device;
+      unsigned int sampRate;
 
     public:
+      static unsigned int calcBufferSizeForRate(unsigned int rate);
+
       PlaybackWorker(
           AudioBufferList *instance = nullptr,
-          GenericAudioPlayer *player = nullptr,
-          unsigned int bufferSize = 512);
-      void setGain(float);
+          std::string const &dev = "default",
+          unsigned int sampRate = SIGDIGGER_AUDIO_SAMPLE_RATE);
       unsigned int getBufferSize(void) const;
 
     public slots:
+      void startPlayback();
+      void stopPlayback();
+      void setSampleRate(unsigned int rate);
+      void setGain(float);
       void play(void);
       void halt(void);
 
     signals:
-      void error(void);
+      void ready(void);
+      void error(QString);
       void starving(void);
       void finished(void);
   };
 
+  // TODO: turn into std::list
   struct AudioBuffer {
     AudioBuffer *next = nullptr;
     AudioBuffer *prev = nullptr;
@@ -116,6 +124,8 @@ namespace SigDigger {
       return this->playListLen;
     }
 
+    void clear(void);
+
     void reset(void);
 
     // Takes one from the freelist, replaces current, returns pointer
@@ -140,11 +150,12 @@ namespace SigDigger {
     PlaybackWorker *worker = nullptr;
 
     bool buffering = true;
-    bool failed = false;
+    bool running = false;
+    bool ready = false;
     float *current_buffer = nullptr;
     float volume = 1;
-    GenericAudioPlayer *player = nullptr;
 
+    std::string  device;
     unsigned int completed = 0;
     unsigned int ptr = 0;
     unsigned int sampRate;
@@ -158,19 +169,33 @@ namespace SigDigger {
           unsigned int rate = SIGDIGGER_AUDIO_SAMPLE_RATE);
       virtual ~AudioPlayback();
       unsigned int getSampleRate(void) const;
+      void setSampleRate(unsigned int);
       void write(const SUCOMPLEX *samples, SUSCOUNT size);
-
+      void start(void);
+      void stop(void);
       float getVolume(void) const;
       void setVolume(float);
+      void cancelPlayBack(void);
+
+      inline bool
+      isRunning(void) const
+      {
+        return this->running;
+      }
 
     public slots:
-      void onError(void);
+      void onError(QString);
       void onStarving(void);
+      void onReady(void);
 
     signals:
       void restart(void);
       void halt(void);
-
+      void error(QString);
+      void sampleRate(unsigned int);
+      void gain(float);
+      void startPlayback(void);
+      void stopPlayback(void);
   };
 }
 
