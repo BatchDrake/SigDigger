@@ -195,8 +195,10 @@ FrequencyCorrectionDialog::paintAzimuthElevationPass(QPainter &p)
         FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING);
 
   if (this->haveALOS) {
-    localtime_r(&this->losTime.tv_sec, &losTm);
-    localtime_r(&this->aosTime.tv_sec, &aosTm);
+	time_t lost = this->losTime.tv_sec;
+	time_t aost = this->aosTime.tv_sec;
+    localtime_r(&lost, &losTm);
+    localtime_r(&aost, &aosTm);
 
     timersub(&this->losTime, &this->aosTime, &diff);
 

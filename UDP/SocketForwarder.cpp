@@ -19,9 +19,9 @@
 
 #include <SocketForwarder.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
+#include <util/compat-socket.h>
+#include <util/compat-in.h>
+#include <util/compat-netdb.h>
 #include <stdexcept>
 
 #ifndef MSG_NOSIGNAL
@@ -130,7 +130,7 @@ SocketDataWriter::write(const void *data, size_t len)
 
   sent = sendto(
           this->fd,
-          data,
+          reinterpret_cast<const char *>(data),
           len,
           MSG_NOSIGNAL,
           reinterpret_cast<struct sockaddr *>(&this->addr),

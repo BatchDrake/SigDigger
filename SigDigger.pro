@@ -45,12 +45,14 @@ darwin: ICON = icons/SigDigger.icns
 darwin: QMAKE_RPATHDIR += $$SUWIDGETS_INSTALL_LIBS
 datwin: QMAKE_RPATHDIR += /usr/local/lib
 
-unix:  QMAKE_SUBSTITUTES += SigDigger.desktop.in RMSViewer.desktop.in
-unix:  desktop.path  = $$PREFIX/share/applications
-unix:  desktop.files = SigDigger.desktop RMSViewer.desktop
-unix:  icons.path    = $$PREFIX/share/icons/hicolor/256x256/apps/
-unix:  icons.files   = icons/SigDigger.png
-unix:  INSTALLS     += desktop icons
+QMAKE_SUBSTITUTES += SigDigger.desktop.in RMSViewer.desktop.in
+desktop.path  = $$PREFIX/share/applications
+desktop.files = SigDigger.desktop RMSViewer.desktop
+icons.path    = $$PREFIX/share/icons/hicolor/256x256/apps/
+icons.files   = icons/SigDigger.png
+INSTALLS     += desktop icons
+
+RC_ICONS = sigdigger_logo.ico
 
 INCLUDEPATH += $$PWD/include $$SUWIDGETS_INSTALL_HEADERS
 SOURCES += \
@@ -337,8 +339,8 @@ FORMS += \
 RESOURCES += \
     icons/Icons.qrc
 
-unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += suscan fftw3f
+CONFIG += link_pkgconfig
+PKGCONFIG += suscan fftw3f
 
 packagesExist(libcurl) {
   PKGCONFIG += libcurl
@@ -367,7 +369,7 @@ packagesExist(alsa):!freebsd {
   }
 }
 
-unix: LIBS += -L$$SUWIDGETS_INSTALL_LIBS -lsuwidgets
+LIBS += -L$$SUWIDGETS_INSTALL_LIBS -lsuwidgets -lwsock32
 
 DISTFILES += \
     icons/icon-alpha.png \

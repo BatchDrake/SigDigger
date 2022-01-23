@@ -25,7 +25,7 @@
 #include <QThread>
 #include <string>
 #include <Suscan/Library.h>
-#include <unistd.h>
+#include <util/compat-unistd.h>
 
 #include <GenericAudioPlayer.h>
 
