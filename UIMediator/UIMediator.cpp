@@ -52,7 +52,7 @@
 #include "DeviceDialog.h"
 #include "AboutDialog.h"
 
-#ifdef interface
+#if defined(_WIN32) && defined(interface)
 #  undef interface
 #endif /* interface */
 

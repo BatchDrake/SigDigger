@@ -369,7 +369,9 @@ packagesExist(alsa):!freebsd {
   }
 }
 
-LIBS += -L$$SUWIDGETS_INSTALL_LIBS -lsuwidgets -lwsock32
+LIBS += -L$$SUWIDGETS_INSTALL_LIBS -lsuwidgets
+
+win32: LIBS += -lwsock32
 
 DISTFILES += \
     icons/icon-alpha.png \
