@@ -20,7 +20,7 @@
 #include <iostream>
 #include "AudioPlayback.h"
 #include <stdexcept>
-#include <sys/mman.h>
+#include <util/compat-mman.h>
 #include <QCoreApplication>
 
 #ifdef SIGDIGGER_HAVE_ALSA

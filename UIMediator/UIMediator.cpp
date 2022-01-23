@@ -19,7 +19,7 @@
 
 #include <Suscan/Library.h>
 #include <QFileDialog>
-#include <sys/statvfs.h>
+#include <util/compat-statvfs.h>
 #include <SuWidgetsHelpers.h>
 
 #include "UIMediator.h"
@@ -51,6 +51,10 @@
 #include "ConfigDialog.h"
 #include "DeviceDialog.h"
 #include "AboutDialog.h"
+
+#ifdef interface
+#  undef interface
+#endif /* interface */
 
 using namespace SigDigger;
 
