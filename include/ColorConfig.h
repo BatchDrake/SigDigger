@@ -47,7 +47,7 @@ namespace SigDigger {
       ColorConfig();
       ColorConfig(Suscan::Object const &conf);
 
-      // Overriden methods
+      // Overridden methods
       void loadDefaults(void);
       void deserialize(Suscan::Object const &conf) override;
       Suscan::Object &&serialize(void) override;

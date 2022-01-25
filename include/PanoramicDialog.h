@@ -61,7 +61,7 @@ namespace SigDigger {
     SUFLOAT getGain(std::string const &dev, std::string const &name) const;
     void setGain(std::string const &dev, std::string const &name, SUFLOAT val);
 
-    // Overriden methods
+    // Overridden methods
     void deserialize(Suscan::Object const &conf) override;
     Suscan::Object &&serialize(void) override;
   };
@@ -140,7 +140,7 @@ namespace SigDigger {
       void setBannedDevice(QString const &);
       void saveConfig(void);
 
-      // Overriden methods
+      // Overridden methods
       Suscan::Serializable *allocConfig(void) override;
       void applyConfig(void) override;
 

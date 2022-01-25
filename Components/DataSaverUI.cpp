@@ -150,7 +150,7 @@ DataSaverUI::~DataSaverUI()
 }
 
 
-// Overriden methods
+// Overridden methods
 Suscan::Serializable *
 DataSaverUI::allocConfig(void)
 {

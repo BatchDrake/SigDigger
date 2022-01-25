@@ -78,7 +78,7 @@ namespace SigDigger {
 
       void loadDefaults(void);
 
-      // Overriden methods
+      // Overridden methods
       void deserialize(Suscan::Object const &conf) override;
       Suscan::Object &&serialize(void) override;
   };

@@ -43,5 +43,5 @@ try "Moving files out of /usr..." mv "$DEPLOYROOT"/usr/* "$DEPLOYROOT"
 try "Remove empty /usr..." rmdir "$DEPLOYROOT"/usr
 try "Setting permissions to wrapper scripts..." chmod a+x "$DEPLOYROOT"/SigDigger "$DEPLOYROOT"/suscli
 echo
-echo "Done. SigDigger compiled succesfully in $DEPLOYROOT"
+echo "Done. SigDigger compiled successfully in $DEPLOYROOT"
 

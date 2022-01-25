@@ -177,7 +177,7 @@ namespace SigDigger {
     void setSourceTimeEnd(struct timeval const &);
     void setTimeStamp(struct timeval const &);
 
-    // Overriden methods
+    // Overridden methods
     Suscan::Serializable *allocConfig() override;
     void applyConfig(void) override;
 

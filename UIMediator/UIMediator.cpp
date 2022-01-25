@@ -1014,7 +1014,7 @@ UIMediator::onTriggerExport(bool)
           QMessageBox::warning(
                 this->ui->main->centralWidget,
                 "Cannot open file",
-                "Cannote save file in the specified location. Please choose "
+                "Cannot save file in the specified location. Please choose "
                 "a different location and try again.",
                 QMessageBox::Ok);
         } else {

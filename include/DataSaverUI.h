@@ -31,7 +31,7 @@ namespace SigDigger {
   public:
     std::string path;
 
-    // Overriden methods
+    // Overridden methods
     void deserialize(Suscan::Object const &conf) override;
     Suscan::Object &&serialize(void) override;
   };
@@ -57,7 +57,7 @@ namespace SigDigger {
       bool getRecordState(void) const override;
       std::string getRecordSavePath(void) const override;
 
-      // Other overriden methods
+      // Other overridden methods
       Suscan::Serializable *allocConfig(void) override;
       void applyConfig(void) override;
 

@@ -43,7 +43,7 @@ namespace SigDigger {
 
       unsigned int throttleRate = 196000;
 
-      // Overriden methods
+      // Overridden methods
       void deserialize(Suscan::Object const &conf) override;
       Suscan::Object &&serialize(void) override;
   };
@@ -178,7 +178,7 @@ namespace SigDigger {
       float getBandwidth(void) const;
       float getPPM(void) const;
 
-      // Overriden methods
+      // Overridden methods
       Suscan::Serializable *allocConfig(void) override;
       void applyConfig(void) override;
       bool event(QEvent *) override;
