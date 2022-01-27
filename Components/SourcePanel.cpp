@@ -278,7 +278,11 @@ SourcePanel::setProcessRate(unsigned int rate)
           static_cast<SUFLOAT>(this->getEffectiveRate());
     }
 
-    this->ui->deliveryProgress->setValue(static_cast<int>(percentUsage * 100));
+    if (percentUsage <= 1) {
+      this->ui->deliveryProgress->setValue(static_cast<int>(percentUsage * 100));
+    } else {
+      this->ui->deliveryProgress->setValue(100);
+    }
 
     if (percentUsage >= SU_ADDSFX(.95))
       this->ui->deliveryLabel->setPixmap(

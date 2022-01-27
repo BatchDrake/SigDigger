@@ -428,33 +428,6 @@ AudioPlayback::startWorker()
         this->worker,
         SLOT(setGain(float)));
 
-  // On halt, stop
-  connect(
-        this,
-        SIGNAL(halt()),
-        this->worker,
-        SLOT(halt()));
-
-  // Worker finished, call thread quit
-  connect(
-        this->worker,
-        SIGNAL(finished()),
-        this->workerThread,
-        SLOT(quit()));
-
-  // When both threads and worker finish, delete them later
-  connect(
-        this->worker,
-        SIGNAL(finished()),
-        this->worker,
-        SLOT(deleteLater()));
-
-  connect(
-        this->workerThread,
-        SIGNAL(finished()),
-        this->workerThread,
-        SLOT(deleteLater()));
-
   this->workerThread->start();
 }
 
@@ -485,6 +458,9 @@ AudioPlayback::~AudioPlayback()
     this->workerThread->quit();
     this->workerThread->wait();
     delete this->workerThread;
+
+    if (this->worker != nullptr)
+      delete this->worker;
   }
 }
 

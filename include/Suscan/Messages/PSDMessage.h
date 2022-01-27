@@ -36,6 +36,7 @@ namespace Suscan {
     unsigned int getMeasuredSampleRate(void) const;
     bool hasLooped(void) const;
     struct timeval getTimeStamp(void) const;
+    struct timeval getRealTimeStamp(void) const;
     const SUFLOAT *get(void) const;
 
     PSDMessage();

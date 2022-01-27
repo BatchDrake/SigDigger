@@ -38,6 +38,8 @@ GuiConfig::loadDefaults(void)
   this->noLimits       = false;
   this->useGLWaterfall = false;
   this->useMaxBlending = false;
+  this->enableMsgTTL   = true;
+  this->msgTTL         = 10; // in milliseconds
 }
 
 #define STRINGFY(x) #x
@@ -55,6 +57,8 @@ GuiConfig::serialize(void)
   STORE(noLimits);
   STORE(useGLWaterfall);
   STORE(useMaxBlending);
+  STORE(enableMsgTTL);
+  STORE(msgTTL);
 
   return this->persist(obj);
 }
@@ -66,4 +70,6 @@ GuiConfig::deserialize(Suscan::Object const &conf)
   LOAD(noLimits);
   LOAD(useGLWaterfall);
   LOAD(useMaxBlending);
+  LOAD(enableMsgTTL);
+  LOAD(msgTTL);
 }

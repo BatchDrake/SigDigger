@@ -30,14 +30,48 @@ using namespace SigDigger;
 void
 UIMediator::feedPSD(const Suscan::PSDMessage &msg)
 {
+  bool expired = false;
+
+  if (this->appConfig->guiConfig.enableMsgTTL) {
+    struct timeval now, rttime, diff;
+    struct timeval max_delta = {
+      this->appConfig->guiConfig.msgTTL / 1000,
+      (this->appConfig->guiConfig.msgTTL % 1000) * 1000};
+
+    gettimeofday(&now, nullptr);
+
+    rttime = msg.getRealTimeStamp();
+
+    if (!this->haveRtDelta) {
+      /* Dont' have implementation timestamp */
+      timersub(&now, &rttime, &this->rtDelta);
+      this->haveRtDelta = SU_TRUE;
+    } else {
+      /* Calculate difference */
+      timersub(&now, &rttime, &diff);
+
+      /* Upgrade RT Delta if this message arrived faster */
+      if (timercmp(&this->rtDelta, &diff, >))
+        this->rtDelta = diff;
+
+      /* Subtract the intrinsic time delta */
+      timersub(&diff, &this->rtDelta, &diff);
+
+      expired = timercmp(&diff, &max_delta, >);
+    }
+  }
+
   this->setSampleRate(msg.getSampleRate());
-  this->setProcessRate(msg.getMeasuredSampleRate());
-  this->averager.feed(msg);
-  this->ui->spectrum->feed(
-        this->averager.get(),
-        static_cast<int>(this->averager.size()),
-        msg.getTimeStamp(),
-        msg.hasLooped());
+
+  if (!expired) {
+    this->setProcessRate(msg.getMeasuredSampleRate());
+    this->averager.feed(msg);
+    this->ui->spectrum->feed(
+          this->averager.get(),
+          static_cast<int>(this->averager.size()),
+          msg.getTimeStamp(),
+          msg.hasLooped());
+  }
 }
 
 void

@@ -151,6 +151,7 @@ UIMediator::refreshUI(void)
       break;
 
     case RUNNING:
+      this->haveRtDelta = false;
       stateString = QString("Running");
 
       if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR)
@@ -425,8 +426,10 @@ UIMediator::setSampleRate(unsigned int rate)
 void
 UIMediator::setState(State state)
 {
-  this->state = state;
-  this->refreshUI();
+  if (this->state != state) {
+    this->state = state;
+    this->refreshUI();
+  }
 }
 
 UIMediator::State

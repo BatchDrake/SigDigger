@@ -75,6 +75,9 @@ namespace SigDigger {
     // UI State
     State state = HALTED;
     bool settingRanges = false;
+    struct timeval rtMaxDelta = {0, 10000};
+    struct timeval rtDelta;
+    bool haveRtDelta = false;
 
     // Private methods
     void connectMainWindow(void);

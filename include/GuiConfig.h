@@ -34,6 +34,8 @@ namespace SigDigger {
         bool noLimits;
         bool useGLWaterfall;
         bool useMaxBlending;
+        bool enableMsgTTL;
+        unsigned int msgTTL;
 
       GuiConfig();
       GuiConfig(Suscan::Object const &conf);

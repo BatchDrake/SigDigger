@@ -63,11 +63,12 @@ void
 Analyzer::AsyncThread::run()
 {
   void *data = nullptr;
-  uint32_t type;
+  uint32_t type = 0;
   bool running = true;
 
   // FIXME: Capture allocation exceptions!
   do {
+    type = -1;
     data = this->owner->read(type);
 
     switch (type) {

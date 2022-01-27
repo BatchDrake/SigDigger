@@ -28,6 +28,9 @@ GuiConfigTab::save()
   this->guiConfig.noLimits       = this->ui->noLimitsCheck->isChecked();
   this->guiConfig.useGLWaterfall = this->ui->useGLWaterfallCheck->isChecked();
   this->guiConfig.useMaxBlending = this->ui->useMaxBlendingCheck->isChecked();
+  this->guiConfig.enableMsgTTL   = this->ui->ttlCheck->isChecked();
+  this->guiConfig.msgTTL         = static_cast<unsigned>(
+        this->ui->ttlSpin->value());
 }
 
 void
@@ -39,6 +42,11 @@ GuiConfigTab::refreshUi()
   this->ui->useMaxBlendingCheck->setEnabled(
         this->ui->useGLWaterfallCheck->isChecked());
   this->ui->useMaxBlendingCheck->setChecked(this->guiConfig.useMaxBlending);
+  this->ui->ttlCheck->setChecked(this->guiConfig.enableMsgTTL);
+  this->ui->ttlLabel->setEnabled(this->ui->ttlCheck->isChecked());
+  this->ui->ttlSpin->setEnabled(this->ui->ttlCheck->isChecked());
+  this->ui->ttlSpin->setValue(static_cast<int>(this->guiConfig.msgTTL));
+
 }
 
 void
@@ -87,6 +95,18 @@ GuiConfigTab::connectAll(void)
         SIGNAL(toggled(bool)),
         this,
         SLOT(onConfigChanged(void)));
+
+  connect(
+        this->ui->ttlCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onConfigChanged(void)));
+
+  connect(
+        this->ui->ttlSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onConfigChanged(void)));
 }
 
 GuiConfigTab::GuiConfigTab(QWidget *parent) :
@@ -109,6 +129,10 @@ GuiConfigTab::onConfigChanged(void)
 {
   this->ui->useMaxBlendingCheck->setEnabled(
         this->ui->useGLWaterfallCheck->isChecked());
+
+  this->ui->ttlLabel->setEnabled(this->ui->ttlCheck->isChecked());
+  this->ui->ttlSpin->setEnabled(this->ui->ttlCheck->isChecked());
+
   this->modified = true;
   emit changed();
 }

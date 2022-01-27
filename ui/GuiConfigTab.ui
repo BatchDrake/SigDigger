@@ -14,14 +14,7 @@
    <string>Form</string>
   </property>
   <layout class="QFormLayout" name="formLayout">
-   <item row="0" column="0">
-    <widget class="QCheckBox" name="reverseDragBehaviorCheck">
-     <property name="text">
-      <string>Use &amp;left mouse button to drag and change center frequency</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
+   <item row="8" column="0">
     <spacer name="verticalSpacer_3">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -34,21 +27,71 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="0">
+   <item row="6" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="QCheckBox" name="ttlCheck">
+     <property name="text">
+      <string>Allow GUI to &amp;discard spectrum updates under heavy load</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="ttlLabel">
+     <property name="text">
+      <string>Max TTL for spectrum updates</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QSpinBox" name="ttlSpin">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="suffix">
+      <string> ms</string>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
     <widget class="QCheckBox" name="noLimitsCheck">
      <property name="text">
       <string>Ignore &amp;hardware limits (use with caution)</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="0" column="0" colspan="2">
+    <widget class="QCheckBox" name="reverseDragBehaviorCheck">
+     <property name="text">
+      <string>Use &amp;left mouse button to drag and change center frequency</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
     <widget class="QCheckBox" name="useGLWaterfallCheck">
      <property name="text">
       <string>Enable Open&amp;GL-based waterfall (needs restart, experimental)</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="3" column="0" colspan="2">
     <widget class="QCheckBox" name="useMaxBlendingCheck">
      <property name="enabled">
       <bool>false</bool>
