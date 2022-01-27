@@ -34,9 +34,10 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
 
   if (this->appConfig->guiConfig.enableMsgTTL) {
     struct timeval now, rttime, diff;
-    struct timeval max_delta = {
-      this->appConfig->guiConfig.msgTTL / 1000,
-      (this->appConfig->guiConfig.msgTTL % 1000) * 1000};
+    struct timeval max_delta;
+
+    max_delta.tv_sec  =  this->appConfig->guiConfig.msgTTL / 1000;
+    max_delta.tv_usec = (this->appConfig->guiConfig.msgTTL % 1000) * 1000;
 
     gettimeofday(&now, nullptr);
 
