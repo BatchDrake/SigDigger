@@ -39,7 +39,7 @@ GuiConfig::loadDefaults(void)
   this->useGLWaterfall = false;
   this->useMaxBlending = false;
   this->enableMsgTTL   = true;
-  this->msgTTL         = 10; // in milliseconds
+  this->msgTTL         = 15; // in milliseconds
 }
 
 #define STRINGFY(x) #x
