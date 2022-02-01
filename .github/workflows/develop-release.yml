@@ -3,6 +3,10 @@ name: "develop-release"
 on:
   workflow_dispatch:
 
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
 jobs:
   # Installation of dependencies is too OS-dependent now, we don't
   # miss that much by particularizing this in a per-OS basis.
