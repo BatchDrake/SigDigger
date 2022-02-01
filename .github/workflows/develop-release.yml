@@ -186,7 +186,7 @@ jobs:
           path: sigutils
         
       - name: Configure sigutils
-        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B D:\\a\\SigDigger\\SigDigger\\sigutils\\build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} D:\\a\\suscan\\suscan\\sigutils
+        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B D:\\a\\SigDigger\\SigDigger\\sigutils\\build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} D:\\a\\SigDigger\\SigDigger\\sigutils
         
       - name: Build sigutils
         run: C:\\msys64\\mingw64\\bin\\cmake --build D:\\a\\SigDigger\\SigDigger\\sigutils\\build --config ${{env.BUILD_TYPE}}
@@ -203,7 +203,7 @@ jobs:
           path: SoapySDR
         
       - name: Configure
-        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B  D:\\a\\SigDigger\\SigDigger\\SoapySDR\\build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\suscan\\suscan\\SoapySDR\\
+        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B  D:\\a\\SigDigger\\SigDigger\\SoapySDR\\build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\SigDigger\\SoapySDR\\
         
       - name: Build
         run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\SoapySDR\\build --config ${{env.BUILD_TYPE}}
@@ -220,7 +220,7 @@ jobs:
           path: rtl-sdr-blog
         
       - name: Configure
-        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B  D:\\a\\SigDigger\\SigDigger\\rtl-sdr-blog\\build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\suscan\\suscan\\rtl-sdr-blog\\
+        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B  D:\\a\\SigDigger\\SigDigger\\rtl-sdr-blog\\build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\SigDigger\\rtl-sdr-blog\\
         
       - name: Build
         run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\rtl-sdr-blog\\build --config ${{env.BUILD_TYPE}}
@@ -237,7 +237,7 @@ jobs:
           path: SoapyRTLSDR
         
       - name: Configure
-        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B  D:\\a\\SigDigger\\SigDigger\\SoapyRTLSDR/build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\suscan\\suscan\\SoapyRTLSDR\\
+        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B  D:\\a\\SigDigger\\SigDigger\\SoapyRTLSDR/build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\SigDigger\\SoapyRTLSDR\\
         
       - name: Build
         run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\SoapyRTLSDR\\build --config ${{env.BUILD_TYPE}}
@@ -256,13 +256,13 @@ jobs:
       - name: Configure CMake
         run: |
           export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
-          C:\\msys64\\mingw64\\bin\\cmake -B  D:\\a\\SigDigger\\suscan\\build -G"MinGW Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\suscan\\suscan\\
+          C:\\msys64\\mingw64\\bin\\cmake -B  D:\\a\\SigDigger\\SigDigger\\suscan\\build -G"MinGW Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\SigDigger\\suscan\\
         
       - name: Build
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\suscan\\build --config ${{env.BUILD_TYPE}}
+        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\suscan\\build --config ${{env.BUILD_TYPE}}
         
       - name: Install
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\suscan\\build --config ${{env.BUILD_TYPE}} --target install
+        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\suscan\\build --config ${{env.BUILD_TYPE}} --target install
         
       # SuWidgets
       - name: Checkout (suscan)
