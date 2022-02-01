@@ -294,7 +294,9 @@ jobs:
         run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\SuWidgets\\
         
       - name: Install
-        run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\SuWidgets\\ install
+        run: |
+          C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\SuWidgets\\ install
+          cp /mingw64/lib/suwidgets0.dll /mingw64/lib/suwidgets.dll
         
       # SigDigger
       - name: Configure QMake
