@@ -285,7 +285,9 @@ jobs:
           path: SuWidgets
 
       - name: Configure QMake
-        run: /mingw64/bin/qmake.exe D:\\a\\SigDigger\\SigDigger\\SuWidgets\\SuWidgetsLib.pro "CONFIG += release" PREFIX="/mingw64"
+        run: |
+          export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
+          /mingw64/bin/qmake.exe D:\\a\\SigDigger\\SigDigger\\SuWidgets\\SuWidgetsLib.pro "CONFIG += release" PREFIX="/mingw64"
         
       - name: Build
         run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\SuWidgets\\
@@ -302,7 +304,9 @@ jobs:
           path: suscan
         
       - name: Configure QMake
-        run: /mingw64/bin/qmake.exe D:\\a\\SigDigger\\SigDigger\\SigDigger.pro "CONFIG += release" PREFIX="/mingw64" SUWIDGETS_PREFIX=/mingw64
+        run: |
+          export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
+          /mingw64/bin/qmake.exe D:\\a\\SigDigger\\SigDigger\\SigDigger.pro "CONFIG += release" PREFIX="/mingw64" SUWIDGETS_PREFIX=/mingw64
         
       - name: Build
         run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\
