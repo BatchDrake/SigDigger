@@ -286,6 +286,7 @@ jobs:
 
       - name: Configure QMake
         run: |
+          cd SuWidgets
           export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
           /mingw64/bin/qmake.exe D:\\a\\SigDigger\\SigDigger\\SuWidgets\\SuWidgetsLib.pro "CONFIG += release" PREFIX="/mingw64"
         
