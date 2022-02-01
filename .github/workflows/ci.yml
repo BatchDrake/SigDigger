@@ -285,7 +285,7 @@ jobs:
           path: suscan
 
       - name: Configure QMake
-        run: C:\\msys64\\mingw64\\bin\\qmake D:\\a\\SigDigger\\SuWidgets\\SuWidgetsLib.pro "CONFIG += release" PREFIX="/mingw64"
+        run: /msys64/mingw64/bin/qmake D:\\a\\SigDigger\\SuWidgets\\SuWidgetsLib.pro "CONFIG += release" PREFIX="/mingw64"
         
       - name: Build
         run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SuWidgets\\
