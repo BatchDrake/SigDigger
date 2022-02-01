@@ -175,7 +175,7 @@ jobs:
         with:
           msystem: MINGW64
           update: true
-          install: git mingw-w64-x86_64-cc mingw-w64-x86_64-make mingw-w64-x86_64-cmake mingw-w64-x86_64-libsndfile mingw-w64-x86_64-fftw mingw-w64-x86_64-volk mingw-w64-x86_64-libxml2 mingw-w64-x86_64-libusb mingw-w64-x86_64-qt5
+          install: git mingw-w64-x86_64-cc mingw-w64-x86_64-make mingw-w64-x86_64-cmake mingw-w64-x86_64-libsndfile mingw-w64-x86_64-fftw mingw-w64-x86_64-volk mingw-w64-x86_64-libxml2 mingw-w64-x86_64-libusb mingw-w64-x86_64-qt5 zip
           
       # SigUtils
       - name: Checkout (sigutils)
@@ -299,9 +299,76 @@ jobs:
         
       - name: Install
         run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\ install
+        
+      - name: Copy files
+        run: |
+          mkdir /SigDigger
+          cp D:\\a\\SigDigger\\SigDigger\\release\\SigDigger.exe /SigDigger/
+          cp /mingw64/lib/libsigutils.dll /SigDigger/
+          cp /mingw64/lib/libsuscan.dll /SigDigger/
+          cp /mingw64/lib/suwidgets0.dll /SigDigger/
+          cp /mingw64/bin/libSoapySDR.dll /SigDigger/
+          cp /mingw64/bin/librtlsdr.dll /SigDigger/
+          cp /mingw64/lib/libbrotlicommon.dll /SigDigger/
+          cp /mingw64/bin/libbrotlidec.dll /SigDigger/
+          cp /mingw64/lib/libbz2-1.dll /SigDigger/
+          cp /mingw64/bin/libcrypto-1_1-x64.dll /SigDigger/
+          cp /mingw64/bin/libcurl-4.dll /SigDigger/
+          cp /mingw64/bin/libdouble-conversion.dll /SigDigger/
+          cp /mingw64/bin/libfftw3f-3.dll /SigDigger/
+          cp /mingw64/bin/libFLAC-8.dll /SigDigger/
+          cp /mingw64/bin/libfreetype-6.dll /SigDigger/
+          cp /mingw64/bin/libgcc_s_seh-1.dll /SigDigger/
+          cp /mingw64/bin/libglib-2.0-0.dll /SigDigger/
+          cp /mingw64/bin/libgraphite2.dll /SigDigger/
+          cp /mingw64/bin/libharfbuzz-0.dll /SigDigger/
+          cp /mingw64/bin/libiconv-2.dll /SigDigger/
+          cp /mingw64/bin/libicudt69.dll /SigDigger/
+          cp /mingw64/bin/libicuin69.dll /SigDigger/
+          cp /mingw64/bin/libicuuc69.dll /SigDigger/
+          cp /mingw64/bin/libidn2-0.dll /SigDigger/
+          cp /mingw64/bin/libintl-8.dll /SigDigger/
+          cp /mingw64/bin/liblzma-5.dll /SigDigger/
+          cp /mingw64/bin/libmd4c.dll /SigDigger/
+          cp /mingw64/bin/libnghttp2-14.dll /SigDigger/
+          cp /mingw64/bin/libogg-0.dll /SigDigger/
+          cp /mingw64/bin/libopus-0.dll /SigDigger/
+          cp /mingw64/bin/liborc-0.4-0.dll /SigDigger/
+          cp /mingw64/bin/libpcre-1.dll /SigDigger/
+          cp /mingw64/bin/libpng16-16.dll /SigDigger/
+          cp /mingw64/bin/libportaudio.dll /SigDigger/
+          cp /mingw64/bin/libpsl-5.dll /SigDigger/
+          cp /mingw64/bin/libsndfile-1.dll /SigDigger/
+          cp /mingw64/bin/libssh2-1.dll /SigDigger/
+          cp /mingw64/bin/libssl-1_1-x64.dll /SigDigger/
+          cp /mingw64/bin/libssp-0.dll /SigDigger/
+          cp /mingw64/bin/libstdc++-6.dll /SigDigger/
+          cp /mingw64/bin/libunistring-2.dll /SigDigger/
+          cp /mingw64/bin/libusb-1.0.dll /SigDigger/
+          cp /mingw64/bin/libvolk.dll /SigDigger/
+          cp /mingw64/bin/libvorbis-0.dll /SigDigger/
+          cp /mingw64/bin/libvorbisenc-2.dll /SigDigger/
+          cp /mingw64/bin/libwinpthread-1.dll /SigDigger/
+          cp /mingw64/bin/libxml2-2.dll /SigDigger/
+          cp /mingw64/bin/libzstd.dll /SigDigger/
+          cp /mingw64/bin/libzlib1.dll /SigDigger/
+          
+          cp -r /mingw64/share/suscan/* /SigDigger/
+          
+      - name: Qt deploy & distribute
+        run: |
+          windeployqt /SigDigger/SigDigger.exe
+          zip -r windows_latest_x64.zip /SigDigger
+          
+      - name: Archive zip file
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows_latest_x64
+          path: /windows_latest_x64.zip
+            
   
   do_release:
-    needs: [ build-linux-appimage, build-macos ]
+    needs: [ build-linux-appimage, build-macos, build-windows ]
     runs-on: ubuntu-latest
     
     steps:
@@ -322,3 +389,4 @@ jobs:
           files: |
             linux-latest-appimage/*.AppImage
             macos-latest-dmg/*.dmg
+            windows_latest_x64/*
