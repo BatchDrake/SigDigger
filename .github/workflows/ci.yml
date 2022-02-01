@@ -263,18 +263,18 @@ jobs:
         with:
           repository: BatchDrake/suscan
           ref: refs/heads/develop
-          path: suscan
+          path: ../suscan
       
       - name: Configure CMake
         run: |
           export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
-          C:\\msys64\\mingw64\\bin\\cmake -B  D:\\a\\SigDigger\\SigDigger\\suscan\\build -G"MinGW Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\SigDigger\\suscan\\
+          C:\\msys64\\mingw64\\bin\\cmake -B  D:\\a\\SigDigger\\suscan\\build -G"MinGW Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\suscan\\
         
       - name: Build
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\suscan\\build --config ${{env.BUILD_TYPE}}
+        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\suscan\\build --config ${{env.BUILD_TYPE}}
         
       - name: Install
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\suscan\\build --config ${{env.BUILD_TYPE}} --target install
+        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\suscan\\build --config ${{env.BUILD_TYPE}} --target install
         
       # SuWidgets
       - name: Checkout (SuWidgets)
