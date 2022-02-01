@@ -282,16 +282,16 @@ jobs:
         with:
           repository: BatchDrake/SuWidgets
           ref: refs/heads/develop
-          path: suscan
+          path: SuWidgets
 
       - name: Configure QMake
-        run: /mingw64/bin/qmake.exe D:\\a\\SigDigger\\SuWidgets\\SuWidgetsLib.pro "CONFIG += release" PREFIX="/mingw64"
+        run: C:\\msys64\\mingw64\\bin\\qmake D:\\a\\SigDigger\\SigDigger\\SuWidgets\\SuWidgetsLib.pro "CONFIG += release" PREFIX="/mingw64"
         
       - name: Build
-        run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SuWidgets\\
+        run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\SuWidgets\\
         
       - name: Install
-        run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SuWidgets\\ install
+        run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\SuWidgets\\ install
         
       # SigDigger
       - name: Checkout (suscan)
