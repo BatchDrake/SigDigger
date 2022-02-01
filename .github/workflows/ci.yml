@@ -277,7 +277,7 @@ jobs:
         run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\suscan\\build --config ${{env.BUILD_TYPE}} --target install
         
       # SuWidgets
-      - name: Checkout (suscan)
+      - name: Checkout (SuWidgets)
         uses: actions/checkout@v2
         with:
           repository: BatchDrake/SuWidgets
@@ -297,15 +297,9 @@ jobs:
         run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\SuWidgets\\ install
         
       # SigDigger
-      - name: Checkout (suscan)
-        uses: actions/checkout@v2
-        with:
-          repository: BatchDrake/SuWidgets
-          ref: refs/heads/develop
-          path: suscan
-        
       - name: Configure QMake
         run: |
+          
           export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
           /mingw64/bin/qmake.exe D:\\a\\SigDigger\\SigDigger\\SigDigger.pro "CONFIG += release" PREFIX="/mingw64" SUWIDGETS_PREFIX=/mingw64
         
