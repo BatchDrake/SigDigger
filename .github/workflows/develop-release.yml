@@ -370,13 +370,14 @@ jobs:
           
       - name: Archive
         run: |
-          zip -r /windows_latest_x64.zip /SigDigger
+          mkdir deploy
+          zip -r deploy/windows_latest_x64.zip /SigDigger
           
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: windows_latest_x64
-          path: /SigDigger
+          path: deploy/windows_latest_x64.zip
             
   
   do_release:
