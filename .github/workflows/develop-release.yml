@@ -376,7 +376,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: windows_latest_x64
-          path: /windows_latest_x64.zip
+          path: /SigDigger
             
   
   do_release:
