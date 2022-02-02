@@ -308,55 +308,6 @@ jobs:
         run: |
           mkdir /SigDigger
           cp D:\\a\\SigDigger\\SigDigger\\release\\SigDigger.exe /SigDigger/
-          cp /mingw64/lib/libsigutils.dll /SigDigger/
-          cp /mingw64/lib/libsuscan.dll /SigDigger/
-          cp /mingw64/lib/suwidgets0.dll /SigDigger/
-          cp /mingw64/bin/libSoapySDR.dll /SigDigger/
-          cp /mingw64/bin/librtlsdr.dll /SigDigger/
-          cp /mingw64/lib/libbrotlicommon.dll /SigDigger/
-          cp /mingw64/bin/libbrotlidec.dll /SigDigger/
-          cp /mingw64/lib/libbz2-1.dll /SigDigger/
-          cp /mingw64/bin/libcrypto-1_1-x64.dll /SigDigger/
-          cp /mingw64/bin/libcurl-4.dll /SigDigger/
-          cp /mingw64/bin/libdouble-conversion.dll /SigDigger/
-          cp /mingw64/bin/libfftw3f-3.dll /SigDigger/
-          cp /mingw64/bin/libFLAC-8.dll /SigDigger/
-          cp /mingw64/bin/libfreetype-6.dll /SigDigger/
-          cp /mingw64/bin/libgcc_s_seh-1.dll /SigDigger/
-          cp /mingw64/bin/libglib-2.0-0.dll /SigDigger/
-          cp /mingw64/bin/libgraphite2.dll /SigDigger/
-          cp /mingw64/bin/libharfbuzz-0.dll /SigDigger/
-          cp /mingw64/bin/libiconv-2.dll /SigDigger/
-          cp /mingw64/bin/libicudt69.dll /SigDigger/
-          cp /mingw64/bin/libicuin69.dll /SigDigger/
-          cp /mingw64/bin/libicuuc69.dll /SigDigger/
-          cp /mingw64/bin/libidn2-0.dll /SigDigger/
-          cp /mingw64/bin/libintl-8.dll /SigDigger/
-          cp /mingw64/bin/liblzma-5.dll /SigDigger/
-          cp /mingw64/bin/libmd4c.dll /SigDigger/
-          cp /mingw64/bin/libnghttp2-14.dll /SigDigger/
-          cp /mingw64/bin/libogg-0.dll /SigDigger/
-          cp /mingw64/bin/libopus-0.dll /SigDigger/
-          cp /mingw64/bin/liborc-0.4-0.dll /SigDigger/
-          cp /mingw64/bin/libpcre-1.dll /SigDigger/
-          cp /mingw64/bin/libpng16-16.dll /SigDigger/
-          cp /mingw64/bin/libportaudio.dll /SigDigger/
-          cp /mingw64/bin/libpsl-5.dll /SigDigger/
-          cp /mingw64/bin/libsndfile-1.dll /SigDigger/
-          cp /mingw64/bin/libssh2-1.dll /SigDigger/
-          cp /mingw64/bin/libssl-1_1-x64.dll /SigDigger/
-          cp /mingw64/bin/libssp-0.dll /SigDigger/
-          cp /mingw64/bin/libstdc++-6.dll /SigDigger/
-          cp /mingw64/bin/libunistring-2.dll /SigDigger/
-          cp /mingw64/bin/libusb-1.0.dll /SigDigger/
-          cp /mingw64/bin/libvolk.dll /SigDigger/
-          cp /mingw64/bin/libvorbis-0.dll /SigDigger/
-          cp /mingw64/bin/libvorbisenc-2.dll /SigDigger/
-          cp /mingw64/bin/libwinpthread-1.dll /SigDigger/
-          cp /mingw64/bin/libxml2-2.dll /SigDigger/
-          cp /mingw64/bin/libzstd.dll /SigDigger/
-          cp /mingw64/bin/libzlib1.dll /SigDigger/
-          
           cp -r /mingw64/share/suscan/* /SigDigger/
           
       - name: Qt deploy & distribute
