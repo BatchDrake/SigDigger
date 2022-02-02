@@ -190,7 +190,7 @@ jobs:
           path: sigutils
         
       - name: Configure sigutils
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B D:/a/SigDigger/SigDigger/sigutils/build -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} D:/a/SigDigger/SigDigger/sigutils
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B D:/a/SigDigger/SigDigger/sigutils/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} D:/a/SigDigger/SigDigger/sigutils
         
       - name: Build sigutils
         run: /mingw64/bin/cmake --build D:/a/SigDigger/SigDigger/sigutils/build --config ${{env.BUILD_TYPE}}
@@ -207,7 +207,7 @@ jobs:
           path: SoapySDR
         
       - name: Configure
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  D:/a/SigDigger/SigDigger/SoapySDR/build -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/SoapySDR/
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  D:/a/SigDigger/SigDigger/SoapySDR/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/SoapySDR/
         
       - name: Build
         run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/SoapySDR/build --config ${{env.BUILD_TYPE}}
@@ -224,7 +224,7 @@ jobs:
           path: rtl-sdr-blog
         
       - name: Configure
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  D:/a/SigDigger/SigDigger/rtl-sdr-blog/build -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/rtl-sdr-blog/
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  D:/a/SigDigger/SigDigger/rtl-sdr-blog/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/rtl-sdr-blog/
         
       - name: Build
         run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/rtl-sdr-blog/build --config ${{env.BUILD_TYPE}}
@@ -241,7 +241,7 @@ jobs:
           path: SoapyRTLSDR
         
       - name: Configure
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  D:/a/SigDigger/SigDigger/SoapyRTLSDR/build -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/SoapyRTLSDR/
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  D:/a/SigDigger/SigDigger/SoapyRTLSDR/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/SoapyRTLSDR/
         
       - name: Build
         run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/SoapyRTLSDR/build --config ${{env.BUILD_TYPE}}
@@ -260,7 +260,7 @@ jobs:
       - name: Configure CMake
         run: |
           export PKG_CONFIG_PATH=/mingw64/lib/pkgconfig/
-          /mingw64/bin/cmake -B  D:/a/SigDigger/SigDigger/deps/suscan/build -G"MinGW Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/deps/suscan/
+          /mingw64/bin/cmake -B  D:/a/SigDigger/SigDigger/deps/suscan/build -G"MinGW Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/deps/suscan/
         
       - name: Build
         run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/deps/suscan/build --config ${{env.BUILD_TYPE}}
