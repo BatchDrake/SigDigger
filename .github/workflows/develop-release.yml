@@ -190,13 +190,13 @@ jobs:
           path: sigutils
         
       - name: Configure sigutils
-        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B D:\\a\\SigDigger\\SigDigger\\sigutils\\build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} D:\\a\\SigDigger\\SigDigger\\sigutils
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B D:/a/SigDigger/SigDigger/sigutils/build -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} D:/a/SigDigger/SigDigger/sigutils
         
       - name: Build sigutils
-        run: C:\\msys64\\mingw64\\bin\\cmake --build D:\\a\\SigDigger\\SigDigger\\sigutils\\build --config ${{env.BUILD_TYPE}}
+        run: /mingw64/bin/cmake --build D:/a/SigDigger/SigDigger/sigutils/build --config ${{env.BUILD_TYPE}}
         
       - name: Install sigutils
-        run: C:\\msys64\\mingw64\\bin\\cmake --build D:\\a\\SigDigger\\SigDigger\\sigutils\\build --config ${{env.BUILD_TYPE}} --target install
+        run: /mingw64/bin/cmake --build D:/a/SigDigger/SigDigger/sigutils/build --config ${{env.BUILD_TYPE}} --target install
         
       # SoapySDR
       - name: Checkout (soapysdr)
@@ -207,13 +207,13 @@ jobs:
           path: SoapySDR
         
       - name: Configure
-        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B  D:\\a\\SigDigger\\SigDigger\\SoapySDR\\build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\SigDigger\\SoapySDR\\
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  D:/a/SigDigger/SigDigger/SoapySDR/build -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/SoapySDR/
         
       - name: Build
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\SoapySDR\\build --config ${{env.BUILD_TYPE}}
+        run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/SoapySDR/build --config ${{env.BUILD_TYPE}}
         
       - name: Install sigutils
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\SoapySDR\\build --config ${{env.BUILD_TYPE}} --target install
+        run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/SoapySDR/build --config ${{env.BUILD_TYPE}} --target install
         
       # BatchDrake's fixed rtl-sdr
       - name: Checkout (rtl-sdr-blog)
@@ -224,13 +224,13 @@ jobs:
           path: rtl-sdr-blog
         
       - name: Configure
-        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B  D:\\a\\SigDigger\\SigDigger\\rtl-sdr-blog\\build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\SigDigger\\rtl-sdr-blog\\
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  D:/a/SigDigger/SigDigger/rtl-sdr-blog/build -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/rtl-sdr-blog/
         
       - name: Build
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\rtl-sdr-blog\\build --config ${{env.BUILD_TYPE}}
+        run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/rtl-sdr-blog/build --config ${{env.BUILD_TYPE}}
         
       - name: Install
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\rtl-sdr-blog\\build --config ${{env.BUILD_TYPE}} --target install
+        run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/rtl-sdr-blog/build --config ${{env.BUILD_TYPE}} --target install
         
       # SoapyRTLSDR
       - name: Checkout (soapyrtlsdr)
@@ -241,13 +241,13 @@ jobs:
           path: SoapyRTLSDR
         
       - name: Configure
-        run: C:\\msys64\\mingw64\\bin\\cmake -G"MinGW Makefiles" -B  D:\\a\\SigDigger\\SigDigger\\SoapyRTLSDR/build -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\SigDigger\\SoapyRTLSDR\\
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  D:/a/SigDigger/SigDigger/SoapyRTLSDR/build -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/SoapyRTLSDR/
         
       - name: Build
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\SoapyRTLSDR\\build --config ${{env.BUILD_TYPE}}
+        run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/SoapyRTLSDR/build --config ${{env.BUILD_TYPE}}
         
       - name: Install
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\SoapyRTLSDR\\build --config ${{env.BUILD_TYPE}} --target install
+        run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/SoapyRTLSDR/build --config ${{env.BUILD_TYPE}} --target install
         
       # suscan
       - name: Checkout (suscan)
@@ -259,14 +259,14 @@ jobs:
       
       - name: Configure CMake
         run: |
-          export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
-          C:\\msys64\\mingw64\\bin\\cmake -B  D:\\a\\SigDigger\\SigDigger\\deps\\suscan\\build -G"MinGW Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=C:\\msys64\\mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:\\a\\SigDigger\\SigDigger\\deps\\suscan\\
+          export PKG_CONFIG_PATH=/mingw64/lib/pkgconfig/
+          /mingw64/bin/cmake -B  D:/a/SigDigger/SigDigger/deps/suscan/build -G"MinGW Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=C:/msys64/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  D:/a/SigDigger/SigDigger/deps/suscan/
         
       - name: Build
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\deps\\suscan\\build --config ${{env.BUILD_TYPE}}
+        run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/deps/suscan/build --config ${{env.BUILD_TYPE}}
         
       - name: Install
-        run: C:\\msys64\\mingw64\\bin\\cmake --build  D:\\a\\SigDigger\\SigDigger\\deps\\suscan\\build --config ${{env.BUILD_TYPE}} --target install
+        run: /mingw64/bin/cmake --build  D:/a/SigDigger/SigDigger/deps/suscan/build --config ${{env.BUILD_TYPE}} --target install
         
       # SuWidgets
       - name: Checkout (SuWidgets)
@@ -279,35 +279,35 @@ jobs:
       - name: Configure QMake
         run: |
           cd SuWidgets
-          export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
-          /mingw64/bin/qmake.exe D:\\a\\SigDigger\\SigDigger\\SuWidgets\\SuWidgetsLib.pro "CONFIG += release" PREFIX="/mingw64"
+          export PKG_CONFIG_PATH=/mingw64/lib/pkgconfig/
+          /mingw64/bin/qmake.exe D:/a/SigDigger/SigDigger/SuWidgets/SuWidgetsLib.pro "CONFIG += release" PREFIX="/mingw64"
         
       - name: Build
-        run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\SuWidgets\\
+        run: /mingw64/bin/mingw32-make -C D:/a/SigDigger/SigDigger/SuWidgets/
         
       - name: Install
         run: |
-          C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\SuWidgets\\ install
+          /mingw64/bin/mingw32-make -C D:/a/SigDigger/SigDigger/SuWidgets/ install
           cp /mingw64/lib/suwidgets0.dll /mingw64/lib/suwidgets.dll
         
       # SigDigger
       - name: Configure QMake
         run: |
-          export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
-          /mingw64/bin/qmake.exe D:\\a\\SigDigger\\SigDigger\\SigDigger.pro "CONFIG += release" PREFIX="/mingw64" SUWIDGETS_PREFIX=/mingw64
+          export PKG_CONFIG_PATH=/mingw64/lib/pkgconfig/
+          /mingw64/bin/qmake.exe D:/a/SigDigger/SigDigger/SigDigger.pro "CONFIG += release" PREFIX="/mingw64" SUWIDGETS_PREFIX=/mingw64
         
       - name: Build
         run: |
-          export PKG_CONFIG_PATH=C:\\msys64\\mingw64\\lib\\pkgconfig\\
-          C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\
+          export PKG_CONFIG_PATH=/mingw64/lib/pkgconfig/
+          /mingw64/bin/mingw32-make -C D:/a/SigDigger/SigDigger/
         
       - name: Install
-        run: C:\\msys64\\mingw64\\bin\\mingw32-make -C D:\\a\\SigDigger\\SigDigger\\ install
+        run: /mingw64/bin/mingw32-make -C D:/a/SigDigger/SigDigger/ install
         
       - name: Copy files
         run: |
           mkdir /SigDigger
-          cp D:\\a\\SigDigger\\SigDigger\\release\\SigDigger.exe /SigDigger/
+          cp D:/a/SigDigger/SigDigger/release/SigDigger.exe /SigDigger/
           cp -r /mingw64/share/suscan/* /SigDigger/
           
       - name: Qt deploy & distribute
