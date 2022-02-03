@@ -54,7 +54,7 @@ SCRIPTDIR=`dirname "$SCRIPTPATH"`
 DEPLOYROOT="$DISTROOT/deploy-root"
 BUILDROOT="$DISTROOT/build-root"
 
-if [ "$OSTYPE" == "Linux" ]; then
+if [ "$OSTYPE" == "Linux" ] || is_mingw; then
   THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
 elif [ "$OSTYPE" == "Darwin" ]; then
   THREADS=`sysctl -n hw.ncpu`
@@ -214,7 +214,7 @@ $ESCAPE[0;1m...multi platform deployment script.$ESCAPE[0m
 EOF
 
 echo
-echo "Attempting deployment on $OSTYPE ($ARCH)"
+echo "Attempting deployment on $OSTYPE ($ARCH) with $THREADS threads"
 echo "Date: "`date`
 echo "SigDigger release to be built: $RELEASE"
 echo
