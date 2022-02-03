@@ -161,7 +161,7 @@ function build()
         try "Recreating directories..."    mkdir -p "$DEPLOYROOT" "$BUILDROOT"
 
         cd "$BUILDROOT"
-        export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$PKG_CONFIG"
+        export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
         export LD_LIBRARY_PATH="$DEPLOYROOT/usr/lib:$LD_LIBRARY_PATH"
 
         try "Cloning sigutils..."          git clone -b "$BRANCH" https://github.com/BatchDrake/sigutils
