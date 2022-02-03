@@ -54,7 +54,6 @@ function gather_dlls()
 {
     fetch_dll libsuscan.dll
     fetch_dll libsigutils.dll
-    fetch_dll suwidgets0.dll suwidgets.dll
     fetch_dll suwidgets0.dll
     fetch_dll libportaudio.dll
     fetch_dll libxml2-2.dll
