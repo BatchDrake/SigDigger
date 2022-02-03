@@ -65,20 +65,20 @@ jobs:
       run: |
         sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
         sudo chmod a+x /usr/bin/appimagetool
-
+    
     - name: Build & Distribute (SigDigger)
       run: |
-        cd SigDigger/Scripts
+        cd Scripts
         chmod a+x dist-appimage.sh
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
         SIGDIGGER_EMBED_SOAPYSDR=1 ./dist-appimage.sh 
-        cd ../..
+        cd ..
 
     - name: Archive AppImage files
       uses: actions/upload-artifact@v2
       with:
         name: linux-latest-appimage
-        path: SigDigger/Scripts/*.AppImage
+        path: Scripts/*.AppImage
 
   build-macos:
     runs-on: macos-latest
@@ -135,7 +135,7 @@ jobs:
 
     - name: Remove SoapySDR remote module to prevent crashes
       run: sudo rm /usr/local/lib/SoapySDR/modules0.8/libremote*
-    
+
     - name: Install libxml2
       run: brew install libxml2
 
@@ -144,16 +144,16 @@ jobs:
 
     - name: Build & Distribute (SigDigger)
       run: |
-        cd SigDigger/Scripts
+        cd Scripts
         chmod a+x dist-dmg.sh
         SIGDIGGER_EMBED_SOAPYSDR=1 ./dist-dmg.sh
-        cd ../..
+        cd ..
 
     - name: Archive .DMG files
       uses: actions/upload-artifact@v2
       with:
         name: macos-latest-dmg
-        path: SigDigger/Scripts/*.dmg
+        path: Scripts/*.dmg
 
   # Windows
   build-windows:
@@ -220,6 +220,7 @@ jobs:
       - name: Install (SoapyRTLSDR)
         run: /mingw64/bin/cmake --build  SoapyRTLSDR/build --config ${{env.BUILD_TYPE}} --target install
         
+
       # SigDigger
       - name: Build & Distribute (SigDigger)
         run: |
