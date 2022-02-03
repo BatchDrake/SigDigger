@@ -123,6 +123,8 @@ function locate_sdk()
       export PATH="/mingw64/bin:$PATH:/mingw64/bin"
       export LD_LIBRARY_PATH="/mingw64/lib:/mingw64/bin:$LD_LIBRARY_PATH:/mingw64/lib:/mingw64/bin"
       export CMAKE_EXTRA_OPTS='-GMinGW Makefiles'
+  else
+    export CMAKE_EXTRA_OPTS='-GUnix Makefiles'
   fi
 
   try "Locate Make..." which $MAKE
