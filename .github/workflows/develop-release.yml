@@ -65,13 +65,6 @@ jobs:
       run: |
         sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
         sudo chmod a+x /usr/bin/appimagetool
-    
-    - name: Checkout (SigDigger)
-      uses: actions/checkout@v2
-      with:
-        repository: BatchDrake/SigDigger
-        ref: refs/heads/develop
-        path: SigDigger
 
     - name: Build & Distribute (SigDigger)
       run: |
@@ -148,13 +141,6 @@ jobs:
 
     - name: Install portaudio
       run: brew install portaudio
-
-    - name: Checkout (SigDigger)
-      uses: actions/checkout@v2
-      with:
-        repository: BatchDrake/SigDigger
-        ref: refs/heads/develop
-        path: SigDigger
 
     - name: Build & Distribute (SigDigger)
       run: |
