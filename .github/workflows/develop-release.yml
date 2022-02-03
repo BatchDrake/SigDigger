@@ -371,7 +371,6 @@ jobs:
           
       - name: Archive zipped redistributable directory
         run: |
-          mkdir deploy
           zip -r deploy/SigDigger-0.3.0-win32-x86_64.zip deploy/SigDigger
           
       - name: Archive Windows files
