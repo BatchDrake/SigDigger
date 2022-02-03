@@ -32,9 +32,20 @@ ARCH=`uname -m`
 RELEASE="0.3.0"
 DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
 PKGVERSION=""
+MAKE="make"
+
+function is_mingw()
+{
+    echo "$OSTYPE" | grep MINGW > /dev/null
+    return $?
+}
+
 
 if [ "$OSTYPE" == "Linux" ]; then
     SCRIPTPATH=`realpath "$0"`
+elif is_mingw; then
+    SCRIPTPATH=`realpath "$0"`
+    MAKE="mingw32-make"
 else
     SCRIPTPATH="$0"
 fi
@@ -107,7 +118,14 @@ function locate_qt()
 function locate_sdk()
 {
   try "Locate Git..." which git
-  try "Locate Make..." which make
+  if is_mingw; then
+      try "Probing MinGW64..." test -d /mingw64/bin
+      export PATH="/mingw64/bin:$PATH:/mingw64/bin"
+      export LD_LIBRARY_PATH="/mingw64/lib:/mingw64/bin:$LD_LIBRARY_PATH:/mingw64/lib:/mingw64/bin"
+      export CMAKE_EXTRA_OPTS='-GMinGW Makefiles'
+  fi
+
+  try "Locate Make..." which $MAKE
   try "Ensuring pkgconfig availability... " which pkg-config
   try "Locating sndfile... " pkg-config sndfile
   try "Locating libxml2..." pkg-config libxml-2.0
@@ -150,27 +168,27 @@ function build()
         try "Cloning SigDigger..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SigDigger
         try "Creating builddirs..."        mkdir -p sigutils/build suscan/build
         cd sigutils/build
-        try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
+        try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=Release "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
         cd ../../
-        try "Building sigutils..."         make -j $THREADS -C sigutils/build
-        try "Deploying sigutils..."        make -j $THREADS -C sigutils/build install
+        try "Building sigutils..."         $MAKE -j $THREADS -C sigutils/build
+        try "Deploying sigutils..."        $MAKE -j $THREADS -C sigutils/build install
 
         cd suscan/build
-        try "Running CMake (suscan)..."    cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
+        try "Running CMake (suscan)..."    cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=Release "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
         cd ../../
-        try "Building suscan..."           make -j $THREADS -C suscan/build
-        try "Deploying suscan..."          make -j $THREADS -C suscan/build install
+        try "Building suscan..."           $MAKE -j $THREADS -C suscan/build
+        try "Deploying suscan..."          $MAKE -j $THREADS -C suscan/build install
 
         cd SuWidgets
         try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += release" PREFIX="$DEPLOYROOT/usr"
-        try "Building SuWidgets..."        make -j $THREADS
-        try "Deploying SuWidgets..."       make install
+        try "Building SuWidgets..."        $MAKE -j $THREADS
+        try "Deploying SuWidgets..."       $MAKE install
         cd ..
 
         cd SigDigger
         try "Running QMake (SigDigger)..." qmake SigDigger.pro "CONFIG += release" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr"
-        try "Building SigDigger..."        make -j $THREADS
-        try "Deploying SigDigger..."       make install
+        try "Building SigDigger..."        $MAKE -j $THREADS
+        try "Deploying SigDigger..."       $MAKE install
         cd ..
     else
         skip "Skipping build..."
