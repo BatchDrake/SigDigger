@@ -316,7 +316,6 @@ jobs:
 
           cp -R /mingw64/bin/libusb-1.0.dll deploy/SigDigger
           cp -R /mingw64/bin/librtlsdr.dll deploy/SigDigger
-
           cp /mingw64/lib/libsuscan.dll deploy/SigDigger/
           cp /mingw64/lib/libsigutils.dll deploy/SigDigger/
           cp /mingw64/lib/suwidgets0.dll deploy/SigDigger/suwidgets.dll
@@ -371,13 +370,13 @@ jobs:
           
       - name: Archive zipped redistributable directory
         run: |
-          zip -r deploy/SigDigger-0.3.0-win32-x86_64.zip deploy/SigDigger
+          zip -r deploy/SigDigger-0.3.0-x86_64-win32.zip deploy/SigDigger
           
       - name: Archive Windows files
         uses: actions/upload-artifact@v2
         with:
           name: windows-latest
-          path: deploy/SigDigger/
+          path: deploy/SigDigger-0.3.0-x86_64-win32.zip
           
   
   do_release:
@@ -402,4 +401,4 @@ jobs:
           files: |
             linux-latest-appimage/*.AppImage
             macos-latest-dmg/*.dmg
-            deploy/SigDigger-0.3.0-win32-x86_64.zip
+            windows-latest/*.zip
