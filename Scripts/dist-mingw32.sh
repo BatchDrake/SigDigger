@@ -39,14 +39,14 @@ function deploy()
 
 function fetch_dll()
 {
-    if [ -f "/mingw64/lib/$1" ]; then
-	try "Fetching $1 (lib)..." cp "/mingw64/lib/$1" "$STAGINGDIR/$2"
+    if [ -f "$DEPLOYROOT/usr/lib/$1" ]; then
+	    try "Fetching $1 (deploy root)" cp "$DEPLOYROOT/usr/lib/$1" "$STAGINGDIR/$2"
+    elif [ -f "/mingw64/lib/$1" ]; then
+	    try "Fetching $1 (lib)..." cp "/mingw64/lib/$1" "$STAGINGDIR/$2"
     elif [ -f "/mingw64/bin/$1" ]; then
-	try "Fetching $1 (bin)..." cp "/mingw64/bin/$1" "$STAGINGDIR/$2"
-    elif [ -f "$DEPLOYROOT/usr/lib/$1" ]; then
-	try "Fetching $1 (deploy root)" cp "$DEPLOYROOT/usr/lib/$1" "$STAGINGDIR/$2"
+	    try "Fetching $1 (bin)..." cp "/mingw64/bin/$1" "$STAGINGDIR/$2"
     else
-	try "$1 NOT FOUND!" false
+	    try "$1 NOT FOUND!" false
     fi
 }
 
