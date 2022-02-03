@@ -111,14 +111,13 @@ function create_bundle()
 {
     PARENT=`dirname "$STAGINGDIR"`
     BASE=`basename "$STAGINGDIR"`
+    BUNDLEPATH="$DISTROOT/$DISTFILENAME-win32.zip"
 
     cd "$PARENT"
     
-    try "Creating ZIP file and finishing..." zip -r "$DISTFILENAME-win32.zip" "$BASE"
-
-    echo
-    echo "Bundle file generated in $PWD/$DISTFILENAME-win32.zip"
-    echo "Have a nice day"
+    try "Creating ZIP file and finishing..." zip -r "$BUNDLEPATH" "$BASE"
+    
+    echo "Bundle file generated in $BUNDLEPATH"
 }
 
 build
