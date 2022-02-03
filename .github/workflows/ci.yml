@@ -245,13 +245,13 @@ jobs:
       # SigDigger
       - name: Build & Distribute (SigDigger)
         run: |
-          cd SigDigger/Scripts
+          cd Scripts
           chmod a+x dist-mingw32.sh
           ./dist-mingw32.sh
-          cd ../..
+          cd ..
 
       - name: Archive .ZIP files
         uses: actions/upload-artifact@v2
         with:
           name: windows-latest-zip
-          path: SigDigger/Scripts/SigDigger-*.zip
+          path: Scripts/SigDigger-*.zip
