@@ -14,6 +14,7 @@ jobs:
   build-linux-appimage:
     runs-on: ubuntu-18.04
     steps:
+    - uses: actions/checkout@v2
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
@@ -89,6 +90,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
+    - uses: actions/checkout@v2
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
