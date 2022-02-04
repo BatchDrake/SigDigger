@@ -36,7 +36,7 @@
      </property>
      <widget class="MultiToolBox" name="multiToolBox">
       <property name="currentIndex">
-       <number>2</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="multiToolBoxPage">
        <property name="windowTitle">
@@ -980,7 +980,7 @@ font-family: Monospace;</string>
           <attribute name="title">
            <string>Spectrum</string>
           </attribute>
-          <layout class="QGridLayout" name="gridLayout_3">
+          <layout class="QGridLayout" name="spectLayout">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -1013,7 +1013,7 @@ font-family: Monospace;</string>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <layout class="QGridLayout" name="gridLayout_6">
+             <layout class="QGridLayout" name="frameLayout">
               <property name="leftMargin">
                <number>3</number>
               </property>
@@ -1302,9 +1302,6 @@ font-family: Monospace;</string>
              </layout>
             </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="Waterfall" name="wfSpectrum"/>
-           </item>
           </layout>
          </widget>
         </widget>
@@ -1338,12 +1335,6 @@ font-family: Monospace;</string>
    <class>LCD</class>
    <extends>QFrame</extends>
    <header>LCD.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Waterfall</class>
-   <extends>QFrame</extends>
-   <header>Waterfall.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
