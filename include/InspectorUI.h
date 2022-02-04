@@ -59,6 +59,9 @@ namespace Ui {
 #define SIGDIGGER_INSPECTOR_UI_SOFT_BITS_Q    3
 #define SIGDIGGER_INSPECTOR_UI_SYMBOLS        4
 
+class Waterfall;
+class GLWaterfall;
+
 namespace SigDigger {
   class FrequencyCorrectionDialog;
   class AppConfig;
@@ -109,6 +112,8 @@ namespace SigDigger {
     std::vector<SUFLOAT>  fftData;
 
     // UI objects
+    Waterfall   *wf   = nullptr;
+    GLWaterfall *glWf = nullptr;
     std::vector<Suscan::Estimator> estimators;
     std::vector<Suscan::SpectrumSource> spectsrcs;
     std::map<Suscan::EstimatorId, EstimatorControl *> estimatorCtls;
@@ -149,6 +154,9 @@ namespace SigDigger {
     std::string getClassName(void) const;
     void populateUnits(void);
     void populate(void);
+    void connectWf(void);
+    void connectGLWf(void);
+    void makeWf(QWidget *owner, AppConfig const &appConfig);
     void connectDataSaver(void);
     void connectNetForwarder(void);
     void refreshSizes(void);
@@ -160,6 +168,7 @@ namespace SigDigger {
     void refreshHScrollBar(void) const;
     void redrawMeasures(void);
     void addForwarderWidget(QWidget *widget);
+
     int fd = -1;
 
     float
@@ -178,7 +187,8 @@ namespace SigDigger {
       InspectorUI(
           QWidget *owner,
           QString name,
-          Suscan::Config *config);
+          Suscan::Config *config,
+          AppConfig const &appConfig);
       ~InspectorUI();
 
       QString

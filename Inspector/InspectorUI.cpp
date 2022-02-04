@@ -46,12 +46,101 @@
 #include "InspectorPanel.h"
 #include "FftPanel.h"
 
+#include "Waterfall.h"
+#include "GLWaterfall.h"
+
 using namespace SigDigger;
+
+#define WATERFALL_CALL(call)        \
+  do {                              \
+    if (this->wf != nullptr)        \
+      this->wf->call;               \
+    else if (this->glWf != nullptr) \
+      this->glWf->call;             \
+  } while (false)
+
+
+#define WATERFALL_FUNC(call, dfl)   \
+  (this->wf != nullptr              \
+    ? this->wf->call                \
+    : (this->glWf != nullptr        \
+        ? this->glWf->call          \
+        : (dfl)))
+void
+InspectorUI::makeWf(QWidget *owner, AppConfig const &appConfig)
+{
+  if (this->wf == nullptr && this->glWf == nullptr) {
+    if (appConfig.guiConfig.useGLWaterfall) {
+      // OpenGL waterfall
+      this->glWf = new GLWaterfall(owner);
+      this->glWf->setObjectName(QStringLiteral("wfSpectrum"));
+      this->ui->spectLayout->addWidget(this->glWf, 1, 0, 1, 2);
+      this->connectGLWf();
+    } else {
+      // Classic waterfall
+      this->wf = new Waterfall(owner);
+      this->wf->setObjectName(QStringLiteral("wfSpectrum"));
+      this->ui->spectLayout->addWidget(this->wf, 1, 0, 1, 2);
+      this->connectWf();
+    }
+
+    WATERFALL_CALL(setClickResolution(1));
+    WATERFALL_CALL(setFilterClickResolution(1));
+  }
+
+  if (this->glWf != nullptr)
+    this->glWf->setMaxBlending(appConfig.guiConfig.useMaxBlending);
+}
+
+void
+InspectorUI::connectWf(void)
+{
+  connect(
+        this->wf,
+        SIGNAL(pandapterRangeChanged(float, float)),
+        this,
+        SLOT(onPandapterRangeChanged(float, float)));
+
+  connect(
+        this->wf,
+        SIGNAL(newFilterFreq(int, int)),
+        this,
+        SLOT(onNewBandwidth(int, int)));
+
+  connect(
+        this->wf,
+        SIGNAL(newDemodFreq(qint64, qint64)),
+        this,
+        SLOT(onNewOffset()));
+}
+
+void
+InspectorUI::connectGLWf()
+{
+  connect(
+        this->glWf,
+        SIGNAL(pandapterRangeChanged(float, float)),
+        this,
+        SLOT(onPandapterRangeChanged(float, float)));
+
+  connect(
+        this->glWf,
+        SIGNAL(newFilterFreq(int, int)),
+        this,
+        SLOT(onNewBandwidth(int, int)));
+
+  connect(
+        this->glWf,
+        SIGNAL(newDemodFreq(qint64, qint64)),
+        this,
+        SLOT(onNewOffset()));
+}
 
 InspectorUI::InspectorUI(
     QWidget *owner,
     QString name,
-    Suscan::Config *config)
+    Suscan::Config *config,
+    AppConfig const &appConfig)
 {
   struct timeval tv;
 
@@ -61,6 +150,7 @@ InspectorUI::InspectorUI(
   this->owner  = owner;
 
   this->ui->setupUi(owner);
+  this->makeWf(owner, appConfig);
 
   this->haveQth = suscan_get_qth(&this->qth);
 
@@ -88,7 +178,8 @@ InspectorUI::InspectorUI(
         0,
         ColorConfig());
 
-  gettimeofday(&tv, NULL);
+  gettimeofday(&tv, nullptr);
+
   this->fcDialog->resetTimestamp(tv);
   if (this->haveQth)
     this->fcDialog->setQth(this->qth);
@@ -146,7 +237,7 @@ InspectorUI::~InspectorUI()
 void
 InspectorUI::initUi(void)
 {
-  this->ui->wfSpectrum->setFreqUnits(1);
+  WATERFALL_CALL(setFreqUnits(1));
 
   SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
 
@@ -165,9 +256,9 @@ InspectorUI::initUi(void)
   this->ui->histogram->setThrottleControl(&this->throttle);
   this->ui->histogram->setDecider(&this->decider);
   this->ui->histogram->reset();
-  this->ui->wfSpectrum->setCenterFreq(0);
-  this->ui->wfSpectrum->resetHorizontalZoom();
-  this->ui->wfSpectrum->setFftPlotColor(QColor(255, 255, 0));
+  WATERFALL_CALL(setCenterFreq(0));
+  WATERFALL_CALL(resetHorizontalZoom());
+  WATERFALL_CALL(setFftPlotColor(QColor(255, 255, 0)));
 
   this->ui->centerLabel->setFixedWidth(
         SuWidgetsHelpers::getWidgetTextWidth(
@@ -232,14 +323,14 @@ InspectorUI::setSampleRate(float rate)
   this->ui->bwLcd->setMin(0);
   this->ui->bwLcd->setMax(static_cast<qint64>(rate));
 
-  this->ui->wfSpectrum->setClickResolution(1);
-  this->ui->wfSpectrum->setFilterClickResolution(1);
-  this->ui->wfSpectrum->setDemodRanges(
+  WATERFALL_CALL(setClickResolution(1));
+  WATERFALL_CALL(setFilterClickResolution(1));
+  WATERFALL_CALL(setDemodRanges(
         static_cast<int>(-rate / 2),
         1,
         1,
         static_cast<int>(+rate / 2),
-        true);
+        true));
 
   if (this->config->hasPrefix("fsk"))
     this->ui->histogram->overrideDisplayRange(static_cast<qreal>(rate));
@@ -302,8 +393,8 @@ InspectorUI::setPalette(std::string const &str)
   if (index < 0)
     return false;
 
-  this->ui->wfSpectrum->setPalette(
-        SigDiggerHelpers::instance()->getPalette(index)->getGradient());
+  WATERFALL_CALL(setPalette(
+        SigDiggerHelpers::instance()->getPalette(index)->getGradient()));
   this->ui->paletteCombo->setCurrentIndex(index);
 
   return true;
@@ -427,12 +518,6 @@ InspectorUI::connectAll()
         SLOT(onAspectSliderChanged(int)));
 
   connect(
-        this->ui->wfSpectrum,
-        SIGNAL(pandapterRangeChanged(float, float)),
-        this,
-        SLOT(onPandapterRangeChanged(float, float)));
-
-  connect(
         this->ui->unitsCombo,
         SIGNAL(activated(int)),
         this,
@@ -449,18 +534,6 @@ InspectorUI::connectAll()
         SIGNAL(valueChanged(double)),
         this,
         SLOT(onGainChanged(void)));
-
-  connect(
-        this->ui->wfSpectrum,
-        SIGNAL(newFilterFreq(int, int)),
-        this,
-        SLOT(onNewBandwidth(int, int)));
-
-  connect(
-        this->ui->wfSpectrum,
-        SIGNAL(newDemodFreq(qint64, qint64)),
-        this,
-        SLOT(onNewOffset()));
 
   connect(
         this->ui->dopplerSettingsButton,
@@ -851,16 +924,16 @@ void
 InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
 {
   if (this->lastRate != rate) {
-    this->ui->wfSpectrum->setSampleRate(static_cast<float>(rate));
+    WATERFALL_CALL(setSampleRate(static_cast<float>(rate)));
     this->lastRate = rate;
   }
 
   this->fftData.resize(len);
   this->fftData.assign(data, data + len);
 
-  this->ui->wfSpectrum->setNewFftData(
+  WATERFALL_CALL(setNewFftData(
         static_cast<float *>(this->fftData.data()),
-        static_cast<int>(len));
+        static_cast<int>(len)));
 
   if (!this->haveSpectrumLimits) {
     SUFLOAT min = +INFINITY;
@@ -879,8 +952,8 @@ InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
       SUFLOAT spacing = .1f * range;
       this->ui->gainSpinBox->setValue(-max);
       this->ui->zeroPointSpin->setValue(-max);
-      this->ui->wfSpectrum->setPandapterRange(min - max - spacing, spacing);
-      this->ui->wfSpectrum->setWaterfallRange(min - max - spacing, spacing);
+      WATERFALL_CALL(setPandapterRange(min - max - spacing, spacing));
+      WATERFALL_CALL(setWaterfallRange(min - max - spacing, spacing));
 
       // The inspector spectrum size is len, with 100 ms update period.
       // If the sample rate is fs, len / (fs * .1) is the number of intermediate
@@ -900,9 +973,9 @@ InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
       res = 1;
 
     this->lastLen = len;
-    this->ui->wfSpectrum->resetHorizontalZoom();
-    this->ui->wfSpectrum->setClickResolution(res);
-    this->ui->wfSpectrum->setFilterClickResolution(res);
+    WATERFALL_CALL(resetHorizontalZoom());
+    WATERFALL_CALL(setClickResolution(res));
+    WATERFALL_CALL(setFilterClickResolution(res));
   }
 }
 
@@ -1038,22 +1111,22 @@ InspectorUI::redrawMeasures(void)
   this->ui->centerLabel->setText(
         SuWidgetsHelpers::formatQuantity(
           static_cast<qreal>(
-            this->ui->wfSpectrum->getFilterOffset()),
+            WATERFALL_FUNC(getFilterOffset(), 0)),
           6,
           "Hz",
           true));
   this->ui->scFreqSpin->setValue(
         static_cast<qreal>(
-          this->ui->wfSpectrum->getFilterOffset()));
+          WATERFALL_FUNC(getFilterOffset(), 0)));
 
   this->ui->bwLabel->setText(
         SuWidgetsHelpers::formatQuantity(
-          static_cast<qreal>(this->ui->wfSpectrum->getFilterBw()),
+          static_cast<qreal>(WATERFALL_FUNC(getFilterBw(), 0)),
           6,
           "Hz"));
   this->ui->scBandwidth->setValue(
         static_cast<qreal>(
-          this->ui->wfSpectrum->getFilterBw()));
+          WATERFALL_FUNC(getFilterBw(), 0)));
 
 }
 
@@ -1232,11 +1305,11 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   this->ui->loLcd->setForegroundColor(colors.lcdForeground);
   this->ui->loLcd->setBackgroundColor(colors.lcdBackground);
 
-  this->ui->wfSpectrum->setFftPlotColor(colors.spectrumForeground);
-  this->ui->wfSpectrum->setFftBgColor(colors.spectrumBackground);
-  this->ui->wfSpectrum->setFftAxesColor(colors.spectrumAxes);
-  this->ui->wfSpectrum->setFftTextColor(colors.spectrumText);
-  this->ui->wfSpectrum->setFilterBoxColor(colors.filterBox);
+  WATERFALL_CALL(setFftPlotColor(colors.spectrumForeground));
+  WATERFALL_CALL(setFftBgColor(colors.spectrumBackground));
+  WATERFALL_CALL(setFftAxesColor(colors.spectrumAxes));
+  WATERFALL_CALL(setFftTextColor(colors.spectrumText));
+  WATERFALL_CALL(setFilterBoxColor(colors.filterBox));
 
   // Set SymView colors
   this->symViewTab->setColorConfig(colors);
@@ -1322,7 +1395,7 @@ void
 InspectorUI::setZeroPoint(float zp)
 {
   this->ui->zeroPointSpin->setValue(static_cast<double>(zp));
-  this->ui->wfSpectrum->setZeroPoint(this->currentUnit.zeroPoint + zp);
+  WATERFALL_CALL(setZeroPoint(this->currentUnit.zeroPoint + zp));
 }
 
 void
@@ -1345,12 +1418,12 @@ void
 InspectorUI::onSpectrumConfigChanged(void)
 {
   int index = this->ui->paletteCombo->currentIndex();
-  this->ui->wfSpectrum->setPalette(
-        SigDiggerHelpers::instance()->getPalette(index)->getGradient());
-  this->ui->wfSpectrum->setPeakDetection(
-        this->ui->peakDetectionButton->isChecked(), 3);
+  WATERFALL_CALL(setPalette(
+        SigDiggerHelpers::instance()->getPalette(index)->getGradient()));
+  WATERFALL_CALL(setPeakDetection(
+        this->ui->peakDetectionButton->isChecked(), 3));
 
-  this->ui->wfSpectrum->setPeakHold(this->ui->peakHoldButton->isChecked());
+  WATERFALL_CALL(setPeakHold(this->ui->peakHoldButton->isChecked()));
 }
 
 void
@@ -1364,13 +1437,13 @@ void
 InspectorUI::onRangeChanged(void)
 {
   if (!this->adjusting) {
-    this->ui->wfSpectrum->setPandapterRange(
+    WATERFALL_CALL(setPandapterRange(
           this->ui->rangeSlider->minimumValue(),
-          this->ui->rangeSlider->maximumValue());
+          this->ui->rangeSlider->maximumValue()));
 
-    this->ui->wfSpectrum->setWaterfallRange(
+    WATERFALL_CALL(setWaterfallRange(
           this->ui->rangeSlider->minimumValue(),
-          this->ui->rangeSlider->maximumValue());
+          this->ui->rangeSlider->maximumValue()));
   }
 }
 
@@ -1401,7 +1474,7 @@ InspectorUI::onApplyEstimation(QString name, float value)
 void
 InspectorUI::onAspectSliderChanged(int ratio)
 {
-  this->ui->wfSpectrum->setPercent2DScreen(ratio);
+  WATERFALL_CALL(setPercent2DScreen(ratio));
 }
 
 void
@@ -1413,7 +1486,7 @@ InspectorUI::onPandapterRangeChanged(float min, float max)
   this->ui->rangeSlider->setMinimumPosition(static_cast<int>(min));
   this->ui->rangeSlider->setMaximumPosition(static_cast<int>(max));
 
-  this->ui->wfSpectrum->setWaterfallRange(min, max);
+  WATERFALL_CALL(setWaterfallRange(min, max));
 
   this->adjusting = adjusting;
 }
@@ -1575,9 +1648,9 @@ InspectorUI::onUnitChanged(void)
 
   newZp = this->dbToZeroPoint(currZPdB);
 
-  this->ui->wfSpectrum->setUnitName(
-        QString::fromStdString(this->currentUnit.name));
-  this->ui->wfSpectrum->setdBPerUnit(this->currentUnit.dBPerUnit);
+  WATERFALL_CALL(setUnitName(
+        QString::fromStdString(this->currentUnit.name)));
+  WATERFALL_CALL(setdBPerUnit(this->currentUnit.dBPerUnit));
   this->setZeroPoint(newZp);
 }
 
@@ -1585,14 +1658,14 @@ void
 InspectorUI::onZeroPointChanged(void)
 {
   float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
-  this->ui->wfSpectrum->setZeroPoint(this->currentUnit.zeroPoint + currZP);
+  WATERFALL_CALL(setZeroPoint(this->currentUnit.zeroPoint + currZP));
 }
 
 void
 InspectorUI::onGainChanged(void)
 {
-  this->ui->wfSpectrum->setGain(
-        static_cast<float>(this->ui->gainSpinBox->value()));
+  WATERFALL_CALL(setGain(
+        static_cast<float>(this->ui->gainSpinBox->value())));
 }
 
 void
@@ -1636,20 +1709,20 @@ InspectorUI::onDopplerAccepted(void)
 void
 InspectorUI::onScFrequencyChanged(void)
 {
-  this->ui->wfSpectrum->setFilterOffset(
+  WATERFALL_CALL(setFilterOffset(
         static_cast<qint64>(
-          this->ui->scFreqSpin->value()));
+          this->ui->scFreqSpin->value())));
 
 }
 
 void
 InspectorUI::onScBandwidthChanged(void)
 {
-  this->ui->wfSpectrum->setHiLowCutFrequencies(
+  WATERFALL_CALL(setHiLowCutFrequencies(
         -static_cast<qint64>(
           this->ui->scBandwidth->value() / 2),
         +static_cast<qint64>(
-          this->ui->scBandwidth->value() / 2));
+          this->ui->scBandwidth->value() / 2)));
 }
 
 void

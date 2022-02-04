@@ -34,7 +34,7 @@ Inspector::Inspector(
   this->handle = msg.getHandle();
   this->analyzer = nullptr;
 
-  this->ui = std::make_unique<InspectorUI>(this, name, &this->config);
+  this->ui = std::make_unique<InspectorUI>(this, name, &this->config, config);
   this->ui->setAppConfig(config);
   this->ui->setBasebandRate(msg.getBasebandRate());
   this->ui->setSampleRate(msg.getEquivSampleRate());
