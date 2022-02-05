@@ -86,6 +86,7 @@ namespace SigDigger {
       DeviceGain *lookupGain(std::string const &name);
       void clearGains(void);
       void refreshGains(Suscan::Source::Config &config);
+      bool tryApplyGains(Suscan::AnalyzerSourceInfo const &info);
       void selectAutoGain(unsigned int);
       void refreshAutoGains(Suscan::Source::Config &config);
       void applyCurrentAutogain(void);
