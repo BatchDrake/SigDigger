@@ -482,6 +482,29 @@ SourcePanel::refreshGains(Suscan::Source::Config &config)
     this->ui->gainsFrame->show();
 }
 
+bool
+SourcePanel::tryApplyGains(
+    Suscan::AnalyzerSourceInfo const &info)
+{
+  std::vector<Suscan::Source::GainDescription> gains;
+  DeviceGain *gain;
+  unsigned int i;
+
+  info.getGainInfo(gains);
+
+  if (gains.size() != this->gainControls.size())
+    return false;
+
+  for (i = 0; i < gains.size(); ++i) {
+    if ((gain = this->lookupGain(gains[i].getName())) == nullptr)
+      return false;
+
+    gain->setGain(gains[i].getDefault());
+  }
+
+  return true;
+}
+
 void
 SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
@@ -503,33 +526,36 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   // not reported in the antenna list
   this->selectAntenna(info.getAntenna());
 
-  // Create gains
-  this->clearGains();
 
-  info.getGainInfo(gains);
+  if (!this->tryApplyGains(info)) {
+    // Recreate gains
+    this->clearGains();
 
-  for (auto p: gains) {
-    gain = new DeviceGain(nullptr, p);
-    this->gainControls.push_back(gain);
-    this->ui->gainGridLayout->addWidget(
-          gain,
-          static_cast<int>(this->gainControls.size() - 1),
-          0,
-          1,
-          1);
+    info.getGainInfo(gains);
 
-    connect(
-          gain,
-          SIGNAL(gainChanged(QString, float)),
-          this,
-          SLOT(onGainChanged(QString, float)));
-    gain->setGain(p.getDefault());
+    for (auto p: gains) {
+      gain = new DeviceGain(nullptr, p);
+      this->gainControls.push_back(gain);
+      this->ui->gainGridLayout->addWidget(
+            gain,
+            static_cast<int>(this->gainControls.size() - 1),
+            0,
+            1,
+            1);
+
+      connect(
+            gain,
+            SIGNAL(gainChanged(QString, float)),
+            this,
+            SLOT(onGainChanged(QString, float)));
+      gain->setGain(p.getDefault());
+    }
+
+    if (this->gainControls.size() == 0)
+      this->ui->gainsFrame->hide();
+    else
+      this->ui->gainsFrame->show();
   }
-
-  if (this->gainControls.size() == 0)
-    this->ui->gainsFrame->hide();
-  else
-    this->ui->gainsFrame->show();
 
   this->refreshing = oldRefreshing;
 }

@@ -227,7 +227,7 @@ void
 MainSpectrum::updateLimits(void)
 {
   qint64 minFreq = this->noLimits ? 0         : this->minFreq;
-  qint64 maxFreq = this->noLimits ? 300000000 : this->maxFreq;
+  qint64 maxFreq = this->noLimits ? 300000000000 : this->maxFreq;
 
   qint64 minLcd = minFreq + this->getLnbFreq();
   qint64 maxLcd = maxFreq + this->getLnbFreq();
