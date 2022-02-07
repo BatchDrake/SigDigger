@@ -402,10 +402,10 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
   this->setPPM(this->profile->getPPM());
 
   // Reset the autogain configuration if a new profile is chosen
-  this->ui->gainsFrame->setEnabled(!presetEnabled);
-
   if (presetEnabled)
     this->refreshCurrentAutoGain(config->getDevice().getDriver());
+  else
+    this->ui->gainsFrame->setEnabled(true);
 
   this->refreshUi();
 
@@ -500,44 +500,55 @@ SourcePanel::selectAutoGain(std::string const &name)
 void
 SourcePanel::refreshCurrentAutoGain(std::string const &driver)
 {
+  bool enableGains = true;
+
   if (this->panelConfig->agcSettings.find(driver) !=
       this->panelConfig->agcSettings.end()) {
     AutoGainSetting setting = this->panelConfig->agcSettings[driver];
 
     if (this->selectAutoGain(setting.name)) {
       this->ui->autoGainSlider->setValue(setting.value);
+      enableGains = false;
     } else {
       this->selectAutoGain(0);
     }
   } else {
     this->selectAutoGain(0);
   }
+
+  this->ui->gainsFrame->setEnabled(enableGains);
 }
 
 void
 SourcePanel::refreshAutoGains(Suscan::Source::Config &config)
 {
-  this->currAutoGainSet =
-      &this->autoGains[config.getDevice().getDriver()];
-
-  this->currentAutoGain = nullptr;
+  std::string driver = config.getDevice().getDriver();
+  bool showFrame = false;
 
   this->ui->autoGainCombo->clear();
 
-  if (this->currAutoGainSet->size() == 0
-      || config.getType() != SUSCAN_SOURCE_TYPE_SDR) {
-    this->ui->autoGainFrame->hide();
+  if (this->autoGains.find(driver) != this->autoGains.end()) {
+    this->currAutoGainSet = &this->autoGains[driver];
+    this->currentAutoGain = nullptr;
+
+    if (this->currAutoGainSet->size() > 0
+        && config.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+      for (auto p = this->currAutoGainSet->begin();
+           p != this->currAutoGainSet->end(); ++p)
+        this->ui->autoGainCombo->addItem(
+              QString::fromStdString(p->getName()));
+
+      if (this->ui->gainPresetCheck->isEnabled())
+        this->refreshCurrentAutoGain(driver);
+
+      showFrame = true;
+    }
   } else {
-    for (auto p = this->currAutoGainSet->begin();
-         p != this->currAutoGainSet->end(); ++p)
-      this->ui->autoGainCombo->addItem(
-            QString::fromStdString(p->getName()));
-
-    if (this->ui->gainPresetCheck->isEnabled())
-      this->refreshCurrentAutoGain(config.getDevice().getDriver());
-
-    this->ui->autoGainFrame->show();
+    this->currAutoGainSet = nullptr;
+    this->currentAutoGain = nullptr;
   }
+
+  this->ui->autoGainFrame->setVisible(showFrame);
 }
 
 void
@@ -575,7 +586,10 @@ SourcePanel::refreshGains(Suscan::Source::Config &config)
   else
     this->ui->gainsFrame->show();
 
-  this->ui->gainsFrame->setEnabled(!presetEnabled);
+  if (presetEnabled)
+    this->refreshCurrentAutoGain(dev.getDriver());
+  else
+    this->ui->gainsFrame->setEnabled(true);
 }
 
 bool
@@ -650,8 +664,6 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
       this->ui->gainsFrame->hide();
     else
       this->ui->gainsFrame->show();
-
-    this->ui->gainsFrame->setEnabled(!presetEnabled);
   }
 
   this->refreshing = oldRefreshing;
@@ -725,7 +737,6 @@ SourcePanel::applyConfig(void)
   this->ui->agcEnabledCheck->setChecked(this->panelConfig->agcEnabled);
   this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
   this->ui->gainPresetCheck->setChecked(this->panelConfig->gainPresetEnabled);
-  this->ui->gainsFrame->setEnabled(!this->panelConfig->gainPresetEnabled);
 
   this->setProperty("collapsed", this->panelConfig->collapsed);
 
@@ -871,7 +882,6 @@ SourcePanel::onToggleAutoGain(void)
 
   if (this->panelConfig->gainPresetEnabled) {
     this->applyCurrentAutogain();
-    this->ui->gainsFrame->setEnabled(false);
     this->ui->autoGainCombo->setEnabled(true);
     this->ui->autoGainSlider->setEnabled(true);
   } else {

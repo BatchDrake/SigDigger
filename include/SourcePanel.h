@@ -91,7 +91,7 @@ namespace SigDigger {
       State state = DETACHED;
       std::map<std::string, std::vector<AutoGain>> autoGains;
       bool throttleable = false;
-      std::vector<AutoGain> *currAutoGainSet;
+      std::vector<AutoGain> *currAutoGainSet = nullptr;
       AutoGain *currentAutoGain = nullptr;
       bool loadingConfig = false;
 
