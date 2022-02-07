@@ -54,6 +54,11 @@ namespace SigDigger {
     SaveProfileDialog saveProfileDialog;
 
     void connectAll(void);
+
+    void populateProfileCombo(void);
+    void populateDeviceCombo(void);
+    void populateRemoteDeviceCombo(void);
+
     void populateCombos(void);
     void refreshAntennas(void);
     void refreshSampRates(void);

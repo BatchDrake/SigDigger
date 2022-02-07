@@ -73,30 +73,58 @@ ProfileConfigTab::shouldDisregardTweaks(void)
 }
 
 void
-ProfileConfigTab::populateCombos(void)
+ProfileConfigTab::populateProfileCombo(void)
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
   this->ui->profileCombo->clear();
-  this->ui->deviceCombo->clear();
-  this->ui->remoteDeviceCombo->clear();
 
   for (auto i = sus->getFirstProfile(); i != sus->getLastProfile(); ++i)
-      this->ui->profileCombo->addItem(
-            QString::fromStdString(i->first),
-            QVariant::fromValue(i->second));
+    this->ui->profileCombo->addItem(
+        QString::fromStdString(i->first),
+        QVariant::fromValue(i->second));
+}
 
-  // Populate local devices only
-  for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i)
-    if (i->isAvailable() && !i->isRemote())
+void
+ProfileConfigTab::populateDeviceCombo(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  int currentIndex = this->ui->deviceCombo->currentIndex();
+  int newIndex = -1;
+  int p = 0;
+  QString prevName, name;
+
+  if (currentIndex != -1)
+    prevName = this->ui->deviceCombo->currentText();
+
+  this->ui->deviceCombo->clear();
+
+  for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
+    if (i->isAvailable() && !i->isRemote()) {
+      name = QString::fromStdString(i->getDesc());
+      if (currentIndex != -1 && newIndex == -1 && name == prevName)
+        newIndex = p;
+
       this->ui->deviceCombo->addItem(
-          QString::fromStdString(i->getDesc()),
+          name,
           QVariant::fromValue<long>(i - sus->getFirstDevice()));
+      ++p;
+    }
+  }
 
-  if (this->ui->deviceCombo->currentIndex() == -1)
-    this->ui->deviceCombo->setCurrentIndex(0);
+  if (newIndex == -1)
+    newIndex = 0;
 
-  // Network devices are traversed here.
+  this->ui->deviceCombo->setCurrentIndex(newIndex);
+}
+
+void
+ProfileConfigTab::populateRemoteDeviceCombo(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  this->ui->remoteDeviceCombo->clear();
+
   for (
        auto i = sus->getFirstNetworkProfile();
        i != sus->getLastNetworkProfile();
@@ -105,6 +133,15 @@ ProfileConfigTab::populateCombos(void)
 
   if (this->ui->remoteDeviceCombo->currentIndex() != -1)
     this->ui->remoteDeviceCombo->setCurrentIndex(0);
+}
+
+
+void
+ProfileConfigTab::populateCombos(void)
+{
+  this->populateProfileCombo();
+  this->populateDeviceCombo();
+  this->populateRemoteDeviceCombo();
 
   this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
 }
@@ -899,6 +936,7 @@ ProfileConfigTab::onAnalyzerTypeChanged(int index)
         break;
     }
 
+    printf("Stacked widget height: %d\n", this->ui->analyzerParamsStackedWidget->height());
     this->refreshUiState();
   }
 }
@@ -1277,7 +1315,7 @@ ProfileConfigTab::onSaveProfile(void)
 
     this->profile.setLabel(candidate);
     sus->saveProfile(this->profile);
-    this->populateCombos();
+    this->populateProfileCombo();
   }
 }
 
@@ -1306,7 +1344,7 @@ ProfileConfigTab::onRefreshRemoteDevices(void)
   int countAfter;
 
   sus->refreshNetworkProfiles();
-  this->populateCombos();
+  this->populateRemoteDeviceCombo();
 
   countAfter = this->ui->remoteDeviceCombo->count();
 
