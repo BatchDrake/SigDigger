@@ -22,6 +22,7 @@
 
 #include <PersistentWidget.h>
 #include <Suscan/Analyzer.h>
+#include <map>
 
 #include "DataSaverUI.h"
 #include "DeviceGain.h"
@@ -32,6 +33,16 @@ namespace Ui {
 }
 
 namespace SigDigger {
+  struct AutoGainSetting : public Suscan::Serializable {
+    std::string driver;
+    std::string name;
+    int         value;
+
+    // Overriden methods
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize(void) override;
+  };
+
   class SourcePanelConfig : public Suscan::Serializable {
     public:
       Suscan::Serializable *dataSaverConfig = nullptr;
@@ -40,7 +51,9 @@ namespace SigDigger {
       bool dcRemove = false;
       bool iqRev = false;
       bool agcEnabled = false;
+      bool gainPresetEnabled = false;
 
+      std::map<std::string, AutoGainSetting> agcSettings;
       unsigned int throttleRate = 196000;
 
       // Overriden methods
@@ -88,7 +101,9 @@ namespace SigDigger {
       void refreshGains(Suscan::Source::Config &config);
       bool tryApplyGains(Suscan::AnalyzerSourceInfo const &info);
       void selectAutoGain(unsigned int);
+      bool selectAutoGain(std::string const &);
       void refreshAutoGains(Suscan::Source::Config &config);
+      void refreshCurrentAutoGain(std::string const &);
       void applyCurrentAutogain(void);
       void selectAntenna(std::string const &name);
       void setBandwidth(float bw);

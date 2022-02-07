@@ -29,27 +29,73 @@
 
 using namespace SigDigger;
 
-/////////////////////////////// Source panel cnfig ////////////////////////////
 #define STRINGFY(x) #x
 #define STORE(field) obj.set(STRINGFY(field), this->field)
 #define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
 
+///////////////////////////////// Autogain config //////////////////////////////
+void
+AutoGainSetting::deserialize(Suscan::Object const &conf)
+{
+  LOAD(driver);
+  LOAD(name);
+  LOAD(value);
+}
+
+Suscan::Object &&
+AutoGainSetting::serialize(void)
+{
+  Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+  Suscan::Object dataSaverConfig;
+
+  obj.setClass("AutoGainSetting");
+
+  STORE(driver);
+  STORE(name);
+  STORE(value);
+
+  return this->persist(obj);
+}
+/////////////////////////////// Source panel config ////////////////////////////
+
 void
 SourcePanelConfig::deserialize(Suscan::Object const &conf)
 {
+  this->agcSettings.clear();
+
   LOAD(collapsed);
   LOAD(throttle);
   LOAD(throttleRate);
   LOAD(dcRemove);
   LOAD(iqRev);
   LOAD(agcEnabled);
+  LOAD(gainPresetEnabled);
 
   try {
-    Suscan::Object field = conf.getField("DataSaverConfig");
+    Suscan::Object field = conf.getField("dataSaverConfig");
     this->dataSaverConfig->deserialize(field);
   } catch (Suscan::Exception const &) {
 
   }
+
+  try {
+    Suscan::Object list = conf.getField("SavedAutoGains");
+    if (list.getType() == SUSCAN_OBJECT_TYPE_SET) {
+      for (unsigned int i = 0; i < list.length(); ++i) {
+        Suscan::Object field = list[i];
+        if (field.getType() == SUSCAN_OBJECT_TYPE_OBJECT
+            && field.getClass() == "AutoGainSetting") {
+          try {
+            AutoGainSetting agcSetting;
+
+            agcSetting.deserialize(field);
+            this->agcSettings[agcSetting.driver] = agcSetting;
+          } catch (Suscan::Exception const &) { }
+        }
+      }
+
+    }
+  } catch (Suscan::Exception const &) { }
 }
 
 Suscan::Object &&
@@ -57,6 +103,7 @@ SourcePanelConfig::serialize(void)
 {
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
   Suscan::Object dataSaverConfig;
+  Suscan::Object list(SUSCAN_OBJECT_TYPE_SET);
 
   obj.setClass("SourcePanelConfig");
 
@@ -66,10 +113,18 @@ SourcePanelConfig::serialize(void)
   STORE(dcRemove);
   STORE(iqRev);
   STORE(agcEnabled);
+  STORE(gainPresetEnabled);
 
   dataSaverConfig = this->dataSaverConfig->serialize();
 
-  obj.setField("DataSaverConfig", dataSaverConfig);
+  obj.setField("dataSaverConfig", dataSaverConfig);
+
+  for (auto p : this->agcSettings) {
+    Suscan::Object serialized = p.second.serialize();
+    list.append(serialized);
+  }
+
+  obj.setField("SavedAutoGains", list);
 
   return this->persist(obj);
 }
@@ -312,6 +367,7 @@ void
 SourcePanel::setProfile(Suscan::Source::Config *config)
 {
   SUFLOAT bw;
+  bool presetEnabled = this->ui->gainPresetCheck->isChecked();
   bool oldRefreshing = this->refreshing;
   this->refreshing = true;
 
@@ -346,8 +402,10 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
   this->setPPM(this->profile->getPPM());
 
   // Reset the autogain configuration if a new profile is chosen
-  this->ui->gainsFrame->setEnabled(true);
-  this->ui->gainPresetCheck->setChecked(false);
+  this->ui->gainsFrame->setEnabled(!presetEnabled);
+
+  if (presetEnabled)
+    this->refreshCurrentAutoGain(config->getDevice().getDriver());
 
   this->refreshUi();
 
@@ -423,6 +481,39 @@ SourcePanel::selectAutoGain(unsigned int gain)
   }
 }
 
+bool
+SourcePanel::selectAutoGain(std::string const &name)
+{
+  int ndx;
+
+  ndx = this->ui->autoGainCombo->findText(QString::fromStdString(name));
+
+  if (ndx == -1)
+    return false;
+
+  this->ui->autoGainCombo->setCurrentIndex(ndx);
+  this->selectAutoGain(static_cast<unsigned int>(ndx));
+
+  return true;
+}
+
+void
+SourcePanel::refreshCurrentAutoGain(std::string const &driver)
+{
+  if (this->panelConfig->agcSettings.find(driver) !=
+      this->panelConfig->agcSettings.end()) {
+    AutoGainSetting setting = this->panelConfig->agcSettings[driver];
+
+    if (this->selectAutoGain(setting.name)) {
+      this->ui->autoGainSlider->setValue(setting.value);
+    } else {
+      this->selectAutoGain(0);
+    }
+  } else {
+    this->selectAutoGain(0);
+  }
+}
+
 void
 SourcePanel::refreshAutoGains(Suscan::Source::Config &config)
 {
@@ -442,8 +533,10 @@ SourcePanel::refreshAutoGains(Suscan::Source::Config &config)
       this->ui->autoGainCombo->addItem(
             QString::fromStdString(p->getName()));
 
+    if (this->ui->gainPresetCheck->isEnabled())
+      this->refreshCurrentAutoGain(config.getDevice().getDriver());
+
     this->ui->autoGainFrame->show();
-    this->selectAutoGain(0);
   }
 }
 
@@ -452,6 +545,7 @@ SourcePanel::refreshGains(Suscan::Source::Config &config)
 {
   Suscan::Source::Device const &dev = config.getDevice();
   DeviceGain *gain = nullptr;
+  bool presetEnabled = this->ui->gainPresetCheck->isChecked();
 
   this->clearGains();
 
@@ -480,6 +574,8 @@ SourcePanel::refreshGains(Suscan::Source::Config &config)
     this->ui->gainsFrame->hide();
   else
     this->ui->gainsFrame->show();
+
+  this->ui->gainsFrame->setEnabled(!presetEnabled);
 }
 
 bool
@@ -510,8 +606,8 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
   std::vector<Suscan::Source::GainDescription> gains;
   DeviceGain *gain = nullptr;
+  bool presetEnabled = this->ui->gainPresetCheck->isChecked();
   bool oldRefreshing = this->refreshing;
-
   this->refreshing = true;
 
   this->setDCRemove(info.getDCRemove());
@@ -525,7 +621,6 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   // What if SoapySDR lies? We consider the case in which the antenna is
   // not reported in the antenna list
   this->selectAntenna(info.getAntenna());
-
 
   if (!this->tryApplyGains(info)) {
     // Recreate gains
@@ -555,9 +650,16 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
       this->ui->gainsFrame->hide();
     else
       this->ui->gainsFrame->show();
+
+    this->ui->gainsFrame->setEnabled(!presetEnabled);
   }
 
   this->refreshing = oldRefreshing;
+
+  // AGC Enabled, we override gain settings with the current AGC
+  // settings
+  if (presetEnabled)
+    this->applyCurrentAutogain();
 }
 
 bool
@@ -577,9 +679,18 @@ SourcePanel::event(QEvent *event)
 void
 SourcePanel::applyCurrentAutogain(void)
 {
-  if (this->currentAutoGain != nullptr) {
-    std::vector<GainConfig> cfg = this->currentAutoGain->translateGain(
-          this->ui->autoGainSlider->value());
+  if (this->currentAutoGain != nullptr
+      && this->ui->gainPresetCheck->isChecked()) {
+    AutoGainSetting agc;
+    agc.driver = this->currentAutoGain->getDriver();
+    agc.name   = this->currentAutoGain->getName();
+    agc.value  = this->ui->autoGainSlider->value();
+
+    this->panelConfig->agcSettings[agc.driver] = agc;
+
+    std::vector<GainConfig> cfg =
+        this->currentAutoGain->translateGain(agc.value);
+
     for (auto p = cfg.begin();
          p != cfg.end();
          ++p) {
@@ -613,6 +724,9 @@ SourcePanel::applyConfig(void)
   this->ui->swapIQCheck->setChecked(this->panelConfig->iqRev);
   this->ui->agcEnabledCheck->setChecked(this->panelConfig->agcEnabled);
   this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
+  this->ui->gainPresetCheck->setChecked(this->panelConfig->gainPresetEnabled);
+  this->ui->gainsFrame->setEnabled(!this->panelConfig->gainPresetEnabled);
+
   this->setProperty("collapsed", this->panelConfig->collapsed);
 
   this->saverUI->applyConfig();
@@ -753,7 +867,9 @@ SourcePanel::onChangeAutoGain(void)
 void
 SourcePanel::onToggleAutoGain(void)
 {
-  if (this->ui->gainPresetCheck->isChecked()) {
+  this->panelConfig->gainPresetEnabled = this->ui->gainPresetCheck->isChecked();
+
+  if (this->panelConfig->gainPresetEnabled) {
     this->applyCurrentAutogain();
     this->ui->gainsFrame->setEnabled(false);
     this->ui->autoGainCombo->setEnabled(true);
