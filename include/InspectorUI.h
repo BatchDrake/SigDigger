@@ -242,7 +242,6 @@ namespace SigDigger {
       void onFPSChanged(void);
       void onSpectrumConfigChanged(void);
       void onSpectrumSourceChanged(void);
-      void onRangeChanged(void);
       void onToggleSNR(void);
       void onResetSNR(void);
       void onToggleRecord(void);

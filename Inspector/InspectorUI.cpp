@@ -219,7 +219,6 @@ InspectorUI::InspectorUI(
   this->refreshUi();
 
   // Force refresh of waterfall
-  this->onRangeChanged();
   this->onAspectSliderChanged(this->ui->aspectSlider->value());
 }
 
@@ -468,12 +467,6 @@ InspectorUI::connectAll()
         SIGNAL(activated(int)),
         this,
         SLOT(onSpectrumSourceChanged()));
-
-  connect(
-        this->ui->rangeSlider,
-        SIGNAL(valuesChanged(int, int)),
-        this,
-        SLOT(onRangeChanged(void)));
 
   connect(
         this->ui->peakDetectionButton,
@@ -1434,20 +1427,6 @@ InspectorUI::onSpectrumSourceChanged(void)
 }
 
 void
-InspectorUI::onRangeChanged(void)
-{
-  if (!this->adjusting) {
-    WATERFALL_CALL(setPandapterRange(
-          this->ui->rangeSlider->minimumValue(),
-          this->ui->rangeSlider->maximumValue()));
-
-    WATERFALL_CALL(setWaterfallRange(
-          this->ui->rangeSlider->minimumValue(),
-          this->ui->rangeSlider->maximumValue()));
-  }
-}
-
-void
 InspectorUI::onChangeLo(void)
 {
   emit loChanged();
@@ -1482,9 +1461,6 @@ InspectorUI::onPandapterRangeChanged(float min, float max)
 {
   bool adjusting = this->adjusting;
   this->adjusting = true;
-
-  this->ui->rangeSlider->setMinimumPosition(static_cast<int>(min));
-  this->ui->rangeSlider->setMaximumPosition(static_cast<int>(max));
 
   WATERFALL_CALL(setWaterfallRange(min, max));
 

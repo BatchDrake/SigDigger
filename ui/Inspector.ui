@@ -1029,7 +1029,49 @@ font-family: Monospace;</string>
               <property name="spacing">
                <number>1</number>
               </property>
-              <item row="0" column="11">
+              <item row="4" column="1">
+               <widget class="QComboBox" name="paletteCombo">
+                <property name="iconSize">
+                 <size>
+                  <width>64</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="8">
+               <widget class="QComboBox" name="unitsCombo"/>
+              </item>
+              <item row="1" column="2">
+               <widget class="QPushButton" name="peakHoldButton">
+                <property name="text">
+                 <string>Peak hold</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Palette</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QComboBox" name="spectrumSourceCombo">
+                <item>
+                 <property name="text">
+                  <string>None</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="1" column="15">
                <spacer name="horizontalSpacer_2">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -1042,170 +1084,17 @@ font-family: Monospace;</string>
                 </property>
                </spacer>
               </item>
-              <item row="2" column="9">
-               <widget class="QLabel" name="label_4">
-                <property name="text">
-                 <string>Range</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QPushButton" name="peakDetectionButton">
-                <property name="text">
-                 <string>Peak detection</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="4">
-               <widget class="QComboBox" name="unitsCombo"/>
-              </item>
-              <item row="2" column="10">
-               <widget class="ctkRangeSlider" name="rangeSlider">
-                <property name="minimum">
-                 <number>-150</number>
-                </property>
-                <property name="maximum">
-                 <number>150</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="minimumValue">
-                 <number>-60</number>
-                </property>
-                <property name="maximumValue">
-                 <number>-10</number>
-                </property>
-                <property name="minimumPosition">
-                 <number>-60</number>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="10">
-               <widget class="QSlider" name="aspectSlider">
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="value">
-                 <number>30</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="6">
-               <widget class="QLabel" name="label_9">
-                <property name="text">
-                 <string>Gain</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>Palette</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="3">
-               <widget class="QLabel" name="label_6">
-                <property name="text">
-                 <string>Zero adjust</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="4">
-               <widget class="QDoubleSpinBox" name="zeroPointSpin">
-                <property name="minimumSize">
-                 <size>
-                  <width>140</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="suffix">
-                 <string> dBFS</string>
-                </property>
-                <property name="minimum">
-                 <double>-120.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>120.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
+              <item row="1" column="0">
                <widget class="QLabel" name="label">
                 <property name="text">
-                 <string>Spectrum source</string>
+                 <string>Source</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="spectrumSourceCombo">
-                <item>
-                 <property name="text">
-                  <string>None</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <widget class="QLabel" name="label_5">
-                <property name="text">
-                 <string>Units</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="9">
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>Spectrum / Waterfall</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QPushButton" name="peakHoldButton">
-                <property name="text">
-                 <string>Peak hold</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QComboBox" name="paletteCombo">
-                <property name="iconSize">
-                 <size>
-                  <width>64</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="7">
+              <item row="1" column="5">
                <widget class="QDoubleSpinBox" name="gainSpinBox">
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1221,7 +1110,27 @@ font-family: Monospace;</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="0" colspan="12">
+              <item row="4" column="2">
+               <widget class="QPushButton" name="peakDetectionButton">
+                <property name="text">
+                 <string>Peak detection</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>Gain</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0" colspan="16">
                <widget class="QFrame" name="frame_2">
                 <property name="frameShape">
                  <enum>QFrame::StyledPanel</enum>
@@ -1299,6 +1208,71 @@ font-family: Monospace;</string>
                 </layout>
                </widget>
               </item>
+              <item row="1" column="6">
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>Units</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="5">
+               <widget class="QDoubleSpinBox" name="zeroPointSpin">
+                <property name="minimumSize">
+                 <size>
+                  <width>140</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="suffix">
+                 <string> dBFS</string>
+                </property>
+                <property name="minimum">
+                 <double>-120.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>120.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="6">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>WF ratio</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="8">
+               <widget class="QSlider" name="aspectSlider">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>30</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="3">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Zero adjust</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -1336,11 +1310,6 @@ font-family: Monospace;</string>
    <extends>QFrame</extends>
    <header>LCD.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ctkRangeSlider</class>
-   <extends>QSlider</extends>
-   <header>ctkRangeSlider.h</header>
   </customwidget>
   <customwidget>
    <class>FrequencySpinBox</class>
