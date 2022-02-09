@@ -147,6 +147,15 @@ ProfileConfigTab::populateCombos(void)
 }
 
 void
+ProfileConfigTab::sampRateCtlHint(int index)
+{
+  if (this->ui->sampleRateCombo->count() == 0)
+    index = 1;
+
+  this->ui->sampRateStack->setCurrentIndex(index);
+}
+
+void
 ProfileConfigTab::refreshUiState(void)
 {
   int analyzerTypeIndex = this->ui->analyzerTypeCombo->currentIndex();
@@ -160,18 +169,18 @@ ProfileConfigTab::refreshUiState(void)
     if (this->ui->sdrRadio->isChecked()) {
       this->ui->sdrFrame->setEnabled(true);
       this->ui->fileFrame->setEnabled(false);
-      this->ui->sampRateStack->setCurrentIndex(0);
+      this->sampRateCtlHint(0);
       this->ui->ppmSpinBox->setEnabled(true);
     } else {
       this->ui->sdrFrame->setEnabled(false);
       this->ui->fileFrame->setEnabled(true);
       this->ui->ppmSpinBox->setEnabled(false);
-      this->ui->sampRateStack->setCurrentIndex(1);
+      this->sampRateCtlHint(1);
       adjustStartTime = true;
     }
   } else {
     /* Remote analyzer */
-    this->ui->sampRateStack->setCurrentIndex(1);
+    this->sampRateCtlHint(1);
 
     if (this->ui->remoteDeviceCombo->count() == 0) {
       if (netProfile)
@@ -310,12 +319,12 @@ ProfileConfigTab::refreshProfileUi(void)
   switch (this->profile.getType()) {
     case SUSCAN_SOURCE_TYPE_SDR:
       this->ui->sdrRadio->setChecked(true);
-      this->ui->sampRateStack->setCurrentIndex(0);
+      this->sampRateCtlHint(0);
       break;
 
     case SUSCAN_SOURCE_TYPE_FILE:
       this->ui->fileRadio->setChecked(true);
-      this->ui->sampRateStack->setCurrentIndex(1);
+      this->sampRateCtlHint(1);
       break;
   }
 
@@ -936,7 +945,6 @@ ProfileConfigTab::onAnalyzerTypeChanged(int index)
         break;
     }
 
-    printf("Stacked widget height: %d\n", this->ui->analyzerParamsStackedWidget->height());
     this->refreshUiState();
   }
 }

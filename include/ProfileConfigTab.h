@@ -67,6 +67,7 @@ namespace SigDigger {
     void refreshUi(void);
     void refreshAnalyzerTypeUi(void);
     void refreshUiState(void);
+    void sampRateCtlHint(int);
     void refreshTrueSampleRate(void);
     void loadProfile(Suscan::Source::Config &config);
     void guessParamsFromFileName(void);
