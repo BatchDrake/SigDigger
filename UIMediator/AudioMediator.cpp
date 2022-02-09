@@ -100,11 +100,11 @@ UIMediator::connectAudioPanel(void)
 }
 
 void
-UIMediator::onAudioChanged(void)
+UIMediator::refreshSpectrumFilterShape(void)
 {
   MainSpectrum::Skewness skewness = MainSpectrum::SYMMETRIC;
 
-  if (this->ui->audioPanel->getEnabled()) {
+  if (this->ui->audioPanel->shouldOpenAudio()) {
     switch (this->ui->audioPanel->getDemod()) {
       case AM:
       case FM:
@@ -122,6 +122,11 @@ UIMediator::onAudioChanged(void)
   }
 
   this->ui->spectrum->setFilterSkewness(skewness);
+}
+void
+UIMediator::onAudioChanged(void)
+{
+  this->refreshSpectrumFilterShape();
 
   emit audioChanged();
 }

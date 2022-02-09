@@ -834,7 +834,7 @@ Application::startCapture(void)
 
       this->mediator->setState(UIMediator::RUNNING);
 
-      if (this->ui.audioPanel->getEnabled())
+      if (this->ui.audioPanel->shouldOpenAudio())
         this->openAudio(this->ui.audioPanel->getSampleRate());
     }
   } catch (Suscan::Exception &) {
@@ -1473,7 +1473,7 @@ Application::onChannelBandwidthChanged(qreal)
 void
 Application::onAudioChanged(void)
 {
-  bool audioEnabled = this->ui.audioPanel->getEnabled();
+  bool audioEnabled = this->ui.audioPanel->shouldOpenAudio();
 
   if (this->mediator->getState() == UIMediator::RUNNING) {
     if (this->audioFileSaver != nullptr) {

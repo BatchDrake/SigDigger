@@ -213,21 +213,28 @@ AudioPanel::populateRates(void)
   }
 }
 
+bool
+AudioPanel::shouldOpenAudio(void) const
+{
+  bool validRate = this->bandwidth >= supportedRates[0];
+  return this->getEnabled() && validRate;
+}
+
 void
 AudioPanel::refreshUi(void)
 {
-  bool enabled = this->getEnabled();
+  bool shouldOpenAudio = this->shouldOpenAudio();
   bool validRate = this->bandwidth >= supportedRates[0];
 
   this->ui->audioPreviewCheck->setEnabled(validRate);
-  this->ui->demodCombo->setEnabled(enabled && validRate);
-  this->ui->sampleRateCombo->setEnabled(enabled && validRate);
-  this->ui->cutoffSlider->setEnabled(enabled && validRate);
-  this->ui->recordStartStopButton->setEnabled(enabled && validRate);
+  this->ui->demodCombo->setEnabled(shouldOpenAudio);
+  this->ui->sampleRateCombo->setEnabled(shouldOpenAudio);
+  this->ui->cutoffSlider->setEnabled(shouldOpenAudio);
+  this->ui->recordStartStopButton->setEnabled(shouldOpenAudio);
 
-  this->ui->sqlButton->setEnabled(enabled && validRate);
+  this->ui->sqlButton->setEnabled(shouldOpenAudio);
   this->ui->sqlLevelSpin->setEnabled(
-        enabled && validRate && this->getDemod() != AudioDemod::FM);
+        shouldOpenAudio && this->getDemod() != AudioDemod::FM);
 
   if (validRate) {
     this->setCutOff(this->panelConfig->cutOff);

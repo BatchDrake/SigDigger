@@ -122,6 +122,7 @@ namespace SigDigger {
     // Getters
     SUFLOAT getBandwidth(void) const;
     bool getEnabled(void) const;
+    bool shouldOpenAudio(void) const;
     enum AudioDemod getDemod(void) const;
     unsigned int getSampleRate(void) const;
     SUFLOAT getCutOff(void) const;

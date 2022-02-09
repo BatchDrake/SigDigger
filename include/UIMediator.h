@@ -96,7 +96,7 @@ namespace SigDigger {
     void setSampleRate(unsigned int rate);
     void setBandwidth(unsigned int bandwidth);
     void refreshProfile(void);
-
+    void refreshSpectrumFilterShape(void);
     void setCurrentAutoGain(void);
 
   public:

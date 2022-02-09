@@ -415,10 +415,11 @@ UIMediator::setSampleRate(unsigned int rate)
     this->ui->inspectorPanel->setBandwidthLimits(0, rate);
     this->ui->spectrum->setSampleRate(rate);
     this->ui->sourcePanel->setSampleRate(rate);
-    this->ui->inspectorPanel->setBandwidth(bw);
-    this->ui->spectrum->setFilterBandwidth(bw);
+    this->setBandwidth(bw);
 
     this->ui->audioPanel->setBandwidth(static_cast<float>(audioBw));
+    this->refreshSpectrumFilterShape();
+
     this->rate = rate;
   }
 }
