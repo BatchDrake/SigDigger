@@ -1,6 +1,6 @@
 //
-//    PLLSyncTask.h: Synchronize to carrier
-//    Copyright (C) 2022 Gonzalo José Carracedo Carballal
+//    filename: description
+//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,17 +16,17 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef PLLSYNCTASK_H
-#define PLLSYNCTASK_H
+#ifndef AGCTASK_H
+#define AGCTASK_H
 
 #include <Suscan/CancellableTask.h>
-#include <sigutils/pll.h>
+#include <sigutils/agc.h>
 
 #ifndef NULL
 #  define NULL nullptr
 #endif // NULL
 
-class PLLSyncTask : public Suscan::CancellableTask
+class AGCTask : public Suscan::CancellableTask
 {
   Q_OBJECT
 
@@ -36,21 +36,22 @@ class PLLSyncTask : public Suscan::CancellableTask
   size_t length;
   size_t p = 0;
 
-  su_pll_t pll = su_pll_INITIALIZER;
-  bool pllInitialized = false;
+  su_agc_t agc = su_agc_INITIALIZER;
+
+  bool agcInitialized = false;
 
 public:
-  explicit PLLSyncTask(
+  explicit AGCTask(
       const SUCOMPLEX *data,
       SUCOMPLEX *destination,
       size_t length,
-      SUFLOAT cutoff,
+      SUFLOAT tau,
       QObject *parent = nullptr);
 
-  virtual ~PLLSyncTask() override;
+  virtual ~AGCTask();
 
   virtual bool work(void) override;
   virtual void cancel(void) override;
 };
 
-#endif // PLLSYNCTASK_H
+#endif // AGCTASK_H

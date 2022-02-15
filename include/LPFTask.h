@@ -1,6 +1,6 @@
 //
-//    PLLSyncTask.h: Synchronize to carrier
-//    Copyright (C) 2022 Gonzalo José Carracedo Carballal
+//    filename: description
+//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,41 +16,45 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef PLLSYNCTASK_H
-#define PLLSYNCTASK_H
+#ifndef LPFTASK_H
+#define LPFTASK_H
 
 #include <Suscan/CancellableTask.h>
-#include <sigutils/pll.h>
+#include <sigutils/specttuner.h>
 
-#ifndef NULL
-#  define NULL nullptr
-#endif // NULL
-
-class PLLSyncTask : public Suscan::CancellableTask
+class LPFTask : public Suscan::CancellableTask
 {
   Q_OBJECT
 
   const SUCOMPLEX *origin = nullptr;
   SUCOMPLEX       *destination = nullptr;
 
-  size_t length;
-  size_t p = 0;
+  su_specttuner_t *stuner        = nullptr;
+  su_specttuner_channel_t *schan = nullptr;
 
-  su_pll_t pll = su_pll_INITIALIZER;
-  bool pllInitialized = false;
+  size_t length;
+  size_t p = 0; // Read pointer
+  size_t q = 0; // Write pointer
+
+  static SUBOOL
+  onData(
+        const struct sigutils_specttuner_channel *channel,
+        void *privdata,
+        const SUCOMPLEX *data,
+        SUSCOUNT size);
 
 public:
-  explicit PLLSyncTask(
+  explicit LPFTask(
       const SUCOMPLEX *data,
       SUCOMPLEX *destination,
       size_t length,
-      SUFLOAT cutoff,
+      SUFLOAT bw,
       QObject *parent = nullptr);
 
-  virtual ~PLLSyncTask() override;
+  virtual ~LPFTask() override;
 
   virtual bool work(void) override;
   virtual void cancel(void) override;
 };
 
-#endif // PLLSYNCTASK_H
+#endif // LPFTASK_H

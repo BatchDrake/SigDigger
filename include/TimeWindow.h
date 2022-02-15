@@ -56,7 +56,8 @@ namespace SigDigger {
     bool adjusting = false;
     bool firstShow = true;
 
-    qreal     fs;
+    qreal     fs = 0;
+    qreal     bw = 0;
 
     std::vector<SUCOMPLEX> const *data;
     std::vector<SUCOMPLEX> processedData;
@@ -70,11 +71,14 @@ namespace SigDigger {
     SUFREQ    centerFreq;
     SUFLOAT   rms;
 
+    bool taskRunning = false;
+
     Suscan::CancellableController taskController;
 
     int getPeriodicDivision(void) const;
 
     void connectFineTuneSelWidgets(void);
+    void connectTransformWidgets(void);
     void connectAll(void);
 
     void recalcLimits(void);
@@ -92,6 +96,12 @@ namespace SigDigger {
     bool fineTuneSenderIs(const QPushButton *sender) const;
     void fineTuneSelNotifySelection(bool);
     void fineTuneSelSetEnabled(bool);
+
+    void getTransformRegion(
+        const SUCOMPLEX * &origin,
+        SUCOMPLEX *&destination,
+        SUSCOUNT &length,
+        bool selection);
 
     void populateSamplingProperties(SamplingProperties &prop);
     void startSampling(void);
@@ -111,7 +121,10 @@ namespace SigDigger {
     ~TimeWindow();
 
     void setCenterFreq(SUFREQ center);
-    void setData(std::vector<SUCOMPLEX> const &data, qreal fs);
+    void setData(
+        std::vector<SUCOMPLEX> const &data,
+        qreal fs,
+        qreal bw);
     void setPalette(std::string const &);
     void setPaletteOffset(unsigned int);
     void setPaletteContrast(int);
@@ -177,6 +190,17 @@ namespace SigDigger {
     void onFineTuneSelectionClicked(void);
     void onClkSourceButtonClicked(void);
     void onCalculateDoppler(void);
+
+    void onCostasRecovery(void);
+    void onPLLRecovery(void);
+    void onCycloAnalysis(void);
+    void onQuadDemod(void);
+    void onAGC(void);
+    void onLPF(void);
+    void onDelayedConjugate(void);
+
+    void onAGCRateChanged(void);
+    void onDelayedConjChanged(void);
   };
 }
 

@@ -25,13 +25,15 @@
 #include <cmath>
 #include <sigutils/types.h>
 
-#define SU_ATTEMPT(expr)     \
-  if (!(expr)) {             \
-    throw Suscan::Exception( \
-      __FILE__,              \
-      __LINE__,              \
-      STRINGIFY(expr));      \
-  }
+#define SU_ATTEMPT(expr)       \
+  do {                         \
+    if (!(expr)) {             \
+      throw Suscan::Exception( \
+        __FILE__,              \
+        __LINE__,              \
+        STRINGIFY(expr));      \
+    }                          \
+  } while(false)
 
 namespace Suscan {
   class Exception: public std::runtime_error {

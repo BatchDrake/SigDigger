@@ -27,10 +27,17 @@
 #include <SuWidgetsHelpers.h>
 #include <SigDiggerHelpers.h>
 #include <climits>
+#include <HistogramFeeder.h>
+
+#include <DopplerCalculator.h>
 #include <CarrierDetector.h>
 #include <CarrierXlator.h>
-#include <HistogramFeeder.h>
-#include <DopplerCalculator.h>
+#include <CostasRecoveryTask.h>
+#include <PLLSyncTask.h>
+#include <QuadDemodTask.h>
+#include <AGCTask.h>
+#include <DelayedConjTask.h>
+#include <LPFTask.h>
 
 #include "ui_TimeWindow.h"
 
@@ -89,8 +96,74 @@ TimeWindow::connectFineTuneSelWidgets(void)
 }
 
 void
+TimeWindow::connectTransformWidgets(void)
+{
+  connect(
+        this->ui->lpfApplyButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onLPF()));
+
+  connect(
+        this->ui->costasSyncButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onCostasRecovery()));
+
+  connect(
+        this->ui->pllSyncButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onPLLRecovery()));
+
+  connect(
+        this->ui->cycloButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onCycloAnalysis()));
+
+  connect(
+        this->ui->agcButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onAGC()));
+
+  connect(
+        this->ui->dcmButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onDelayedConjugate()));
+
+  connect(
+        this->ui->quadDemodButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onQuadDemod()));
+
+  connect(
+        this->ui->agcRateSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onAGCRateChanged()));
+
+  connect(
+        this->ui->dcmRateSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onDelayedConjChanged()));
+
+  connect(
+        this->ui->resetTransformButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onResetCarrier()));
+}
+
+void
 TimeWindow::connectAll(void)
 {
+  this->connectTransformWidgets();
+
   connect(
         this->ui->realWaveform,
         SIGNAL(horizontalRangeChanged(qint64, qint64)),
@@ -480,6 +553,39 @@ TimeWindow::samplingSetEnabled(bool enabled)
   this->ui->samplingPage->setEnabled(enabled);
 }
 
+void
+TimeWindow::getTransformRegion(
+    const SUCOMPLEX * &origin,
+    SUCOMPLEX *&destination,
+    SUSCOUNT &length,
+    bool selection)
+{
+  const SUCOMPLEX *data = this->getDisplayData();
+  SUCOMPLEX *dest;
+  length = 0;
+
+  this->processedData.resize(this->getDisplayDataLength());
+  dest = this->processedData.data();
+
+  if (data == this->data->data())
+    memcpy(dest, data, this->getDisplayDataLength() * sizeof(SUCOMPLEX));
+
+  if (selection && this->ui->realWaveform->getHorizontalSelectionPresent()) {
+    qint64 selStart = static_cast<qint64>(
+          this->ui->realWaveform->getHorizontalSelectionStart());
+    qint64 selEnd = static_cast<qint64>(
+          this->ui->realWaveform->getHorizontalSelectionEnd());
+    origin      = data + selStart;
+    destination = dest + selStart;
+    length      = selEnd - selStart;
+  }
+
+  if (length == 0) {
+    origin = data;
+    destination = dest;
+    length = this->getDisplayDataLength();
+  }
+}
 
 void
 TimeWindow::populateSamplingProperties(SamplingProperties &prop)
@@ -574,9 +680,21 @@ TimeWindow::samplingNotifySelection(bool selection, bool periodic)
 void
 TimeWindow::notifyTaskRunning(bool running)
 {
+  this->taskRunning = running;
+
   this->ui->taskAbortButton->setEnabled(running);
   this->carrierSyncSetEnabled(!running);
   this->samplingSetEnabled(!running);
+
+  this->ui->lpfApplyButton->setEnabled(!running);
+  this->ui->agcButton->setEnabled(!running);
+  this->ui->dcmButton->setEnabled(!running);
+  this->ui->cycloButton->setEnabled(!running);
+  this->ui->quadDemodButton->setEnabled(!running);
+  this->ui->resetTransformButton->setEnabled(!running);
+  this->ui->resetButton->setEnabled(!running);
+  this->ui->costasSyncButton->setEnabled(!running);
+  this->ui->pllSyncButton->setEnabled(!running);
 }
 
 void
@@ -628,12 +746,13 @@ TimeWindow::refreshUi(void)
   this->ui->clkGardnerFrame->setEnabled(
         this->ui->clkGardnerButton->isChecked());
 
+  SamplingProperties sp;
+  this->populateSamplingProperties(sp);
+  qreal baud = (sp.symbolCount * this->fs) / sp.length;
+
   if (this->ui->clkSelectionButton->isChecked()
-      || this->ui->clkPartitionButton->isChecked()) {
-    SamplingProperties sp;
-    this->populateSamplingProperties(sp);
-    this->ui->baudSpin->setValue((sp.symbolCount * this->fs) / sp.length);
-  }
+      || this->ui->clkPartitionButton->isChecked())
+    this->ui->baudSpin->setValue(baud);
 
   this->hadSelectionBefore = haveSelection;
 }
@@ -683,6 +802,17 @@ TimeWindow::refreshMeasures(void)
            : 1)
         * deltaT;
     qreal baud = 1 / period;
+
+    // If we are not handling a specific region, update delays
+    if (!this->ui->transSelCheck->isChecked()
+        && !this->taskRunning) {
+      this->ui->agcRateSpin->setValue(baud);
+      this->ui->lpfSpin->setValue(baud);
+      this->ui->dcmRateSpin->setValue(baud);
+
+      this->onAGCRateChanged();
+      this->onDelayedConjChanged();
+    }
 
     SigDiggerHelpers::kahanMeanAndRms(
           &mean,
@@ -800,9 +930,16 @@ TimeWindow::setDisplayData(
 }
 
 void
-TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs)
+TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs, qreal bw)
 {
-  this->fs = fs;
+  if (this->fs != fs) {
+    this->fs = fs;
+    this->ui->costasBwSpin->setValue(this->fs / 2);
+    this->ui->pllCutOffSpin->setValue(this->fs / 200);
+  }
+
+  if (!sufeq(this->bw, bw, 1e-6))
+    this->bw = bw;
 
   this->ui->syncFreqSpin->setMinimum(-this->fs / 2);
   this->ui->syncFreqSpin->setMaximum(this->fs / 2);
@@ -878,6 +1015,9 @@ TimeWindow::TimeWindow(QWidget *parent) :
   this->refreshUi();
   this->refreshMeasures();
   SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
+
+  this->ui->toolBox->setCurrentIndex(0);
+
   this->connectAll();
 }
 
@@ -1309,24 +1449,26 @@ TimeWindow::onTaskDone(void)
     const CarrierDetector *cd =
         static_cast<const CarrierDetector *>(this->taskController.getTask());
     SUFLOAT relFreq = SU_ANG2NORM_FREQ(cd->getPeak());
+    const SUCOMPLEX *orig = nullptr;
+    SUCOMPLEX *dest = nullptr;
+    SUSCOUNT len = 0;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->afcSelCheck->isChecked());
 
     // Some UI feedback
     this->ui->syncFreqSpin->setValue(SU_NORM2ABS_FREQ(this->fs, relFreq));
 
-    // Resize and process
-    this->processedData.resize(this->getDisplayDataLength());
-
-    CarrierXlator *cx = new CarrierXlator(
-          this->getDisplayData(),
-          this->processedData.data(),
-          this->getDisplayDataLength(),
-          relFreq);
+    // Translate
+    CarrierXlator *cx = new CarrierXlator(orig, dest, len, relFreq);
 
     // Launch carrier translator
     this->taskController.process("xlateCarrier", cx);
   } else if (this->taskController.getName() == "xlateCarrier") {
     this->setDisplayData(&this->processedData, true);
-
     this->notifyTaskRunning(false);
   } else if (this->taskController.getName() == "triggerHistogram") {
     this->histogramDialog->show();
@@ -1354,6 +1496,13 @@ TimeWindow::onTaskDone(void)
     this->dopplerDialog->giveSpectrum(std::move(spectrum));
     this->dopplerDialog->setMax(dc->getMax());
     this->dopplerDialog->show();
+  } else {
+    this->setDisplayData(this->data, true);
+    this->setDisplayData(&this->processedData, true);
+    this->ui->realWaveform->invalidate();
+    this->ui->imagWaveform->invalidate();
+    this->onFit();
+    this->notifyTaskRunning(false);
   }
 }
 
@@ -1407,14 +1556,17 @@ TimeWindow::onSyncCarrier(void)
   SUFLOAT relFreq = SU_ABS2NORM_FREQ(
         this->fs,
         this->ui->syncFreqSpin->value());
+  const SUCOMPLEX *orig = nullptr;
+  SUCOMPLEX *dest = nullptr;
+  SUSCOUNT len = 0;
 
-  this->processedData.resize(this->getDisplayDataLength());
+  this->getTransformRegion(
+        orig,
+        dest,
+        len,
+        this->ui->afcSelCheck->isChecked());
 
-  CarrierXlator *cx = new CarrierXlator(
-        this->getDisplayData(),
-        this->processedData.data(),
-        this->getDisplayDataLength(),
-        relFreq);
+  CarrierXlator *cx = new CarrierXlator(orig, dest, len, relFreq);
 
   this->notifyTaskRunning(true);
   this->taskController.process("xlateCarrier", cx);
@@ -1424,6 +1576,7 @@ void
 TimeWindow::onResetCarrier(void)
 {
   this->setDisplayData(this->data, true);
+  this->onFit();
   this->ui->syncFreqSpin->setValue(0);
 }
 
@@ -1607,3 +1760,289 @@ TimeWindow::onCalculateDoppler(void)
   }
 }
 
+void
+TimeWindow::onCostasRecovery(void)
+{
+  try {
+    enum sigutils_costas_kind kind = SU_COSTAS_KIND_BPSK;
+
+    SUFLOAT relBw = SU_ABS2NORM_FREQ(
+          this->fs,
+          this->ui->costasBwSpin->value());
+
+    SUFLOAT tau = 2. / SU_ABS2NORM_FREQ(this->fs, this->bw);
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->afcSelCheck->isChecked());
+
+    switch (this->ui->costasOrderCombo->currentIndex()) {
+      case 0:
+        kind = SU_COSTAS_KIND_BPSK;
+        break;
+
+      case 1:
+        kind = SU_COSTAS_KIND_QPSK;
+        break;
+
+      case 2:
+        kind = SU_COSTAS_KIND_8PSK;
+        break;
+    }
+
+    CostasRecoveryTask *task = new CostasRecoveryTask(
+          orig,
+          dest,
+          len,
+          tau,
+          relBw,
+          kind);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("costas", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Costas carrier recovery",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onPLLRecovery(void)
+{
+  try {
+    SUFLOAT relBw = SU_ABS2NORM_FREQ(
+          this->fs,
+          this->ui->pllCutOffSpin->value());
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->afcSelCheck->isChecked());
+
+    PLLSyncTask *task = new PLLSyncTask(orig, dest, len, relBw);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("pll", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "PLL carrier recovery",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onCycloAnalysis(void)
+{
+  try {
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    DelayedConjTask *task = new DelayedConjTask(orig, dest, len, 1);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("cyclo", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Cyclostationary analysis",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onQuadDemod(void)
+{
+  try {
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    QuadDemodTask *task = new QuadDemodTask(orig, dest, len);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("quadDemod", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Quadrature demodulator",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onAGC(void)
+{
+  try {
+    SUFLOAT rate = SU_ABS2NORM_BAUD(
+          this->fs,
+          this->ui->agcRateSpin->value());
+    SUFLOAT tau = 1 / rate;
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    if (isinf(tau) || isnan(tau)) {
+      QMessageBox::warning(
+            this,
+            "Automatic Gain Control",
+            "Cannot perform automatic gain control: rate is too slow");
+    } else if (tau <= 1.) {
+      QMessageBox::warning(
+            this,
+            "Automatic Gain Control",
+            "Cannot perform automatic gain control: rate is faster than sample rate");
+    } else {
+      AGCTask *task = new AGCTask(orig, dest, len, tau);
+
+      this->notifyTaskRunning(true);
+      this->taskController.process("agc", task);
+    }
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Automatic Gain Control",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onLPF(void)
+{
+  try {
+    SUFLOAT bw = SU_ABS2NORM_FREQ(
+          this->fs,
+          this->ui->lpfSpin->value());
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    if (bw >= 1.f)
+      bw = 1;
+
+    LPFTask *task = new LPFTask(orig, dest, len, bw);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("lpf", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Low-pass filter",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onDelayedConjugate(void)
+{
+  try {
+    SUFLOAT rate = SU_ABS2NORM_BAUD(
+          this->fs,
+          this->ui->dcmRateSpin->value());
+    SUFLOAT tau = 1. / rate;
+    SUSCOUNT samples = static_cast<SUSCOUNT>(tau);
+    const SUCOMPLEX *orig = nullptr;
+    SUCOMPLEX *dest = nullptr;
+    SUSCOUNT len = 0;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    if (isinf(tau) || isnan(tau) || tau >= this->getDisplayDataLength()) {
+      QMessageBox::warning(
+            this,
+            "Product by the delayed conjugate",
+            "Product by the delayed conjugate exceeds capture length");
+    } else if (samples <= 1) {
+      QMessageBox::warning(
+            this,
+            "Product by the delayed conjugate",
+            "Product by the delayed conjugate: rate is faster than sample rate");
+    } else {
+      DelayedConjTask *task = new DelayedConjTask(orig, dest, len, samples);
+
+      this->notifyTaskRunning(true);
+      this->taskController.process("delayedConj", task);
+    }
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Product by the delayed conjugate",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onAGCRateChanged(void)
+{
+  SUFLOAT absRate = this->ui->agcRateSpin->value();
+  SUFLOAT rate = SU_ABS2NORM_BAUD(this->fs, absRate);
+  SUFLOAT tau = 1 / rate;
+  SUSCOUNT samples = static_cast<SUSCOUNT>(tau);
+
+  this->ui->agcTauLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          1. / absRate,
+          4) + " (" +
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(samples),
+          4,
+          "sp") + ")");
+}
+
+void
+TimeWindow::onDelayedConjChanged(void)
+{
+  SUFLOAT absRate = this->ui->dcmRateSpin->value();
+  SUFLOAT rate = SU_ABS2NORM_BAUD(this->fs, absRate);
+  SUFLOAT tau = 1 / rate;
+  SUSCOUNT samples = static_cast<SUSCOUNT>(tau);
+
+  this->ui->dcmTauLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          1. / absRate,
+          4) + " (" +
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(samples),
+          4,
+          "sp") + ")");
+}

@@ -131,10 +131,16 @@ SOURCES += \
     Suscan/Object.cpp \
     Suscan/Serializable.cpp \
     Suscan/Source.cpp \
+    Tasks/AGCTask.cpp \
     Tasks/CarrierDetector.cpp \
     Tasks/CarrierXlator.cpp \
+    Tasks/CostasRecoveryTask.cpp \
+    Tasks/DelayedConjTask.cpp \
     Tasks/DopplerCalculator.cpp \
     Tasks/HistogramFeeder.cpp \
+    Tasks/LPFTask.cpp \
+    Tasks/PLLSyncTask.cpp \
+    Tasks/QuadDemodTask.cpp \
     Tasks/WaveSampler.cpp \
     UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
@@ -172,6 +178,7 @@ SOURCES += \
 
 
 HEADERS += \
+    include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
     include/AudioFileSaver.h \
@@ -179,6 +186,8 @@ HEADERS += \
     include/CarrierXlator.h \
     include/ColorConfigTab.h \
     include/ConfigTab.h \
+    include/CostasRecoveryTask.h \
+    include/DelayedConjTask.h \
     include/DeviceTweaks.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
@@ -189,10 +198,13 @@ HEADERS += \
     include/GuiConfigTab.h \
     include/HistogramDialog.h \
     include/HistogramFeeder.h \
+    include/LPFTask.h \
     include/LocationConfigTab.h \
+    include/PLLSyncTask.h \
     include/PortAudioPlayer.h \
     include/ProfileConfigTab.h \
     include/QTimeSlider.h \
+    include/QuadDemodTask.h \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
     include/SigDiggerHelpers.h \
