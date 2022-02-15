@@ -1,7 +1,6 @@
 Makefile*
 debug/
 release/
-*.h
 *.rc
 *.desktop
 object_script*
