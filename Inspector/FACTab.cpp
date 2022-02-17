@@ -19,6 +19,7 @@
 
 #include "FACTab.h"
 #include "ui_FACTab.h"
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -31,7 +32,7 @@ FACTab::resizeFAC(int size)
   this->fac.resize(static_cast<size_t>(size / 2));
   this->fac.assign(this->fac.size(), 0);
 
-  this->ui->facWaveform->setData(&this->fac, true);
+  this->ui->facWaveform->setData(&this->fac, true, true);
 
   this->ui->facWaveform->invalidate();
   this->adjustZoom = true;
@@ -190,6 +191,8 @@ FACTab::feed(const SUCOMPLEX *data, unsigned int size)
   unsigned int powerCount = 0;
   size_t localMaxPos = 0;
   struct timeval tv, diff;
+  qint64 currStart = this->ui->facWaveform->getSampleStart();
+  qint64 currEnd   = this->ui->facWaveform->getSampleEnd();
 
   while (size > 0) {
     got = size;
@@ -214,7 +217,7 @@ FACTab::feed(const SUCOMPLEX *data, unsigned int size)
       for (i = 0; i < bufLen / 2; ++i) {
         bufData[i] = SU_C_ABS(bufData[i]);
 
-        if (i > 4) {
+        if (currStart <= SCAST(qint64, i) && SCAST(qint64, i) < currEnd) {
           if (SU_C_REAL(bufData[i]) > localMax) {
             localMax = SU_C_REAL(bufData[i]);
             localMaxPos = i;

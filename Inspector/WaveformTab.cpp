@@ -30,6 +30,7 @@ WaveformTab::WaveformTab(QWidget *parent) :
 
   this->ui->realWaveform->setRealComponent(true);
   this->ui->imagWaveform->setRealComponent(false);
+  this->ui->imagWaveform->reuseDisplayData(this->ui->realWaveform);
 
   QFontMetrics m(this->ui->selStartButtonsWidget->font());
 
@@ -510,8 +511,8 @@ WaveformTab::clear(void)
 
   this->buffer.clear();
 
-  this->ui->realWaveform->setData(&this->buffer);
-  this->ui->imagWaveform->setData(&this->buffer);
+  this->ui->realWaveform->setData(nullptr);
+  this->ui->imagWaveform->setData(nullptr);
 }
 
 WaveformTab::~WaveformTab()
@@ -769,7 +770,6 @@ WaveformTab::onZoomToSelection(void)
 void
 WaveformTab::onZoomReset(void)
 {
-  // Should propagate to imaginary
   this->ui->realWaveform->zoomHorizontalReset();
   this->ui->imagWaveform->zoomHorizontalReset();
 

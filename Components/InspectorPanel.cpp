@@ -438,7 +438,10 @@ InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
 void
 InspectorPanel::openTimeWindow(void)
 {
-  this->timeWindow->setData(this->data, this->timeWindowFs, this->ui->bandwidthSpin->value());
+  this->timeWindow->setData(
+        this->data,
+        this->timeWindowFs,
+        this->ui->bandwidthSpin->value());
   this->timeWindow->setCenterFreq(this->demodFreq);
   this->timeWindow->show();
   this->timeWindow->raise();

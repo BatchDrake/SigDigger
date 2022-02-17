@@ -912,21 +912,35 @@ TimeWindow::setDisplayData(
     std::vector<SUCOMPLEX> const *displayData,
     bool keepView)
 {
+  QCursor cursor = this->cursor();
+
   this->displayData = displayData;
+
+  // This is just a workaround. TODO: fix build method in Waveformview
+  this->setCursor(Qt::WaitCursor);
 
   if (displayData->size() == 0) {
     this->ui->realWaveform->setData(nullptr, false);
     this->ui->imagWaveform->setData(nullptr, false);
   } else {
-    this->ui->realWaveform->setData(displayData, keepView);
-    this->ui->imagWaveform->setData(displayData, keepView);
-  }
+    qint64 currStart = this->ui->realWaveform->getSampleStart();
+    qint64 currEnd   = this->ui->realWaveform->getSampleEnd();
 
+    this->ui->realWaveform->setData(displayData, keepView, true);
+    this->ui->imagWaveform->setData(displayData, keepView, true);
+
+    if (currStart != currEnd) {
+      this->ui->realWaveform->zoomHorizontal(currStart, currEnd);
+      this->ui->imagWaveform->zoomHorizontal(currStart, currEnd);
+    }
+  }
 
   this->recalcLimits();
 
   this->refreshUi();
   this->refreshMeasures();
+
+  this->setCursor(cursor);
 }
 
 void
@@ -986,6 +1000,8 @@ TimeWindow::TimeWindow(QWidget *parent) :
 
   this->ui->realWaveform->setRealComponent(true);
   this->ui->imagWaveform->setRealComponent(false);
+
+  this->ui->imagWaveform->reuseDisplayData(this->ui->realWaveform);
 
   this->ui->syncFreqSpin->setExtraDecimals(6);
 
@@ -1275,6 +1291,10 @@ TimeWindow::onFit(void)
 {
   this->ui->realWaveform->fitToEnvelope();
   this->ui->imagWaveform->fitToEnvelope();
+
+  this->ui->realWaveform->zoomHorizontalReset();
+  this->ui->imagWaveform->zoomHorizontalReset();
+
   this->ui->realWaveform->invalidate();
   this->ui->imagWaveform->invalidate();
 }
@@ -1330,9 +1350,11 @@ TimeWindow::onZoomToSelection(void)
 void
 TimeWindow::onZoomReset(void)
 {
-  // Should propagate to imaginary
   this->ui->realWaveform->zoomHorizontalReset();
+  this->ui->imagWaveform->zoomHorizontalReset();
+
   this->ui->realWaveform->zoomVerticalReset();
+  this->ui->imagWaveform->zoomVerticalReset();
 
   this->ui->realWaveform->invalidate();
   this->ui->imagWaveform->invalidate();
