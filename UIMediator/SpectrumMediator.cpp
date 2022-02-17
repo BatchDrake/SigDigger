@@ -201,3 +201,18 @@ UIMediator::onNewBandPlan(QString plan)
 {
   this->addBandPlan(plan.toStdString());
 }
+
+void
+UIMediator::onBookmarkChanged(void)
+{
+  this->ui->spectrum->updateOverlay();
+}
+
+void
+UIMediator::onModulationChanged(QString newModulation)
+{
+  this->ui->audioPanel->setDemod(
+        AudioPanel::strToDemod(
+          newModulation.toStdString()));
+  this->refreshSpectrumFilterShape();
+}

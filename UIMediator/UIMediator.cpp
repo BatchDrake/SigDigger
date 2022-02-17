@@ -1166,15 +1166,3 @@ UIMediator::onJumpToBookmark(BookmarkInfo info)
 
   this->onFrequencyChanged(info.frequency);
 }
-
-void
-UIMediator::onBookmarkChanged(void)
-{
-  this->ui->spectrum->updateOverlay();
-}
-
-void
-UIMediator::onModulationChanged(QString newModulation)
-{
-  this->ui->audioPanel->setDemod(AudioPanel::strToDemod(newModulation.toStdString()));
-}
