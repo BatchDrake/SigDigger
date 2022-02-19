@@ -338,6 +338,7 @@ namespace Suscan {
     SUFLOAT getBandwidth(void) const;
     SUFLOAT getGain(const std::string &) const;
     std::string getParam(const std::string &key) const;
+    bool hasParam(const std::string &key) const;
     QList<QPair<std::string, std::string>> getParamList(void) const;
 
     SUFLOAT getPPM(void) const;

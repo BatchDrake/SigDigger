@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>576</width>
-    <height>367</height>
+    <width>578</width>
+    <height>374</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,47 +29,56 @@
    <property name="spacing">
     <number>3</number>
    </property>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_2">
+   <item row="5" column="4">
+    <widget class="QDateTimeEdit" name="sourceTimeEdit">
+     <property name="minimumSize">
+      <size>
+       <width>173</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="time">
+      <time>
+       <hour>0</hour>
+       <minute>0</minute>
+       <second>0</second>
+      </time>
+     </property>
+     <property name="displayFormat">
+      <string> dd/MM/yyyy HH:mm:ss.zzz</string>
+     </property>
+     <property name="timeSpec">
+      <enum>Qt::LocalTime</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Load profile</string>
+      <string>Sample rate</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QComboBox" name="profileCombo">
-     <property name="currentText">
-      <string/>
-     </property>
-     <property name="currentIndex">
-      <number>-1</number>
-     </property>
-     <property name="modelColumn">
-      <number>0</number>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="3">
-    <widget class="QPushButton" name="loadProfileButton">
+   <item row="3" column="3">
+    <widget class="QLabel" name="label_46">
      <property name="text">
-      <string>&amp;Load profile</string>
+      <string>Freq. correction</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="4">
-    <widget class="QPushButton" name="saveProfileButton">
+   <item row="3" column="1">
+    <widget class="FrequencySpinBox" name="lnbSpinBox"/>
+   </item>
+   <item row="4" column="4">
+    <widget class="QLabel" name="trueRateLabel">
      <property name="text">
-      <string>&amp;Save as...</string>
+      <string>N/A</string>
      </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="5">
-    <widget class="Line" name="line_4">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -82,66 +91,6 @@
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="FrequencySpinBox" name="frequencySpinBox"/>
-   </item>
-   <item row="2" column="2">
-    <widget class="QWidget" name="widget_3" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_20">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <property name="spacing">
-       <number>0</number>
-      </property>
-     </layout>
-    </widget>
-   </item>
-   <item row="2" column="3">
-    <widget class="QCheckBox" name="iqBalanceCheck">
-     <property name="text">
-      <string>I/Q Balance</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="4">
-    <widget class="QCheckBox" name="removeDCCheck">
-     <property name="text">
-      <string>DC remove</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_20">
-     <property name="text">
-      <string>   LNB frequency</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="FrequencySpinBox" name="lnbSpinBox"/>
    </item>
    <item row="3" column="2">
     <widget class="QWidget" name="widget_6" native="true">
@@ -170,10 +119,50 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="3">
-    <widget class="QLabel" name="label_46">
+   <item row="4" column="3">
+    <widget class="QLabel" name="label_75">
      <property name="text">
-      <string>Freq. correction</string>
+      <string>True rate:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="4">
+    <widget class="QCheckBox" name="removeDCCheck">
+     <property name="text">
+      <string>DC remove</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QCheckBox" name="iqBalanceCheck">
+     <property name="text">
+      <string>I/Q Balance</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>Decimation</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="3">
+    <widget class="QLabel" name="label_49">
+     <property name="text">
+      <string>Source time</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -190,16 +179,6 @@
      </property>
      <property name="maximum">
       <double>100.000000000000000</double>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Sample rate</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -307,33 +286,77 @@
      </widget>
     </widget>
    </item>
-   <item row="4" column="3">
-    <widget class="QLabel" name="label_75">
+   <item row="7" column="0" colspan="5">
+    <widget class="Line" name="line_5">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="FrequencySpinBox" name="frequencySpinBox"/>
+   </item>
+   <item row="2" column="2">
+    <widget class="QWidget" name="widget_3" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_20">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="4">
+    <widget class="QPushButton" name="saveProfileButton">
      <property name="text">
-      <string>True rate:</string>
+      <string>&amp;Save as...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_9">
+     <property name="text">
+      <string>Analyzer type</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="4" column="4">
-    <widget class="QLabel" name="trueRateLabel">
-     <property name="text">
-      <string>N/A</string>
+   <item row="0" column="1" colspan="2">
+    <widget class="QComboBox" name="profileCombo">
+     <property name="currentText">
+      <string/>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     <property name="currentIndex">
+      <number>-1</number>
+     </property>
+     <property name="modelColumn">
+      <number>0</number>
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_7">
-     <property name="text">
-      <string>Decimation</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   <item row="1" column="0" colspan="5">
+    <widget class="Line" name="line_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
@@ -367,43 +390,27 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="3">
-    <widget class="QLabel" name="label_49">
+   <item row="6" column="4">
+    <widget class="QCheckBox" name="sourceTimeIsUTCCheck">
      <property name="text">
-      <string>Source time</string>
+      <string>Time is &amp;UTC</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Load profile</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="5" column="4">
-    <widget class="QDateTimeEdit" name="sourceTimeEdit">
-     <property name="minimumSize">
-      <size>
-       <width>173</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="time">
-      <time>
-       <hour>0</hour>
-       <minute>0</minute>
-       <second>0</second>
-      </time>
-     </property>
-     <property name="displayFormat">
-      <string> dd/MM/yyyy HH:mm:ss.zzz</string>
-     </property>
-     <property name="timeSpec">
-      <enum>Qt::LocalTime</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_9">
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_20">
      <property name="text">
-      <string>Analyzer type</string>
+      <string>   LNB frequency</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -424,17 +431,10 @@
      </item>
     </widget>
    </item>
-   <item row="6" column="4">
-    <widget class="QCheckBox" name="sourceTimeIsUTCCheck">
+   <item row="0" column="3">
+    <widget class="QPushButton" name="loadProfileButton">
      <property name="text">
-      <string>Time is &amp;UTC</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0" colspan="5">
-    <widget class="Line" name="line_5">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <string>&amp;Load profile</string>
      </property>
     </widget>
    </item>
@@ -447,7 +447,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="localPage">
       <layout class="QGridLayout" name="gridLayout_14">
@@ -710,46 +710,44 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page_2">
-      <layout class="QGridLayout" name="gridLayout_16">
-       <item row="1" column="7">
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="QLabel" name="label_47">
+     <widget class="QWidget" name="remotePage">
+      <layout class="QGridLayout" name="gridLayout_4">
+       <property name="leftMargin">
+        <number>6</number>
+       </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
+        <number>6</number>
+       </property>
+       <property name="spacing">
+        <number>3</number>
+       </property>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Profile name</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2" colspan="2">
-        <widget class="QLineEdit" name="hostEdit">
-         <property name="text">
-          <string>localhost</string>
+          <string>Interface IP</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="5" column="0" colspan="2">
+       <item row="8" column="0">
         <widget class="QLabel" name="label_44">
          <property name="text">
           <string>Password</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="8">
+       <item row="3" column="0" colspan="2">
         <widget class="QRadioButton" name="useHostPortRadio">
          <property name="text">
           <string>Connect manually to host</string>
@@ -759,24 +757,17 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0" colspan="8">
-        <widget class="QRadioButton" name="useNetworkProfileRadio">
+       <item row="4" column="1" rowspan="2">
+        <widget class="QLineEdit" name="hostEdit">
          <property name="text">
-          <string>Connect to LAN profile</string>
+          <string>localhost</string>
          </property>
-         <property name="checked">
-          <bool>true</bool>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="QLabel" name="label_43">
-         <property name="text">
-          <string>User</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="4">
+       <item row="4" column="2">
         <widget class="QLabel" name="label_22">
          <property name="text">
           <string>Port</string>
@@ -786,31 +777,37 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="2" colspan="4">
-        <widget class="QLineEdit" name="userEdit">
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_21">
          <property name="text">
-          <string>anonymous</string>
+          <string>Host</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="1" column="6">
-        <widget class="QPushButton" name="refreshButton">
+       <item row="3" column="5" colspan="2">
+        <widget class="QRadioButton" name="useNetworkProfileRadio">
          <property name="text">
-          <string>&amp;Refresh</string>
+          <string>Connect to LAN profile</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="5" column="2" colspan="4">
-        <widget class="QLineEdit" name="passEdit">
-         <property name="echoMode">
-          <enum>QLineEdit::Password</enum>
-         </property>
-         <property name="placeholderText">
-          <string>(no password)</string>
+       <item row="4" column="6">
+        <widget class="QComboBox" name="remoteDeviceCombo"/>
+       </item>
+       <item row="4" column="5">
+        <widget class="QLabel" name="label_47">
+         <property name="text">
+          <string>Profile name</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="5">
+       <item row="4" column="3">
         <widget class="QSpinBox" name="portEdit">
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -823,41 +820,50 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="2" colspan="4">
-        <widget class="QComboBox" name="remoteDeviceCombo"/>
+       <item row="6" column="6">
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>1</height>
+          </size>
+         </property>
+        </spacer>
        </item>
-       <item row="3" column="6" rowspan="3" colspan="2">
-        <widget class="QLabel" name="label_45">
-         <property name="font">
-          <font>
-           <italic>true</italic>
-          </font>
-         </property>
+       <item row="6" column="5" rowspan="2">
+        <widget class="QPushButton" name="refreshButton">
          <property name="text">
-          <string>Support for remote analyzers is provided by an experimental application layer protocol that is still under active development and lacks basic security features like proper authentication or transport encryption. Use at your own risk.</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
+          <string>&amp;Refresh</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="2">
-        <widget class="QLabel" name="label_21">
+       <item row="8" column="5" colspan="2">
+        <widget class="QLabel" name="label_14">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
-          <string>Host</string>
+          <string/>
          </property>
         </widget>
        </item>
-       <item row="6" column="2">
-        <spacer name="verticalSpacer">
+       <item row="3" column="4" rowspan="7">
+        <widget class="Line" name="line">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Expanding</enum>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -866,6 +872,47 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_43">
+         <property name="text">
+          <string>User</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1" colspan="3">
+        <widget class="QLineEdit" name="userEdit">
+         <property name="text">
+          <string>anonymous</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1" colspan="3">
+        <widget class="QLineEdit" name="passEdit">
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
+         </property>
+         <property name="placeholderText">
+          <string>(no password)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="mcInterfaceEdit">
+         <property name="placeholderText">
+          <string>192.168.1.1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="7">
+        <widget class="QCheckBox" name="mcCheck">
+         <property name="text">
+          <string>Accept multicast traffic in LAN connections (experimental, partial support)</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

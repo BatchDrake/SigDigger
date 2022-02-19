@@ -450,6 +450,19 @@ Source::Config::getParam(const std::string &key) const
   return param;
 }
 
+bool
+Source::Config::hasParam(const std::string &key) const
+{
+  const char *param;
+
+  if (this->instance == nullptr)
+    return "";
+
+  param = suscan_source_config_get_param(this->instance, key.c_str());
+
+  return param != nullptr;
+}
+
 SUBOOL
 Source::Config::walkParams(
     const suscan_source_config_t *,

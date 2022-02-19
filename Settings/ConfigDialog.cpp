@@ -213,7 +213,7 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
   this->ui->setupUi(this);
   this->setWindowFlags(
     this->windowFlags() & ~Qt::WindowMaximizeButtonHint);
-  this->layout()->setSizeConstraint(QLayout::SetFixedSize);
+  //this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 
   this->profileTab   = new ProfileConfigTab(this);
   this->colorTab     = new ColorConfigTab(this);

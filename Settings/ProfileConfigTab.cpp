@@ -388,13 +388,16 @@ ProfileConfigTab::refreshProfileUi(void)
     if (this->profile.getType() == SUSCAN_SOURCE_TYPE_FILE)
       adjustableSourceTime = true;
   } else {
-    std::string host, port, user, pass;
+    bool hasMc;
+    std::string host, port, user, pass, mc_if;
     int index;
 
-    host = this->profile.getParam("host");
-    port = this->profile.getParam("port");
-    user = this->profile.getParam("user");
-    pass = this->profile.getParam("password");
+    host  = this->profile.getParam("host");
+    port  = this->profile.getParam("port");
+    user  = this->profile.getParam("user");
+    pass  = this->profile.getParam("password");
+    hasMc = this->profile.hasParam("mc_if");
+    mc_if = this->profile.getParam("mc_if");
 
     // Set remote analyzer interface
     this->ui->hostEdit->setText(host.c_str());
@@ -419,6 +422,9 @@ ProfileConfigTab::refreshProfileUi(void)
 
     this->ui->userEdit->setText(user.c_str());
     this->ui->passEdit->setText(pass.c_str());
+    this->ui->mcCheck->setChecked(hasMc);
+    this->ui->mcInterfaceEdit->setText(mc_if.c_str());
+    this->ui->mcInterfaceEdit->setEnabled(hasMc);
   }
 
   if (adjustableSourceTime) {
@@ -645,6 +651,18 @@ ProfileConfigTab::connectAll(void)
         SLOT(onRemoteParamsChanged()));
 
   connect(
+        this->ui->mcCheck,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onRemoteParamsChanged()));
+
+  connect(
+        this->ui->mcInterfaceEdit,
+        SIGNAL(textEdited(const QString &)),
+        this,
+        SLOT(onRemoteParamsChanged()));
+
+  connect(
         this->ui->useNetworkProfileRadio,
         SIGNAL(toggled(bool)),
         this,
@@ -749,10 +767,18 @@ ProfileConfigTab::getProfile(void) const
 void
 ProfileConfigTab::updateRemoteParams(void)
 {
+  this->profile.clearParams();
+
   this->profile.setParam("host", this->ui->hostEdit->text().toStdString());
   this->profile.setParam("port", std::to_string(this->ui->portEdit->value()));
   this->profile.setParam("user", this->ui->userEdit->text().toStdString());
   this->profile.setParam("password", this->ui->passEdit->text().toStdString());
+
+  if (this->ui->mcCheck->isChecked())
+    this->profile.setParam(
+        "mc_if",
+        this->ui->mcInterfaceEdit->text().toStdString());
+
   this->profile.setParam("label", "User-defined remote profile");
 }
 
@@ -761,6 +787,9 @@ ProfileConfigTab::ProfileConfigTab(QWidget *parent) : ConfigTab(parent, "Source"
 {
   this->ui = new Ui::ProfileConfigTab;
   this->ui->setupUi(this);
+
+  // Set local analyzer as default
+  this->ui->analyzerTypeCombo->setCurrentIndex(0);
 
   this->tweaks = new DeviceTweaks(this);
   this->tweaks->setModal(true);
@@ -788,6 +817,7 @@ ProfileConfigTab::ProfileConfigTab(QWidget *parent) : ConfigTab(parent, "Source"
   this->ui->sampleRateSpinBox->setUnits("sps");
   this->connectAll();
   this->refreshUi();
+
 }
 
 QString
@@ -953,6 +983,7 @@ void
 ProfileConfigTab::onRemoteParamsChanged(void)
 {
   if (this->remoteSelected()) {
+    this->ui->mcInterfaceEdit->setEnabled(this->ui->mcCheck->isChecked());
     this->configChanged(true);
     this->profile.setDevice(this->remoteDevice);
     this->updateRemoteParams();
@@ -1373,7 +1404,7 @@ ProfileConfigTab::onRemoteProfileSelected(void)
 
   if (this->ui->useNetworkProfileRadio->isChecked()) {
     QHash<QString, Suscan::Source::Config>::const_iterator it;
-    std::string user, pass;
+    std::string user, pass, mc;
 
     it = sus->getNetworkProfileFrom(this->ui->remoteDeviceCombo->currentText());
 
@@ -1395,6 +1426,16 @@ ProfileConfigTab::onRemoteProfileSelected(void)
       // Provide a better hint for username if the server announced none
       this->ui->userEdit->setText(user.c_str());
       this->ui->passEdit->setText(pass.c_str());
+
+      // If mc is enabled, set up accordingly
+      if (it->hasParam("mc_if")) {
+        mc = it->getParam("mc_if");
+        this->ui->mcCheck->setChecked(true);
+        this->ui->mcInterfaceEdit->setText(mc.c_str());
+      } else {
+        this->ui->mcCheck->setChecked(false);
+      }
+
       this->onRemoteParamsChanged();
     }
   }
