@@ -52,7 +52,7 @@ QuadDemodTask::work(void)
     if (p < 1) {
       this->destination[p] = 0;
     } else {
-      this->destination[p] = k * SU_C_ARG(x * SU_C_CONJ(this->prev));
+      this->destination[p] = I * k * SU_C_ARG(x * SU_C_CONJ(this->prev));
     }
 
     this->prev = x;

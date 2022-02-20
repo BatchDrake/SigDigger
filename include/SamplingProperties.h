@@ -31,7 +31,8 @@ namespace SigDigger {
 
   enum SamplingClockSync {
     MANUAL,
-    GARDNER
+    GARDNER,
+    ZERO_CROSSING
   };
 
   struct SamplingProperties {
@@ -39,6 +40,7 @@ namespace SigDigger {
     SamplingSpace space;
     qreal fs;
     qreal loopGain;
+    SUCOMPLEX zeroCrossingAngle;
     const SUCOMPLEX *data;
     size_t length;
 

@@ -598,16 +598,23 @@ TimeWindow::populateSamplingProperties(SamplingProperties &prop)
   prop.fs = this->fs;
   prop.loopGain = 0;
 
-  prop.sync = this->ui->clkGardnerButton->isChecked()
-      ? SamplingClockSync::GARDNER
-      : SamplingClockSync::MANUAL;
+  if (this->ui->clkGardnerButton->isChecked())
+    prop.sync = SamplingClockSync::GARDNER;
+  else if (this->ui->clkZcButton->isChecked())
+    prop.sync = SamplingClockSync::ZERO_CROSSING;
+  else
+    prop.sync = SamplingClockSync::MANUAL;
 
-  if (this->ui->decAmplitudeButton->isChecked())
+  if (this->ui->decAmplitudeButton->isChecked()) {
     prop.space = SamplingSpace::AMPLITUDE;
-  else if (this->ui->decPhaseButton->isChecked())
+    prop.zeroCrossingAngle = this->ui->clkComponentCombo->currentIndex() == 0
+        ? 1
+        : -I;
+  } else if (this->ui->decPhaseButton->isChecked()) {
     prop.space = SamplingSpace::PHASE;
-  else if (this->ui->decFrequencyButton->isChecked())
+  } else if (this->ui->decFrequencyButton->isChecked()) {
     prop.space = SamplingSpace::FREQUENCY;
+  }
 
   if (intSelection) {
     size_t start = static_cast<size_t>(
@@ -715,6 +722,8 @@ void
 TimeWindow::refreshUi(void)
 {
   bool haveSelection = this->ui->realWaveform->getHorizontalSelectionPresent();
+  bool baudEditable;
+
   this->ui->periodicDivisionsSpin->setEnabled(
         this->ui->periodicSelectionCheck->isChecked());
   this->ui->selStartLabel->setEnabled(haveSelection);
@@ -738,13 +747,19 @@ TimeWindow::refreshUi(void)
           this->ui->realWaveform->getSampleRate())) +
         QStringLiteral(" sp/s"));
 
-  this->ui->clkRateFrame->setEnabled(
-        this->ui->clkManualButton->isChecked()
-        || this->ui->clkGardnerButton->isChecked());
+  baudEditable = this->ui->clkManualButton->isChecked()
+      || this->ui->clkGardnerButton->isChecked()
+      || this->ui->clkZcButton->isChecked();
+
+  this->ui->clkRateFrame->setEnabled(baudEditable);
   this->ui->clkPartitionFrame->setEnabled(
         this->ui->clkPartitionButton->isChecked());
   this->ui->clkGardnerFrame->setEnabled(
         this->ui->clkGardnerButton->isChecked());
+  this->ui->clkZcFrame->setEnabled(
+        this->ui->clkZcButton->isChecked());
+  this->ui->clkComponentCombo->setEnabled(
+        this->ui->decAmplitudeButton->isChecked());
 
   SamplingProperties sp;
   this->populateSamplingProperties(sp);
@@ -803,6 +818,8 @@ TimeWindow::refreshMeasures(void)
         * deltaT;
     qreal baud = 1 / period;
 
+    // This was a very stupid idea
+#if 0
     // If we are not handling a specific region, update delays
     if (!this->ui->transSelCheck->isChecked()
         && !this->taskRunning) {
@@ -813,6 +830,7 @@ TimeWindow::refreshMeasures(void)
       this->onAGCRateChanged();
       this->onDelayedConjChanged();
     }
+#endif
 
     SigDiggerHelpers::kahanMeanAndRms(
           &mean,
@@ -1715,7 +1733,7 @@ TimeWindow::onFineTuneSelectionClicked(void)
       static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionStart());
   qint64 newSelEnd =
       static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionEnd());
-  qint64 delta = newSelEnd - newSelStart;
+  qint64 delta = (newSelEnd - newSelStart) / this->ui->periodicDivisionsSpin->value();
 
 #define CHECKBUTTON(btn) this->fineTuneSenderIs(this->ui->btn)
 

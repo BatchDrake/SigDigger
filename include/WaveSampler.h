@@ -43,10 +43,14 @@ namespace SigDigger {
     SamplingProperties properties;
     su_clock_detector_t cd;
     bool cdInit = false;
+    SUFLOAT prevVar = -1;
+    SUFLOAT bnor = 0;
+
 #ifdef SIGDIGGER_WAVESAMPLER_USE_MF
     su_iir_filt_t mf;
     bool mfInit = false;
 #endif // SIGDIGGER_WAVESAMPLER_USE_MF
+    long lastZc = 0;
     long p = 0;
     qreal delta = 0;
     qreal sampOffset;
@@ -58,6 +62,7 @@ namespace SigDigger {
 
     bool sampleManual(void);
     bool sampleGardner(void);
+    bool sampleZeroCrossing(void);
 
   public:
     WaveSampler(
