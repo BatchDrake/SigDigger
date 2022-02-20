@@ -652,13 +652,13 @@ ProfileConfigTab::connectAll(void)
 
   connect(
         this->ui->mcCheck,
-        SIGNAL(clicked(bool)),
+        SIGNAL(stateChanged(int)),
         this,
         SLOT(onRemoteParamsChanged()));
 
   connect(
         this->ui->mcInterfaceEdit,
-        SIGNAL(textEdited(const QString &)),
+        SIGNAL(textChanged(const QString &)),
         this,
         SLOT(onRemoteParamsChanged()));
 
@@ -1404,7 +1404,12 @@ ProfileConfigTab::onRemoteProfileSelected(void)
 
   if (this->ui->useNetworkProfileRadio->isChecked()) {
     QHash<QString, Suscan::Source::Config>::const_iterator it;
-    std::string user, pass, mc;
+    std::string user, pass, mc, mc_if;
+    bool hasMc;
+
+    // Save multicast config
+    hasMc = this->ui->mcCheck->isChecked();
+    mc_if = this->ui->mcInterfaceEdit->text().toStdString();
 
     it = sus->getNetworkProfileFrom(this->ui->remoteDeviceCombo->currentText());
 
@@ -1427,14 +1432,10 @@ ProfileConfigTab::onRemoteProfileSelected(void)
       this->ui->userEdit->setText(user.c_str());
       this->ui->passEdit->setText(pass.c_str());
 
-      // If mc is enabled, set up accordingly
-      if (it->hasParam("mc_if")) {
-        mc = it->getParam("mc_if");
-        this->ui->mcCheck->setChecked(true);
-        this->ui->mcInterfaceEdit->setText(mc.c_str());
-      } else {
-        this->ui->mcCheck->setChecked(false);
-      }
+      // Restore mc config
+      this->ui->mcCheck->setChecked(hasMc);
+      this->ui->mcInterfaceEdit->setText(mc_if.c_str());
+      this->ui->mcInterfaceEdit->setEnabled(hasMc);
 
       this->onRemoteParamsChanged();
     }
