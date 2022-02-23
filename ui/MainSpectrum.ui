@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1053</width>
-    <height>596</height>
+    <width>1136</width>
+    <height>68</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -61,13 +61,13 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>182</width>
+           <width>222</width>
            <height>40</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>140</width>
+           <width>222</width>
            <height>16777215</height>
           </size>
          </property>
@@ -96,6 +96,9 @@
          </property>
          <property name="min">
           <longLong>0</longLong>
+         </property>
+         <property name="max">
+          <longLong>99999999999</longLong>
          </property>
         </widget>
        </item>
@@ -145,7 +148,7 @@ font-weight: bold;
         <widget class="LCD" name="loLcd">
          <property name="minimumSize">
           <size>
-           <width>96</width>
+           <width>104</width>
            <height>0</height>
           </size>
          </property>
@@ -178,7 +181,7 @@ font-weight: bold;
         <widget class="LCD" name="lnbLcd">
          <property name="minimumSize">
           <size>
-           <width>96</width>
+           <width>104</width>
            <height>0</height>
           </size>
          </property>
