@@ -238,7 +238,6 @@ WaveSampler::sampleZeroCrossing(void)
       if (var * prevVar < 0 || last) {
         long samples = p - this->lastZc;
         long symbols = SCAST(long, round(samples * this->bnor));
-        printf("Run of %d symbols equal to %d\n", symbols, var > 0);
 
         while (symbols-- > 0 && i < SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH) {
           this->set.block[i]   = var > 0;

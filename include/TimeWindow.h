@@ -64,12 +64,7 @@ namespace SigDigger {
 
     std::vector<SUCOMPLEX> const *displayData = &processedData;
 
-    SUCOMPLEX min;
-    SUCOMPLEX max;
-    SUCOMPLEX mean;
-
     SUFREQ    centerFreq;
-    SUFLOAT   rms;
 
     bool taskRunning = false;
 
@@ -81,7 +76,6 @@ namespace SigDigger {
     void connectTransformWidgets(void);
     void connectAll(void);
 
-    void recalcLimits(void);
     void refreshMeasures(void);
     void refreshUi(void);
 
@@ -201,6 +195,8 @@ namespace SigDigger {
 
     void onAGCRateChanged(void);
     void onDelayedConjChanged(void);
+
+    void onWaveViewChanged(void);
   };
 }
 

@@ -30,6 +30,7 @@ class QComboBox;
 
 namespace SigDigger {
   class MultitaskController;
+
   class SigDiggerHelpers
   {
     std::vector<Palette> palettes;
@@ -46,17 +47,6 @@ namespace SigDigger {
     static QString version(void);
     static QString pkgversion(void);
 
-    static void kahanMeanAndRms(
-        SUCOMPLEX *mean,
-        SUFLOAT *rms,
-        const SUCOMPLEX *data,
-        int length);
-
-    static void calcLimits(
-        SUCOMPLEX *oMin,
-        SUCOMPLEX *oMax,
-        const SUCOMPLEX *data,
-        int length);
 
     static void openSaveSamplesDialog(
         QWidget *root,

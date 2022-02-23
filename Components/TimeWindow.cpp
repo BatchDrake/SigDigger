@@ -413,6 +413,12 @@ TimeWindow::connectAll(void)
         this,
         SLOT(onCalculateDoppler(void)));
 
+  connect(
+        this->ui->realWaveform,
+        SIGNAL(waveViewChanged(void)),
+        this,
+        SLOT(onWaveViewChanged(void)));
+
   connectFineTuneSelWidgets();
 }
 
@@ -705,20 +711,6 @@ TimeWindow::notifyTaskRunning(bool running)
 }
 
 void
-TimeWindow::recalcLimits(void)
-{
-  const SUCOMPLEX *data = this->getDisplayData();
-  int length = static_cast<int>(this->getDisplayDataLength());
-
-  if (length == 0) {
-    this->min = this->max = this->mean = this->rms = 0;
-  } else {
-    SigDiggerHelpers::kahanMeanAndRms(&this->mean, &this->rms, data, length);
-    SigDiggerHelpers::calcLimits(&this->min, &this->max, data, length);
-  }
-}
-
-void
 TimeWindow::refreshUi(void)
 {
   bool haveSelection = this->ui->realWaveform->getHorizontalSelectionPresent();
@@ -832,16 +824,16 @@ TimeWindow::refreshMeasures(void)
     }
 #endif
 
-    SigDiggerHelpers::kahanMeanAndRms(
+    SuWidgetsHelpers::kahanMeanAndRms(
           &mean,
           &rms,
           data + static_cast<qint64>(selStart),
-          static_cast<int>(selEnd - selStart));
-    SigDiggerHelpers::calcLimits(
+          SCAST(SUSCOUNT, selEnd - selStart));
+    SuWidgetsHelpers::calcLimits(
           &min,
           &max,
           data + static_cast<qint64>(selStart),
-          static_cast<int>(selEnd - selStart));
+          SCAST(SUSCOUNT, selEnd - selStart));
 
     this->ui->periodLabel->setText(
           SuWidgetsHelpers::formatQuantityFromDelta(
@@ -874,10 +866,11 @@ TimeWindow::refreshMeasures(void)
             "s")
           + " (" + SuWidgetsHelpers::formatReal(selEnd - selStart) + ")");
   } else {
-    min = this->min;
-    max = this->max;
-    mean = this->mean;
-    rms = this->rms;
+    min  = this->ui->realWaveform->getDataMin();
+    max  = this->ui->realWaveform->getDataMax();
+    mean = this->ui->realWaveform->getDataMean();
+    rms  = this->ui->realWaveform->getDataRMS();
+
     this->ui->periodLabel->setText("N/A");
     this->ui->baudLabel->setText("N/A");
     this->ui->selStartLabel->setText("N/A");
@@ -897,7 +890,7 @@ TimeWindow::refreshMeasures(void)
         SuWidgetsHelpers::formatScientific(SU_C_REAL(min)));
 
   this->ui->maxILabel->setText(
-        SuWidgetsHelpers::formatScientific(SU_C_REAL(min)));
+        SuWidgetsHelpers::formatScientific(SU_C_REAL(max)));
 
   this->ui->meanILabel->setText(
         SuWidgetsHelpers::formatScientific(SU_C_REAL(mean)));
@@ -906,7 +899,7 @@ TimeWindow::refreshMeasures(void)
         SuWidgetsHelpers::formatScientific(SU_C_IMAG(min)));
 
   this->ui->maxQLabel->setText(
-        SuWidgetsHelpers::formatScientific(SU_C_IMAG(min)));
+        SuWidgetsHelpers::formatScientific(SU_C_IMAG(max)));
 
   this->ui->meanQLabel->setText(
         SuWidgetsHelpers::formatScientific(SU_C_IMAG(mean)));
@@ -953,11 +946,8 @@ TimeWindow::setDisplayData(
     }
   }
 
-  this->recalcLimits();
-
   this->refreshUi();
   this->refreshMeasures();
-
   this->setCursor(cursor);
 }
 
@@ -979,8 +969,8 @@ TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs, qreal bw)
   this->ui->imagWaveform->setSampleRate(fs);
 
   this->data = &data;
-  this->setDisplayData(&data);
 
+  this->setDisplayData(&data);
   this->onCarrierSlidersChanged();
 }
 
@@ -1043,8 +1033,6 @@ TimeWindow::TimeWindow(QWidget *parent) :
   this->ui->gridLayout_11->setVerticalSpacing(6);
   this->ui->gridLayout_12->setVerticalSpacing(6);
 #endif
-
-  this->recalcLimits();
 
   this->refreshUi();
   this->refreshMeasures();
@@ -2085,4 +2073,11 @@ TimeWindow::onDelayedConjChanged(void)
           static_cast<qreal>(samples),
           4,
           "sp") + ")");
+}
+
+void
+TimeWindow::onWaveViewChanged(void)
+{
+  this->refreshMeasures();
+  this->onFit();
 }

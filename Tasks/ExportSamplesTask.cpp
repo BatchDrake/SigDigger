@@ -108,18 +108,23 @@ ExportSamplesTask::exportToWav(void)
   size_t size = this->data.size();
   bool ok = false;
   size_t i = 0;
+  size_t amount;
 
   for (
        i = 0;
        !this->cancelFlag
          && i < size - SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE;
        i += SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE) {
+
+    amount = size - i;
+    if (amount > SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE)
+      amount = SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE;
+
     if (sf_write_float(
           this->sfp,
           reinterpret_cast<const SUFLOAT *>(this->data.data() + i),
-          2 * SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE)
-        != 2 * static_cast<sf_count_t>(
-          SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE))
+          2 * amount)
+        != 2 * static_cast<sf_count_t>(amount))
         goto done;
 
     this->breathe(i);
