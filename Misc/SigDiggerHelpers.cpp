@@ -81,9 +81,10 @@ SigDiggerHelpers::openSaveSamplesDialog(
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setWindowTitle(QString("Save capture"));
 
-    filters << "MATLAB/Octave script (*.m)"
-            << "MATLAB 5.0 MAT-file (*.mat)"
-            << "Audio file (*.wav)";
+    filters << "Audio file (*.wav)"
+            << "Raw I/Q data (*.raw)"
+            << "MATLAB/Octave script (*.m)"
+            << "MATLAB 5.0 MAT-file (*.mat)";
 
     dialog.setNameFilters(filters);
 
@@ -96,6 +97,8 @@ SigDiggerHelpers::openSaveSamplesDialog(
         format = "mat";
       else if (strstr(filter.toStdString().c_str(), ".m") != nullptr)
         format = "m";
+      else if (strstr(filter.toStdString().c_str(), ".raw") != nullptr)
+        format = "raw";
       else
         format = "wav";
 

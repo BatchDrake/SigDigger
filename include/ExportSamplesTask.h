@@ -48,6 +48,7 @@ namespace SigDigger {
       bool openMat5(void);
       bool openMatlab(void);
       bool openWav(void);
+      bool openRaw(void);
 
       bool exportToMat5(void);
       bool exportToMatlab(void);

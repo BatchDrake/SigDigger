@@ -112,8 +112,7 @@ ExportSamplesTask::exportToWav(void)
 
   for (
        i = 0;
-       !this->cancelFlag
-         && i < size - SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE;
+       !this->cancelFlag && i < size;
        i += SIGDIGGER_EXPORT_SAMPLES_BREATHE_BLOCK_SIZE) {
 
     amount = size - i;
@@ -143,7 +142,7 @@ ExportSamplesTask::exportToWav(void)
 done:
   if (!ok)
     emit error(
-        "Cannot save data to WAV file "
+        "Cannot save data to WAV/RAW file "
         + this->path
         + ": "
         + QString(sf_strerror(this->sfp)));
@@ -162,7 +161,7 @@ ExportSamplesTask::work(void)
     ok = this->exportToMat5();
   else if (this->format == "m")
     ok = this->exportToMatlab();
-  else if (this->format == "wav")
+  else if (this->format == "wav" || this->format == "raw")
     ok = this->exportToWav();
   else
     emit error("Unsupported data format " + this->format);
@@ -266,6 +265,31 @@ ExportSamplesTask::openWav(void)
 }
 
 bool
+ExportSamplesTask::openRaw(void)
+{
+  SF_INFO sfinfo;
+
+  sfinfo.channels = 2;
+  sfinfo.samplerate = static_cast<int>(fs);
+  sfinfo.format = SF_FORMAT_RAW | SF_FORMAT_FLOAT;
+
+  if ((this->sfp = sf_open(
+         path.toStdString().c_str(),
+         SFM_WRITE,
+         &sfinfo)) == nullptr) {
+    this->lastError =
+        "Cannot open "
+        + this->path
+        + ": "
+        + QString(strerror(errno));
+    return false;
+  }
+
+  return true;
+}
+
+
+bool
 ExportSamplesTask::attemptOpen(void)
 {
   if (this->format == "mat")
@@ -274,8 +298,10 @@ ExportSamplesTask::attemptOpen(void)
     return this->openMatlab();
   else if (this->format == "wav")
     return this->openWav();
-
-  this->lastError = "Unsupported format \"" + this->lastError + "\"";
+  else if (this->format == "raw")
+    return this->openRaw();
+  else
+    this->lastError = "Unsupported format \"" + this->lastError + "\"";
 
   return false;
 }
