@@ -338,7 +338,7 @@ font-weight: bold;</string>
             </font>
            </property>
            <property name="text">
-            <string>Hold</string>
+            <string>Push to capture</string>
            </property>
           </widget>
          </item>
