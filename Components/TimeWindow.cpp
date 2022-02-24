@@ -431,6 +431,12 @@ TimeWindow::connectAll(void)
         this,
         SLOT(onZeroCrossingComponentChanged(void)));
 
+  connect(
+        this->ui->spaceButtonGrp,
+        SIGNAL(buttonClicked(int)),
+        this,
+        SLOT(onZeroPointChanged(void)));
+
   connectFineTuneSelWidgets();
 }
 
@@ -2135,10 +2141,16 @@ TimeWindow::onZeroPointChanged(void)
 {
   QList<WaveVCursor> vCursors, vEmpty;
   QList<WaveACursor> aCursors, aEmpty;
+  bool isAmplitude = false;
   bool imag = false;
   bool real = false;
 
-  if (this->ui->clkZcButton->isChecked()) {
+  isAmplitude = this->ui->decAmplitudeButton->isChecked();
+
+  this->ui->zeroPointSpin->setEnabled(isAmplitude);
+  this->ui->clkComponentCombo->setEnabled(isAmplitude);
+
+  if (this->ui->clkZcButton->isChecked() && isAmplitude) {
     WaveVCursor vCursor;
     WaveACursor aCursor;
 

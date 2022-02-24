@@ -206,6 +206,7 @@ WaveSampler::sampleZeroCrossing(void)
   long i = 0;
   SUCOMPLEX x = 0, prev = this->prevSample;
   SUFLOAT var = 0, prevVar = this->prevVar;
+  SUFLOAT thres = 0;
 
   if (amount > SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH)
     amount = SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH;
@@ -214,11 +215,26 @@ WaveSampler::sampleZeroCrossing(void)
 
   this->set.len = 0;
 
+  if (this->properties.amplitude)
+    thres = SU_C_REAL(
+          this->properties.threshold * SU_C_CONJ(this->properties.threshold));
+  else
+    thres = SU_C_REAL(
+          this->properties.threshold * this->properties.zeroCrossingAngle);
+
   while (amount--) {
     switch (this->properties.space) {
       case AMPLITUDE:
-        var = SU_C_REAL(
-              this->properties.data[p] * this->properties.zeroCrossingAngle);
+        if (this->properties.amplitude)
+          var = SU_C_REAL(
+                  this->properties.data[p]
+                * SU_C_CONJ(this->properties.data[p]));
+        else
+          var = SU_C_REAL(
+                  this->properties.data[p]
+                * this->properties.zeroCrossingAngle);
+
+        var -= thres;
         break;
 
       case PHASE:

@@ -40,6 +40,8 @@ namespace SigDigger {
     SamplingSpace space;
     qreal fs;
     qreal loopGain;
+    bool amplitude = false;
+    SUCOMPLEX threshold;
     SUCOMPLEX zeroCrossingAngle;
     const SUCOMPLEX *data;
     size_t length;
