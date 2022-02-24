@@ -419,6 +419,18 @@ TimeWindow::connectAll(void)
         this,
         SLOT(onWaveViewChanged(void)));
 
+  connect(
+        this->ui->zeroPointSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onZeroPointChanged(void)));
+
+  connect(
+        this->ui->clkComponentCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onZeroCrossingComponentChanged(void)));
+
   connectFineTuneSelWidgets();
 }
 
@@ -760,6 +772,9 @@ TimeWindow::refreshUi(void)
   if (this->ui->clkSelectionButton->isChecked()
       || this->ui->clkPartitionButton->isChecked())
     this->ui->baudSpin->setValue(baud);
+
+  this->onZeroPointChanged();
+  this->onZeroCrossingComponentChanged();
 
   this->hadSelectionBefore = haveSelection;
 }
@@ -2080,4 +2095,92 @@ TimeWindow::onWaveViewChanged(void)
 {
   this->refreshMeasures();
   this->onFit();
+}
+
+void
+TimeWindow::onZeroCrossingComponentChanged(void)
+{
+  qreal min, max;
+  int digits;
+
+  switch (this->ui->clkComponentCombo->currentIndex()) {
+    case 0:
+      min = this->ui->realWaveform->getMin();
+      max = this->ui->realWaveform->getMax();
+      break;
+
+    case 1:
+      min = this->ui->imagWaveform->getMin();
+      max = this->ui->imagWaveform->getMax();
+      break;
+
+    case 2:
+      min = 0;
+      max = this->ui->realWaveform->getEnvelope();
+      break;
+  }
+
+  digits = SCAST(int, floor(log10(max - min)));
+
+  this->ui->zeroPointSpin->setDecimals(7 - digits);
+  this->ui->zeroPointSpin->setSingleStep(5e-3 * (max - min));
+  this->ui->zeroPointSpin->setMinimum(min);
+  this->ui->zeroPointSpin->setMaximum(max);
+
+  this->onZeroPointChanged();
+}
+
+void
+TimeWindow::onZeroPointChanged(void)
+{
+  QList<WaveVCursor> vCursors, vEmpty;
+  QList<WaveACursor> aCursors, aEmpty;
+  bool imag = false;
+  bool real = false;
+
+  if (this->ui->clkZcButton->isChecked()) {
+    WaveVCursor vCursor;
+    WaveACursor aCursor;
+
+    vCursor.color  = QColor(0xff, 0xff, 0x00);
+    vCursor.string = "Zero point";
+
+    switch (this->ui->clkComponentCombo->currentIndex()) {
+      case 0:
+        vCursor.level = SCAST(SUCOMPLEX, this->ui->zeroPointSpin->value());
+        vCursors.append(vCursor);
+        real = true;
+        break;
+
+      case 1:
+        vCursor.level = I * SCAST(SUCOMPLEX, this->ui->zeroPointSpin->value());
+        vCursors.append(vCursor);
+        imag = true;
+        break;
+
+      case 2:
+        aCursor.color     = QColor(0xc1, 0x2e, 0x81);
+        aCursor.string    = vCursor.string;
+        aCursor.amplitude = this->ui->zeroPointSpin->value();
+        aCursors.append(aCursor);
+        real = imag = true;
+        break;
+    }
+  }
+
+  if (real) {
+    this->ui->realWaveform->setVCursorList(vCursors);
+    this->ui->realWaveform->setACursorList(aCursors);
+  } else {
+    this->ui->realWaveform->setVCursorList(vEmpty);
+    this->ui->realWaveform->setACursorList(aEmpty);
+  }
+
+  if (imag) {
+    this->ui->imagWaveform->setVCursorList(vCursors);
+    this->ui->imagWaveform->setACursorList(aCursors);
+  } else {
+    this->ui->imagWaveform->setVCursorList(vEmpty);
+    this->ui->imagWaveform->setACursorList(aEmpty);
+  }
 }

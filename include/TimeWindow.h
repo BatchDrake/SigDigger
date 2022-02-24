@@ -197,6 +197,8 @@ namespace SigDigger {
     void onDelayedConjChanged(void);
 
     void onWaveViewChanged(void);
+    void onZeroCrossingComponentChanged(void);
+    void onZeroPointChanged(void);
   };
 }
 
