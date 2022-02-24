@@ -35,6 +35,9 @@ namespace SigDigger {
     Decider decider;
     SamplingProperties properties;
 
+    SUFLOAT minVal = +INFINITY;
+    SUFLOAT maxVal = -INFINITY;
+
     void connectAll(void);
     void refreshUi(void);
     bool scrolling = false;
@@ -54,6 +57,7 @@ namespace SigDigger {
     void feedSet(WaveSampleSet const &set);
     void setColorConfig(ColorConfig const &cfg);
     void closeEvent(QCloseEvent *);
+    void fitToSamples(void);
 
     WaveSampler *makeSampler(void);
 

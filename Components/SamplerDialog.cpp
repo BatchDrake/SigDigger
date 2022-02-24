@@ -166,6 +166,9 @@ SamplerDialog::reset(void)
 {
   this->ui->symView->clear();
   this->ui->histogram->reset();
+
+  this->minVal = +INFINITY;
+  this->maxVal = -INFINITY;
 }
 
 void
@@ -181,8 +184,40 @@ SamplerDialog::setColorConfig(ColorConfig const &cfg)
 }
 
 void
+SamplerDialog::fitToSamples(void)
+{
+  if (isfinite(this->minVal) && isfinite(this->maxVal)) {
+    this->decider.setMinimum(this->minVal);
+    this->decider.setMaximum(this->maxVal);
+
+    this->ui->histogram->setDecider(&this->decider);
+  }
+}
+
+void
 SamplerDialog::feedSet(WaveSampleSet const &set)
 {
+  if (this->decider.getDecisionMode() == Decider::MODULUS) {
+    for (SUSCOUNT i = 0; i < set.len; ++i) {
+      SUFLOAT amp = SU_C_ABS(set.block[i]);
+      if (amp > this->maxVal)
+        this->maxVal = SU_C_ABS(set.block[i]);
+      if (amp < this->minVal)
+        this->minVal = SU_C_ABS(set.block[i]);
+    }
+  } else {
+    for (SUSCOUNT i = 0; i < set.len; ++i) {
+      SUFLOAT arg = SU_C_ARG(set.block[i]);
+      if (arg > this->maxVal)
+        this->maxVal = SU_C_ARG(set.block[i]);
+      if (arg < this->minVal)
+        this->minVal = SU_C_ARG(set.block[i]);
+    }
+  }
+
+  if (!this->isVisible())
+    this->fitToSamples();
+
   this->ui->histogram->feed(set.block, set.len);
   this->ui->symView->feed(set.symbols, set.len);
 

@@ -796,7 +796,6 @@ TimeWindow::startSampling(void)
         this,
         SLOT(onSampleSet(SigDigger::WaveSampleSet)));
 
-  this->samplerDialog->show();
   this->notifyTaskRunning(true);
   this->taskController.process(QStringLiteral("triggerSampler"), ws);
 }
