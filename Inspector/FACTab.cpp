@@ -33,7 +33,6 @@ FACTab::resizeFAC(int size)
   this->fac.assign(this->fac.size(), 0);
 
   this->ui->facWaveform->setData(&this->fac, true, true);
-
   this->ui->facWaveform->invalidate();
   this->adjustZoom = true;
 
@@ -85,6 +84,7 @@ FACTab::FACTab(QWidget *parent) :
   this->ui->facSizeCombo->setCurrentIndex(16 - 9);
 
   this->ui->facWaveform->setRealComponent(true);
+  this->ui->facWaveform->setEnableFeedback(false);
   this->onUnitsChanged();
 
   this->onChangeFACSize();
@@ -246,8 +246,7 @@ FACTab::feed(const SUCOMPLEX *data, unsigned int size)
 
   if (redraw) {
     this->ui->progressBar->setValue(100);
-    this->ui->facWaveform->refreshData();
-    this->ui->facWaveform->invalidate();
+    this->ui->facWaveform->setData(&this->fac, true, true);
 
     if (this->adjustZoom) {
       this->ui->facWaveform->zoomVertical(
