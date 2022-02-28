@@ -100,10 +100,10 @@ WaveSampler::sampleManual(void)
   long p = this->p;
 
   unsigned int q = 0;
-  SUFLOAT start, end;
+  qreal start, end;
   SUFLOAT tStart, tEnd;
-  SUFLOAT deltaInv = 1.f / static_cast<SUFLOAT>(this->delta);
-  long iStart, iEnd;
+  SUFLOAT deltaInv = 1.f / SCAST(SUFLOAT, this->delta);
+  qint64 iStart, iEnd;
 
   SUCOMPLEX avg;
   SUCOMPLEX x = 0, prev = this->prevSample;
@@ -112,22 +112,22 @@ WaveSampler::sampleManual(void)
     amount = SIGDIGGER_WAVESAMPLER_FEEDER_BLOCK_LENGTH;
 
   while (amount--) {
-    start = static_cast<SUFLOAT>(
-          (p++ - this->sampOffset) * this->delta + this->properties.symbolSync);
-    end = start + static_cast<SUFLOAT>(this->delta);
+    start =  (p++ - this->sampOffset) * this->delta + this->properties.symbolSync;
+
+    end = start + this->delta;
     avg = 0;
 
-    iStart = static_cast<long>(std::floor(start));
-    iEnd   = static_cast<long>(std::ceil(end));
+    iStart = static_cast<qint64>(std::floor(start));
+    iEnd   = static_cast<qint64>(std::ceil(end));
 
-    tStart = 1 - (start - iStart);
-    tEnd   = 1 - (iEnd  - end);
+    tStart = SCAST(SUFLOAT, 1 - (start - SCAST(qreal, iStart)));
+    tEnd   = SCAST(SUFLOAT, 1 - (SCAST(qreal, iEnd)  - end));
 
     // Average all symbols between start and end. This is actually some
     // terrible filtering algorithm, but it should work
 
     for (auto i = iStart; i <= iEnd; ++i) {
-      if (i >= 0 && i < static_cast<long>(this->properties.length)) {
+      if (i >= 0 && i < SCAST(qint64, this->properties.length)) {
         if (i == iStart)
           x = tStart * this->properties.data[i];
         else if (i == iEnd)
@@ -138,15 +138,30 @@ WaveSampler::sampleManual(void)
         x = 0;
       }
 
-      if (this->properties.space == FREQUENCY)
-        avg += x * SU_C_CONJ(prev);
-      else
-        avg += x;
+      // Sample averaging is performed differently according to the
+      // decision space.
+
+      switch (this->properties.space) {
+        // Phase (and frequency, which is encoded in the phase): we perform
+        // an averaged weight by the modulus. This is, we just sum up samples.
+        case FREQUENCY:
+        case PHASE:
+          avg += x * SU_C_CONJ(prev);
+          break;
+
+        // Ampltude: we perform a power estimation over the symbol length and
+        // from there, deduce the amplitude (i.e. RMS)
+        case AMPLITUDE:
+          avg += x * SU_C_CONJ(x);
+      }
 
       prev = x;
     }
 
-    this->set.block[q++] = deltaInv * avg;
+    if (this->properties.space == AMPLITUDE)
+      this->set.block[q++] = SU_SQRT(deltaInv * SU_C_REAL(avg));
+    else
+      this->set.block[q++] = deltaInv * avg;
   }
 
   this->prevSample = prev;

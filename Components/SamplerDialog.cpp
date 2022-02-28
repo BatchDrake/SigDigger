@@ -122,6 +122,13 @@ SamplerDialog::connectAll(void)
 }
 
 void
+SamplerDialog::setAmplitudeLimits(SUFLOAT min, SUFLOAT max)
+{
+  this->minAmp = min;
+  this->maxAmp = max;
+}
+
+void
 SamplerDialog::setProperties(SamplingProperties const &prop)
 {
   this->properties = prop;
@@ -129,12 +136,12 @@ SamplerDialog::setProperties(SamplingProperties const &prop)
   switch (prop.space) {
     case AMPLITUDE:
       this->decider.setDecisionMode(Decider::MODULUS);
-      this->decider.setMinimum(0);
-      this->decider.setMaximum(1);
+      this->decider.setMinimum(this->minAmp);
+      this->decider.setMaximum(this->maxAmp);
 
-      this->ui->histogram->overrideDisplayRange(1);
+      this->ui->histogram->overrideDisplayRange(this->maxAmp);
       this->ui->histogram->overrideUnits("");
-      this->ui->histogram->overrideDataRange(1);
+      this->ui->histogram->overrideDataRange(this->maxAmp);
       break;
 
     case PHASE:
@@ -214,9 +221,6 @@ SamplerDialog::feedSet(WaveSampleSet const &set)
         this->minVal = SU_C_ARG(set.block[i]);
     }
   }
-
-  if (!this->isVisible())
-    this->fitToSamples();
 
   this->ui->histogram->feed(set.block, set.len);
   this->ui->symView->feed(set.symbols, set.len);

@@ -1696,10 +1696,27 @@ void
 TimeWindow::onTriggerSampler(void)
 {
   SamplingProperties props;
+  SUCOMPLEX dataMin = this->ui->realWaveform->getDataMin();
+  SUCOMPLEX dataMax = this->ui->realWaveform->getDataMax();
+  SUFLOAT   maxAmp;
 
   this->populateSamplingProperties(props);
 
+  if (props.sync == ZERO_CROSSING) {
+    maxAmp = 1;
+  } else {
+    maxAmp =
+        SU_MAX(
+          SU_MAX(
+            SU_C_REAL(dataMin),
+            SU_C_IMAG(dataMin)),
+          SU_MAX(
+            SU_C_REAL(dataMax),
+            SU_C_IMAG(dataMax)));
+  }
+
   this->samplerDialog->reset();
+  this->samplerDialog->setAmplitudeLimits(-.5f * maxAmp, 1.5f * maxAmp);
   this->samplerDialog->setProperties(props);
 
   this->startSampling();
