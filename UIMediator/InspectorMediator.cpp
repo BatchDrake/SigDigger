@@ -109,6 +109,8 @@ UIMediator::detachAllInspectors()
       p->second = nullptr;
     }
   }
+
+  this->ui->inspectorTable.clear();
 }
 
 void
