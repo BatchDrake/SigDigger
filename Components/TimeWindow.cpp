@@ -808,8 +808,8 @@ TimeWindow::refreshMeasures(void)
   qreal deltaT = 1. / this->ui->realWaveform->getSampleRate();
   SUCOMPLEX min, max, mean;
   SUFLOAT rms;
-  const SUCOMPLEX *data = this->getDisplayData();
   int length = static_cast<int>(this->getDisplayDataLength());
+  bool selection = false;
 
   if (this->ui->realWaveform->getHorizontalSelectionPresent()) {
     selStart = this->ui->realWaveform->getHorizontalSelectionStart();
@@ -821,7 +821,9 @@ TimeWindow::refreshMeasures(void)
       selEnd = length;
   }
 
-  if (selEnd - selStart > 0) {
+  if (selEnd - selStart > 0 && this->ui->realWaveform->isComplete()) {
+    WaveLimits limits;
+
     qreal period =
         (selEnd - selStart) /
         (this->ui->periodicSelectionCheck->isChecked()
@@ -830,19 +832,8 @@ TimeWindow::refreshMeasures(void)
         * deltaT;
     qreal baud = 1 / period;
 
-    // This was a very stupid idea
 #if 0
-    // If we are not handling a specific region, update delays
-    if (!this->ui->transSelCheck->isChecked()
-        && !this->taskRunning) {
-      this->ui->agcRateSpin->setValue(baud);
-      this->ui->lpfSpin->setValue(baud);
-      this->ui->dcmRateSpin->setValue(baud);
-
-      this->onAGCRateChanged();
-      this->onDelayedConjChanged();
-    }
-#endif
+    const SUCOMPLEX *data = this->getDisplayData();
 
     SuWidgetsHelpers::kahanMeanAndRms(
           &mean,
@@ -854,7 +845,17 @@ TimeWindow::refreshMeasures(void)
           &max,
           data + static_cast<qint64>(selStart),
           SCAST(SUSCOUNT, selEnd - selStart));
+#else
+    this->ui->realWaveform->computeLimits(selStart, selEnd, limits);
 
+    mean = limits.mean;
+    min  = limits.min;
+    max  = limits.max;
+    rms  = limits.envelope;
+
+    selection = true;
+
+#endif
     this->ui->periodLabel->setText(
           SuWidgetsHelpers::formatQuantityFromDelta(
             period,
@@ -925,6 +926,7 @@ TimeWindow::refreshMeasures(void)
         SuWidgetsHelpers::formatScientific(SU_C_IMAG(mean)));
 
   this->ui->rmsLabel->setText(
+        (selection ? "< " : "") +
         SuWidgetsHelpers::formatReal(rms));
 }
 
