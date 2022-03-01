@@ -44,6 +44,7 @@ namespace SigDigger {
         SUCOMPLEX *destination,
         size_t length,
         SUFLOAT relFreq,
+        SUFLOAT phase,
         QObject *parent = nullptr);
     virtual ~CarrierXlator() override;
 

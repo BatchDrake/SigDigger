@@ -460,7 +460,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>4</number>
+            <number>2</number>
            </property>
            <widget class="QWidget" name="measurementsPage">
             <property name="sizePolicy">
@@ -1530,24 +1530,13 @@
                 <property name="spacing">
                  <number>3</number>
                 </property>
-                <item row="3" column="0">
-                 <widget class="QPushButton" name="costasSyncButton">
-                  <property name="text">
-                   <string>&amp;Sync</string>
-                  </property>
-                 </widget>
+                <item row="2" column="1">
+                 <widget class="FrequencySpinBox" name="costasBwSpin"/>
                 </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_34">
-                  <property name="text">
-                   <string>Order</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
+                <item row="1" column="1">
+                 <widget class="FrequencySpinBox" name="costasArmBwSpin"/>
                 </item>
-                <item row="1" column="0">
+                <item row="2" column="0">
                  <widget class="QLabel" name="label_35">
                   <property name="text">
                    <string>Loop BW</string>
@@ -1576,15 +1565,32 @@
                   </item>
                  </widget>
                 </item>
-                <item row="2" column="0" colspan="2">
-                 <widget class="QCheckBox" name="checkBox">
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_43">
                   <property name="text">
-                   <string>Apply to selection only</string>
+                   <string>Arm BW</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
-                 <widget class="FrequencySpinBox" name="costasBwSpin"/>
+                <item row="3" column="0">
+                 <widget class="QPushButton" name="costasSyncButton">
+                  <property name="text">
+                   <string>&amp;Sync</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_34">
+                  <property name="text">
+                   <string>Order</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -1610,20 +1616,20 @@
                 <property name="spacing">
                  <number>3</number>
                 </property>
-                <item row="1" column="1" colspan="2">
-                 <widget class="FrequencySpinBox" name="syncFreqSpin"/>
-                </item>
                 <item row="1" column="0">
                  <widget class="QLabel" name="label_21">
                   <property name="text">
-                   <string>Amount</string>
+                   <string>Frequency</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="0">
+                <item row="1" column="1" colspan="2">
+                 <widget class="FrequencySpinBox" name="syncFreqSpin"/>
+                </item>
+                <item row="3" column="0">
                  <widget class="QPushButton" name="syncButton">
                   <property name="text">
                    <string>&amp;Apply</string>
@@ -1633,6 +1639,32 @@
                   </property>
                   <property name="default">
                    <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="Phase">
+                  <property name="text">
+                   <string>Phase</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1" colspan="2">
+                 <widget class="QDoubleSpinBox" name="syncPhaseSpin">
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="suffix">
+                   <string> º</string>
+                  </property>
+                  <property name="minimum">
+                   <double>-180.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>180.000000000000000</double>
                   </property>
                  </widget>
                 </item>
@@ -1744,7 +1776,7 @@
                 <item row="1" column="0">
                  <widget class="QLabel" name="label_37">
                   <property name="text">
-                   <string>Cut-off</string>
+                   <string>Bandwidth</string>
                   </property>
                  </widget>
                 </item>
@@ -2576,8 +2608,8 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="clckSourceBtnGrp"/>
   <buttongroup name="intervalButtonGrp"/>
+  <buttongroup name="clckSourceBtnGrp"/>
   <buttongroup name="spaceButtonGrp"/>
  </buttongroups>
 </ui>

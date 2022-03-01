@@ -978,12 +978,14 @@ TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs, qreal bw)
 {
   if (this->fs != fs) {
     this->fs = fs;
-    this->ui->costasBwSpin->setValue(this->fs / 2);
+    this->ui->costasBwSpin->setValue(this->fs / 200);
     this->ui->pllCutOffSpin->setValue(this->fs / 200);
   }
 
-  if (!sufeq(this->bw, bw, 1e-6))
+  if (!sufeq(this->bw, bw, 1e-6)) {
     this->bw = bw;
+    this->ui->costasArmBwSpin->setValue(bw / 100);
+  }
 
   this->ui->syncFreqSpin->setMinimum(-this->fs / 2);
   this->ui->syncFreqSpin->setMaximum(this->fs / 2);
@@ -1317,14 +1319,16 @@ TimeWindow::onSaveSelection(void)
 void
 TimeWindow::onFit(void)
 {
-  this->ui->realWaveform->fitToEnvelope();
-  this->ui->imagWaveform->fitToEnvelope();
+  if (this->ui->realWaveform->isComplete()) {
+    this->ui->realWaveform->fitToEnvelope();
+    this->ui->imagWaveform->fitToEnvelope();
 
-  this->ui->realWaveform->zoomHorizontalReset();
-  this->ui->imagWaveform->zoomHorizontalReset();
+    this->ui->realWaveform->zoomHorizontalReset();
+    this->ui->imagWaveform->zoomHorizontalReset();
 
-  this->ui->realWaveform->invalidate();
-  this->ui->imagWaveform->invalidate();
+    this->ui->realWaveform->invalidate();
+    this->ui->imagWaveform->invalidate();
+  }
 }
 
 void
@@ -1513,7 +1517,7 @@ TimeWindow::onTaskDone(void)
     this->ui->syncFreqSpin->setValue(SU_NORM2ABS_FREQ(this->fs, relFreq));
 
     // Translate
-    CarrierXlator *cx = new CarrierXlator(orig, dest, len, relFreq);
+    CarrierXlator *cx = new CarrierXlator(orig, dest, len, relFreq, 0);
 
     // Launch carrier translator
     this->taskController.process("xlateCarrier", cx);
@@ -1606,6 +1610,7 @@ TimeWindow::onSyncCarrier(void)
   SUFLOAT relFreq = SU_ABS2NORM_FREQ(
         this->fs,
         this->ui->syncFreqSpin->value());
+  SUFLOAT phase = SU_DEG2RAD(this->ui->syncPhaseSpin->value());
   const SUCOMPLEX *orig = nullptr;
   SUCOMPLEX *dest = nullptr;
   SUSCOUNT len = 0;
@@ -1616,7 +1621,7 @@ TimeWindow::onSyncCarrier(void)
         len,
         this->ui->afcSelCheck->isChecked());
 
-  CarrierXlator *cx = new CarrierXlator(orig, dest, len, relFreq);
+  CarrierXlator *cx = new CarrierXlator(orig, dest, len, relFreq, phase);
 
   this->notifyTaskRunning(true);
   this->taskController.process("xlateCarrier", cx);
@@ -1664,6 +1669,9 @@ TimeWindow::onTriggerHistogram(void)
 {
   SamplingProperties props;
 
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   this->populateSamplingProperties(props);
 
   HistogramFeeder *hf = new HistogramFeeder(props);
@@ -1697,6 +1705,9 @@ TimeWindow::onSampleSet(SigDigger::WaveSampleSet set)
 void
 TimeWindow::onTriggerSampler(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   SamplingProperties props;
   SUCOMPLEX dataMin = this->ui->realWaveform->getDataMin();
   SUCOMPLEX dataMax = this->ui->realWaveform->getDataMax();
@@ -1803,6 +1814,9 @@ TimeWindow::onClkSourceButtonClicked(void)
 void
 TimeWindow::onCalculateDoppler(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   if (this->ui->realWaveform->getHorizontalSelectionPresent()) {
     const SUCOMPLEX *data = this->getDisplayData();
     qint64 selStart = static_cast<qint64>(
@@ -1830,6 +1844,9 @@ TimeWindow::onCalculateDoppler(void)
 void
 TimeWindow::onCostasRecovery(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   try {
     enum sigutils_costas_kind kind = SU_COSTAS_KIND_BPSK;
 
@@ -1837,7 +1854,9 @@ TimeWindow::onCostasRecovery(void)
           this->fs,
           this->ui->costasBwSpin->value());
 
-    SUFLOAT tau = 2. / SU_ABS2NORM_FREQ(this->fs, this->bw);
+    SUFLOAT tau = 1. / SU_ABS2NORM_BAUD(
+          this->fs,
+          this->ui->costasArmBwSpin->value());
     const SUCOMPLEX *orig;
     SUCOMPLEX *dest;
     SUSCOUNT len;
@@ -1883,6 +1902,9 @@ TimeWindow::onCostasRecovery(void)
 void
 TimeWindow::onPLLRecovery(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   try {
     SUFLOAT relBw = SU_ABS2NORM_FREQ(
           this->fs,
@@ -1912,6 +1934,9 @@ TimeWindow::onPLLRecovery(void)
 void
 TimeWindow::onCycloAnalysis(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   try {
     const SUCOMPLEX *orig;
     SUCOMPLEX *dest;
@@ -1938,6 +1963,9 @@ TimeWindow::onCycloAnalysis(void)
 void
 TimeWindow::onQuadDemod(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   try {
     const SUCOMPLEX *orig;
     SUCOMPLEX *dest;
@@ -1964,6 +1992,9 @@ TimeWindow::onQuadDemod(void)
 void
 TimeWindow::onAGC(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   try {
     SUFLOAT rate = SU_ABS2NORM_BAUD(
           this->fs,
@@ -2006,6 +2037,9 @@ TimeWindow::onAGC(void)
 void
 TimeWindow::onLPF(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   try {
     SUFLOAT bw = SU_ABS2NORM_FREQ(
           this->fs,
@@ -2038,6 +2072,9 @@ TimeWindow::onLPF(void)
 void
 TimeWindow::onDelayedConjugate(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   try {
     SUFLOAT rate = SU_ABS2NORM_BAUD(
           this->fs,
