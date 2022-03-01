@@ -94,7 +94,7 @@ function gather_dlls()
     fetch_dll libpsl-5.dll
     fetch_dll libssh2-1.dll
     fetch_dll libssl-1_1-x64.dll
-    fetch_dll libFLAC-8.dll
+    fetch_dll libFLAC.dll
     fetch_dll libssp-0.dll
     fetch_dll libogg-0.dll
     fetch_dll libopus-0.dll
