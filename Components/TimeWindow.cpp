@@ -599,6 +599,7 @@ TimeWindow::getTransformRegion(
           this->ui->realWaveform->getHorizontalSelectionStart());
     qint64 selEnd = static_cast<qint64>(
           this->ui->realWaveform->getHorizontalSelectionEnd());
+
     origin      = data + selStart;
     destination = dest + selStart;
     length      = selEnd - selStart;
@@ -967,6 +968,8 @@ TimeWindow::setDisplayData(
       this->ui->imagWaveform->zoomHorizontal(currStart, currEnd);
     }
   }
+
+  this->setCursor(Qt::ArrowCursor);
 
   this->refreshUi();
   this->refreshMeasures();
