@@ -139,9 +139,9 @@ SamplerDialog::setProperties(SamplingProperties const &prop)
       this->decider.setMinimum(this->minAmp);
       this->decider.setMaximum(this->maxAmp);
 
-      this->ui->histogram->overrideDisplayRange(this->maxAmp);
+      this->ui->histogram->overrideDisplayRange(std::fmax(this->maxAmp, this->minAmp));
       this->ui->histogram->overrideUnits("");
-      this->ui->histogram->overrideDataRange(this->maxAmp);
+      this->ui->histogram->overrideDataRange(std::fmax(this->maxAmp, this->minAmp));
       break;
 
     case PHASE:

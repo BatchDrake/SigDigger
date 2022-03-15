@@ -1712,8 +1712,8 @@ TimeWindow::onTriggerSampler(void)
     return;
 
   SamplingProperties props;
-  SUCOMPLEX dataMin = this->ui->realWaveform->getDataMin();
-  SUCOMPLEX dataMax = this->ui->realWaveform->getDataMax();
+  SUCOMPLEX dataMin = 2 * this->ui->realWaveform->getDataRMS();
+  SUCOMPLEX dataMax = 2 * this->ui->realWaveform->getDataRMS();
   SUFLOAT   maxAmp;
 
   this->populateSamplingProperties(props);
@@ -1748,8 +1748,11 @@ TimeWindow::onTriggerSampler(void)
             SU_C_IMAG(dataMax)));
   }
 
+  if (maxAmp < 0)
+    maxAmp = 0;
+
   this->samplerDialog->reset();
-  this->samplerDialog->setAmplitudeLimits(-.5f * maxAmp, 1.5f * maxAmp);
+  this->samplerDialog->setAmplitudeLimits(0, maxAmp);
   this->samplerDialog->setProperties(props);
 
   this->startSampling();
