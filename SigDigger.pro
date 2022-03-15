@@ -112,6 +112,7 @@ SOURCES += \
     Settings/ProfileConfigTab.cpp \
     Settings/TLESourceTab.cpp \
     Suscan/CancellableTask.cpp \
+    Suscan/FeatureFactory.cpp \
     Suscan/Messages/ChannelMessage.cpp \
     Suscan/Messages/GenericMessage.cpp \
     Suscan/Messages/InspectorMessage.cpp \
@@ -129,6 +130,7 @@ SOURCES += \
     Suscan/Messages/StatusMessage.cpp \
     Suscan/MultitaskController.cpp \
     Suscan/Object.cpp \
+    Suscan/Plugin.cpp \
     Suscan/Serializable.cpp \
     Suscan/Source.cpp \
     Tasks/AGCTask.cpp \
@@ -192,6 +194,7 @@ HEADERS += \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
     include/FACTab.h \
+    include/FeatureFactory.h \
     include/FrequencyCorrectionDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
@@ -201,6 +204,7 @@ HEADERS += \
     include/LPFTask.h \
     include/LocationConfigTab.h \
     include/PLLSyncTask.h \
+    include/Plugin.h \
     include/PortAudioPlayer.h \
     include/ProfileConfigTab.h \
     include/QTimeSlider.h \
@@ -386,7 +390,7 @@ LIBS += -L$$SUWIDGETS_INSTALL_LIBS
 win32 {
   LIBS += -lwsock32 -lsuwidgets0
 } else {
-  LIBS += -lsuwidgets
+  LIBS += -lsuwidgets -ldl
 }
 
 DISTFILES += \
