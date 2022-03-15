@@ -1718,6 +1718,23 @@ TimeWindow::onTriggerSampler(void)
 
   this->populateSamplingProperties(props);
 
+  if (props.length == 0) {
+    QMessageBox::warning(
+          this,
+          "Start sampling",
+          "Cannot perform sampling: nothing to sample");
+    return;
+  }
+
+  if (props.rate < props.fs / SCAST(qreal, props.length)) {
+    this->ui->baudSpin->setFocus();
+    QMessageBox::warning(
+          this,
+          "Start sampling",
+          "Cannot perform sampling: symbol rate is too small (or zero)");
+    return;
+  }
+
   if (props.sync == ZERO_CROSSING) {
     maxAmp = 1;
   } else {
