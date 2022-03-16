@@ -69,11 +69,12 @@ namespace SigDigger {
     SUFLOAT        bandwidth  = 200000;
     SUFREQ         demodFreq  = 0;
     bool           isRealTime = false;
-    struct timeval timeStamp = {0, 0};
+    struct timeval timeStamp  = {0, 0};
 
     // UI methods
     ColorConfig colorConfig;
     FrequencyCorrectionDialog *fcDialog = nullptr;
+    bool audioAllowed = true;
 
     // Private methods
     void connectAll(void);
@@ -111,6 +112,7 @@ namespace SigDigger {
     void setSquelchLevel(SUFLOAT);
     void notifyOrbitReport(Suscan::OrbitReport const &);
     void notifyDisableCorrection(void);
+    void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
 
     // Overriden setters
     void setRecordSavePath(std::string const &) override;

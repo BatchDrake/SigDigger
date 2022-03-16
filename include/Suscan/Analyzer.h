@@ -73,6 +73,18 @@ namespace Suscan {
       }
     }
 
+    inline uint64_t
+    getPermissions(void) const
+    {
+      return this->c_info->permissions;
+    }
+
+    inline bool
+    testPermission(uint64_t mask) const
+    {
+      return (getPermissions() & mask) == mask;
+    }
+
     inline SUSCOUNT
     getSampleRate(void) const
     {

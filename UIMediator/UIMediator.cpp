@@ -451,12 +451,21 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
         static_cast<qint64>(info.getLnbFrequency()),
         true); // Silent update (important!)
 
+  this->ui->spectrum->setLocked(
+        !info.testPermission(SUSCAN_ANALYZER_PERM_SET_FREQ));
+
   if (info.isSeekable()) {
     this->setSourceTimeStart(info.getSourceStartTime());
     this->setSourceTimeEnd(info.getSourceEndTime());
+
+    this->ui->timeSlider->setEnabled(
+          info.testPermission(
+            SUSCAN_ANALYZER_PERM_SEEK));
   }
 
+  this->ui->audioPanel->applySourceInfo(info);
   this->ui->sourcePanel->applySourceInfo(info);
+  this->ui->fftPanel->applySourceInfo(info);
 }
 
 void
@@ -571,12 +580,18 @@ UIMediator::setCaptureSize(quint64 size)
 void
 UIMediator::setAnalyzerParams(Suscan::AnalyzerParams const &params)
 {
+  bool prev;
   this->ui->spectrum->setExpectedRate(
         static_cast<int>(1.f / params.psdUpdateInterval));
+
+  this->appConfig->analyzerParams = params;
+
+  prev = this->ui->fftPanel->blockSignals(true);
   this->ui->fftPanel->setWindowFunction(params.windowFunction);
   this->ui->fftPanel->setFftSize(params.windowSize);
   this->ui->fftPanel->setRefreshRate(
         static_cast<unsigned int>(1.f / params.psdUpdateInterval));
+  this->ui->fftPanel->blockSignals(prev);
 }
 
 void

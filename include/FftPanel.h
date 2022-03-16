@@ -23,6 +23,7 @@
 #include <Suscan/AnalyzerParams.h>
 #include <QListWidgetItem>
 #include <Suscan/Library.h>
+#include <Suscan/Analyzer.h>
 
 #include "Palette.h"
 
@@ -144,6 +145,8 @@ namespace SigDigger {
     float getdBPerUnit(void) const;
 
     enum Suscan::AnalyzerParams::WindowFunction getWindowFunction(void) const;
+
+    void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
 
     // Setters
     void setPeakHold(bool);

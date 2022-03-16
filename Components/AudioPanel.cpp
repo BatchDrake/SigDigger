@@ -217,7 +217,7 @@ bool
 AudioPanel::shouldOpenAudio(void) const
 {
   bool validRate = this->bandwidth >= supportedRates[0];
-  return this->getEnabled() && validRate;
+  return this->audioAllowed && this->getEnabled() && validRate;
 }
 
 void
@@ -226,7 +226,7 @@ AudioPanel::refreshUi(void)
   bool shouldOpenAudio = this->shouldOpenAudio();
   bool validRate = this->bandwidth >= supportedRates[0];
 
-  this->ui->audioPreviewCheck->setEnabled(validRate);
+  this->ui->audioPreviewCheck->setEnabled(validRate && this->audioAllowed);
   this->ui->demodCombo->setEnabled(shouldOpenAudio);
   this->ui->sampleRateCombo->setEnabled(shouldOpenAudio);
   this->ui->cutoffSlider->setEnabled(shouldOpenAudio);
@@ -453,6 +453,13 @@ AudioPanel::notifyOrbitReport(Suscan::OrbitReport const &report)
           4,
           "Hz",
           true));
+}
+
+void
+AudioPanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
+{
+  this->audioAllowed = info.testPermission(SUSCAN_ANALYZER_PERM_OPEN_AUDIO);
+  this->refreshUi();
 }
 
 void

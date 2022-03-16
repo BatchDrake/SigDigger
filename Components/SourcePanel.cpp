@@ -672,6 +672,25 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   // settings
   if (presetEnabled)
     this->applyCurrentAutogain();
+
+  // Everything is set, time to decide what is enabled and what is not
+
+  this->ui->dcRemoveCheck->setEnabled(
+        info.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE));
+  this->ui->swapIQCheck->setEnabled(
+        info.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE));
+  this->ui->agcEnabledCheck->setEnabled(
+        info.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE));
+  this->ui->bwSpin->setEnabled(
+        info.testPermission(SUSCAN_ANALYZER_PERM_SET_BW));
+  this->ui->antennaCombo->setEnabled(
+        info.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA));
+  this->ui->gainsFrame->setEnabled(
+        this->ui->gainsFrame->isEnabled()
+        && info.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
+  this->ui->autoGainFrame->setEnabled(
+        this->ui->autoGainFrame->isEnabled()
+        && info.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
 }
 
 bool
