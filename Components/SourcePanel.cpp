@@ -264,7 +264,12 @@ void
 SourcePanel::refreshUi()
 {
   if (this->profile != nullptr) {
-    this->setThrottleable(this->profile->getType() != SUSCAN_SOURCE_TYPE_SDR);
+    bool isRemote =
+        this->profile->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE;
+
+    this->setThrottleable(
+          this->profile->getType() != SUSCAN_SOURCE_TYPE_SDR
+          || isRemote);
 
     this->ui->antennaCombo->setEnabled(
           this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
@@ -274,10 +279,9 @@ SourcePanel::refreshUi()
 
     this->ui->ppmSpinBox->setEnabled(
           this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR
-          || this->profile->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE);
+          || isRemote);
 
-    this->saverUI->setEnabled(
-          this->profile->getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE);
+    this->saverUI->setEnabled(isRemote);
   }
 
   // These depend on the source info only
@@ -664,6 +668,7 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   DeviceGain *gain = nullptr;
   bool presetEnabled = this->ui->gainPresetCheck->isChecked();
   bool oldRefreshing = this->refreshing;
+  bool throttleEnabled;
   this->refreshing = true;
 
   this->sourceInfo = info;
@@ -672,11 +677,13 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   this->setIQReverse(info.getIQReverse());
   this->setAGCEnabled(info.getAGC());
   this->setBandwidth(info.getBandwidth());
-  this->ui->throttleCheck->setChecked(
-        !sufeq(
-          info.getEffectiveSampleRate(),
-          info.getSampleRate(),
-          1e-6f));
+
+  throttleEnabled = !sufeq(
+        info.getEffectiveSampleRate(),
+        info.getSampleRate(),
+        0); // Integer quantities
+
+  this->ui->throttleCheck->setChecked(throttleEnabled);
 
   // Populate antennas
   populateAntennaCombo(info);
