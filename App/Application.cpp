@@ -811,15 +811,49 @@ Application::startCapture(void)
       analyzer = std::make_unique<Suscan::Analyzer>(params, profile);
 
       // Enable throttling, if requested
-      if (this->ui.sourcePanel->isThrottleEnabled())
-        analyzer->setThrottle(this->ui.sourcePanel->getThrottleRate());
+      if (this->ui.sourcePanel->isThrottleEnabled()) {
+        try {
+          analyzer->setThrottle(this->ui.sourcePanel->getThrottleRate());
+        } catch (Suscan::Exception &) {
+          (void)  QMessageBox::critical(
+                this,
+                "SigDigger error",
+                "Source does not allow adjusting the current throttle config",
+                QMessageBox::Ok);
+        }
+      }
 
-      analyzer->setDCRemove(this->ui.sourcePanel->getDCremove());
-      analyzer->setIQReverse(this->ui.sourcePanel->getIQReverse());
+      try {
+        analyzer->setDCRemove(this->ui.sourcePanel->getDCremove());
+      } catch (Suscan::Exception &) {
+        (void)  QMessageBox::critical(
+              this,
+              "SigDigger error",
+              "Source does not allow toggling DC removal",
+              QMessageBox::Ok);
+      }
 
-      if (this->ui.sourcePanel->getAGCEnabled())
-        analyzer->setAGC(true);
+      try {
+        analyzer->setIQReverse(this->ui.sourcePanel->getIQReverse());
+      } catch (Suscan::Exception &) {
+        (void)  QMessageBox::critical(
+              this,
+              "SigDigger error",
+              "Source does not allow toggling IQ reverse",
+              QMessageBox::Ok);
+      }
 
+      if (this->ui.sourcePanel->getAGCEnabled()) {
+        try {
+          analyzer->setAGC(true);
+        } catch (Suscan::Exception &) {
+          (void)  QMessageBox::critical(
+                this,
+                "SigDigger error",
+                "Source does not allow toggling the AGC",
+                QMessageBox::Ok);
+        }
+      }
       // All set, move to application
       this->analyzer = std::move(analyzer);
 
@@ -1189,22 +1223,49 @@ Application::onFrequencyChanged(qint64 freq, qint64 lnb)
 void
 Application::onToggleIQReverse(void)
 {
-  if (this->mediator->getState() == UIMediator::RUNNING)
-    this->analyzer->setIQReverse(this->ui.sourcePanel->getIQReverse());
+  if (this->mediator->getState() == UIMediator::RUNNING) {
+    try {
+      this->analyzer->setIQReverse(this->ui.sourcePanel->getIQReverse());
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow toggling IQ reversal",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
 Application::onToggleDCRemove(void)
 {
-  if (this->mediator->getState() == UIMediator::RUNNING)
-    this->analyzer->setDCRemove(this->ui.sourcePanel->getDCremove());
+  if (this->mediator->getState() == UIMediator::RUNNING) {
+    try {
+      this->analyzer->setDCRemove(this->ui.sourcePanel->getDCremove());
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow toggling DC removal",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
 Application::onToggleAGCEnabled(void)
 {
-  if (this->mediator->getState() == UIMediator::RUNNING)
-    this->analyzer->setAGC(this->ui.sourcePanel->getAGCEnabled());
+  if (this->mediator->getState() == UIMediator::RUNNING) {
+    try {
+      this->analyzer->setAGC(this->ui.sourcePanel->getAGCEnabled());
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow toggling the AGC",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
@@ -1349,8 +1410,17 @@ Application::onToggleRecord(void)
 void
 Application::onSeek(struct timeval tv)
 {
-  if (this->mediator->getState() == UIMediator::RUNNING)
-    this->analyzer->seek(tv);
+  if (this->mediator->getState() == UIMediator::RUNNING) {
+    try {
+      this->analyzer->seek(tv);
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow seeking",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
@@ -1559,8 +1629,17 @@ Application::onAudioRecordStateChanged(void)
 void
 Application::onAntennaChanged(QString name)
 {
-  if (this->mediator->getState() == UIMediator::RUNNING)
-    this->analyzer->setAntenna(name.toStdString());
+  if (this->mediator->getState() == UIMediator::RUNNING) {
+    try {
+      this->analyzer->setAntenna(name.toStdString());
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow changing the current RX antenna",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
@@ -1579,8 +1658,16 @@ void
 Application::onBandwidthChanged(void)
 {
   if (this->mediator->getState() == UIMediator::RUNNING) {
-    this->analyzer->setBandwidth(this->mediator->getProfile()->getBandwidth());
-    this->assertAudioInspectorLo();
+    try {
+      this->analyzer->setBandwidth(this->mediator->getProfile()->getBandwidth());
+      this->assertAudioInspectorLo();
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow setting the bandwidth",
+            QMessageBox::Ok);
+    }
   }
 }
 
@@ -1588,7 +1675,15 @@ void
 Application::onPPMChanged(void)
 {
   if (this->mediator->getState() == UIMediator::RUNNING) {
-    this->analyzer->setPPM(this->mediator->getProfile()->getPPM());
+    try {
+      this->analyzer->setPPM(this->mediator->getProfile()->getPPM());
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow manual PPM adjustment",
+            QMessageBox::Ok);
+    }
   }
 }
 

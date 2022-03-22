@@ -48,7 +48,7 @@ namespace Suscan {
     struct suscan_analyzer_source_info local_info;
     struct suscan_analyzer_source_info *c_info = nullptr;
 
-    AnalyzerSourceInfo()
+    AnalyzerSourceInfo() : AnalyzerSourceInfo(&this->local_info)
     {
       suscan_analyzer_source_info_init(&this->local_info);
     }

@@ -464,6 +464,7 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   }
 
   this->ui->audioPanel->applySourceInfo(info);
+  this->ui->inspectorPanel->applySourceInfo(info);
   this->ui->sourcePanel->applySourceInfo(info);
   this->ui->fftPanel->applySourceInfo(info);
 }

@@ -269,6 +269,9 @@ SourcePanel::refreshUi()
     this->ui->antennaCombo->setEnabled(
           this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
 
+    this->ui->bwSpin->setEnabled(
+          this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
+
     this->ui->ppmSpinBox->setEnabled(
           this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR
           || this->profile->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE);
@@ -276,6 +279,37 @@ SourcePanel::refreshUi()
     this->saverUI->setEnabled(
           this->profile->getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE);
   }
+
+  // These depend on the source info only
+  this->ui->dcRemoveCheck->setEnabled(
+        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE));
+  this->ui->swapIQCheck->setEnabled(
+        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE));
+  this->ui->agcEnabledCheck->setEnabled(
+        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_AGC));
+
+  // These depend both the profile and source info
+  this->ui->bwSpin->setEnabled(
+        this->ui->bwSpin->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_BW));
+  this->ui->ppmSpinBox->setEnabled(
+        this->ui->ppmSpinBox->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_PPM));
+  this->ui->throttleCheck->setEnabled(
+        this->ui->throttleCheck->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE));
+  this->ui->throttleSpin->setEnabled(
+        this->ui->throttleCheck->isChecked()
+        && this->ui->throttleCheck->isEnabled());
+  this->ui->antennaCombo->setEnabled(
+        this->ui->antennaCombo->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA));
+  this->ui->gainsFrame->setEnabled(
+        this->ui->gainsFrame->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
+  this->ui->autoGainFrame->setEnabled(
+        this->ui->autoGainFrame->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
 }
 
 void
@@ -371,6 +405,9 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
   bool oldRefreshing = this->refreshing;
   this->refreshing = true;
 
+  // Setting the profile resets the SourceInfo
+  this->sourceInfo = Suscan::AnalyzerSourceInfo();
+
   this->profile = config;
   this->refreshGains(*config);
   this->refreshAutoGains(*config);
@@ -415,12 +452,17 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
 void
 SourcePanel::setThrottleable(bool val)
 {
+  val = val && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE);
+
   this->throttleable = val;
   this->ui->throttleCheck->setEnabled(val);
   if (!val)
     this->ui->throttleCheck->setChecked(false);
 
-  this->ui->throttleSpin->setEnabled(this->ui->throttleCheck->isChecked());
+  this->ui->throttleSpin->setEnabled(
+        this->ui->throttleCheck->isChecked()
+        && this->ui->throttleCheck->isEnabled());
+
   this->ui->bwSpin->setEnabled(!val);
 }
 
@@ -624,10 +666,17 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   bool oldRefreshing = this->refreshing;
   this->refreshing = true;
 
+  this->sourceInfo = info;
+
   this->setDCRemove(info.getDCRemove());
   this->setIQReverse(info.getIQReverse());
   this->setAGCEnabled(info.getAGC());
   this->setBandwidth(info.getBandwidth());
+  this->ui->throttleCheck->setChecked(
+        !sufeq(
+          info.getEffectiveSampleRate(),
+          info.getSampleRate(),
+          1e-6f));
 
   // Populate antennas
   populateAntennaCombo(info);
@@ -674,23 +723,7 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
     this->applyCurrentAutogain();
 
   // Everything is set, time to decide what is enabled and what is not
-
-  this->ui->dcRemoveCheck->setEnabled(
-        info.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE));
-  this->ui->swapIQCheck->setEnabled(
-        info.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE));
-  this->ui->agcEnabledCheck->setEnabled(
-        info.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE));
-  this->ui->bwSpin->setEnabled(
-        info.testPermission(SUSCAN_ANALYZER_PERM_SET_BW));
-  this->ui->antennaCombo->setEnabled(
-        info.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA));
-  this->ui->gainsFrame->setEnabled(
-        this->ui->gainsFrame->isEnabled()
-        && info.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
-  this->ui->autoGainFrame->setEnabled(
-        this->ui->autoGainFrame->isEnabled()
-        && info.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
+  this->refreshUi();
 }
 
 bool
@@ -868,7 +901,8 @@ SourcePanel::onThrottleChanged(void)
     this->panelConfig->throttle = throttling;
     this->panelConfig->throttleRate = static_cast<unsigned>(this->ui->throttleSpin->value());
 
-    this->ui->throttleSpin->setEnabled(throttling);
+    this->ui->throttleSpin->setEnabled(
+          throttling && this->ui->throttleCheck->isChecked());
 
     emit throttleConfigChanged();
   }

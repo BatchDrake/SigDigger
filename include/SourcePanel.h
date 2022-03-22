@@ -79,6 +79,8 @@ namespace SigDigger {
 
       // Managed objects
       Suscan::Source::Config *profile = nullptr;
+      Suscan::AnalyzerSourceInfo sourceInfo =
+          Suscan::AnalyzerSourceInfo();
 
       // UI objects
       Ui::SourcePanel *ui = nullptr;
