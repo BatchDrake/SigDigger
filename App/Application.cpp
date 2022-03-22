@@ -854,6 +854,9 @@ Application::startCapture(void)
                 QMessageBox::Ok);
         }
       }
+
+      this->sourceInfoReceived = false;
+
       // All set, move to application
       this->analyzer = std::move(analyzer);
 
@@ -867,9 +870,6 @@ Application::startCapture(void)
       this->connectAnalyzer();
 
       this->mediator->setState(UIMediator::RUNNING);
-
-      if (this->ui.audioPanel->shouldOpenAudio())
-        this->openAudio(this->ui.audioPanel->getSampleRate());
     }
   } catch (Suscan::Exception &) {
     (void)  QMessageBox::critical(
@@ -954,6 +954,12 @@ Application::onSourceInfoMessage(const Suscan::SourceInfoMessage &msg)
 
   // It may have notified a change in current frequency.
   this->assertAudioInspectorLo();
+
+  if (!this->sourceInfoReceived) {
+    if (this->ui.audioPanel->shouldOpenAudio())
+      this->openAudio(this->ui.audioPanel->getSampleRate());
+    this->sourceInfoReceived = true;
+  }
 }
 
 void

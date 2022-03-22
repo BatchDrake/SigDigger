@@ -68,6 +68,7 @@ namespace SigDigger {
     AppUI ui;
     UIMediator *mediator = nullptr;
     QTimer uiTimer;
+    bool sourceInfoReceived = false;
 
     // Audio
     std::unique_ptr<AudioPlayback> playBack = nullptr;
