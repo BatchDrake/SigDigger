@@ -166,9 +166,6 @@ InspectorPanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
   this->sourceInfo = info;
   this->refreshUi();
-
-  printf("Permissions: 0x%016lx\n", info.getPermissions());
-
 }
 
 void

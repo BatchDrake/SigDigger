@@ -51,6 +51,7 @@
 #include "ConfigDialog.h"
 #include "DeviceDialog.h"
 #include "AboutDialog.h"
+#include "QuickConnectDialog.h"
 
 #if defined(_WIN32) && defined(interface)
 #  undef interface
@@ -247,6 +248,18 @@ UIMediator::connectMainWindow(void)
         SLOT(onTriggerDevices(bool)));
 
   connect(
+        this->ui->main->actionQuick_connect,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onQuickConnect(void)));
+
+  connect(
+        this->ui->quickConnectDialog,
+        SIGNAL(accepted(void)),
+        this,
+        SLOT(onQuickConnectAccepted(void)));
+
+  connect(
         this->ui->main->actionStart_capture,
         SIGNAL(triggered(bool)),
         this,
@@ -359,6 +372,13 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 {
   this->owner = owner;
   this->ui = ui;
+
+  this->remoteDevice = Suscan::Source::Device(
+            "Remote device",
+            "localhost",
+            28001,
+            "anonymous",
+            "");
 
   this->ui->spectrum->addToolWidget(this->ui->audioPanel, "Audio preview");
   this->ui->spectrum->addToolWidget(this->ui->sourcePanel, "Signal source");
@@ -907,6 +927,41 @@ UIMediator::onToggleAbout(bool)
   this->ui->aboutDialog->exec();
 }
 
+void
+UIMediator::onQuickConnect(void)
+{
+  this->ui->quickConnectDialog->setProfile(this->appConfig->profile);
+  this->ui->quickConnectDialog->exec();
+}
+
+void
+UIMediator::onQuickConnectAccepted(void)
+{
+  this->appConfig->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
+  this->appConfig->profile.setDevice(this->remoteDevice);
+
+  this->appConfig->profile.clearParams();
+
+  this->appConfig->profile.setParam(
+        "host",
+        this->ui->quickConnectDialog->getHost().toStdString());
+  this->appConfig->profile.setParam(
+        "port",
+        std::to_string(this->ui->quickConnectDialog->getPort()));
+  this->appConfig->profile.setParam(
+        "user",
+        this->ui->quickConnectDialog->getUser().toStdString());
+  this->appConfig->profile.setParam(
+        "password",
+        this->ui->quickConnectDialog->getPassword().toStdString());
+
+  this->refreshProfile();
+  this->refreshUI();
+  emit profileChanged(true);
+
+  if (this->state == HALTED)
+    emit captureStart();
+}
 
 void
 UIMediator::onTriggerStart(bool)

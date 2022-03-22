@@ -42,6 +42,7 @@ namespace SigDigger {
   class BookmarkManagerDialog;
   class QTimeSlider;
   class Inspector;
+  class QuickConnectDialog;
 
   struct AppUI {
     Ui_MainWindow *main = nullptr;
@@ -56,6 +57,7 @@ namespace SigDigger {
     AboutDialog *aboutDialog = nullptr;
     DataSaverUI *dataSaverUI = nullptr;
     LogDialog *logDialog = nullptr;
+    QuickConnectDialog *quickConnectDialog = nullptr;
     BackgroundTasksDialog *backgroundTasksDialog = nullptr;
     AddBookmarkDialog *addBookmarkDialog = nullptr;
     BookmarkManagerDialog *bookmarkManagerDialog = nullptr;

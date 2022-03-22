@@ -66,6 +66,7 @@ namespace SigDigger {
     bool isRealTime;
     struct timeval profileStart;
     struct timeval profileEnd;
+    Suscan::Source::Device remoteDevice;
 
     // UI Data
     Averager averager;
@@ -245,6 +246,8 @@ namespace SigDigger {
     void onToggleFullScreen(bool);
     void onToggleAbout(bool);
     void onCloseInspectorTab(int index);
+    void onQuickConnect(void);
+    void onQuickConnectAccepted(void);
     void onTriggerStart(bool);
     void onTriggerStop(bool);
     void onTriggerImport(bool);

@@ -72,6 +72,7 @@
     </widget>
     <addaction name="actionStart_capture"/>
     <addaction name="actionStop_capture"/>
+    <addaction name="actionQuick_connect"/>
     <addaction name="menuStart"/>
     <addaction name="separator"/>
     <addaction name="actionImport_profile"/>
@@ -321,6 +322,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="actionQuick_connect">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/network-device.png</normaloff>:/icons/network-device.png</iconset>
+   </property>
+   <property name="text">
+    <string>Q&amp;uick connect...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+U</string>
    </property>
   </action>
  </widget>

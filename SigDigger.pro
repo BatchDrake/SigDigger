@@ -83,6 +83,7 @@ SOURCES += \
     Components/MainWindow.cpp \
     Components/PersistentWidget.cpp \
     Components/QTimeSlider.cpp \
+    Components/QuickConnectDialog.cpp \
     Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
@@ -205,6 +206,7 @@ HEADERS += \
     include/ProfileConfigTab.h \
     include/QTimeSlider.h \
     include/QuadDemodTask.h \
+    include/QuickConnectDialog.h \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
     include/SigDiggerHelpers.h \
@@ -325,6 +327,7 @@ FORMS += \
     ui/MainWindow.ui \
     ui/MfControl.ui \
     ui/ProfileConfigTab.ui \
+    ui/QuickConnectDialog.ui \
     ui/SamplerDialog.ui \
     ui/SourcePanel.ui \
     ui/TLESourceTab.ui \
