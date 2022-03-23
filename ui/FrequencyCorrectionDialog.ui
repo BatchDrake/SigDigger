@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>785</width>
+    <width>848</width>
     <height>352</height>
    </rect>
   </property>
@@ -224,36 +224,29 @@
              <property name="spacing">
               <number>3</number>
              </property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_4">
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_12">
                <property name="text">
-                <string>Visible</string>
+                <string>Azimuth</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="2">
-              <widget class="QLabel" name="label_10">
-               <property name="text">
-                <string>VLOS speed</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_8">
-               <property name="text">
-                <string>Doppler</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLabel" name="dopplerLabel">
+             <item row="2" column="3">
+              <widget class="QLabel" name="elevationLabel">
                <property name="font">
                 <font>
                  <family>Monospace</family>
                 </font>
                </property>
                <property name="text">
-                <string>0 Hz</string>
+                <string>0 º</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="4">
+              <widget class="QLabel" name="label_7">
+               <property name="text">
+                <string>Inclination</string>
                </property>
               </widget>
              </item>
@@ -269,15 +262,22 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="3">
-              <widget class="QLabel" name="nextEventLabel">
+             <item row="1" column="1">
+              <widget class="QLabel" name="dopplerLabel">
                <property name="font">
                 <font>
                  <family>Monospace</family>
                 </font>
                </property>
                <property name="text">
-                <string>&gt; 10 days</string>
+                <string>0 Hz</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QLabel" name="label_10">
+               <property name="text">
+                <string>VLOS speed</string>
                </property>
               </widget>
              </item>
@@ -293,6 +293,44 @@
                </property>
               </widget>
              </item>
+             <item row="0" column="4">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Period</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="3">
+              <widget class="QLabel" name="nextEventLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>126</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                </font>
+               </property>
+               <property name="text">
+                <string>Rise in XX:XX:XX</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="4">
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Eccentricity</string>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="2">
               <widget class="QLabel" name="label_6">
                <property name="text">
@@ -300,22 +338,27 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_12">
-               <property name="text">
-                <string>Azimuth</string>
-               </property>
-              </widget>
-             </item>
              <item row="2" column="1">
               <widget class="QLabel" name="azimuthLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>93</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="font">
                 <font>
                  <family>Monospace</family>
                 </font>
                </property>
                <property name="text">
-                <string>0 º</string>
+                <string>XXXº XX' XX&quot;</string>
                </property>
               </widget>
              </item>
@@ -326,15 +369,65 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="3">
-              <widget class="QLabel" name="elevationLabel">
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>Doppler</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Visible</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="5">
+              <widget class="QLabel" name="periodLabel">
                <property name="font">
                 <font>
                  <family>Monospace</family>
                 </font>
                </property>
                <property name="text">
-                <string>0 º</string>
+                <string>XX:XX:XX</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="5">
+              <widget class="QLabel" name="incLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>104</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                </font>
+               </property>
+               <property name="text">
+                <string>XXXº XX' XX&quot;</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="5">
+              <widget class="QLabel" name="eccLabel">
+               <property name="font">
+                <font>
+                 <family>Monospace</family>
+                </font>
+               </property>
+               <property name="text">
+                <string>0</string>
                </property>
               </widget>
              </item>

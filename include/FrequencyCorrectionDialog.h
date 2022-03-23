@@ -25,8 +25,8 @@
 #include <ColorConfig.h>
 #include <QTimer>
 
-// 10 days
-#define FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW (3 * 864000.0)
+#define FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW_MIN (1 * 86400.0)  // 1 day
+#define FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW_MAX (30 * 86400.0) // 30 days
 
 namespace Ui {
   class FrequencyCorrectionDialog;

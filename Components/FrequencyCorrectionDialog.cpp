@@ -403,9 +403,9 @@ FrequencyCorrectionDialog::recalcALOS(void)
         || timercmp(&this->timeStamp, &this->losTime, >=)) {
       xyz_t azel;
       SUFREQ window;
+      SUDOUBLE searchWindow;
       struct timeval delta, search;
       this->haveALOS = false;
-
 
       // Get current prediction
       if (!sgdp4_prediction_update(&this->prediction, &this->timeStamp))
@@ -413,8 +413,12 @@ FrequencyCorrectionDialog::recalcALOS(void)
 
       sgdp4_prediction_get_azel(&this->prediction, &azel);
 
+      searchWindow = qBound(
+            FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW_MIN,  // 1 day
+            3 * 86400.0 / this->currentOrbit.rev,
+            FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW_MAX); // 30 days
       if (this->realTime) {
-        window = FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW;
+        window = searchWindow;
       } else {
         timersub(&this->endTime, &this->timeStamp, &delta);
         window = static_cast<SUFREQ>(delta.tv_sec);
@@ -451,19 +455,18 @@ FrequencyCorrectionDialog::recalcALOS(void)
 
           sgdp4_prediction_get_azel(&this->prediction, &azel);
         } while (azel.elevation > 0
-                 && static_cast<qreal>(delta.tv_sec) < FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW);
+                 && static_cast<qreal>(delta.tv_sec) < searchWindow);
 
         // Check if the satellite now is belon the horizon
         if (azel.elevation > 0)
           return; // Nope. Something went wrong.
-
 
         // Okay, now if we find the next AOS, it should be our rise time
         this->haveALOS =
             sgdp4_prediction_find_aos(
               &this->prediction,
               &search,
-              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
+              searchWindow,
               &this->aosTime);
 
         if (!this->haveALOS)
@@ -473,7 +476,7 @@ FrequencyCorrectionDialog::recalcALOS(void)
             sgdp4_prediction_find_los(
               &this->prediction,
               &search,
-              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
+              searchWindow,
               &this->losTime);
       } else {
         // For non-visible satellites, the strategy is as follows:
@@ -493,7 +496,7 @@ FrequencyCorrectionDialog::recalcALOS(void)
         this->haveALOS = sgdp4_prediction_find_los(
               &this->prediction,
               &this->timeStamp,
-              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
+              searchWindow,
               &this->losTime);
       }
     }
@@ -646,12 +649,36 @@ FrequencyCorrectionDialog::updatePrediction(void)
             4,
             "m/s",
             false));
+
+    if (orbit_is_geo(&this->currentOrbit))
+      this->ui->periodLabel->setText("Geostationary");
+    else if (orbit_is_decayed(&this->currentOrbit, &this->timeStamp))
+      this->ui->periodLabel->setText("Decayed");
+    else
+      this->ui->periodLabel->setText(
+          SuWidgetsHelpers::formatQuantity(
+            86400.0 / this->currentOrbit.rev,
+            4,
+            "s"));
+
+    this->ui->eccLabel->setText(
+            QString::asprintf("%g", this->currentOrbit.ecc));
+
+    this->ui->incLabel->setText(
+          SuWidgetsHelpers::formatQuantity(
+            SU_RAD2DEG(this->currentOrbit.eqinc),
+            0,
+            "deg"));
+
   } else {
     this->ui->visibleLabel->setText("N / A");
     this->ui->azimuthLabel->setText("N / A");
     this->ui->elevationLabel->setText("N / A");
     this->ui->dopplerLabel->setText("N / A");
     this->ui->speedLabel->setText("N / A");
+    this->ui->periodLabel->setText("N / A");
+    this->ui->eccLabel->setText("N / A");
+    this->ui->incLabel->setText("N / A");
   }
 
   if (!this->haveALOS) {
