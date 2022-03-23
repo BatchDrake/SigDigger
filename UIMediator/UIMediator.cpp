@@ -153,6 +153,9 @@ UIMediator::refreshUI(void)
 
     case RUNNING:
       this->haveRtDelta = false;
+      this->rtCalibrations = 0;
+      this->rtDeltaReal = 0;
+
       stateString = QString("Running");
 
       if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR)

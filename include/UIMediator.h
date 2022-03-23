@@ -28,10 +28,13 @@
 #include <WFHelpers.h>
 #include <PersistentWidget.h>
 #include <Averager.h>
+#include <QMessageBox>
 
-#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ 0
-#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ 6000000000
-
+#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ  0
+#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ  6000000000
+#define SIGDIGGER_UI_MEDIATOR_PSD_CAL_LEN       10
+#define SIGDIGGER_UI_MEDIATOR_PSD_MAX_LAG       .3
+#define SIGDIGGER_UI_MEDIATOR_PSD_LAG_THRESHOLD 5e-3
 #define SIGDIGGER_UI_MEDIATOR_LOCAL_GRACE_PERIOD_MS  -1
 #define SIGDIGGER_UI_MEDIATOR_REMOTE_GRACE_PERIOD_MS 1000
 
@@ -60,6 +63,7 @@ namespace SigDigger {
     QMainWindow *owner = nullptr;
     AppUI *ui = nullptr;
 
+    QMessageBox *laggedMsgBox = nullptr;
     std::map<std::string, QAction *> bandPlanMap;
 
     // Cached members
@@ -77,8 +81,12 @@ namespace SigDigger {
     State state = HALTED;
     bool settingRanges = false;
     struct timeval rtMaxDelta = {0, 10000};
-    struct timeval rtDelta;
+    struct timeval lastPsd;
+    qreal psdDelta = 0;
+    qreal psdAdj   = 0;
     bool haveRtDelta = false;
+    unsigned int rtCalibrations = 0;
+    qreal rtDeltaReal = 0;
 
     // Private methods
     void connectMainWindow(void);

@@ -24,6 +24,7 @@
 #include "InspectorPanel.h"
 #include "AudioPanel.h"
 #include "Inspector.h"
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -33,32 +34,79 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
   bool expired = false;
 
   if (this->appConfig->guiConfig.enableMsgTTL) {
+    qreal delta;
+    qreal psdDelta;
+    qreal prevDelta;
+    qreal interval = this->appConfig->analyzerParams.psdUpdateInterval;
+    qreal selRate = 1. / interval;
     struct timeval now, rttime, diff;
-    struct timeval max_delta;
-
-    max_delta.tv_sec  =  this->appConfig->guiConfig.msgTTL / 1000;
-    max_delta.tv_usec = (this->appConfig->guiConfig.msgTTL % 1000) * 1000;
+    qreal max_delta;
+    qreal adj;
+    max_delta = this->appConfig->guiConfig.msgTTL * 1e-3;
 
     gettimeofday(&now, nullptr);
 
     rttime = msg.getRealTimeStamp();
 
-    if (!this->haveRtDelta) {
-      /* Dont' have implementation timestamp */
-      timersub(&now, &rttime, &this->rtDelta);
-      this->haveRtDelta = SU_TRUE;
+    /* Update current rtDelta */
+    timersub(&now, &rttime, &diff);
+    delta = diff.tv_sec + diff.tv_usec * 1e-6;
+
+    timersub(&now, &this->lastPsd, &diff);
+    psdDelta = diff.tv_sec + diff.tv_usec * 1e-6;
+
+    this->lastPsd = now;
+
+    if (this->rtCalibrations++ == 0) {
+      this->rtDeltaReal = delta;
+      this->psdDelta    = 1. / selRate;
+      prevDelta         = this->psdDelta;
+      adj               = prevDelta;
     } else {
-      /* Calculate difference */
-      timersub(&now, &rttime, &diff);
+      prevDelta         = this->psdDelta;
+      SU_SPLPF_FEED(
+            this->rtDeltaReal,
+            delta,
+            SU_SPLPF_ALPHA(SIGDIGGER_UI_MEDIATOR_PSD_CAL_LEN));
+      SU_SPLPF_FEED(this->psdDelta, psdDelta, SU_SPLPF_ALPHA(selRate));
+      adj               = this->psdDelta - prevDelta;
+    }
 
-      /* Upgrade RT Delta if this message arrived faster */
-      if (timercmp(&this->rtDelta, &diff, >))
-        this->rtDelta = diff;
+    SU_SPLPF_FEED(this->psdAdj, adj, SU_SPLPF_ALPHA(selRate));
 
+    if (!this->haveRtDelta) {
+      if (++this->rtCalibrations > SIGDIGGER_UI_MEDIATOR_PSD_CAL_LEN)
+        this->haveRtDelta = true;
+    } else {
       /* Subtract the intrinsic time delta */
-      timersub(&diff, &this->rtDelta, &diff);
+      delta -= this->rtDeltaReal;
+      expired = delta > max_delta;
 
-      expired = timercmp(&diff, &max_delta, >);
+      if (fabs(this->psdAdj / interval)
+          < SIGDIGGER_UI_MEDIATOR_PSD_LAG_THRESHOLD) {
+        if ((this->psdDelta - interval) / interval
+            > SIGDIGGER_UI_MEDIATOR_PSD_MAX_LAG) {
+          if (this->laggedMsgBox == nullptr) {
+            this->laggedMsgBox = new QMessageBox(this->owner);
+            this->laggedMsgBox->setWindowTitle("Connection quality warning");
+            this->laggedMsgBox->setWindowModality(Qt::NonModal);
+            this->laggedMsgBox->setIcon(QMessageBox::Icon::Warning);
+          }
+
+          if (this->laggedMsgBox->isHidden()) {
+            this->laggedMsgBox->setText(
+                  QString::asprintf(
+                    "The rate at which spectrum data is arriving is slower than "
+                    "expected (requested %g fps, but it is arriving at %g fps). "
+                    "This is most likely a bandwidth issue.\n\nIn order to prevent "
+                    "server synchronization issues, please reduce either the "
+                    "spectrum rate or the FFT size.",
+                    selRate,
+                    1. / this->psdDelta));
+            this->laggedMsgBox->show();
+          }
+        }
+      }
     }
   }
 
