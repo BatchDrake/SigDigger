@@ -263,6 +263,9 @@ SourcePanel::formatSampleRate(unsigned int rate)
 void
 SourcePanel::refreshUi()
 {
+  bool haveAGC = this->currentAutoGain != nullptr;
+  bool gainPresetEnabled = this->panelConfig->gainPresetEnabled && haveAGC;
+
   if (this->profile != nullptr) {
     bool isRemote =
         this->profile->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE;
@@ -309,11 +312,14 @@ SourcePanel::refreshUi()
         this->ui->antennaCombo->isEnabled()
         && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA));
   this->ui->gainsFrame->setEnabled(
-        this->ui->gainsFrame->isEnabled()
+        !gainPresetEnabled
         && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
   this->ui->autoGainFrame->setEnabled(
-        this->ui->autoGainFrame->isEnabled()
+        gainPresetEnabled
         && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
+
+  this->ui->autoGainCombo->setEnabled(gainPresetEnabled);
+  this->ui->autoGainSlider->setEnabled(gainPresetEnabled);
 }
 
 void
@@ -940,15 +946,10 @@ SourcePanel::onToggleAutoGain(void)
 {
   this->panelConfig->gainPresetEnabled = this->ui->gainPresetCheck->isChecked();
 
-  if (this->panelConfig->gainPresetEnabled) {
+  if (this->panelConfig->gainPresetEnabled)
     this->applyCurrentAutogain();
-    this->ui->autoGainCombo->setEnabled(true);
-    this->ui->autoGainSlider->setEnabled(true);
-  } else {
-    this->ui->gainsFrame->setEnabled(true);
-    this->ui->autoGainCombo->setEnabled(false);
-    this->ui->autoGainSlider->setEnabled(false);
-  }
+
+  this->refreshUi();
 }
 
 void
