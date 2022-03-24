@@ -1065,7 +1065,7 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
           this->mediator->resetRawInspector(
                 static_cast<qreal>(msg.getEquivSampleRate()));
       } else {
-          insp = this->mediator->addInspectorTab(msg, oId);
+          insp = this->mediator->addInspector(msg, oId);
           insp->setAnalyzer(this->analyzer.get());
           this->analyzer->setInspectorId(msg.getHandle(), oId, 0);
       }
@@ -1109,7 +1109,7 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
         // Do nothing either (yet).
       } else if ((insp = this->mediator->lookupInspector(msg.getInspectorId())) != nullptr) {
         insp->setAnalyzer(nullptr);
-        this->mediator->closeInspectorTab(insp);
+        this->mediator->closeInspector(insp);
       }
 
       break;

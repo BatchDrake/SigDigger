@@ -376,6 +376,8 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->owner = owner;
   this->ui = ui;
 
+  this->lastPsd.tv_sec = this->lastPsd.tv_usec = 0;
+
   this->remoteDevice = Suscan::Source::Device(
             "Remote device",
             "localhost",

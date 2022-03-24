@@ -37,6 +37,7 @@ GuiConfig::loadDefaults(void)
   this->useLMBdrag     = false;
   this->noLimits       = false;
   this->useGLWaterfall = false;
+  this->useGlInWindows = false;
   this->useMaxBlending = false;
   this->enableMsgTTL   = true;
   this->msgTTL         = 15; // in milliseconds
@@ -57,6 +58,7 @@ GuiConfig::serialize(void)
   STORE(noLimits);
   STORE(useGLWaterfall);
   STORE(useMaxBlending);
+  STORE(useGlInWindows);
   STORE(enableMsgTTL);
   STORE(msgTTL);
 
@@ -70,6 +72,7 @@ GuiConfig::deserialize(Suscan::Object const &conf)
   LOAD(noLimits);
   LOAD(useGLWaterfall);
   LOAD(useMaxBlending);
+  LOAD(useGlInWindows);
   LOAD(enableMsgTTL);
   LOAD(msgTTL);
 }

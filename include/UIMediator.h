@@ -146,10 +146,12 @@ namespace SigDigger {
 
     // Inspector handling
     Inspector *lookupInspector(Suscan::InspectorId id) const;
-    Inspector *addInspectorTab(
+    Inspector *addInspector(
         Suscan::InspectorMessage const &msg,
         Suscan::InspectorId &oId);
-    void closeInspectorTab(Inspector *insp);
+    void unbindInspectorWidget(Inspector *insp);
+    void closeInspector(Inspector *insp);
+    void floatInspector(Inspector *insp);
     void detachAllInspectors(void);
 
     // Convenience getters
@@ -276,6 +278,7 @@ namespace SigDigger {
     void onInspectorMenuRequested(const QPoint &);
     void onInspectorNameChanged(void);
     void onInspectorCloseRequested(void);
+    void onInspectorDetachRequested(void);
 
     // Time Slider slots
     void onTimeStampChanged(void);
@@ -322,6 +325,7 @@ namespace SigDigger {
     void onOpenInspector(void);
     void onOpenRawInspector(void);
     void onCloseRawInspector(void);
+    void onCloseInspectorWindow(void);
 
     // Device dialog
     void onRefreshDevices(void);

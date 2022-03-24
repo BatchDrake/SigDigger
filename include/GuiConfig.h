@@ -34,6 +34,7 @@ namespace SigDigger {
         bool noLimits;
         bool useGLWaterfall;
         bool useMaxBlending;
+        bool useGlInWindows;
         bool enableMsgTTL;
         unsigned int msgTTL;
 

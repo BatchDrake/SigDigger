@@ -28,6 +28,7 @@ GuiConfigTab::save()
   this->guiConfig.noLimits       = this->ui->noLimitsCheck->isChecked();
   this->guiConfig.useGLWaterfall = this->ui->useGLWaterfallCheck->isChecked();
   this->guiConfig.useMaxBlending = this->ui->useMaxBlendingCheck->isChecked();
+  this->guiConfig.useGlInWindows = this->ui->useGlWfInWindowsCheck->isChecked();
   this->guiConfig.enableMsgTTL   = this->ui->ttlCheck->isChecked();
   this->guiConfig.msgTTL         = static_cast<unsigned>(
         this->ui->ttlSpin->value());
@@ -40,6 +41,8 @@ GuiConfigTab::refreshUi()
   this->ui->noLimitsCheck->setChecked(this->guiConfig.noLimits);
   this->ui->useGLWaterfallCheck->setChecked(this->guiConfig.useGLWaterfall);
   this->ui->useMaxBlendingCheck->setEnabled(
+        this->ui->useGLWaterfallCheck->isChecked());
+  this->ui->useGlWfInWindowsCheck->setEnabled(
         this->ui->useGLWaterfallCheck->isChecked());
   this->ui->useMaxBlendingCheck->setChecked(this->guiConfig.useMaxBlending);
   this->ui->ttlCheck->setChecked(this->guiConfig.enableMsgTTL);
@@ -97,6 +100,12 @@ GuiConfigTab::connectAll(void)
         SLOT(onConfigChanged(void)));
 
   connect(
+        this->ui->useGlWfInWindowsCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onConfigChanged(void)));
+
+  connect(
         this->ui->ttlCheck,
         SIGNAL(toggled(bool)),
         this,
@@ -128,6 +137,8 @@ void
 GuiConfigTab::onConfigChanged(void)
 {
   this->ui->useMaxBlendingCheck->setEnabled(
+        this->ui->useGLWaterfallCheck->isChecked());
+  this->ui->useGlWfInWindowsCheck->setEnabled(
         this->ui->useGLWaterfallCheck->isChecked());
 
   this->ui->ttlLabel->setEnabled(this->ui->ttlCheck->isChecked());

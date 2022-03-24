@@ -86,6 +86,8 @@ namespace SigDigger {
       void setQth(xyz_t const &qth);
 
       void showEvent(QShowEvent *event);
+      void beginReparenting();
+      void doneReparenting();
 
       explicit Inspector(
           QWidget *parent,
@@ -97,6 +99,7 @@ namespace SigDigger {
     signals:
       void nameChanged(void);
       void closeRequested(void);
+      void detachRequested(void);
 
     public slots:
       void onConfigChanged(void);

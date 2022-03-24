@@ -24,6 +24,7 @@
 class QMainWindow;
 class Ui_MainWindow;
 class QToolBar;
+class QDialog;
 
 namespace SigDigger {
   class ConfigDialog;
@@ -64,6 +65,8 @@ namespace SigDigger {
     QToolBar *timeToolbar;
     QTimeSlider *timeSlider = nullptr;
     std::map<Suscan::InspectorId, Inspector *> inspectorTable;
+    std::map<Inspector *, QDialog *> floatInspectorTable;
+
     Suscan::InspectorId lastId = 0;
 
     AppUI(QMainWindow *);

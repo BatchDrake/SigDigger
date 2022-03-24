@@ -67,10 +67,10 @@ using namespace SigDigger;
         ? this->glWf->call          \
         : (dfl)))
 void
-InspectorUI::makeWf(QWidget *owner, AppConfig const &appConfig)
+InspectorUI::makeWf(QWidget *owner)
 {
   if (this->wf == nullptr && this->glWf == nullptr) {
-    if (appConfig.guiConfig.useGLWaterfall) {
+    if (this->usingGlWf) {
       // OpenGL waterfall
       this->glWf = new GLWaterfall(owner);
       this->glWf->setObjectName(QStringLiteral("wfSpectrum"));
@@ -86,10 +86,81 @@ InspectorUI::makeWf(QWidget *owner, AppConfig const &appConfig)
 
     WATERFALL_CALL(setClickResolution(1));
     WATERFALL_CALL(setFilterClickResolution(1));
+    WATERFALL_CALL(setFreqUnits(1));
+
+    WATERFALL_CALL(setCenterFreq(0));
+    WATERFALL_CALL(resetHorizontalZoom());
+    WATERFALL_CALL(setFftPlotColor(QColor(255, 255, 0)));
+
   }
 
   if (this->glWf != nullptr)
-    this->glWf->setMaxBlending(appConfig.guiConfig.useMaxBlending);
+    this->glWf->setMaxBlending(this->usingMaxBlending);
+}
+
+void
+InspectorUI::beginReparenting(void)
+{
+  if (this->glWf != nullptr) {
+    delete this->glWf;
+    this->glWf = nullptr;
+  }
+}
+
+void
+InspectorUI::doneReparenting(void)
+{
+  bool recreated = this->glWf == nullptr && this->wf == nullptr;
+
+  if (this->fallBackToWf)
+    this->usingGlWf = false;
+
+  this->makeWf(this->owner);
+
+  if (recreated) {
+    int index = this->ui->paletteCombo->currentIndex();
+    float rate = this->lastRate > 0 ? this->lastRate : this->sampleRate;
+    float zp = SCAST(float, this->ui->zeroPointSpin->value());
+
+    WATERFALL_CALL(setDemodRanges(
+          static_cast<int>(-rate / 2),
+          1,
+          1,
+          static_cast<int>(+rate / 2),
+          true));
+
+    if (index != -1)
+      WATERFALL_CALL(setPalette(
+            SigDiggerHelpers::instance()->getPalette(index)->getGradient()));
+
+    WATERFALL_CALL(setFftPlotColor(this->colors.spectrumForeground));
+    WATERFALL_CALL(setFftBgColor(this->colors.spectrumBackground));
+    WATERFALL_CALL(setFftAxesColor(this->colors.spectrumAxes));
+    WATERFALL_CALL(setFftTextColor(this->colors.spectrumText));
+    WATERFALL_CALL(setFilterBoxColor(this->colors.filterBox));
+
+    WATERFALL_CALL(setZeroPoint(this->currentUnit.zeroPoint + zp));
+    WATERFALL_CALL(setUnitName(
+          QString::fromStdString(this->currentUnit.name)));
+    WATERFALL_CALL(setdBPerUnit(this->currentUnit.dBPerUnit));
+
+    WATERFALL_CALL(setPeakDetection(
+          this->ui->peakDetectionButton->isChecked(), 3));
+
+    WATERFALL_CALL(setPeakHold(this->ui->peakHoldButton->isChecked()));
+
+    WATERFALL_CALL(setPercent2DScreen(this->ui->aspectSlider->value()));
+    WATERFALL_CALL(setGain(
+          static_cast<float>(this->ui->gainSpinBox->value())));
+    WATERFALL_CALL(setFilterOffset(
+          static_cast<qint64>(
+            this->ui->scFreqSpin->value())));
+    WATERFALL_CALL(setHiLowCutFrequencies(
+          -static_cast<qint64>(
+            this->ui->scBandwidth->value() / 2),
+          +static_cast<qint64>(
+            this->ui->scBandwidth->value() / 2)));
+  }
 }
 
 void
@@ -150,7 +221,12 @@ InspectorUI::InspectorUI(
   this->owner  = owner;
 
   this->ui->setupUi(owner);
-  this->makeWf(owner, appConfig);
+
+  this->usingGlWf = appConfig.guiConfig.useGLWaterfall;
+  this->usingMaxBlending = appConfig.guiConfig.useMaxBlending;
+  this->fallBackToWf = !appConfig.guiConfig.useGlInWindows;
+
+  this->makeWf(owner);
 
   this->haveQth = suscan_get_qth(&this->qth);
 
@@ -168,8 +244,10 @@ InspectorUI::InspectorUI(
 
   this->inspectorMenu = new QMenu(owner);
   this->renameInspectorTab = new QAction("&Rename...");
+  this->detachInspectorTab = new QAction("&Detach to a separate window");
   this->closeInspectorTab = new QAction("&Close");
   this->inspectorMenu->addAction(this->renameInspectorTab);
+  this->inspectorMenu->addAction(this->detachInspectorTab);
   this->inspectorMenu->addSeparator();
   this->inspectorMenu->addAction(this->closeInspectorTab);
 
@@ -236,8 +314,6 @@ InspectorUI::~InspectorUI()
 void
 InspectorUI::initUi(void)
 {
-  WATERFALL_CALL(setFreqUnits(1));
-
   SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
 
   this->setPalette("Suscan");
@@ -255,9 +331,6 @@ InspectorUI::initUi(void)
   this->ui->histogram->setThrottleControl(&this->throttle);
   this->ui->histogram->setDecider(&this->decider);
   this->ui->histogram->reset();
-  WATERFALL_CALL(setCenterFreq(0));
-  WATERFALL_CALL(resetHorizontalZoom());
-  WATERFALL_CALL(setFftPlotColor(QColor(255, 255, 0)));
 
   this->ui->centerLabel->setFixedWidth(
         SuWidgetsHelpers::getWidgetTextWidth(
@@ -569,6 +642,12 @@ InspectorUI::connectAll()
         SIGNAL(triggered()),
         this,
         SIGNAL(closeRequested()));
+
+  connect(
+        this->detachInspectorTab,
+        SIGNAL(triggered()),
+        this,
+        SIGNAL(detachRequested()));
 }
 
 void
@@ -1272,10 +1351,15 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   InspectorPanelConfig panelConfig;
   FftPanelConfig fftConfig;
 
+  this->colors = colors;
+
   fftConfig.deserialize(cfg.fftConfig->serialize());
   panelConfig.deserialize(cfg.inspectorConfig->serialize());
 
   this->fcDialog->setColorConfig(colors);
+
+  this->fallBackToWf     = !cfg.guiConfig.useGlInWindows;
+  this->usingMaxBlending = cfg.guiConfig.useMaxBlending;
 
   // Set colors according to application config
   this->ui->constellation->setForegroundColor(colors.constellationForeground);
@@ -1303,6 +1387,9 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   WATERFALL_CALL(setFftAxesColor(colors.spectrumAxes));
   WATERFALL_CALL(setFftTextColor(colors.spectrumText));
   WATERFALL_CALL(setFilterBoxColor(colors.filterBox));
+
+  if (this->glWf != nullptr)
+    this->glWf->setMaxBlending(this->usingMaxBlending);
 
   // Set SymView colors
   this->symViewTab->setColorConfig(colors);
