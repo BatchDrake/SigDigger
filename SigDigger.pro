@@ -373,18 +373,22 @@ packagesExist(volk) {
 # to PortAudio.
 
 
-isEmpty(DISABLE_ALSA): ALSA_FOUND = packagesExist(alsa)
-isEmpty(DISABLE_PORTAUDIO): PORTAUDIO_FOUND = packagesExist(portaudio-2.0)
+isEmpty(DISABLE_ALSA): packagesExist(alsa): ALSA_FOUND = Yes
+isEmpty(DISABLE_PORTAUDIO): packagesExist(portaudio-2.0): PORTAUDIO_FOUND = Yes
 
 !isEmpty(ALSA_FOUND):!freebsd {
+  message(Note: using ALSA libraries for audio support)
   PKGCONFIG += alsa
   SOURCES += Audio/AlsaPlayer.cpp
   DEFINES += SIGDIGGER_HAVE_ALSA
 } else {
   !isEmpty(PORTAUDIO_FOUND) {
+    message(Note: using PortAudio libraries for audio support)
     PKGCONFIG += portaudio-2.0
     SOURCES += Audio/PortAudioPlayer.cpp
     DEFINES += SIGDIGGER_HAVE_PORTAUDIO
+  } else {
+    message(Note: audio support is disabled)
   }
 }
 
