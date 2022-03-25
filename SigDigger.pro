@@ -372,12 +372,16 @@ packagesExist(volk) {
 # which tend to be the faster ones. If they are not available, fallback
 # to PortAudio.
 
-packagesExist(alsa):!freebsd {
+
+isEmpty(DISABLE_ALSA): ALSA_FOUND = packagesExist(alsa)
+isEmpty(DISABLE_PORTAUDIO): PORTAUDIO_FOUND = packagesExist(portaudio-2.0)
+
+!isEmpty(ALSA_FOUND):!freebsd {
   PKGCONFIG += alsa
   SOURCES += Audio/AlsaPlayer.cpp
   DEFINES += SIGDIGGER_HAVE_ALSA
 } else {
-  packagesExist(portaudio-2.0) {
+  !isEmpty(PORTAUDIO_FOUND) {
     PKGCONFIG += portaudio-2.0
     SOURCES += Audio/PortAudioPlayer.cpp
     DEFINES += SIGDIGGER_HAVE_PORTAUDIO
