@@ -99,8 +99,6 @@ namespace SigDigger {
     void connectDeviceDialog(void);
     void connectPanoramicDialog(void);
 
-    void refreshUI(void);
-
     // Behavioral methods
     void setSampleRate(unsigned int rate);
     void setBandwidth(unsigned int bandwidth);
@@ -110,6 +108,7 @@ namespace SigDigger {
 
   public:
     // UI State
+    void refreshUI(void);
     void setState(enum State);
     State getState(void) const;
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);

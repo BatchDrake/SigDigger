@@ -756,9 +756,30 @@ Application::getLogText(void)
   return text;
 }
 
+
 void
 Application::startCapture(void)
 {
+  auto iface = this->mediator->getProfile()->getInterface();
+
+#ifdef _WIN32
+  if (iface == SUSCAN_SOURCE_REMOTE_INTERFACE) {
+    (void)  QMessageBox::critical(
+          this,
+          "SigDigger error",
+          "Remoter analyzers are not supported in Windows operating systems.\n\n"
+          "This is not a SigDigger limitation, but a Windows one. Although "
+          "proposals to circumvent this issue exist, they are inherently "
+          "non-trivial and are not expected to be implemented any time soon.\n\n"
+          "If you are a developer and are curious about the nature of this "
+          "limitation (or even feel like helping me out addressing it), please "
+          "feel free to e-mail me at BatchDrake@gmail.com",
+          QMessageBox::Ok);
+    this->mediator->refreshUI();
+    return;
+  }
+#endif // _WIN32
+
   try {
     this->filterInstalled = false;
 
