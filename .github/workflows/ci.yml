@@ -96,7 +96,7 @@ jobs:
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-      
+    
     - uses: actions/setup-python@v3
       with:
         python-version: '3.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
