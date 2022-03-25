@@ -767,7 +767,7 @@ Application::startCapture(void)
     (void)  QMessageBox::critical(
           this,
           "SigDigger error",
-          "Remoter analyzers are not supported in Windows operating systems.\n\n"
+          "Remote analyzers are not supported in Windows operating systems.\n\n"
           "This is not a SigDigger limitation, but a Windows one. Although "
           "proposals to circumvent this issue exist, they are inherently "
           "non-trivial and are not expected to be implemented any time soon.\n\n"
