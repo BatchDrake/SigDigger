@@ -103,6 +103,7 @@ jobs:
     
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
+      with:
         py7zrversion: '==0.18.1'
 
     - name: Install sndfile
