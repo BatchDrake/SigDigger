@@ -1273,49 +1273,61 @@ ProfileConfigTab::guessParamsFromFileName(void)
 void
 ProfileConfigTab::onBrowseCaptureFile(void)
 {
-  QString format;
   QString title;
   QFileInfo fi(this->ui->pathEdit->text());
+  QStringList formats;
+  QString selected = "All files (*)";
 
   switch (this->profile.getFormat()) {
     case SUSCAN_SOURCE_FORMAT_AUTO:
       title = "Open capture file";
-      format = "Raw complex 32-bit float (*.raw *.cf32);;"
-               "Raw complex 8-bit unsigned (*.u8 *.cu8);;"
-               "Raw complex 16-bit signed (*.s16 *.cs16);;"
-               "WAV files (*.wav);;"
-               "All files (*)";
+      formats
+          << "Raw complex 32-bit float (*.raw *.cf32)"
+          << "Raw complex 8-bit unsigned (*.u8 *.cu8)"
+          << "Raw complex 16-bit signed (*.s16 *.cs16)"
+          << "WAV files (*.wav)"
+          << "All files (*)";
       break;
 
     case SUSCAN_SOURCE_FORMAT_RAW_FLOAT32:
       title = "Open I/Q file";
-      format = "Raw complex 32-bit float (*.raw *.cf32);;"
-               "All files (*)";
+      formats
+          << "Raw complex 32-bit float (*.raw *.cf32)"
+          << "All files (*)";
       break;
 
     case SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8:
       title = "Open I/Q file";
-      format = "Raw complex 8-bit unsigned (*.u8 *.cu8);;"
-               "All files (*)";
+      formats
+          << "Raw complex 8-bit unsigned (*.u8 *.cu8)"
+          << "All files (*)";
       break;
 
     case SUSCAN_SOURCE_FORMAT_RAW_SIGNED16:
       title = "Open I/Q file";
-      format = "Raw complex 16-bit signed (*.s16 *.cs16);;"
-               "All files (*)";
+      formats
+          << "Raw complex 16-bit signed (*.s16 *.cs16)"
+          << "All files (*)";
       break;
 
     case SUSCAN_SOURCE_FORMAT_WAV:
       title = "Open WAV file";
-      format = "WAV files (*.wav);;All files (*)";
+      formats
+          << "WAV files (*.wav)"
+          << "All files (*)";
       break;
   }
+
+  for (auto p : formats)
+    if (p.contains("*." + fi.suffix()))
+      selected = p;
 
   QString path = QFileDialog::getOpenFileName(
          this,
          title,
          fi.absolutePath(),
-         format);
+         formats.join(";;"),
+         &selected);
 
   if (!path.isEmpty()) {
     this->ui->pathEdit->setText(path);
