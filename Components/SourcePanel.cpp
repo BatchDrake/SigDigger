@@ -314,7 +314,7 @@ SourcePanel::refreshUi()
         !gainPresetEnabled
         && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
   this->ui->autoGainFrame->setEnabled(
-        gainPresetEnabled
+        haveAGC
         && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
 
   this->ui->autoGainCombo->setEnabled(gainPresetEnabled);
