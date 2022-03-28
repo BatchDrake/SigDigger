@@ -639,7 +639,7 @@ UIMediator::setIORate(qreal rate)
 }
 
 void
-UIMediator::refreshProfile(void)
+UIMediator::refreshProfile(bool updateFreqs)
 {
   qint64 min = 0, max = 0;
   bool isRealTime = false;
@@ -727,7 +727,7 @@ UIMediator::refreshProfile(void)
   // Configure spectrum
   this->ui->spectrum->setFrequencyLimits(min, max);
 
-  if (!this->appConfig->profile.isRemote()) {
+  if (updateFreqs) {
     this->ui->spectrum->setFreqs(
           static_cast<qint64>(this->appConfig->profile.getFreq()),
           static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
@@ -963,7 +963,7 @@ UIMediator::onQuickConnectAccepted(void)
         "password",
         this->ui->quickConnectDialog->getPassword().toStdString());
 
-  this->refreshProfile();
+  this->refreshProfile(false);
   this->refreshUI();
   emit profileChanged(true);
 

@@ -102,7 +102,7 @@ namespace SigDigger {
     // Behavioral methods
     void setSampleRate(unsigned int rate);
     void setBandwidth(unsigned int bandwidth);
-    void refreshProfile(void);
+    void refreshProfile(bool updateFreqs = true);
     void refreshSpectrumFilterShape(void);
     void setCurrentAutoGain(void);
 
