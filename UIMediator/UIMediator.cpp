@@ -188,7 +188,7 @@ UIMediator::refreshUI(void)
         ? InspectorPanel::State::ATTACHED
         : InspectorPanel::State::DETACHED);
 
-  if (config->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
+  if (config->isRemote()) {
     QString user = QString::fromStdString(config->getParam("user"));
     QString host = QString::fromStdString(config->getParam("host"));
     QString port = QString::fromStdString(config->getParam("port"));
@@ -655,7 +655,7 @@ UIMediator::refreshProfile(void)
 
   this->ui->configDialog->setProfile(this->appConfig->profile);
 
-  if (this->appConfig->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
+  if (!this->appConfig->profile.isRemote()) {
     if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
       min = static_cast<qint64>(
             this->appConfig->profile.getDevice().getMinFreq());
@@ -726,10 +726,13 @@ UIMediator::refreshProfile(void)
 
   // Configure spectrum
   this->ui->spectrum->setFrequencyLimits(min, max);
-  this->ui->spectrum->setFreqs(
-        static_cast<qint64>(this->appConfig->profile.getFreq()),
-        static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
-  this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
+
+  if (!this->appConfig->profile.isRemote()) {
+    this->ui->spectrum->setFreqs(
+          static_cast<qint64>(this->appConfig->profile.getFreq()),
+          static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
+    this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
+  }
 }
 
 Suscan::Source::Config *

@@ -362,11 +362,8 @@ MainSpectrum::setLnbFreq(qint64 lnbFreq)
 void
 MainSpectrum::setLocked(bool locked)
 {
-  if (!this->ui->fcLcd->isLocked())
-    this->ui->fcLcd->setLocked(locked);
-
-  if (!this->ui->lnbLcd->isLocked())
-    this->ui->lnbLcd->setLocked(locked);
+  this->ui->fcLcd->setLocked(locked);
+  this->ui->lnbLcd->setLocked(locked);
 
   this->ui->fcLcd->setEnabled(!locked);
   this->ui->lnbLcd->setEnabled(!locked);
