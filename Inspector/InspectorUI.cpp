@@ -243,9 +243,9 @@ InspectorUI::InspectorUI(
   this->ui->toolTab->addTab(this->tvTab, "Analog TV");
 
   this->inspectorMenu = new QMenu(owner);
-  this->renameInspectorTab = new QAction("&Rename...");
-  this->detachInspectorTab = new QAction("&Detach to a separate window");
-  this->closeInspectorTab = new QAction("&Close");
+  this->renameInspectorTab = new QAction("&Rename...", owner);
+  this->detachInspectorTab = new QAction("&Detach to a separate window", owner);
+  this->closeInspectorTab = new QAction("&Close", owner);
   this->inspectorMenu->addAction(this->renameInspectorTab);
   this->inspectorMenu->addAction(this->detachInspectorTab);
   this->inspectorMenu->addSeparator();

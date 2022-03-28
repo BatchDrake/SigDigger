@@ -492,6 +492,12 @@ Source::Config::getParamList(void) const
   return list;
 }
 
+bool
+Source::Config::isRemote(void) const
+{
+  return this->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE;
+}
+
 SUFLOAT
 Source::Config::getPPM(void) const
 {

@@ -267,8 +267,7 @@ SourcePanel::refreshUi()
   bool gainPresetEnabled = this->panelConfig->gainPresetEnabled && haveAGC;
 
   if (this->profile != nullptr) {
-    bool isRemote =
-        this->profile->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE;
+    bool isRemote = this->profile->isRemote();
 
     this->setThrottleable(
           this->profile->getType() != SUSCAN_SOURCE_TYPE_SDR
@@ -284,7 +283,7 @@ SourcePanel::refreshUi()
           this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR
           || isRemote);
 
-    this->saverUI->setEnabled(isRemote);
+    this->saverUI->setEnabled(!isRemote);
   }
 
   // These depend on the source info only
