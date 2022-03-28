@@ -129,6 +129,7 @@ SOURCES += \
     Suscan/Messages/StatusMessage.cpp \
     Suscan/MultitaskController.cpp \
     Suscan/Object.cpp \
+    Suscan/Plugin.cpp \
     Suscan/Serializable.cpp \
     Suscan/Source.cpp \
     Tasks/AGCTask.cpp \
@@ -201,6 +202,7 @@ HEADERS += \
     include/LPFTask.h \
     include/LocationConfigTab.h \
     include/PLLSyncTask.h \
+    include/Plugin.h \
     include/PortAudioPlayer.h \
     include/ProfileConfigTab.h \
     include/QTimeSlider.h \
