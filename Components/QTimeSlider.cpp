@@ -60,7 +60,7 @@ QTimeSlider::QTimeSlider(QWidget *parent) : QSlider(parent)
 
   this->setMinimum(0);
   this->setMaximum(2e9);
-  this->setMinimumHeight(32);
+  this->setMinimumHeight(42);
   this->setTickInterval(this->maximum());
 
   this->setStyle(new AbsolutePositioningStyle(this->style()));
@@ -83,7 +83,6 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
     QFont font;
     qreal lastTextX = 0, textX;
     struct timeval tvFirstTick;
-    QFontMetrics metrics(font);
     int tw, th;
     int i;
     struct timeval diff;
@@ -99,6 +98,8 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
     qint64 minTicks = 10;
     qint64 maxTicks = this->width() / 2;
     qreal maxTickLen = this->height() / 3;
+
+    QFontMetrics metrics(font);
 
     th = metrics.height();
 
