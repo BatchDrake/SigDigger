@@ -42,6 +42,7 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
 
   this->ui->waveform->setData(&this->data);
   this->ui->waveform->setHorizontalUnits("s");
+  this->ui->waveform->setAutoFitToEnvelope(false);
 
   this->onToggleModes();
 
@@ -101,6 +102,8 @@ RMSViewTab::integrateMeasure(qreal timestamp, SUFLOAT mag)
     this->accum_ctr = 0;
     this->energy_accum = 0;
     this->ui->waveform->refreshData();
+    if (this->ui->autoFitButton->isChecked())
+      this->fitVertical();
     this->ui->waveform->invalidate();
   }
 }
@@ -215,6 +218,24 @@ RMSViewTab::disconnectSocket(void)
 }
 
 void
+RMSViewTab::fitVertical(void)
+{
+  SUCOMPLEX dataMin = this->ui->waveform->getDataMin();
+  SUCOMPLEX dataMax = this->ui->waveform->getDataMax();
+  qreal min, max;
+
+  if (this->ui->dbButton->isChecked()) {
+    min = SU_C_IMAG(dataMin);
+    max = SU_C_IMAG(dataMax);
+  } else {
+    min = SU_C_REAL(dataMin);
+    max = SU_C_REAL(dataMax);
+  }
+
+  this->ui->waveform->zoomVertical(min, max);
+}
+
+void
 RMSViewTab::connectAll(void)
 {
   connect(
@@ -310,8 +331,9 @@ RMSViewTab::onTimeout(void)
 void
 RMSViewTab::onToggleModes(void)
 {
+
   this->ui->waveform->setAutoScroll(this->ui->autoScrollButton->isChecked());
-  this->ui->waveform->setAutoFitToEnvelope(this->ui->autoFitButton->isChecked());
+
   this->ui->resetButton->setEnabled(!this->ui->autoFitButton->isChecked());
 
   if (this->ui->dbButton->isChecked()) {
@@ -323,12 +345,14 @@ RMSViewTab::onToggleModes(void)
   }
 
   this->ui->waveform->refreshData();
+  if (this->ui->autoFitButton->isChecked())
+    this->fitVertical();
 }
 
 void
 RMSViewTab::onResetZoom(void)
 {
-  this->ui->waveform->fitToEnvelope();
+  this->fitVertical();
   this->ui->waveform->zoomHorizontalReset();
 }
 
@@ -349,4 +373,6 @@ RMSViewTab::onValueChanged(int)
   this->data.clear();
   this->ui->waveform->setSampleRate(rate / this->ui->intSpin->value());
   this->ui->waveform->refreshData();
+  if (this->ui->autoFitButton->isChecked())
+    this->fitVertical();
 }
