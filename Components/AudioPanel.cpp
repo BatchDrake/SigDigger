@@ -680,7 +680,6 @@ void
 AudioPanel::onDemodChanged(void)
 {
   this->setDemod(this->getDemod());
-
   emit changed();
 }
 

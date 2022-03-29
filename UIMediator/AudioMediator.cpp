@@ -127,6 +127,5 @@ void
 UIMediator::onAudioChanged(void)
 {
   this->refreshSpectrumFilterShape();
-
   emit audioChanged();
 }

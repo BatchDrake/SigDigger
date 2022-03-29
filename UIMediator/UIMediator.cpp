@@ -1236,12 +1236,13 @@ UIMediator::onJumpToBookmark(BookmarkInfo info)
   this->ui->spectrum->setLoFreq(0);
 
   if (!info.modulation.isEmpty()) {
-    this->ui->audioPanel->setDemod(AudioPanel::strToDemod(info.modulation.toStdString()));
+    this->ui->audioPanel->setDemod(
+          AudioPanel::strToDemod(info.modulation.toStdString()));
+    this->refreshSpectrumFilterShape();
   }
 
-  if (info.bandwidth() != 0) {
+  if (info.bandwidth() != 0)
     this->setBandwidth(info.bandwidth());
-  }
 
   this->onFrequencyChanged(info.frequency);
 }
