@@ -2184,7 +2184,7 @@ TimeWindow::onWaveViewChanged(void)
 void
 TimeWindow::onZeroCrossingComponentChanged(void)
 {
-  qreal min, max;
+  qreal min = -1, max = 1;
   int digits;
 
   switch (this->ui->clkComponentCombo->currentIndex()) {
