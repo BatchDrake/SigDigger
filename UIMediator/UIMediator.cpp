@@ -188,6 +188,11 @@ UIMediator::refreshUI(void)
         ? InspectorPanel::State::ATTACHED
         : InspectorPanel::State::DETACHED);
 
+  this->ui->sourcePanel->setState(
+        this->state == RUNNING
+        ? SourcePanel::State::ATTACHED
+        : SourcePanel::State::DETACHED);
+
   if (config->isRemote()) {
     QString user = QString::fromStdString(config->getParam("user"));
     QString host = QString::fromStdString(config->getParam("host"));

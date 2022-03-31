@@ -263,8 +263,8 @@ SourcePanel::formatSampleRate(unsigned int rate)
 void
 SourcePanel::refreshUi()
 {
-  bool haveAGC = this->currentAutoGain != nullptr;
-  bool gainPresetEnabled = this->panelConfig->gainPresetEnabled && haveAGC;
+  bool gainPresetEnabled = this->panelConfig->gainPresetEnabled;
+  bool haveAGC = this->currAutoGainSet != nullptr;
 
   if (this->profile != nullptr) {
     bool isRemote = this->profile->isRemote();
@@ -311,11 +311,10 @@ SourcePanel::refreshUi()
         this->ui->antennaCombo->isEnabled()
         && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA));
   this->ui->gainsFrame->setEnabled(
-        !gainPresetEnabled
+        (!gainPresetEnabled || !haveAGC)
         && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
   this->ui->autoGainFrame->setEnabled(
-        haveAGC
-        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
+        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
 
   this->ui->autoGainCombo->setEnabled(gainPresetEnabled);
   this->ui->autoGainSlider->setEnabled(gainPresetEnabled);
@@ -487,6 +486,20 @@ SourcePanel::lookupGain(std::string const &name)
   }
 
   return nullptr;
+}
+
+void
+SourcePanel::setState(State state)
+{
+  if (this->state != state) {
+    if (state == DETACHED) {
+      this->haveSourceInfo = false;
+      this->sourceInfo = Suscan::AnalyzerSourceInfo();
+      this->refreshUi();
+    }
+
+    this->state = state;
+  }
 }
 
 void
@@ -676,7 +689,10 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   bool throttleEnabled;
   this->refreshing = true;
 
-  this->sourceInfo = info;
+  if (!this->haveSourceInfo) {
+    this->sourceInfo = Suscan::AnalyzerSourceInfo(info);
+    this->haveSourceInfo = true;
+  }
 
   this->setDCRemove(info.getDCRemove());
   this->setIQReverse(info.getIQReverse());
@@ -727,8 +743,6 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
       this->ui->gainsFrame->show();
   }
 
-  this->refreshing = oldRefreshing;
-
   // AGC Enabled, we override gain settings with the current AGC
   // settings
   if (presetEnabled)
@@ -736,6 +750,8 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 
   // Everything is set, time to decide what is enabled and what is not
   this->refreshUi();
+
+  this->refreshing = oldRefreshing;
 }
 
 bool

@@ -90,6 +90,7 @@ namespace SigDigger {
       // UI State
       unsigned int rate = 0;
       unsigned int processRate = 0;
+      bool haveSourceInfo = false;
       State state = DETACHED;
       std::map<std::string, std::vector<AutoGain>> autoGains;
       bool throttleable = false;
@@ -123,6 +124,8 @@ namespace SigDigger {
       {
         return this->state;
       }
+
+      void setState(State);
 
       std::string
       getRecordSavePath(void) const
