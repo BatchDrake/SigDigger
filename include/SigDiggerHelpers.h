@@ -53,7 +53,7 @@ namespace SigDigger {
     static unsigned int abiVersion(void);
     static QString version(void);
     static QString pkgversion(void);
-
+    static void timerdup(struct timeval *);
 
     static void openSaveSamplesDialog(
         QWidget *root,

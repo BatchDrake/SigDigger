@@ -58,7 +58,16 @@ SigDiggerHelpers::pkgversion(void)
   return QString(SIGDIGGER_PKGVERSION);
 }
 
-
+void
+SigDiggerHelpers::timerdup(struct timeval *tv)
+{
+  tv->tv_sec  <<= 1;
+  tv->tv_usec <<= 1;
+  if (tv->tv_usec >= 1000000) {
+    tv->tv_sec  += 1;
+    tv->tv_usec -= 1000000;
+  }
+}
 
 void
 SigDiggerHelpers::openSaveSamplesDialog(
