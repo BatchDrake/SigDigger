@@ -24,6 +24,7 @@
 #include <SuWidgetsHelpers.h>
 #include <time.h>
 #include "ProfileConfigTab.h"
+#include "SigDiggerHelpers.h"
 #include "DeviceTweaks.h"
 #include "ui_ProfileConfigTab.h"
 #include <util/compat-stdlib.h>
@@ -1138,6 +1139,8 @@ ProfileConfigTab::guessParamsFromFileName(void)
 {
   QFileInfo fi(QString::fromStdString(this->profile.getPath()));
   std::string baseName = fi.baseName().toStdString();
+  SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
+
   SUFREQ fc;
   unsigned int fs;
   unsigned int date, time;
@@ -1237,25 +1240,16 @@ ProfileConfigTab::guessParamsFromFileName(void)
 
   if (haveTm) {
     if (isUTC) {
-      char *tz = getenv("TZ");
-      std::string oldTz;
-
-      if (tz != nullptr)
-        oldTz = tz;
-
+      hlp->pushUTCTZ();
       tm.tm_isdst = 0;
-      setenv("TZ", "", 1);
-      tzset();
       tv.tv_sec = mktime(&tm);
-      if (tz != nullptr)
-        setenv("TZ", oldTz.c_str(), 1);
-      else
-        unsetenv("TZ");
-      tzset();
     } else {
+      hlp->pushLocalTZ();
       tm.tm_isdst = -1;
       tv.tv_sec = mktime(&tm);
     }
+
+    hlp->popTZ();
 
     this->profile.setStartTime(tv);
   }

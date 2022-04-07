@@ -19,6 +19,7 @@
 #include "FrequencyCorrectionDialog.h"
 #include "ui_FrequencyCorrectionDialog.h"
 #include <QPainter>
+#include "SigDiggerHelpers.h"
 #include <SuWidgetsHelpers.h>
 #include <Suscan/Analyzer.h>
 
@@ -185,6 +186,7 @@ FrequencyCorrectionDialog::paintAzimuthElevationPass(QPainter &p)
   struct timeval tdelta;
   struct timeval t;
   struct tm losTm, aosTm;
+  SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
   bool visible;
   QVector<qreal> dashes;
   xyz_t pAzEl = {{0}, {0}, {0}};
@@ -197,8 +199,11 @@ FrequencyCorrectionDialog::paintAzimuthElevationPass(QPainter &p)
   if (this->haveALOS) {
 	time_t lost = this->losTime.tv_sec;
 	time_t aost = this->aosTime.tv_sec;
+
+    hlp->pushLocalTZ();
     localtime_r(&lost, &losTm);
     localtime_r(&aost, &aosTm);
+    hlp->popTZ();
 
     timersub(&this->losTime, &this->aosTime, &diff);
 

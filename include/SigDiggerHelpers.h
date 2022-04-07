@@ -25,6 +25,7 @@
 #include <Palette.h>
 #include <QStyledItemDelegate>
 #include <QItemDelegate>
+#include <list>
 
 class QComboBox;
 
@@ -35,6 +36,12 @@ namespace SigDigger {
   {
     std::vector<Palette> palettes;
     Palette *gqrxPalette = nullptr;
+
+    std::list<std::string> tzs;
+    std::list<const std::string *> tzStack;
+
+    bool haveTZvar = false;
+    std::string tzVar;
 
     static SigDiggerHelpers *currInstance;
 
@@ -62,8 +69,13 @@ namespace SigDigger {
     const Palette *getPalette(std::string const &) const;
     const Palette *getPalette(int index) const;
     void populatePaletteCombo(QComboBox *combo);
-
     void deserializePalettes(void);
+
+    void pushLocalTZ(void);
+    void pushUTCTZ(void);
+
+    void pushTZ(const char *);
+    bool popTZ(void);
   };
 }
 

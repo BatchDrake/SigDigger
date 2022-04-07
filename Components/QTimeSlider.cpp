@@ -24,6 +24,7 @@
 #include <QStyle>
 #include <QMouseEvent>
 #include <QStyleOptionSlider>
+#include "SigDiggerHelpers.h"
 #include <QProxyStyle>
 
 using namespace SigDigger;
@@ -166,14 +167,23 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
 
     while (x < this->width()) {
       if (i % 10 == 0) {
-        QDateTime dateTime;
+        SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
         QString text;
         QRect rect;
-        dateTime.setMSecsSinceEpoch(
-              tvFirstTick.tv_sec * 1000
-              + tvFirstTick.tv_usec / 1000
-              + static_cast<qint64>((i / 10) * tickStepMsec));
-        text = dateTime.toString(tickFormat);
+
+        hlp->pushLocalTZ();
+
+        {
+          QDateTime dateTime;
+          dateTime.setMSecsSinceEpoch(
+                tvFirstTick.tv_sec * 1000
+                + tvFirstTick.tv_usec / 1000
+                + static_cast<qint64>((i / 10) * tickStepMsec));
+          text = dateTime.toString(tickFormat);
+        }
+
+        hlp->popTZ();
+
       #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
               tw = metrics.horizontalAdvance(text);
       #else
