@@ -27,7 +27,6 @@
 #include "SigDiggerHelpers.h"
 #include "DeviceTweaks.h"
 #include "ui_ProfileConfigTab.h"
-#include <util/compat-stdlib.h>
 
 #define PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ 0
 #define PROFILE_CONFIG_TAB_MAX_DEVICE_FREQ 7.5e9
