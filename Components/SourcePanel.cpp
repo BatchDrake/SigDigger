@@ -496,6 +496,10 @@ SourcePanel::setState(State state)
       this->haveSourceInfo = false;
       this->sourceInfo = Suscan::AnalyzerSourceInfo();
       this->refreshUi();
+    } else {
+      // Switched to running! If AGC was enabled, request a gain adjustment
+      if (this->panelConfig->gainPresetEnabled)
+        this->applyCurrentAutogain();
     }
 
     this->state = state;
