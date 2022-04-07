@@ -720,7 +720,7 @@ UIMediator::refreshProfile(bool updateFreqs)
   this->isRealTime   = isRealTime;
 
   // Configure timeslider
-  this->ui->timeSlider->setEnabled(!isRealTime);
+  this->ui->timeToolbar->setVisible(!isRealTime);
   this->ui->timeSlider->setStartTime(start);
   this->ui->timeSlider->setEndTime(end);
   this->ui->timeSlider->setTimeStamp(tv);
