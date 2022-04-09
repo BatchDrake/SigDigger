@@ -649,7 +649,6 @@ UIMediator::refreshProfile(bool updateFreqs)
   qint64 min = 0, max = 0;
   bool isRealTime = false;
   struct timeval tv, start, end;
-
   this->ui->sourcePanel->setProfile(&this->appConfig->profile);
 
   std::string user, pass, interface;
@@ -841,6 +840,7 @@ UIMediator::applyConfig(void)
   this->ui->panoramicDialog->applyConfig();
 
   this->refreshProfile();
+  this->refreshUI();
 
   // Apply loFreq and bandwidth config AFTER profile has been set.
   this->ui->spectrum->setLoFreq(savedLoFreq);
