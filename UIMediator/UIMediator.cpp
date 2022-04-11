@@ -126,7 +126,6 @@ UIMediator::refreshUI(void)
   QString stateString;
   QString sourceDesc;
   bool    enableTimeSlider = false;
-  bool    isRealTime = false;
 
   Suscan::Source::Config *config = this->getProfile();
   const Suscan::Source::Device &dev = config->getDevice();
@@ -204,7 +203,6 @@ UIMediator::refreshUI(void)
   } else {
     if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {
       sourceDesc = QString::fromStdString(dev.getDesc());
-      isRealTime = true;
     } else {
       QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
       sourceDesc = fi.fileName();
@@ -214,7 +212,6 @@ UIMediator::refreshUI(void)
   }
 
   this->ui->timeSlider->setEnabled(enableTimeSlider);
-  this->ui->timeToolbar->setVisible(!isRealTime);
 
   this->owner->setWindowTitle(
         "SigDigger - "
@@ -665,7 +662,7 @@ UIMediator::refreshProfile(bool updateFreqs)
             this->appConfig->profile.getDevice().getMinFreq());
       max = static_cast<qint64>(
             this->appConfig->profile.getDevice().getMaxFreq());
-        isRealTime = true;
+      isRealTime = true;
     } else {
       min = SIGDIGGER_MIN_RADIO_FREQ;
       max = SIGDIGGER_MAX_RADIO_FREQ;
@@ -719,10 +716,10 @@ UIMediator::refreshProfile(bool updateFreqs)
   this->isRealTime   = isRealTime;
 
   // Configure timeslider
-  this->ui->timeToolbar->setVisible(!isRealTime);
   this->ui->timeSlider->setStartTime(start);
   this->ui->timeSlider->setEndTime(end);
   this->ui->timeSlider->setTimeStamp(tv);
+  this->ui->timeToolbar->setVisible(!isRealTime);
 
   // Configure audio panel
   this->ui->audioPanel->setRealTime(isRealTime);
