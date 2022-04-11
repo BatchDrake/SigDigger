@@ -24,9 +24,9 @@
 #include <SuWidgetsHelpers.h>
 #include <time.h>
 #include "ProfileConfigTab.h"
+#include "SigDiggerHelpers.h"
 #include "DeviceTweaks.h"
 #include "ui_ProfileConfigTab.h"
-#include <util/compat-stdlib.h>
 
 #define PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ 0
 #define PROFILE_CONFIG_TAB_MAX_DEVICE_FREQ 7.5e9
@@ -1138,6 +1138,8 @@ ProfileConfigTab::guessParamsFromFileName(void)
 {
   QFileInfo fi(QString::fromStdString(this->profile.getPath()));
   std::string baseName = fi.baseName().toStdString();
+  SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
+
   SUFREQ fc;
   unsigned int fs;
   unsigned int date, time;
@@ -1237,25 +1239,16 @@ ProfileConfigTab::guessParamsFromFileName(void)
 
   if (haveTm) {
     if (isUTC) {
-      char *tz = getenv("TZ");
-      std::string oldTz;
-
-      if (tz != nullptr)
-        oldTz = tz;
-
+      hlp->pushUTCTZ();
       tm.tm_isdst = 0;
-      setenv("TZ", "", 1);
-      tzset();
       tv.tv_sec = mktime(&tm);
-      if (tz != nullptr)
-        setenv("TZ", oldTz.c_str(), 1);
-      else
-        unsetenv("TZ");
-      tzset();
     } else {
+      hlp->pushLocalTZ();
       tm.tm_isdst = -1;
       tv.tv_sec = mktime(&tm);
     }
+
+    hlp->popTZ();
 
     this->profile.setStartTime(tv);
   }
@@ -1273,49 +1266,61 @@ ProfileConfigTab::guessParamsFromFileName(void)
 void
 ProfileConfigTab::onBrowseCaptureFile(void)
 {
-  QString format;
   QString title;
   QFileInfo fi(this->ui->pathEdit->text());
+  QStringList formats;
+  QString selected = "All files (*)";
 
   switch (this->profile.getFormat()) {
     case SUSCAN_SOURCE_FORMAT_AUTO:
       title = "Open capture file";
-      format = "Raw complex 32-bit float (*.raw *.cf32);;"
-               "Raw complex 8-bit unsigned (*.u8 *.cu8);;"
-               "Raw complex 16-bit signed (*.s16 *.cs16);;"
-               "WAV files (*.wav);;"
-               "All files (*)";
+      formats
+          << "Raw complex 32-bit float (*.raw *.cf32)"
+          << "Raw complex 8-bit unsigned (*.u8 *.cu8)"
+          << "Raw complex 16-bit signed (*.s16 *.cs16)"
+          << "WAV files (*.wav)"
+          << "All files (*)";
       break;
 
     case SUSCAN_SOURCE_FORMAT_RAW_FLOAT32:
       title = "Open I/Q file";
-      format = "Raw complex 32-bit float (*.raw *.cf32);;"
-               "All files (*)";
+      formats
+          << "Raw complex 32-bit float (*.raw *.cf32)"
+          << "All files (*)";
       break;
 
     case SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8:
       title = "Open I/Q file";
-      format = "Raw complex 8-bit unsigned (*.u8 *.cu8);;"
-               "All files (*)";
+      formats
+          << "Raw complex 8-bit unsigned (*.u8 *.cu8)"
+          << "All files (*)";
       break;
 
     case SUSCAN_SOURCE_FORMAT_RAW_SIGNED16:
       title = "Open I/Q file";
-      format = "Raw complex 16-bit signed (*.s16 *.cs16);;"
-               "All files (*)";
+      formats
+          << "Raw complex 16-bit signed (*.s16 *.cs16)"
+          << "All files (*)";
       break;
 
     case SUSCAN_SOURCE_FORMAT_WAV:
       title = "Open WAV file";
-      format = "WAV files (*.wav);;All files (*)";
+      formats
+          << "WAV files (*.wav)"
+          << "All files (*)";
       break;
   }
+
+  for (auto p : formats)
+    if (p.contains("*." + fi.suffix()))
+      selected = p;
 
   QString path = QFileDialog::getOpenFileName(
          this,
          title,
          fi.absolutePath(),
-         format);
+         formats.join(";;"),
+         &selected);
 
   if (!path.isEmpty()) {
     this->ui->pathEdit->setText(path);

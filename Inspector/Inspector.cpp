@@ -107,6 +107,12 @@ Inspector::Inspector(
         this,
         SIGNAL(closeRequested()));
 
+  connect(
+        this->ui.get(),
+        SIGNAL(detachRequested()),
+        this,
+        SIGNAL(detachRequested()));
+
   for (auto p = msg.getSpectrumSources().begin();
        p != msg.getSpectrumSources().end();
        ++p)
@@ -212,6 +218,19 @@ Inspector::setTimeStamp(struct timeval const &tv)
 {
   this->ui->setTimeStamp(tv);
 }
+
+void
+Inspector::beginReparenting()
+{
+  this->ui->beginReparenting();
+}
+
+void
+Inspector::doneReparenting()
+{
+  this->ui->doneReparenting();
+}
+
 
 void
 Inspector::setTimeLimits(

@@ -53,6 +53,7 @@ namespace SigDigger {
       void processSocketData(void);
       bool saveToMatlab(QString const &);
       void disconnectSocket(void);
+      void fitVertical(void);
 
     public:
       explicit RMSViewTab(QWidget *parent, QTcpSocket *socket);

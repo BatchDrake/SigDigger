@@ -27,6 +27,7 @@
 #include <SuWidgetsHelpers.h>
 #include <Suscan/MultitaskController.h>
 #include <ExportSamplesTask.h>
+#include <util/compat-stdlib.h>
 
 #ifndef SIGDIGGER_PKGVERSION
 #  define SIGDIGGER_PKGVERSION \
@@ -58,7 +59,16 @@ SigDiggerHelpers::pkgversion(void)
   return QString(SIGDIGGER_PKGVERSION);
 }
 
-
+void
+SigDiggerHelpers::timerdup(struct timeval *tv)
+{
+  tv->tv_sec  <<= 1;
+  tv->tv_usec <<= 1;
+  if (tv->tv_usec >= 1000000) {
+    tv->tv_sec  += 1;
+    tv->tv_usec -= 1000000;
+  }
+}
 
 void
 SigDiggerHelpers::openSaveSamplesDialog(
@@ -233,5 +243,76 @@ SigDiggerHelpers::getPalette(std::string const &name) const
 
 SigDiggerHelpers::SigDiggerHelpers()
 {
+  const char *localTZ = getenv("TZ");
+
+  this->haveTZvar = localTZ != nullptr;
+  if (localTZ != nullptr)
+    this->tzVar = localTZ;
+
   this->deserializePalettes();
+}
+
+
+void
+SigDiggerHelpers::pushTZ(const char *tz)
+{
+  const std::string *front = nullptr;
+  const char *prev = getenv("TZ");
+
+  // Non-null TZ, push in saving stack
+  if (prev != nullptr) {
+    this->tzs.push_front(prev);
+    front = &this->tzs.front();
+  }
+
+  // Push this one nonetheless
+  this->tzStack.push_front(front);
+
+  if (tz != nullptr)
+    setenv("TZ", tz, 1);
+  else
+    unsetenv("TZ");
+
+  tzset();
+}
+
+bool
+SigDiggerHelpers::popTZ(void)
+{
+  const std::string *front;
+
+  if (this->tzStack.empty())
+    return false;
+
+  front = this->tzStack.front();
+
+  if (front != nullptr) {
+    setenv("TZ", front->c_str(), 1);
+    // Non-null TZ, pop from the saving stack
+    this->tzs.pop_front();
+  } else {
+    unsetenv("TZ");
+  }
+
+  tzset();
+
+  // Pop it
+  this->tzStack.pop_front();
+
+  return true;
+}
+
+void
+SigDiggerHelpers::pushLocalTZ(void)
+{
+  if (this->haveTZvar)
+    this->pushTZ(this->tzVar.c_str());
+  else
+    this->pushTZ(nullptr);
+}
+
+void
+SigDiggerHelpers::pushUTCTZ(void)
+{
+  this->pushTZ("");
 }

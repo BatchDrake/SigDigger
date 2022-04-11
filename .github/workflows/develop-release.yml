@@ -81,8 +81,12 @@ jobs:
         path: Scripts/*.AppImage
 
   build-macos:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+    
     - uses: actions/checkout@v2
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
@@ -90,6 +94,10 @@ jobs:
       
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
+      with:
+        version: 5.14.2
+        setup-python: false
+        py7zrversion: '==0.18.1'
 
     - name: Install sndfile
       run: brew install libsndfile

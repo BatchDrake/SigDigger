@@ -150,6 +150,7 @@ namespace SigDigger {
     void addToolWidget(QWidget *widget, QString const &);
     void setSidePanelWidth(int);
     void setSidePanelRatio(qreal);
+    void setLocked(bool);
 
     // Getters
     bool getThrottling(void) const;
@@ -190,6 +191,7 @@ namespace SigDigger {
     void onNewZoomLevel(float);
     void onNewModulation(QString);
     void onLnbFrequencyChanged(void);
+    void onLockStateChanged(void);
   };
 }
 

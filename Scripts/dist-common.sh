@@ -33,12 +33,59 @@ RELEASE="0.3.0"
 DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
 PKGVERSION=""
 MAKE="make"
+CMAKE_SUSCAN_EXTRA_ARGS=""
+QMAKE_SIGDIGGER_EXTRA_ARGS=""
 
 function is_mingw()
 {
     echo "$OSTYPE" | grep MINGW > /dev/null
     return $?
 }
+
+function help()
+{
+  echo "$1: SigDigger's build script"
+  echo "Usage:"
+  echo "  $1 [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  --disable-alsa:      Explicitly disable ALSA support"
+  echo "  --disable-portaudio: Explicitly disable PortAudio support"
+  echo
+  echo "  --help               This help"
+  echo
+}
+
+opt=$1
+SCRIPTNAME="$0"
+
+while [ "$opt" != "" ]; do
+    case "$opt" in
+      --disable-alsa)
+        CMAKE_SUSCAN_EXTRA_ARGS="$CMAKE_SUSCAN_EXTRA_ARGS -DENABLE_ALSA=OFF"
+        QMAKE_SIGDIGGER_EXTRA_ARGS="$QMAKE_SIGDIGGER_EXTRA_ARGS DISABLE_ALSA=1"
+      ;;
+    
+      --disable-portaudio)
+        CMAKE_SUSCAN_EXTRA_ARGS="$CMAKE_SUSCAN_EXTRA_ARGS -DENABLE_PORTAUDIO=OFF"
+        QMAKE_SIGDIGGER_EXTRA_ARGS="$QMAKE_SIGDIGGER_EXTRA_ARGS DISABLE_PORTAUDIO=1"
+      ;;
+    
+      --help)
+        help "$SCRIPTNAME"
+        exit 0
+      ;;
+
+      *)
+        echo "$SCRIPTNAME: unrecognized option $"
+        help "$SCRIPTNAME"
+        exit 1
+      ;;
+    esac
+
+    shift
+    opt="$1"
+done
 
 
 if [ "$OSTYPE" == "Linux" ]; then
@@ -176,7 +223,7 @@ function build()
         try "Deploying sigutils..."        $MAKE -j $THREADS -C sigutils/build install
 
         cd suscan/build
-        try "Running CMake (suscan)..."    cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=Release "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
+        try "Running CMake (suscan)..."    cmake .. $CMAKE_SUSCAN_EXTRA_ARGS -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=Release "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
         cd ../../
         try "Building suscan..."           $MAKE -j $THREADS -C suscan/build
         try "Deploying suscan..."          $MAKE -j $THREADS -C suscan/build install
@@ -188,7 +235,7 @@ function build()
         cd ..
 
         cd SigDigger
-        try "Running QMake (SigDigger)..." qmake SigDigger.pro "CONFIG += release" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr"
+        try "Running QMake (SigDigger)..." qmake SigDigger.pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += release" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr"
         try "Building SigDigger..."        $MAKE -j $THREADS
         try "Deploying SigDigger..."       $MAKE install
         cd ..

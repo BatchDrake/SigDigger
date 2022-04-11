@@ -28,10 +28,13 @@
 #include <WFHelpers.h>
 #include <PersistentWidget.h>
 #include <Averager.h>
+#include <QMessageBox>
 
-#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ 0
-#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ 6000000000
-
+#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MIN_FREQ  0
+#define SIGDIGGER_UI_MEDIATOR_DEFAULT_MAX_FREQ  6000000000
+#define SIGDIGGER_UI_MEDIATOR_PSD_CAL_LEN       10
+#define SIGDIGGER_UI_MEDIATOR_PSD_MAX_LAG       .3
+#define SIGDIGGER_UI_MEDIATOR_PSD_LAG_THRESHOLD 5e-3
 #define SIGDIGGER_UI_MEDIATOR_LOCAL_GRACE_PERIOD_MS  -1
 #define SIGDIGGER_UI_MEDIATOR_REMOTE_GRACE_PERIOD_MS 1000
 
@@ -60,12 +63,14 @@ namespace SigDigger {
     QMainWindow *owner = nullptr;
     AppUI *ui = nullptr;
 
+    QMessageBox *laggedMsgBox = nullptr;
     std::map<std::string, QAction *> bandPlanMap;
 
     // Cached members
     bool isRealTime;
     struct timeval profileStart;
     struct timeval profileEnd;
+    Suscan::Source::Device remoteDevice;
 
     // UI Data
     Averager averager;
@@ -76,8 +81,12 @@ namespace SigDigger {
     State state = HALTED;
     bool settingRanges = false;
     struct timeval rtMaxDelta = {0, 10000};
-    struct timeval rtDelta;
+    struct timeval lastPsd;
+    qreal psdDelta = 0;
+    qreal psdAdj   = 0;
     bool haveRtDelta = false;
+    unsigned int rtCalibrations = 0;
+    qreal rtDeltaReal = 0;
 
     // Private methods
     void connectMainWindow(void);
@@ -90,17 +99,16 @@ namespace SigDigger {
     void connectDeviceDialog(void);
     void connectPanoramicDialog(void);
 
-    void refreshUI(void);
-
     // Behavioral methods
     void setSampleRate(unsigned int rate);
     void setBandwidth(unsigned int bandwidth);
-    void refreshProfile(void);
+    void refreshProfile(bool updateFreqs = true);
     void refreshSpectrumFilterShape(void);
     void setCurrentAutoGain(void);
 
   public:
     // UI State
+    void refreshUI(void);
     void setState(enum State);
     State getState(void) const;
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
@@ -137,10 +145,12 @@ namespace SigDigger {
 
     // Inspector handling
     Inspector *lookupInspector(Suscan::InspectorId id) const;
-    Inspector *addInspectorTab(
+    Inspector *addInspector(
         Suscan::InspectorMessage const &msg,
         Suscan::InspectorId &oId);
-    void closeInspectorTab(Inspector *insp);
+    void unbindInspectorWidget(Inspector *insp);
+    void closeInspector(Inspector *insp);
+    void floatInspector(Inspector *insp);
     void detachAllInspectors(void);
 
     // Convenience getters
@@ -245,6 +255,8 @@ namespace SigDigger {
     void onToggleFullScreen(bool);
     void onToggleAbout(bool);
     void onCloseInspectorTab(int index);
+    void onQuickConnect(void);
+    void onQuickConnectAccepted(void);
     void onTriggerStart(bool);
     void onTriggerStop(bool);
     void onTriggerImport(bool);
@@ -265,6 +277,7 @@ namespace SigDigger {
     void onInspectorMenuRequested(const QPoint &);
     void onInspectorNameChanged(void);
     void onInspectorCloseRequested(void);
+    void onInspectorDetachRequested(void);
 
     // Time Slider slots
     void onTimeStampChanged(void);
@@ -311,6 +324,7 @@ namespace SigDigger {
     void onOpenInspector(void);
     void onOpenRawInspector(void);
     void onCloseRawInspector(void);
+    void onCloseInspectorWindow(void);
 
     // Device dialog
     void onRefreshDevices(void);

@@ -562,6 +562,19 @@ FftPanel::getWindowFunction(void) const
         this->ui->windowCombo->currentIndex());
 }
 
+void
+FftPanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
+{
+  this->ui->fftSizeCombo->setEnabled(
+        info.testPermission(SUSCAN_ANALYZER_PERM_SET_FFT_SIZE));
+
+  this->ui->rateCombo->setEnabled(
+        info.testPermission(SUSCAN_ANALYZER_PERM_SET_FFT_FPS));
+
+  this->ui->windowCombo->setEnabled(
+        info.testPermission(SUSCAN_ANALYZER_PERM_SET_FFT_WINDOW));
+}
+
 QString
 FftPanel::getUnitName(void) const
 {

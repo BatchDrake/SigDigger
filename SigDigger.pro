@@ -6,7 +6,7 @@
 
 QT       += core gui network
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
 TARGET = SigDigger
 TEMPLATE = app
@@ -83,6 +83,7 @@ SOURCES += \
     Components/MainWindow.cpp \
     Components/PersistentWidget.cpp \
     Components/QTimeSlider.cpp \
+    Components/QuickConnectDialog.cpp \
     Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
@@ -209,6 +210,7 @@ HEADERS += \
     include/ProfileConfigTab.h \
     include/QTimeSlider.h \
     include/QuadDemodTask.h \
+    include/QuickConnectDialog.h \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
     include/SigDiggerHelpers.h \
@@ -329,6 +331,7 @@ FORMS += \
     ui/MainWindow.ui \
     ui/MfControl.ui \
     ui/ProfileConfigTab.ui \
+    ui/QuickConnectDialog.ui \
     ui/SamplerDialog.ui \
     ui/SourcePanel.ui \
     ui/TLESourceTab.ui \
@@ -373,15 +376,23 @@ packagesExist(volk) {
 # which tend to be the faster ones. If they are not available, fallback
 # to PortAudio.
 
-packagesExist(alsa):!freebsd {
+
+isEmpty(DISABLE_ALSA): packagesExist(alsa): ALSA_FOUND = Yes
+isEmpty(DISABLE_PORTAUDIO): packagesExist(portaudio-2.0): PORTAUDIO_FOUND = Yes
+
+!isEmpty(ALSA_FOUND):!freebsd {
+  message(Note: using ALSA libraries for audio support)
   PKGCONFIG += alsa
   SOURCES += Audio/AlsaPlayer.cpp
   DEFINES += SIGDIGGER_HAVE_ALSA
 } else {
-  packagesExist(portaudio-2.0) {
+  !isEmpty(PORTAUDIO_FOUND) {
+    message(Note: using PortAudio libraries for audio support)
     PKGCONFIG += portaudio-2.0
     SOURCES += Audio/PortAudioPlayer.cpp
     DEFINES += SIGDIGGER_HAVE_PORTAUDIO
+  } else {
+    message(Note: audio support is disabled)
   }
 }
 

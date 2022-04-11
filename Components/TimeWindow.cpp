@@ -1712,11 +1712,28 @@ TimeWindow::onTriggerSampler(void)
     return;
 
   SamplingProperties props;
-  SUCOMPLEX dataMin = this->ui->realWaveform->getDataMin();
-  SUCOMPLEX dataMax = this->ui->realWaveform->getDataMax();
+  SUCOMPLEX dataMin = 2 * this->ui->realWaveform->getDataRMS();
+  SUCOMPLEX dataMax = 2 * this->ui->realWaveform->getDataRMS();
   SUFLOAT   maxAmp;
 
   this->populateSamplingProperties(props);
+
+  if (props.length == 0) {
+    QMessageBox::warning(
+          this,
+          "Start sampling",
+          "Cannot perform sampling: nothing to sample");
+    return;
+  }
+
+  if (props.rate < props.fs / SCAST(qreal, props.length)) {
+    this->ui->baudSpin->setFocus();
+    QMessageBox::warning(
+          this,
+          "Start sampling",
+          "Cannot perform sampling: symbol rate is too small (or zero)");
+    return;
+  }
 
   if (props.sync == ZERO_CROSSING) {
     maxAmp = 1;
@@ -1731,8 +1748,11 @@ TimeWindow::onTriggerSampler(void)
             SU_C_IMAG(dataMax)));
   }
 
+  if (maxAmp < 0)
+    maxAmp = 0;
+
   this->samplerDialog->reset();
-  this->samplerDialog->setAmplitudeLimits(-.5f * maxAmp, 1.5f * maxAmp);
+  this->samplerDialog->setAmplitudeLimits(0, maxAmp);
   this->samplerDialog->setProperties(props);
 
   this->startSampling();
@@ -2164,7 +2184,7 @@ TimeWindow::onWaveViewChanged(void)
 void
 TimeWindow::onZeroCrossingComponentChanged(void)
 {
-  qreal min, max;
+  qreal min = -1, max = 1;
   int digits;
 
   switch (this->ui->clkComponentCombo->currentIndex()) {

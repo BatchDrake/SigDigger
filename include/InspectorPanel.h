@@ -22,6 +22,7 @@
 #include <PersistentWidget.h>
 #include <TimeWindow.h>
 #include <ColorConfig.h>
+#include <Suscan/Analyzer.h>
 
 #define SIGDIGGER_DEFAULT_SQUELCH_TRIGGER  10
 #define SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS 250.
@@ -64,6 +65,7 @@ namespace SigDigger {
 
     // UI objects
     Ui::InspectorPanel *ui = nullptr;
+
     // TODO: Allow multiple TimeWindows
     TimeWindow *timeWindow = nullptr;
     qreal timeWindowFs = 1;
@@ -75,6 +77,8 @@ namespace SigDigger {
 
     // UI State
     State state = DETACHED;
+    Suscan::AnalyzerSourceInfo sourceInfo =
+        Suscan::AnalyzerSourceInfo();
 
     std::vector<SUCOMPLEX> data;
     std::vector<SUCOMPLEX> history;
@@ -104,6 +108,7 @@ namespace SigDigger {
     void postLoadInit(void);
     ~InspectorPanel() override;
 
+    void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
     void setColorConfig(ColorConfig const &);
     void setDemodFrequency(qint64);
     void setBandwidthLimits(unsigned int min, unsigned int max);

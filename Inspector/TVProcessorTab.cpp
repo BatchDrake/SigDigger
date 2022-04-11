@@ -47,6 +47,12 @@ TVProcessorTab::TVProcessorTab(QWidget *parent, qreal rate) :
         this->tvWorker,
         &QObject::deleteLater);
 
+  connect(
+        this->tvThread,
+        &QThread::finished,
+        this->tvThread,
+        &QObject::deleteLater);
+
   this->tvThread->start();
 
   this->connectAll();

@@ -340,7 +340,7 @@ namespace Suscan {
     std::string getParam(const std::string &key) const;
     bool hasParam(const std::string &key) const;
     QList<QPair<std::string, std::string>> getParamList(void) const;
-
+    bool isRemote(void) const;
     SUFLOAT getPPM(void) const;
 
     const Source::Device &getDevice(void);

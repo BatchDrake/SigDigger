@@ -24,6 +24,7 @@
 #include <QStyle>
 #include <QMouseEvent>
 #include <QStyleOptionSlider>
+#include "SigDiggerHelpers.h"
 #include <QProxyStyle>
 
 using namespace SigDigger;
@@ -60,7 +61,7 @@ QTimeSlider::QTimeSlider(QWidget *parent) : QSlider(parent)
 
   this->setMinimum(0);
   this->setMaximum(2e9);
-  this->setMinimumHeight(32);
+  this->setMinimumHeight(42);
   this->setTickInterval(this->maximum());
 
   this->setStyle(new AbsolutePositioningStyle(this->style()));
@@ -83,7 +84,6 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
     QFont font;
     qreal lastTextX = 0, textX;
     struct timeval tvFirstTick;
-    QFontMetrics metrics(font);
     int tw, th;
     int i;
     struct timeval diff;
@@ -99,6 +99,8 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
     qint64 minTicks = 10;
     qint64 maxTicks = this->width() / 2;
     qreal maxTickLen = this->height() / 3;
+
+    QFontMetrics metrics(font);
 
     th = metrics.height();
 
@@ -165,14 +167,23 @@ QTimeSlider::paintEvent(QPaintEvent *ev)
 
     while (x < this->width()) {
       if (i % 10 == 0) {
-        QDateTime dateTime;
+        SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
         QString text;
         QRect rect;
-        dateTime.setMSecsSinceEpoch(
-              tvFirstTick.tv_sec * 1000
-              + tvFirstTick.tv_usec / 1000
-              + static_cast<qint64>((i / 10) * tickStepMsec));
-        text = dateTime.toString(tickFormat);
+
+        hlp->pushLocalTZ();
+
+        {
+          QDateTime dateTime;
+          dateTime.setMSecsSinceEpoch(
+                tvFirstTick.tv_sec * 1000
+                + tvFirstTick.tv_usec / 1000
+                + static_cast<qint64>((i / 10) * tickStepMsec));
+          text = dateTime.toString(tickFormat);
+        }
+
+        hlp->popTZ();
+
       #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
               tw = metrics.horizontalAdvance(text);
       #else
