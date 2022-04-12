@@ -106,6 +106,9 @@ namespace SigDigger {
     void refreshSpectrumFilterShape(void);
     void setCurrentAutoGain(void);
 
+    // Refactored new members
+    void addToolWidgets(void);
+
   public:
     // Refactored new members
     QMainWindow *getMainWindow() const;

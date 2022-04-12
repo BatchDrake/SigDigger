@@ -53,6 +53,9 @@
 #include "AboutDialog.h"
 #include "QuickConnectDialog.h"
 
+// Tool widget controls
+#include <ToolWidgetFactory.h>
+
 #if defined(_WIN32) && defined(interface)
 #  undef interface
 #endif /* interface */
@@ -379,6 +382,22 @@ UIMediator::connectMainWindow(void)
 
 }
 
+void
+UIMediator::addToolWidgets(void)
+{
+  auto s = Suscan::Singleton::get_instance();
+
+  for (auto p = s->getFirstToolWidgetFactory();
+       p != s->getLastToolWidgetFactory();
+       ++p) {
+    ToolWidgetFactory *f = *p;
+    ToolWidget *widget = f->make(this);
+    this->ui->spectrum->addToolWidget(
+          widget,
+          f->getTitle().c_str());
+  }
+}
+
 UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 {
   this->owner = owner;
@@ -392,6 +411,8 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
             28001,
             "anonymous",
             "");
+
+  this->addToolWidgets();
 
   this->ui->spectrum->addToolWidget(this->ui->audioPanel, "Audio preview");
   this->ui->spectrum->addToolWidget(this->ui->sourcePanel, "Signal source");
