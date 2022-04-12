@@ -145,6 +145,7 @@ SOURCES += \
     Tasks/PLLSyncTask.cpp \
     Tasks/QuadDemodTask.cpp \
     Tasks/WaveSampler.cpp \
+    UIComponent/UIComponentFactory.cpp \
     UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
@@ -275,6 +276,7 @@ HEADERS += \
     include/TVProcessorWorker.h \
     include/TimeWindow.h \
     include/ToneControl.h \
+    include/UIComponentFactory.h \
     include/UIMediator.h \
     include/EstimatorControl.h \
     include/GenericDataSaver.h \

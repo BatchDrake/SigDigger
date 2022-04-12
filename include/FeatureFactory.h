@@ -36,8 +36,8 @@ namespace Suscan {
     ~FeatureObject();
   };
 
-  // Feature factory: registers abd unregisters itself from the plugin
-  // and globally
+  // Feature factory: registers and unregisters itself from the plugin
+  // and globally (whatever that means)
 
   class FeatureFactory {
     QSet<FeatureObject *> m_refSet;
