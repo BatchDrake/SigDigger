@@ -107,6 +107,9 @@ namespace SigDigger {
     void setCurrentAutoGain(void);
 
   public:
+    // Refactored new members
+    QMainWindow *getMainWindow() const;
+
     // UI State
     void refreshUI(void);
     void setState(enum State);

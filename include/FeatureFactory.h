@@ -43,6 +43,7 @@ namespace Suscan {
     QSet<FeatureObject *> m_refSet;
     Plugin *m_plugin = nullptr;
 
+  protected:
     void registerInstance(FeatureObject *object);
     void unregisterInstance(FeatureObject *object);
 

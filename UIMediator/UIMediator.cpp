@@ -120,6 +120,12 @@ UIMediator::setProfile(Suscan::Source::Config const &prof, bool restart)
   emit profileChanged(restart);
 }
 
+QMainWindow *
+UIMediator::getMainWindow() const
+{
+  return this->owner;
+}
+
 void
 UIMediator::refreshUI(void)
 {

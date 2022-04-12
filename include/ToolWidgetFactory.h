@@ -1,5 +1,5 @@
 //
-//    UIComponentFactory.h: Factory for UI components
+//    ToolWidgetFactory.h: Tool widget factory
 //    Copyright (C) 2022 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,33 +16,29 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef UICOMPONENTFACTORY_H
-#define UICOMPONENTFACTORY_H
+#ifndef TOOLWIDGETFACTORY_H
+#define TOOLWIDGETFACTORY_H
 
-#include <FeatureFactory.h>
-#include <Suscan/Analyzer.h>
-#include <PersistentWidget.h>
+#include <UIComponentFactory.h>
+#include <QWidget>
 
 namespace SigDigger {
   class UIMediator;
-  class UIComponentFactory;
+  class ToolWidgetFactory;
 
-  class UIComponent : public Suscan::FeatureObject, PersistentObject {
-    class UIMediator *m_mediator = nullptr;
-
+  class ToolWidget : public UIComponent, QWidget {
   protected:
-    UIComponent(UIComponentFactory *, UIMediator *);
-
-  public:
-    virtual void setState(int, Suscan::Analyzer *);
-    virtual void setProfile(Suscan::Source::Config &);
+    ToolWidget(ToolWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
   };
 
-  class UIComponentFactory : public Suscan::FeatureFactory
-  {
+  class ToolWidgetFactory : public UIComponentFactory {
   public:
-    UIComponentFactory(Suscan::Plugin *);
+    virtual ToolWidget *make(UIMediator *) = 0;
+
+    ToolWidgetFactory(Suscan::Plugin *);
+
+    virtual std::string getTitle() const = 0; // Returns the title in the side panel
   };
 }
 
-#endif // UICOMPONENTFACTORY_H
+#endif // TOOLWIDGETFACTORY_H
