@@ -1145,6 +1145,42 @@ Singleton::getNetworkProfileFrom(QString const &name) const
 }
 
 bool
+Singleton::registerToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
+{
+  if (this->toolWidgetFactories.contains(factory))
+    return false;
+
+  this->toolWidgetFactories.push_back(factory);
+
+  return true;
+}
+
+bool
+Singleton::unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
+{
+  int index = this->toolWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->toolWidgetFactories.removeAt(index);
+
+  return true;
+}
+
+QList<SigDigger::ToolWidgetFactory *>::const_iterator
+Singleton::getFirstToolWidgetFactory() const
+{
+  return this->toolWidgetFactories.cbegin();
+}
+
+QList<SigDigger::ToolWidgetFactory *>::const_iterator
+Singleton::getLastToolWidgetFactory() const
+{
+  return this->toolWidgetFactories.cend();
+}
+
+bool
 Singleton::notifyRecent(std::string const &name)
 {
   bool found = false;

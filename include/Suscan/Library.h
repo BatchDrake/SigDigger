@@ -43,6 +43,10 @@
 
 #include <QHash>
 
+namespace SigDigger {
+  class ToolWidgetFactory;
+};
+
 namespace Suscan {
   uint qHash(const Suscan::Source::Device &dev);
 
@@ -219,6 +223,7 @@ namespace Suscan {
     QMap<qint64, Bookmark> bookmarks;
     QMap<std::string, SpectrumUnit> spectrumUnits;
     QHash<QString, Source::Config> networkProfiles;
+    QList<SigDigger::ToolWidgetFactory *> toolWidgetFactories;
     std::list<std::string> recentProfiles;
 
     bool codecs_initd;
@@ -341,6 +346,11 @@ namespace Suscan {
     QHash<QString, Source::Config>::const_iterator getFirstNetworkProfile(void) const;
     QHash<QString, Source::Config>::const_iterator getLastNetworkProfile(void) const;
     QHash<QString, Source::Config>::const_iterator getNetworkProfileFrom(QString const &) const;
+
+    bool registerToolWidgetFactory(SigDigger::ToolWidgetFactory *);
+    bool unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *);
+    QList<SigDigger::ToolWidgetFactory *>::const_iterator getFirstToolWidgetFactory() const;
+    QList<SigDigger::ToolWidgetFactory *>::const_iterator getLastToolWidgetFactory() const;
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);
