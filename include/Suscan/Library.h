@@ -264,6 +264,7 @@ namespace Suscan {
     void init_bookmarks(void);
     void init_tle_sources(void);
     void init_tle(void);
+    void init_plugins(void);
     void detect_devices(void);
 
     void sync(void);

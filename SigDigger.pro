@@ -88,8 +88,10 @@ SOURCES += \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
     Components/TimeWindow.cpp \
+    Default/Audio/AudioProcessor.cpp \
     Default/Audio/AudioWidget.cpp \
     Default/Audio/AudioWidgetFactory.cpp \
+    Default/Registration.cpp \
     Inspector/FACTab.cpp \
     Inspector/Inspector.cpp \
     Inspector/InspectorUI.cpp \
@@ -185,8 +187,10 @@ SOURCES += \
 
 
 HEADERS += \
+    Default/Audio/AudioProcessor.h \
     Default/Audio/AudioWidget.h \
     Default/Audio/AudioWidgetFactory.h \
+    Default/Registration.h \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \

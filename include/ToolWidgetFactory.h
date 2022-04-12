@@ -37,6 +37,10 @@ namespace SigDigger {
   public:
     virtual ToolWidget *make(UIMediator *) = 0;
 
+    // Overriden methods
+    bool registerGlobally(void) override;
+    bool unregisterGlobally(void) override;
+
     ToolWidgetFactory(Suscan::Plugin *);
 
     virtual std::string getTitle() const = 0; // Returns the title in the side panel

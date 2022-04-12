@@ -56,7 +56,7 @@
     plugin_ver,                                \
     SU_VER(x, y, z));
 
-#define SUSCAN_API_VERSION(x, y, z)            \
+#define SUSCAN_PLUGIN_API_VERSION(x, y, z)     \
   SUSCAN_DECLARE_SYM(                          \
     uint32_t,                                  \
     api_ver,                                   \

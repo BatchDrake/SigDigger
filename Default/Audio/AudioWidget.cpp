@@ -24,6 +24,7 @@
 #include <QDynamicPropertyChangeEvent>
 #include <util/compat-statvfs.h>
 #include "ui_AudioPanel.h"
+#include <QDir>
 
 using namespace SigDigger;
 
@@ -87,9 +88,25 @@ AudioWidgetConfig::serialize(void)
 AudioWidget::AudioWidget(
     AudioWidgetFactory *factory,
     UIMediator *mediator,
-    QWidget *parent) : ToolWidget(factory, mediator, parent)
+    QWidget *parent) :
+  ToolWidget(factory, mediator, parent),
+  ui(new Ui::AudioPanel)
+
 {
   ui->setupUi(this);
+
+  this->setRecordSavePath(QDir::currentPath().toStdString());
+
+  this->fcDialog = new FrequencyCorrectionDialog(
+      this,
+      this->demodFreq,
+      this->colorConfig);
+
+  this->assertConfig();
+  this->populateRates();
+  this->connectAll();
+
+  this->setProperty("collapsed", this->panelConfig->collapsed);
 }
 
 AudioWidget::~AudioWidget()
@@ -98,6 +115,98 @@ AudioWidget::~AudioWidget()
 }
 
 // Private methods
+void
+AudioWidget::populateRates(void)
+{
+  this->ui->sampleRateCombo->clear();
+
+  for (unsigned i = 0; i < sizeof(supportedRates) / sizeof(supportedRates[0]); ++i) {
+    if (this->bandwidth > supportedRates[i]) {
+      this->ui->sampleRateCombo->addItem(
+          QString::number(supportedRates[i]),
+          QVariant(supportedRates[i]));
+      if (supportedRates[i] == this->panelConfig->rate)
+        this->ui->sampleRateCombo->setCurrentIndex(static_cast<int>(i));
+    }
+  }
+}
+
+void
+AudioWidget::connectAll(void)
+{
+  connect(
+      this->ui->audioPreviewCheck,
+      SIGNAL(stateChanged(int)),
+      this,
+      SLOT(onEnabledChanged(void)));
+
+  connect(
+      this->ui->sampleRateCombo,
+      SIGNAL(activated(int)),
+      this,
+      SLOT(onSampleRateChanged(void)));
+
+  connect(
+      this->ui->demodCombo,
+      SIGNAL(activated(int)),
+      this,
+      SLOT(onDemodChanged(void)));
+
+  connect(
+      this->ui->cutoffSlider,
+      SIGNAL(valueChanged(int)),
+      this,
+      SLOT(onFilterChanged(void)));
+
+  connect(
+      this->ui->volumeSlider,
+      SIGNAL(valueChanged(int)),
+      this,
+      SLOT(onVolumeChanged(void)));
+
+  connect(
+      this->ui->muteButton,
+      SIGNAL(toggled(bool)),
+      this,
+      SLOT(onMuteToggled(bool)));
+
+  connect(
+        this->ui->saveButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onChangeSavePath(void)));
+
+  connect(
+        this->ui->recordStartStopButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onRecordStartStop(void)));
+
+  connect(
+        this->ui->sqlButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onToggleSquelch(void)));
+
+  connect(
+        this->ui->sqlLevelSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onSquelchLevelChanged(void)));
+
+  connect(
+        this->ui->dopplerSettingsButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onOpenDopplerSettings(void)));
+
+  connect(
+        this->fcDialog,
+        SIGNAL(accepted()),
+        this,
+        SLOT(onAcceptCorrectionSetting(void)));
+}
+
 bool
 AudioWidget::shouldOpenAudio(void) const
 {

@@ -1,5 +1,5 @@
 //
-//    UIComponentFactory.h: Factory for UI components
+//    Registration.cpp: Default plugin registration
 //    Copyright (C) 2022 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,33 +16,16 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef UICOMPONENTFACTORY_H
-#define UICOMPONENTFACTORY_H
 
-#include <FeatureFactory.h>
-#include <Suscan/Analyzer.h>
-#include <PersistentWidget.h>
+#include "Registration.h"
+#include "Audio/AudioWidgetFactory.h"
 
-namespace SigDigger {
-  class UIMediator;
-  class UIComponentFactory;
+#include <Suscan/Library.h>
 
-  class UIComponent : public Suscan::FeatureObject, public PersistentObject {
-    class UIMediator *m_mediator = nullptr;
+bool
+SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
+{
+  new AudioWidgetFactory(plugin);
 
-  protected:
-    UIComponent(UIComponentFactory *, UIMediator *);
-
-  public:
-    virtual void setState(int, Suscan::Analyzer *);
-    virtual void setProfile(Suscan::Source::Config &);
-  };
-
-  class UIComponentFactory : public Suscan::FeatureFactory
-  {
-  public:
-    UIComponentFactory(Suscan::Plugin *);
-  };
+  return true;
 }
-
-#endif // UICOMPONENTFACTORY_H

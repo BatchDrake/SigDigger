@@ -17,6 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include "ToolWidgetFactory.h"
+#include <Suscan/Library.h>
 
 using namespace SigDigger;
 
@@ -25,6 +26,22 @@ ToolWidget::ToolWidget(
   QWidget(parent), UIComponent(factory, mediator)
 {
 
+}
+
+bool
+ToolWidgetFactory::registerGlobally(void)
+{
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  return s->registerToolWidgetFactory(this);
+}
+
+bool
+ToolWidgetFactory::unregisterGlobally(void)
+{
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  return s->unregisterToolWidgetFactory(this);
 }
 
 ToolWidgetFactory::ToolWidgetFactory(Suscan::Plugin *plugin)

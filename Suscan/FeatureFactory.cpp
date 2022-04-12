@@ -45,6 +45,7 @@ FeatureFactory::FeatureFactory(Plugin *plugin)
     plugin = Suscan::Plugin::getDefaultPlugin();
 
   this->m_plugin = plugin;
+
   plugin->registerFactory(this);
 }
 

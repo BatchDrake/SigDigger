@@ -1,5 +1,5 @@
 //
-//    UIComponentFactory.h: Factory for UI components
+//    AudioProcessor.cpp: Audio processor
 //    Copyright (C) 2022 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,33 +16,10 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef UICOMPONENTFACTORY_H
-#define UICOMPONENTFACTORY_H
+#include "AudioProcessor.h"
 
-#include <FeatureFactory.h>
-#include <Suscan/Analyzer.h>
-#include <PersistentWidget.h>
+AudioProcessor::AudioProcessor(QObject *parent)
+  : QObject{parent}
+{
 
-namespace SigDigger {
-  class UIMediator;
-  class UIComponentFactory;
-
-  class UIComponent : public Suscan::FeatureObject, public PersistentObject {
-    class UIMediator *m_mediator = nullptr;
-
-  protected:
-    UIComponent(UIComponentFactory *, UIMediator *);
-
-  public:
-    virtual void setState(int, Suscan::Analyzer *);
-    virtual void setProfile(Suscan::Source::Config &);
-  };
-
-  class UIComponentFactory : public Suscan::FeatureFactory
-  {
-  public:
-    UIComponentFactory(Suscan::Plugin *);
-  };
 }
-
-#endif // UICOMPONENTFACTORY_H

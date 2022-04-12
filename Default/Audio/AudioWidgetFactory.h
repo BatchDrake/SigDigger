@@ -25,6 +25,10 @@ namespace SigDigger {
   class AudioWidgetFactory : public ToolWidgetFactory
   {
   public:
+    // FeatureFactory overrides
+    const char *name(void) const override;
+
+    // ToolWidgetFactory overrides
     ToolWidget *make(UIMediator *) override;
     std::string getTitle() const override;
 

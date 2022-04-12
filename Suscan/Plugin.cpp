@@ -26,6 +26,8 @@
 #include <SuWidgetsHelpers.h>
 #include <Version.h>
 #include <FeatureFactory.h>
+#include <Default/Registration.h>
+#include <QCoreApplication>
 
 using namespace Suscan;
 
@@ -65,10 +67,12 @@ Plugin *
 Plugin::getDefaultPlugin()
 {
   if (m_default == nullptr) {
-    m_default = new Plugin("default", "N/A", "Default plugin", nullptr);
-
+    m_default = new Plugin(
+          "default",
+          QCoreApplication::applicationName().toStdString(),
+          "Default plugin",
+          nullptr);
     m_default->m_version = SIGDIGGER_VERSION_STRING;
-    m_default->m_loaded = true;
   }
 
   return m_default;
@@ -129,35 +133,57 @@ Plugin::Plugin(
 bool
 Plugin::load(void)
 {
-  PluginEntryFunc pluginEntry =
-      reinterpret_cast<PluginEntryFunc>(this->resolveSym("plugin_load"));
-  const uint32_t *pPluginVer =
-      SCAST(const uint32_t *, this->resolveSym("plugin_ver"));
-  const uint32_t *pAPIVer    =
-      SCAST(const uint32_t *, this->resolveSym("api_ver"));
+  PluginEntryFunc pluginEntry = nullptr;
 
   if (this->m_loaded)
     return true;
 
-  if (pPluginVer == nullptr || pAPIVer == nullptr || pluginEntry == nullptr)
-    return false;
+  // Default plugin
+  if (this->m_handle == nullptr) {
+    pluginEntry = SigDigger::DefaultPluginEntry;
+  } else {
+    pluginEntry =
+        reinterpret_cast<PluginEntryFunc>(this->resolveSym("plugin_load"));
+    const uint32_t *pPluginVer =
+        SCAST(const uint32_t *, this->resolveSym("plugin_ver"));
+    const uint32_t *pAPIVer    =
+        SCAST(const uint32_t *, this->resolveSym("api_ver"));
 
-  this->m_version = QString::asprintf(
-        "%d.%d.%d",
-        0xff & (*pPluginVer >> 16),
-        0xff & (*pPluginVer >> 8),
-        0xff & (*pPluginVer >> 0)).toStdString();
+    if (pPluginVer == nullptr || pAPIVer == nullptr || pluginEntry == nullptr)
+      return false;
 
-  if (*pAPIVer > SIGDIGGER_API_VERSION) {
-    SU_ERROR(
-          "%s: this plugin is not compatible with the current SigDigger version\n",
-          this->m_path.c_str());
-    return false;
+    this->m_version = QString::asprintf(
+          "%d.%d.%d",
+          0xff & (*pPluginVer >> 16),
+          0xff & (*pPluginVer >> 8),
+          0xff & (*pPluginVer >> 0)).toStdString();
+
+    if (*pAPIVer > SIGDIGGER_API_VERSION) {
+      SU_ERROR(
+            "%s: this plugin is not compatible with the current SigDigger version\n",
+            this->m_path.c_str());
+      return false;
+    }
   }
 
   this->m_loaded = (pluginEntry) (this);
 
-  return true;
+  // Load okay, perform registration
+  if (this->m_loaded) {
+    for (auto p : this->m_factorySet) {
+      if (!p->registerGlobally()) {
+        SU_ERROR(
+              "%s: failed to register factory %s globally, unloading plugin\n",
+              this->m_path.c_str(),
+              p->name());
+        this->unload();
+
+        break;
+      }
+    }
+  }
+
+  return this->m_loaded;
 }
 
 bool
