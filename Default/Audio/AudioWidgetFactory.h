@@ -1,5 +1,5 @@
 //
-//    ToolWidgetFactory.cpp: Tool widget factory
+//    Default/Audio/AudioWidgetFactory.h: description
 //    Copyright (C) 2022 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,19 +16,20 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include "ToolWidgetFactory.h"
+#ifndef AUDIOWIDGETFACTORY_H
+#define AUDIOWIDGETFACTORY_H
 
-using namespace SigDigger;
+#include <ToolWidgetFactory.h>
 
-ToolWidget::ToolWidget(
-    ToolWidgetFactory *factory, UIMediator *mediator, QWidget *parent) :
-  QWidget(parent), UIComponent(factory, mediator)
-{
+namespace SigDigger {
+  class AudioWidgetFactory : public ToolWidgetFactory
+  {
+  public:
+    ToolWidget *make(UIMediator *) override;
+    std::string getTitle() const override;
 
+    AudioWidgetFactory(Suscan::Plugin *);
+  };
 }
 
-ToolWidgetFactory::ToolWidgetFactory(Suscan::Plugin *plugin)
-  : UIComponentFactory(plugin)
-{
-
-}
+#endif // AUDIOWIDGETFACTORY_H

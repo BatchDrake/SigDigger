@@ -26,7 +26,9 @@ namespace SigDigger {
   class UIMediator;
   class ToolWidgetFactory;
 
-  class ToolWidget : public UIComponent, public QWidget {
+  class ToolWidget : public QWidget, public UIComponent {
+    Q_OBJECT
+
   protected:
     ToolWidget(ToolWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
   };
