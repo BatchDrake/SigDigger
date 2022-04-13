@@ -51,6 +51,7 @@
 #include "ConfigDialog.h"
 #include "DeviceDialog.h"
 #include "AboutDialog.h"
+#include "QuickConnectDialog.h"
 
 #if defined(_WIN32) && defined(interface)
 #  undef interface
@@ -125,7 +126,6 @@ UIMediator::refreshUI(void)
   QString stateString;
   QString sourceDesc;
   bool    enableTimeSlider = false;
-  bool    isRealTime = false;
 
   Suscan::Source::Config *config = this->getProfile();
   const Suscan::Source::Device &dev = config->getDevice();
@@ -152,6 +152,9 @@ UIMediator::refreshUI(void)
 
     case RUNNING:
       this->haveRtDelta = false;
+      this->rtCalibrations = 0;
+      this->rtDeltaReal = 0;
+
       stateString = QString("Running");
 
       if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR)
@@ -184,7 +187,12 @@ UIMediator::refreshUI(void)
         ? InspectorPanel::State::ATTACHED
         : InspectorPanel::State::DETACHED);
 
-  if (config->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
+  this->ui->sourcePanel->setState(
+        this->state == RUNNING
+        ? SourcePanel::State::ATTACHED
+        : SourcePanel::State::DETACHED);
+
+  if (config->isRemote()) {
     QString user = QString::fromStdString(config->getParam("user"));
     QString host = QString::fromStdString(config->getParam("host"));
     QString port = QString::fromStdString(config->getParam("port"));
@@ -195,7 +203,6 @@ UIMediator::refreshUI(void)
   } else {
     if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {
       sourceDesc = QString::fromStdString(dev.getDesc());
-      isRealTime = true;
     } else {
       QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
       sourceDesc = fi.fileName();
@@ -205,7 +212,6 @@ UIMediator::refreshUI(void)
   }
 
   this->ui->timeSlider->setEnabled(enableTimeSlider);
-  this->ui->timeToolbar->setVisible(!isRealTime);
 
   this->owner->setWindowTitle(
         "SigDigger - "
@@ -245,6 +251,18 @@ UIMediator::connectMainWindow(void)
         SIGNAL(triggered(bool)),
         this,
         SLOT(onTriggerDevices(bool)));
+
+  connect(
+        this->ui->main->actionQuick_connect,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onQuickConnect(void)));
+
+  connect(
+        this->ui->quickConnectDialog,
+        SIGNAL(accepted(void)),
+        this,
+        SLOT(onQuickConnectAccepted(void)));
 
   connect(
         this->ui->main->actionStart_capture,
@@ -360,6 +378,15 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->owner = owner;
   this->ui = ui;
 
+  this->lastPsd.tv_sec = this->lastPsd.tv_usec = 0;
+
+  this->remoteDevice = Suscan::Source::Device(
+            "Remote device",
+            "localhost",
+            28001,
+            "anonymous",
+            "");
+
   this->ui->spectrum->addToolWidget(this->ui->audioPanel, "Audio preview");
   this->ui->spectrum->addToolWidget(this->ui->sourcePanel, "Signal source");
   this->ui->spectrum->addToolWidget(this->ui->inspectorPanel, "Inspection");
@@ -451,12 +478,22 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
         static_cast<qint64>(info.getLnbFrequency()),
         true); // Silent update (important!)
 
+  this->ui->spectrum->setLocked(
+        !info.testPermission(SUSCAN_ANALYZER_PERM_SET_FREQ));
+
   if (info.isSeekable()) {
     this->setSourceTimeStart(info.getSourceStartTime());
     this->setSourceTimeEnd(info.getSourceEndTime());
+
+    this->ui->timeSlider->setEnabled(
+          info.testPermission(
+            SUSCAN_ANALYZER_PERM_SEEK));
   }
 
+  this->ui->audioPanel->applySourceInfo(info);
+  this->ui->inspectorPanel->applySourceInfo(info);
   this->ui->sourcePanel->applySourceInfo(info);
+  this->ui->fftPanel->applySourceInfo(info);
 }
 
 void
@@ -571,12 +608,18 @@ UIMediator::setCaptureSize(quint64 size)
 void
 UIMediator::setAnalyzerParams(Suscan::AnalyzerParams const &params)
 {
+  bool prev;
   this->ui->spectrum->setExpectedRate(
         static_cast<int>(1.f / params.psdUpdateInterval));
+
+  this->appConfig->analyzerParams = params;
+
+  prev = this->ui->fftPanel->blockSignals(true);
   this->ui->fftPanel->setWindowFunction(params.windowFunction);
   this->ui->fftPanel->setFftSize(params.windowSize);
   this->ui->fftPanel->setRefreshRate(
         static_cast<unsigned int>(1.f / params.psdUpdateInterval));
+  this->ui->fftPanel->blockSignals(prev);
 }
 
 void
@@ -598,12 +641,11 @@ UIMediator::setIORate(qreal rate)
 }
 
 void
-UIMediator::refreshProfile(void)
+UIMediator::refreshProfile(bool updateFreqs)
 {
   qint64 min = 0, max = 0;
   bool isRealTime = false;
   struct timeval tv, start, end;
-
   this->ui->sourcePanel->setProfile(&this->appConfig->profile);
 
   std::string user, pass, interface;
@@ -614,13 +656,13 @@ UIMediator::refreshProfile(void)
 
   this->ui->configDialog->setProfile(this->appConfig->profile);
 
-  if (this->appConfig->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
+  if (!this->appConfig->profile.isRemote()) {
     if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
       min = static_cast<qint64>(
             this->appConfig->profile.getDevice().getMinFreq());
       max = static_cast<qint64>(
             this->appConfig->profile.getDevice().getMaxFreq());
-        isRealTime = true;
+      isRealTime = true;
     } else {
       min = SIGDIGGER_MIN_RADIO_FREQ;
       max = SIGDIGGER_MAX_RADIO_FREQ;
@@ -674,10 +716,10 @@ UIMediator::refreshProfile(void)
   this->isRealTime   = isRealTime;
 
   // Configure timeslider
-  this->ui->timeSlider->setEnabled(!isRealTime);
   this->ui->timeSlider->setStartTime(start);
   this->ui->timeSlider->setEndTime(end);
   this->ui->timeSlider->setTimeStamp(tv);
+  this->ui->timeToolbar->setVisible(!isRealTime);
 
   // Configure audio panel
   this->ui->audioPanel->setRealTime(isRealTime);
@@ -685,10 +727,13 @@ UIMediator::refreshProfile(void)
 
   // Configure spectrum
   this->ui->spectrum->setFrequencyLimits(min, max);
-  this->ui->spectrum->setFreqs(
-        static_cast<qint64>(this->appConfig->profile.getFreq()),
-        static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
-  this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
+
+  if (updateFreqs) {
+    this->ui->spectrum->setFreqs(
+          static_cast<qint64>(this->appConfig->profile.getFreq()),
+          static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
+    this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
+  }
 }
 
 Suscan::Source::Config *
@@ -792,6 +837,7 @@ UIMediator::applyConfig(void)
   this->ui->panoramicDialog->applyConfig();
 
   this->refreshProfile();
+  this->refreshUI();
 
   // Apply loFreq and bandwidth config AFTER profile has been set.
   this->ui->spectrum->setLoFreq(savedLoFreq);
@@ -891,6 +937,41 @@ UIMediator::onToggleAbout(bool)
   this->ui->aboutDialog->exec();
 }
 
+void
+UIMediator::onQuickConnect(void)
+{
+  this->ui->quickConnectDialog->setProfile(this->appConfig->profile);
+  this->ui->quickConnectDialog->exec();
+}
+
+void
+UIMediator::onQuickConnectAccepted(void)
+{
+  this->appConfig->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
+  this->appConfig->profile.setDevice(this->remoteDevice);
+
+  this->appConfig->profile.clearParams();
+
+  this->appConfig->profile.setParam(
+        "host",
+        this->ui->quickConnectDialog->getHost().toStdString());
+  this->appConfig->profile.setParam(
+        "port",
+        std::to_string(this->ui->quickConnectDialog->getPort()));
+  this->appConfig->profile.setParam(
+        "user",
+        this->ui->quickConnectDialog->getUser().toStdString());
+  this->appConfig->profile.setParam(
+        "password",
+        this->ui->quickConnectDialog->getPassword().toStdString());
+
+  this->refreshProfile(false);
+  this->refreshUI();
+  emit profileChanged(true);
+
+  if (this->state == HALTED)
+    emit captureStart();
+}
 
 void
 UIMediator::onTriggerStart(bool)
@@ -1157,12 +1238,13 @@ UIMediator::onJumpToBookmark(BookmarkInfo info)
   this->ui->spectrum->setLoFreq(0);
 
   if (!info.modulation.isEmpty()) {
-    this->ui->audioPanel->setDemod(AudioPanel::strToDemod(info.modulation.toStdString()));
+    this->ui->audioPanel->setDemod(
+          AudioPanel::strToDemod(info.modulation.toStdString()));
+    this->refreshSpectrumFilterShape();
   }
 
-  if (info.bandwidth() != 0) {
+  if (info.bandwidth() != 0)
     this->setBandwidth(info.bandwidth());
-  }
 
   this->onFrequencyChanged(info.frequency);
 }

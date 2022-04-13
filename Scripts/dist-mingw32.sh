@@ -28,7 +28,7 @@ function deploy()
 {
     try "Locate windeployqt..." which windeployqt
     try "Create staging dir..." mkdir -p "$STAGINGDIR"
-    try "Deploying via windeployqt..." windeployqt "$DEPLOYROOT/usr/bin/SigDigger.exe" --dir "$STAGINGDIR"
+    try "Deploying via windeployqt..." windeployqt --no-translations "$DEPLOYROOT/usr/bin/SigDigger.exe" --dir "$STAGINGDIR"
     try "Copying SigDigger to staging dir..." cp "$DEPLOYROOT/usr/bin/SigDigger.exe" "$STAGINGDIR"
     try "Copying Suscan CLI tool (suscli) to staging dir..." cp "$DEPLOYROOT/usr/bin/suscli.exe" "$STAGINGDIR"
     try "Copying data directory..." cp -R "$DEPLOYROOT/usr/share/suscan/config" "$STAGINGDIR"

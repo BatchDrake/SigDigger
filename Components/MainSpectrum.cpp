@@ -175,6 +175,12 @@ MainSpectrum::connectAll(void)
         SLOT(onFrequencyChanged(void)));
 
   connect(
+        this->ui->fcLcd,
+        SIGNAL(lockStateChanged(void)),
+        this,
+        SLOT(onLockStateChanged(void)));
+
+  connect(
         this->ui->lnbLcd,
         SIGNAL(valueChanged(void)),
         this,
@@ -351,6 +357,18 @@ void
 MainSpectrum::setLnbFreq(qint64 lnbFreq)
 {
   this->setFreqs(this->getCenterFreq(), lnbFreq);
+}
+
+void
+MainSpectrum::setLocked(bool locked)
+{
+  this->ui->fcLcd->setLocked(locked);
+  this->ui->lnbLcd->setLocked(locked);
+
+  this->ui->fcLcd->setEnabled(!locked);
+  this->ui->lnbLcd->setEnabled(!locked);
+
+  this->onLockStateChanged();
 }
 
 void
@@ -859,3 +877,8 @@ MainSpectrum::onNewModulation(QString modulation)
   emit modulationChanged(modulation);
 }
 
+void
+MainSpectrum::onLockStateChanged(void)
+{
+  WATERFALL_CALL(setFreqDragLocked(this->ui->fcLcd->isLocked()));
+}

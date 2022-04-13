@@ -48,7 +48,7 @@ namespace Suscan {
     struct suscan_analyzer_source_info local_info;
     struct suscan_analyzer_source_info *c_info = nullptr;
 
-    AnalyzerSourceInfo()
+    AnalyzerSourceInfo() : AnalyzerSourceInfo(&this->local_info)
     {
       suscan_analyzer_source_info_init(&this->local_info);
     }
@@ -71,6 +71,54 @@ namespace Suscan {
               suscan_analyzer_source_info_init_copy(&this->local_info, ptr));
         this->c_info = &this->local_info;
       }
+    }
+
+    AnalyzerSourceInfo(AnalyzerSourceInfo const &info)
+      : AnalyzerSourceInfo(info.c_info)
+    {
+    }
+
+    // Move assignation
+    AnalyzerSourceInfo &
+    operator=(AnalyzerSourceInfo &&rv)
+    {
+      std::swap(this->loan, rv.loan);
+      std::swap(this->c_info, rv.c_info);
+      std::swap(this->local_info, rv.local_info);
+
+      if (!this->loan)
+        this->c_info = &this->local_info;
+
+      return *this;
+    }
+
+    // Copy assignation
+    AnalyzerSourceInfo &
+    operator=(const AnalyzerSourceInfo &rv)
+    {
+      if (!this->loan)
+        suscan_analyzer_source_info_finalize(&this->local_info);
+
+      SU_ATTEMPT(
+            suscan_analyzer_source_info_init_copy(
+              &this->local_info,
+              rv.c_info));
+      this->loan   = false;
+      this->c_info = &this->local_info;
+
+      return *this;
+    }
+
+    inline uint64_t
+    getPermissions(void) const
+    {
+      return this->c_info->permissions;
+    }
+
+    inline bool
+    testPermission(uint64_t mask) const
+    {
+      return (getPermissions() & mask) == mask;
     }
 
     inline SUSCOUNT

@@ -19,6 +19,7 @@
 #include "FrequencyCorrectionDialog.h"
 #include "ui_FrequencyCorrectionDialog.h"
 #include <QPainter>
+#include "SigDiggerHelpers.h"
 #include <SuWidgetsHelpers.h>
 #include <Suscan/Analyzer.h>
 
@@ -185,7 +186,10 @@ FrequencyCorrectionDialog::paintAzimuthElevationPass(QPainter &p)
   struct timeval tdelta;
   struct timeval t;
   struct tm losTm, aosTm;
+  SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
   bool visible;
+  bool haveSourceStart = false;
+  bool haveSourceEnd = false;
   QVector<qreal> dashes;
   xyz_t pAzEl = {{0}, {0}, {0}};
   xyz_t firstAzel = {{0}, {0}, {0}};
@@ -195,10 +199,26 @@ FrequencyCorrectionDialog::paintAzimuthElevationPass(QPainter &p)
         FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING);
 
   if (this->haveALOS) {
-	time_t lost = this->losTime.tv_sec;
-	time_t aost = this->aosTime.tv_sec;
+    qreal mkwidth =
+          (this->azElAxesRadius / 80) * FREQUENCY_CORRECTION_DIALOG_OVERSAMPLING;
+    time_t lost = this->losTime.tv_sec;
+    time_t aost = this->aosTime.tv_sec;
+    time_t ssrc = this->startTime.tv_sec;
+    time_t esrc = this->endTime.tv_sec;
+
+    if (!this->realTime) {
+      // Non-realtime signals have a defined start time and end time
+      // We overlay this information on the azel plot indicating the
+      // window in which the predictions will apply
+      haveSourceStart = (aost < ssrc) && (ssrc <= lost);
+      haveSourceEnd   = (aost < esrc) && (esrc <= lost);
+    }
+
+    // Convert to something printable
+    hlp->pushLocalTZ();
     localtime_r(&lost, &losTm);
     localtime_r(&aost, &aosTm);
+    hlp->popTZ();
 
     timersub(&this->losTime, &this->aosTime, &diff);
 
@@ -208,6 +228,7 @@ FrequencyCorrectionDialog::paintAzimuthElevationPass(QPainter &p)
     tdelta.tv_sec  = static_cast<time_t>(floor(delta));
     tdelta.tv_usec = static_cast<unsigned>(1e6 * (delta - floor(delta)));
 
+    // Yay C++
     dashes << 3 << 4;
 
     t = this->aosTime;
@@ -266,6 +287,28 @@ FrequencyCorrectionDialog::paintAzimuthElevationPass(QPainter &p)
           p,
           this->azElToPoint(azel),
           QString::asprintf("%02u:%02u", losTm.tm_hour, losTm.tm_min));
+
+    if (haveSourceStart) {
+      sgdp4_prediction_update(&this->prediction, &this->startTime);
+      sgdp4_prediction_get_azel(&this->prediction, &azel);
+
+      p.setBrush(Qt::yellow);
+      p.drawEllipse(
+            this->azElToPoint(azel),
+            mkwidth,
+            mkwidth);
+    }
+
+    if (haveSourceEnd) {
+      sgdp4_prediction_update(&this->prediction, &this->endTime);
+      sgdp4_prediction_get_azel(&this->prediction, &azel);
+
+      p.setBrush(Qt::yellow);
+      p.drawEllipse(
+            this->azElToPoint(azel),
+            mkwidth,
+            mkwidth);
+    }
   }
 }
 
@@ -291,7 +334,7 @@ FrequencyCorrectionDialog::paintAzimuthElevationSatPath(QPixmap &pixmap)
     if (azel.elevation > 0) {
       p.setBrush(Qt::cyan);
       p.drawEllipse(
-            this->azElToPoint(azel) + QPointF(mkwidth/2, mkwidth/2),
+            this->azElToPoint(azel),
             mkwidth,
             mkwidth);
 
@@ -402,10 +445,10 @@ FrequencyCorrectionDialog::recalcALOS(void)
     if (!this->haveALOS
         || timercmp(&this->timeStamp, &this->losTime, >=)) {
       xyz_t azel;
-      SUFREQ window;
+      SUDOUBLE window;
+      SUDOUBLE searchWindow;
       struct timeval delta, search;
       this->haveALOS = false;
-
 
       // Get current prediction
       if (!sgdp4_prediction_update(&this->prediction, &this->timeStamp))
@@ -413,12 +456,12 @@ FrequencyCorrectionDialog::recalcALOS(void)
 
       sgdp4_prediction_get_azel(&this->prediction, &azel);
 
-      if (this->realTime) {
-        window = FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW;
-      } else {
-        timersub(&this->endTime, &this->timeStamp, &delta);
-        window = static_cast<SUFREQ>(delta.tv_sec);
-      }
+      searchWindow = qBound(
+            FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW_MIN,  // 1 day
+            3 * 86400.0 / this->currentOrbit.rev,
+            FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW_MAX); // 30 days
+
+      window = searchWindow;
 
       if (azel.elevation > 0) {
         // For visible satellites, the strategy is as follows:
@@ -441,29 +484,28 @@ FrequencyCorrectionDialog::recalcALOS(void)
         timersub(&this->losTime, &this->timeStamp, &delta);
         delta.tv_sec += 1;
 
-        // Step
+        // Step 3
         do {
           timersub(&this->losTime, &delta, &search);
-          delta.tv_sec <<= 1;
+          SigDiggerHelpers::timerdup(&delta);
 
           if (!sgdp4_prediction_update(&this->prediction, &search))
             break;
 
           sgdp4_prediction_get_azel(&this->prediction, &azel);
         } while (azel.elevation > 0
-                 && static_cast<qreal>(delta.tv_sec) < FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW);
+                 && static_cast<qreal>(delta.tv_sec) < searchWindow);
 
         // Check if the satellite now is belon the horizon
         if (azel.elevation > 0)
           return; // Nope. Something went wrong.
-
 
         // Okay, now if we find the next AOS, it should be our rise time
         this->haveALOS =
             sgdp4_prediction_find_aos(
               &this->prediction,
               &search,
-              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
+              searchWindow,
               &this->aosTime);
 
         if (!this->haveALOS)
@@ -473,7 +515,7 @@ FrequencyCorrectionDialog::recalcALOS(void)
             sgdp4_prediction_find_los(
               &this->prediction,
               &search,
-              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
+              searchWindow,
               &this->losTime);
       } else {
         // For non-visible satellites, the strategy is as follows:
@@ -493,7 +535,7 @@ FrequencyCorrectionDialog::recalcALOS(void)
         this->haveALOS = sgdp4_prediction_find_los(
               &this->prediction,
               &this->timeStamp,
-              FREQUENCY_CORRECTION_DIALOG_TIME_WINDOW,
+              searchWindow,
               &this->losTime);
       }
     }
@@ -542,6 +584,15 @@ void
 FrequencyCorrectionDialog::setTimestamp(struct timeval const &tv)
 {
   if (!this->realTime) {
+    struct timeval delta;
+
+    timersub(&tv, &this->timeStamp, &delta);
+
+    // If the delta is suspiciously big, or backwards in time, recalculate
+    // ALOS
+    if (delta.tv_sec >= 1 || delta.tv_sec < 0 || delta.tv_usec < 0)
+      this->haveALOS = false;
+
     this->timeStamp = tv;
     this->updatePrediction();
   }
@@ -646,12 +697,36 @@ FrequencyCorrectionDialog::updatePrediction(void)
             4,
             "m/s",
             false));
+
+    if (orbit_is_geo(&this->currentOrbit))
+      this->ui->periodLabel->setText("Geostationary");
+    else if (orbit_is_decayed(&this->currentOrbit, &this->timeStamp))
+      this->ui->periodLabel->setText("Decayed");
+    else
+      this->ui->periodLabel->setText(
+          SuWidgetsHelpers::formatQuantity(
+            86400.0 / this->currentOrbit.rev,
+            4,
+            "s"));
+
+    this->ui->eccLabel->setText(
+            QString::asprintf("%g", this->currentOrbit.ecc));
+
+    this->ui->incLabel->setText(
+          SuWidgetsHelpers::formatQuantity(
+            SU_RAD2DEG(this->currentOrbit.eqinc),
+            0,
+            "deg"));
+
   } else {
     this->ui->visibleLabel->setText("N / A");
     this->ui->azimuthLabel->setText("N / A");
     this->ui->elevationLabel->setText("N / A");
     this->ui->dopplerLabel->setText("N / A");
     this->ui->speedLabel->setText("N / A");
+    this->ui->periodLabel->setText("N / A");
+    this->ui->eccLabel->setText("N / A");
+    this->ui->incLabel->setText("N / A");
   }
 
   if (!this->haveALOS) {
@@ -661,14 +736,22 @@ FrequencyCorrectionDialog::updatePrediction(void)
       timersub(&this->aosTime, &this->timeStamp, &diff);
       seconds = static_cast<qreal>(diff.tv_sec)
           + 1e-6 * static_cast<qreal>(diff.tv_usec);
-      this->ui->nextEventLabel->setText(
-            "Rise in "
-            + SuWidgetsHelpers::formatQuantity(seconds, "s"));
+
+      if (seconds < 1)
+        this->ui->nextEventLabel->setText("Rising now");
+      else
+        this->ui->nextEventLabel->setText(
+              "Rise in "
+              + SuWidgetsHelpers::formatQuantity(seconds, "s"));
     } else {
       timersub(&this->losTime, &this->timeStamp, &diff);
       seconds = static_cast<qreal>(diff.tv_sec)
           + 1e-6 * static_cast<qreal>(diff.tv_usec);
-      this->ui->nextEventLabel->setText(
+
+      if (seconds < 1)
+        this->ui->nextEventLabel->setText("Setting now");
+      else
+        this->ui->nextEventLabel->setText(
             "Set in "
             + SuWidgetsHelpers::formatQuantity(seconds, "s"));
     }

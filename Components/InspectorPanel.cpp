@@ -162,8 +162,20 @@ InspectorPanel::connectAll(void)
 }
 
 void
+InspectorPanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
+{
+  this->sourceInfo = info;
+  this->refreshUi();
+}
+
+void
 InspectorPanel::refreshUi(void)
 {
+  bool inspAllowed = this->sourceInfo.testPermission(
+        SUSCAN_ANALYZER_PERM_OPEN_INSPECTOR);
+  bool rawAllowed = this->sourceInfo.testPermission(
+        SUSCAN_ANALYZER_PERM_OPEN_RAW);
+
   switch (this->state) {
     case DETACHED:
       this->ui->openInspectorButton->setEnabled(false);
@@ -173,10 +185,10 @@ InspectorPanel::refreshUi(void)
       break;
 
     case ATTACHED:
-      this->ui->openInspectorButton->setEnabled(true);
+      this->ui->openInspectorButton->setEnabled(inspAllowed);
       this->ui->bandwidthSpin->setEnabled(true);
-      this->ui->captureButton->setEnabled(true);
-      this->ui->autoSquelchButton->setEnabled(true);
+      this->ui->captureButton->setEnabled(rawAllowed);
+      this->ui->autoSquelchButton->setEnabled(rawAllowed);
       break;
   }
 }
@@ -223,6 +235,7 @@ void
 InspectorPanel::setState(enum State state)
 {
   if (this->state != state) {
+    this->sourceInfo = Suscan::AnalyzerSourceInfo();
     this->state = state;
     this->refreshUi();
   }

@@ -592,6 +592,7 @@ WaveformTab::onHoverTime(qreal time)
         + " (" + SuWidgetsHelpers::formatReal(samp) + ")");
 
   if (length > 0) {
+    SUCOMPLEX val;
     qint64 iSamp = static_cast<qint64>(std::floor(samp));
     qint64 selStart = 0, selEnd = 0, selLen = 0;
     qreal max = std::max<qreal>(
@@ -613,7 +614,10 @@ WaveformTab::onHoverTime(qreal time)
       samp = iSamp = length - 1;
 
     SUFLOAT t = static_cast<SUFLOAT>(samp - iSamp);
-    SUCOMPLEX val = (1 - t) * data[iSamp] + t * data[iSamp + 1];
+    if (iSamp == length - 1)
+      val = data[iSamp];
+    else
+      val = (1 - t) * data[iSamp] + t * data[iSamp + 1];
 
     this->ui->constellation->setGain(ampl);
 

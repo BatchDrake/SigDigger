@@ -114,6 +114,11 @@ namespace SigDigger {
     // UI objects
     Waterfall   *wf   = nullptr;
     GLWaterfall *glWf = nullptr;
+    ColorConfig colors;
+    bool usingGlWf = false;
+    bool usingMaxBlending = false;
+    bool fallBackToWf = true;
+
     std::vector<Suscan::Estimator> estimators;
     std::vector<Suscan::SpectrumSource> spectsrcs;
     std::map<Suscan::EstimatorId, EstimatorControl *> estimatorCtls;
@@ -126,6 +131,7 @@ namespace SigDigger {
     QMenu *inspectorMenu = nullptr;
     QAction *closeInspectorTab = nullptr;
     QAction *renameInspectorTab = nullptr;
+    QAction *detachInspectorTab = nullptr;
     std::vector<InspectorCtl *> controls;
     DataSaverUI *saverUI = nullptr;
     NetForwarderUI *netForwarderUI = nullptr;
@@ -156,7 +162,7 @@ namespace SigDigger {
     void populate(void);
     void connectWf(void);
     void connectGLWf(void);
-    void makeWf(QWidget *owner, AppConfig const &appConfig);
+    void makeWf(QWidget *owner);
     void connectDataSaver(void);
     void connectNetForwarder(void);
     void refreshSizes(void);
@@ -223,6 +229,8 @@ namespace SigDigger {
       void setBasebandRate(unsigned int);
       void setSampleRate(float rate);
       void setBandwidth(unsigned int bw);
+      void beginReparenting(void);
+      void doneReparenting(void);
       void setLo(int lo);
       void popupContextMenu(void);
       void resetSpectrumLimits(void);
@@ -282,6 +290,7 @@ namespace SigDigger {
     signals:
       void nameChanged(void);
       void closeRequested(void);
+      void detachRequested(void);
       void configChanged(void);
       void setSpectrumSource(unsigned int index);
       void loChanged(void);

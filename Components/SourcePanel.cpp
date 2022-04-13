@@ -263,19 +263,61 @@ SourcePanel::formatSampleRate(unsigned int rate)
 void
 SourcePanel::refreshUi()
 {
+  bool gainPresetEnabled = this->panelConfig->gainPresetEnabled;
+  bool haveAGC = this->currAutoGainSet != nullptr;
+
   if (this->profile != nullptr) {
-    this->setThrottleable(this->profile->getType() != SUSCAN_SOURCE_TYPE_SDR);
+    bool isRemote = this->profile->isRemote();
+
+    this->setThrottleable(
+          this->profile->getType() != SUSCAN_SOURCE_TYPE_SDR
+          || isRemote);
 
     this->ui->antennaCombo->setEnabled(
           this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
 
+    this->ui->bwSpin->setEnabled(
+          this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
+
     this->ui->ppmSpinBox->setEnabled(
           this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR
-          || this->profile->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE);
+          || isRemote);
 
-    this->saverUI->setEnabled(
-          this->profile->getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE);
+    this->saverUI->setEnabled(!isRemote);
   }
+
+  // These depend on the source info only
+  this->ui->dcRemoveCheck->setEnabled(
+        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE));
+  this->ui->swapIQCheck->setEnabled(
+        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE));
+  this->ui->agcEnabledCheck->setEnabled(
+        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_AGC));
+
+  // These depend both the profile and source info
+  this->ui->bwSpin->setEnabled(
+        this->ui->bwSpin->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_BW));
+  this->ui->ppmSpinBox->setEnabled(
+        this->ui->ppmSpinBox->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_PPM));
+  this->ui->throttleCheck->setEnabled(
+        this->ui->throttleCheck->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE));
+  this->ui->throttleSpin->setEnabled(
+        this->ui->throttleCheck->isChecked()
+        && this->ui->throttleCheck->isEnabled());
+  this->ui->antennaCombo->setEnabled(
+        this->ui->antennaCombo->isEnabled()
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA));
+  this->ui->gainsFrame->setEnabled(
+        (!gainPresetEnabled || !haveAGC)
+        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
+  this->ui->autoGainFrame->setEnabled(
+        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
+
+  this->ui->autoGainCombo->setEnabled(gainPresetEnabled);
+  this->ui->autoGainSlider->setEnabled(gainPresetEnabled);
 }
 
 void
@@ -371,6 +413,9 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
   bool oldRefreshing = this->refreshing;
   this->refreshing = true;
 
+  // Setting the profile resets the SourceInfo
+  this->sourceInfo = Suscan::AnalyzerSourceInfo();
+
   this->profile = config;
   this->refreshGains(*config);
   this->refreshAutoGains(*config);
@@ -415,12 +460,17 @@ SourcePanel::setProfile(Suscan::Source::Config *config)
 void
 SourcePanel::setThrottleable(bool val)
 {
+  val = val && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE);
+
   this->throttleable = val;
   this->ui->throttleCheck->setEnabled(val);
   if (!val)
     this->ui->throttleCheck->setChecked(false);
 
-  this->ui->throttleSpin->setEnabled(this->ui->throttleCheck->isChecked());
+  this->ui->throttleSpin->setEnabled(
+        this->ui->throttleCheck->isChecked()
+        && this->ui->throttleCheck->isEnabled());
+
   this->ui->bwSpin->setEnabled(!val);
 }
 
@@ -436,6 +486,24 @@ SourcePanel::lookupGain(std::string const &name)
   }
 
   return nullptr;
+}
+
+void
+SourcePanel::setState(State state)
+{
+  if (this->state != state) {
+    if (state == DETACHED) {
+      this->haveSourceInfo = false;
+      this->sourceInfo = Suscan::AnalyzerSourceInfo();
+      this->refreshUi();
+    } else {
+      // Switched to running! If AGC was enabled, request a gain adjustment
+      if (this->panelConfig->gainPresetEnabled)
+        this->applyCurrentAutogain();
+    }
+
+    this->state = state;
+  }
 }
 
 void
@@ -622,12 +690,25 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   DeviceGain *gain = nullptr;
   bool presetEnabled = this->ui->gainPresetCheck->isChecked();
   bool oldRefreshing = this->refreshing;
+  bool throttleEnabled;
   this->refreshing = true;
+
+  if (!this->haveSourceInfo) {
+    this->sourceInfo = Suscan::AnalyzerSourceInfo(info);
+    this->haveSourceInfo = true;
+  }
 
   this->setDCRemove(info.getDCRemove());
   this->setIQReverse(info.getIQReverse());
   this->setAGCEnabled(info.getAGC());
   this->setBandwidth(info.getBandwidth());
+
+  throttleEnabled = !sufeq(
+        info.getEffectiveSampleRate(),
+        info.getSampleRate(),
+        0); // Integer quantities
+
+  this->ui->throttleCheck->setChecked(throttleEnabled);
 
   // Populate antennas
   populateAntennaCombo(info);
@@ -666,12 +747,15 @@ SourcePanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
       this->ui->gainsFrame->show();
   }
 
-  this->refreshing = oldRefreshing;
-
   // AGC Enabled, we override gain settings with the current AGC
   // settings
   if (presetEnabled)
     this->applyCurrentAutogain();
+
+  // Everything is set, time to decide what is enabled and what is not
+  this->refreshUi();
+
+  this->refreshing = oldRefreshing;
 }
 
 bool
@@ -849,7 +933,8 @@ SourcePanel::onThrottleChanged(void)
     this->panelConfig->throttle = throttling;
     this->panelConfig->throttleRate = static_cast<unsigned>(this->ui->throttleSpin->value());
 
-    this->ui->throttleSpin->setEnabled(throttling);
+    this->ui->throttleSpin->setEnabled(
+          throttling && this->ui->throttleCheck->isChecked());
 
     emit throttleConfigChanged();
   }
@@ -880,15 +965,10 @@ SourcePanel::onToggleAutoGain(void)
 {
   this->panelConfig->gainPresetEnabled = this->ui->gainPresetCheck->isChecked();
 
-  if (this->panelConfig->gainPresetEnabled) {
+  if (this->panelConfig->gainPresetEnabled)
     this->applyCurrentAutogain();
-    this->ui->autoGainCombo->setEnabled(true);
-    this->ui->autoGainSlider->setEnabled(true);
-  } else {
-    this->ui->gainsFrame->setEnabled(true);
-    this->ui->autoGainCombo->setEnabled(false);
-    this->ui->autoGainSlider->setEnabled(false);
-  }
+
+  this->refreshUi();
 }
 
 void

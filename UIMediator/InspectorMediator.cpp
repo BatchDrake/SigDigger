@@ -23,6 +23,8 @@
 #include "ui_MainWindow.h"
 #include "MainSpectrum.h"
 #include "InspectorPanel.h"
+
+#include <QDialog>
 #include <QTabBar>
 
 using namespace SigDigger;
@@ -41,7 +43,7 @@ UIMediator::lookupInspector(Suscan::InspectorId handle) const
 }
 
 Inspector *
-UIMediator::addInspectorTab(
+UIMediator::addInspector(
     Suscan::InspectorMessage const &msg,
     Suscan::InspectorId &oId)
 {
@@ -76,6 +78,12 @@ UIMediator::addInspectorTab(
         this,
         SLOT(onInspectorCloseRequested()));
 
+  connect(
+        insp,
+        SIGNAL(detachRequested()),
+        this,
+        SLOT(onInspectorDetachRequested()));
+
   this->ui->inspectorTable[oId] = insp;
   this->ui->main->mainTab->setCurrentIndex(index);
 
@@ -83,18 +91,85 @@ UIMediator::addInspectorTab(
 }
 
 void
-UIMediator::closeInspectorTab(Inspector *insp)
+UIMediator::unbindInspectorWidget(Inspector *insp)
+{
+  int index = this->ui->main->mainTab->indexOf(insp);
+
+  // Inspector widgets may be either in the main window's tab or on
+  // a QDialog on its own.
+
+  if (index != -1) {
+    this->ui->main->mainTab->removeTab(index);
+    insp->setParent(nullptr);
+  } else {
+    auto p = this->ui->floatInspectorTable.find(insp);
+
+    if (p != this->ui->floatInspectorTable.end()) {
+      QDialog *d = p->second;
+      this->ui->floatInspectorTable.erase(insp);
+
+      // This sets the parent to null
+      insp->setParent(nullptr);
+
+      d->setProperty(
+            "inspector-ptr",
+            QVariant::fromValue<Inspector *>(nullptr));
+
+      d->close();
+      d->deleteLater();
+    }
+  }
+}
+
+void
+UIMediator::closeInspector(Inspector *insp)
 {
   if (insp != nullptr) {
     Suscan::Analyzer *analyzer = insp->getAnalyzer();
     if (analyzer != nullptr) {
       analyzer->closeInspector(insp->getHandle(), 0);
     } else {
-      this->ui->main->mainTab->removeTab(
-            this->ui->main->mainTab->indexOf(insp));
+      this->unbindInspectorWidget(insp);
       this->ui->inspectorTable.erase(insp->getId());
       delete insp;
     }
+  }
+}
+
+void
+UIMediator::floatInspector(Inspector *insp)
+{
+  int index = this->ui->main->mainTab->indexOf(insp);
+
+  if (index != -1) {
+    QDialog *dialog = new QDialog(this->owner);
+    QVBoxLayout *layout = new QVBoxLayout;
+
+    insp->beginReparenting();
+    this->unbindInspectorWidget(insp);
+
+    dialog->setProperty(
+          "inspector-ptr",
+          QVariant::fromValue<Inspector *>(insp));
+    dialog->setLayout(layout);
+    dialog->setWindowFlags(Qt::Window);
+
+    connect(
+          dialog,
+          SIGNAL(finished(int)),
+          this,
+          SLOT(onCloseInspectorWindow()));
+
+    layout->addWidget(insp);
+
+    insp->doneReparenting();
+    insp->show();
+
+    dialog->move(this->owner->pos());
+    dialog->setWindowTitle("SigDigger - " + insp->getName());
+
+    this->ui->floatInspectorTable[insp] = dialog;
+    dialog->show();
   }
 }
 
@@ -188,7 +263,7 @@ UIMediator::onCloseInspectorTab(int ndx)
 
   if (widget != nullptr && widget != this->ui->spectrum) {
     Inspector *insp = static_cast<Inspector *>(widget);
-    this->closeInspectorTab(insp);
+    this->closeInspector(insp);
   }
 }
 
@@ -227,5 +302,24 @@ void
 UIMediator::onInspectorCloseRequested(void)
 {
   Inspector *insp = static_cast<Inspector *>(QObject::sender());
-  this->closeInspectorTab(insp);
+  this->closeInspector(insp);
+}
+
+void
+UIMediator::onInspectorDetachRequested(void)
+{
+  Inspector *insp = static_cast<Inspector *>(QObject::sender());
+  this->floatInspector(insp);
+}
+
+void
+UIMediator::onCloseInspectorWindow(void)
+{
+  QDialog *sender = qobject_cast<QDialog *>(QObject::sender());
+  Inspector *insp;
+
+  insp = sender->property("inspector-ptr").value<Inspector *>();
+
+  if (insp != nullptr)
+    this->closeInspector(insp);
 }

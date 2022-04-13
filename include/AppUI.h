@@ -24,6 +24,7 @@
 class QMainWindow;
 class Ui_MainWindow;
 class QToolBar;
+class QDialog;
 
 namespace SigDigger {
   class ConfigDialog;
@@ -42,6 +43,7 @@ namespace SigDigger {
   class BookmarkManagerDialog;
   class QTimeSlider;
   class Inspector;
+  class QuickConnectDialog;
 
   struct AppUI {
     Ui_MainWindow *main = nullptr;
@@ -56,12 +58,15 @@ namespace SigDigger {
     AboutDialog *aboutDialog = nullptr;
     DataSaverUI *dataSaverUI = nullptr;
     LogDialog *logDialog = nullptr;
+    QuickConnectDialog *quickConnectDialog = nullptr;
     BackgroundTasksDialog *backgroundTasksDialog = nullptr;
     AddBookmarkDialog *addBookmarkDialog = nullptr;
     BookmarkManagerDialog *bookmarkManagerDialog = nullptr;
     QToolBar *timeToolbar;
     QTimeSlider *timeSlider = nullptr;
     std::map<Suscan::InspectorId, Inspector *> inspectorTable;
+    std::map<Inspector *, QDialog *> floatInspectorTable;
+
     Suscan::InspectorId lastId = 0;
 
     AppUI(QMainWindow *);

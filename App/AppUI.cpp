@@ -41,6 +41,7 @@
 #include <QToolBar>
 #include "QTimeSlider.h"
 #include "AppUI.h"
+#include "QuickConnectDialog.h"
 
 #include "SigDiggerHelpers.h"
 #include <QToolBar>
@@ -77,6 +78,7 @@ AppUI::AppUI(QMainWindow *owner)
   this->inspectorPanel = new InspectorPanel(nullptr);
   this->fftPanel = new FftPanel(nullptr);
   this->audioPanel = new AudioPanel(nullptr);
+  this->quickConnectDialog = new QuickConnectDialog(owner);
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);
   this->panoramicDialog = new PanoramicDialog(owner);
