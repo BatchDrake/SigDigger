@@ -20,15 +20,64 @@
 #define AUDIOPROCESSOR_H
 
 #include <QObject>
+#include <Suscan/Library.h>
+#include <Suscan/Analyzer.h>
+#include <AudioFileSaver.h>
 
-class AudioProcessor : public QObject
-{
-  Q_OBJECT
-public:
-  explicit AudioProcessor(QObject *parent = nullptr);
-
-signals:
-
+namespace Suscan {
+  class Analyzer;
 };
+
+namespace SigDigger {
+  class UIMediator;
+  class AudioPlayback;
+
+  class AudioProcessor : public QObject
+  {
+    Q_OBJECT
+
+    // Demodulator state
+    Suscan::Orbit   m_orbit;
+    bool            m_enabled = false;
+    float           m_volume = 0;
+    float           m_cutOff = 0;
+    SUFREQ          m_freq = 0;
+    unsigned int    m_sampleRate = 44100;
+    AudioDemod      m_demod = AudioDemod::FM;
+    bool            m_correctionEnabled = false;
+
+    // Composed objects
+    AudioFileSaver *m_audioFileSaver = nullptr;
+    AudioPlayback  *m_playBack = nullptr;
+
+    // Analyzer state objects
+    Suscan::Analyzer *m_analyzer = nullptr;
+    Suscan::Handle    m_audioInspHandle = 0;
+    suscan_config_t  *m_audioCfgTemplate = nullptr;
+    bool              m_audioInspectorOpened = false;
+    float             m_maxAudioBw = 2e5;
+    SUFREQ            m_lastLo = 0;
+
+    // Private methods
+    void connectAnalyzer();
+
+  public:
+    explicit AudioProcessor(UIMediator *, QObject *parent = nullptr);
+
+    void setAnalyzer(Suscan::Analyzer *);
+    void setVolume(float);
+    void setAudioCorrection(Suscan::Orbit const &);
+    void setCorrectionEnabled(bool);
+    void setDemod(AudioDemod);
+    void setSampleRate(unsigned);
+    void setCutOff(float);
+    void setDemodFreq(SUFREQ);
+    void startRecording(QString);
+    void stopRecording(void);
+
+  public slots:
+    // Here: process Analyzer messages
+  };
+}
 
 #endif // AUDIOPROCESSOR_H

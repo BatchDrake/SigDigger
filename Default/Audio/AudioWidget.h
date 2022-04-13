@@ -28,6 +28,7 @@ namespace Ui {
 }
 
 namespace SigDigger {
+  class AudioProcessor;
   class AudioWidgetFactory;
   class FrequencyCorrectionDialog;
 
@@ -67,6 +68,9 @@ namespace SigDigger {
     bool           isRealTime = false;
     struct timeval timeStamp  = {0, 0};
 
+    // Processing members
+    AudioProcessor *m_processor = nullptr;
+
     // UI members
     Ui::AudioPanel *ui = nullptr;
     ColorConfig colorConfig;
@@ -78,7 +82,7 @@ namespace SigDigger {
     void populateRates();
     void refreshUi();
 
-    // Private settes
+    // Private setters
     void setBandwidth(SUFLOAT);
     void setDemodFreq(qint64);
     void setEnabled(bool);

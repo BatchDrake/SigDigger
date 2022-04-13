@@ -17,9 +17,78 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include "AudioProcessor.h"
+#include "AudioPlayback.h"
 
-AudioProcessor::AudioProcessor(QObject *parent)
-  : QObject{parent}
+using namespace SigDigger;
+
+AudioProcessor::AudioProcessor(UIMediator *, QObject *parent)
+  : QObject(parent)
 {
+  this->m_playBack = new AudioPlayback("default");
+}
 
+void
+AudioProcessor::connectAnalyzer()
+{
+  // TODO
+}
+
+void
+AudioProcessor::setAnalyzer(Suscan::Analyzer *)
+{
+  // TODO
+}
+
+void
+AudioProcessor::setVolume(float)
+{
+  // TODO
+}
+
+void
+AudioProcessor::setAudioCorrection(Suscan::Orbit const &)
+{
+  // TODO
+}
+
+void
+AudioProcessor::setCorrectionEnabled(bool)
+{
+  // TODO
+}
+
+void
+AudioProcessor::setDemod(AudioDemod)
+{
+  // TODO
+}
+
+void
+AudioProcessor::setSampleRate(unsigned)
+{
+  // TODO
+}
+
+void
+AudioProcessor::setCutOff(float)
+{
+  // TODO
+}
+
+void
+AudioProcessor::setDemodFreq(SUFREQ)
+{
+  // TODO
+}
+
+void
+AudioProcessor::startRecording(QString)
+{
+  // TODO
+}
+
+void
+AudioProcessor::stopRecording(void)
+{
+  // TODO
 }

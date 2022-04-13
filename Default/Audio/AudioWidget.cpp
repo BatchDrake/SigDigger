@@ -27,6 +27,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
+#include "AudioProcessor.h"
 
 using namespace SigDigger;
 
@@ -96,6 +97,8 @@ AudioWidget::AudioWidget(
 
 {
   ui->setupUi(this);
+
+  this->m_processor = new AudioProcessor(mediator, this);
 
   this->setRecordSavePath(QDir::currentPath().toStdString());
 
