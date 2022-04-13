@@ -17,7 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include <FeatureFactory.h>
-#include <Plugin.h>
+#include "Plugin.h"
 
 using namespace Suscan;
 
@@ -41,9 +41,11 @@ FeatureFactory::FeatureFactory(Plugin *plugin)
 {
   // Construction of a FeatureFactory: notify the plugin about this new
   // factory
-  assert(plugin != nullptr);
+  if (plugin == nullptr)
+    plugin = Suscan::Plugin::getDefaultPlugin();
 
   this->m_plugin = plugin;
+
   plugin->registerFactory(this);
 }
 

@@ -24,6 +24,7 @@
 #include <sigutils/util/util.h>
 #include <sigutils/version.h>
 
+#include <QSet>
 
 #define SUSCAN_SYM_PFX  SUSCAN_CPP_
 
@@ -55,7 +56,7 @@
     plugin_ver,                                \
     SU_VER(x, y, z));
 
-#define SUSCAN_API_VERSION(x, y, z)            \
+#define SUSCAN_PLUGIN_API_VERSION(x, y, z)     \
   SUSCAN_DECLARE_SYM(                          \
     uint32_t,                                  \
     api_ver,                                   \
@@ -63,10 +64,12 @@
 
 namespace Suscan {
   class Plugin;
+  class FeatureFactory;
 
   typedef bool (*PluginEntryFunc) (Plugin *);
 
   class Plugin {
+      static Plugin *m_default;
       void *m_handle = nullptr;
       std::string m_name;
       std::string m_path;
@@ -86,15 +89,22 @@ namespace Suscan {
           void *handle);
 
 
-      // TODO: Add factories
+      QSet<FeatureFactory *> m_factorySet;
 
     public:
       static Plugin *make(const char *path);
+      static Plugin *getDefaultPlugin();
 
       bool load(void);
+      bool canBeUnloaded(void) const;
       bool unload(void);
 
       ~Plugin();
+
+      // Internal
+      bool registerFactory(FeatureFactory *);
+      bool unregisterFactory(FeatureFactory *);
+
   };
 }
 

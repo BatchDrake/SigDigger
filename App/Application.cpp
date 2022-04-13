@@ -55,6 +55,10 @@ DeviceDetectWorker::process()
 
 Application::Application(QWidget *parent) : QMainWindow(parent), ui(this)
 {
+  Suscan::Singleton *sing = Suscan::Singleton::get_instance();
+
+  sing->init_plugins();
+
   this->mediator = new UIMediator(this, &this->ui);
   this->deviceDetectThread = new QThread(this);
   this->deviceDetectWorker = new DeviceDetectWorker();
@@ -890,7 +894,7 @@ Application::startCapture(void)
 
       this->connectAnalyzer();
 
-      this->mediator->setState(UIMediator::RUNNING);
+      this->mediator->setState(UIMediator::RUNNING, this->analyzer.get());
     }
   } catch (Suscan::Exception &) {
     (void)  QMessageBox::critical(

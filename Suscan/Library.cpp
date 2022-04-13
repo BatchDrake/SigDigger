@@ -22,6 +22,9 @@
 #include <suscan.h>
 #include <analyzer/version.h>
 #include <QtGui>
+#include <Plugin.h>
+#include <FeatureFactory.h>
+#include <ToolWidgetFactory.h>
 
 using namespace Suscan;
 
@@ -474,6 +477,22 @@ Singleton::init_tle(void)
       }
     }
   }
+}
+
+void
+Singleton::init_plugins(void)
+{
+  Plugin *defPlug = Plugin::getDefaultPlugin();
+
+  if (!defPlug->load())
+    throw Exception(
+        "Failed to load the default plugin. "
+        "Please report this error to "
+        "<a href=\"https://github.com/BatchDrake/SigDigger/issues\">"
+        "https://github.com/BatchDrake/SigDigger/issues"
+        "</a>");
+
+  // TODO: Traverse plugin directories
 }
 
 void
@@ -1142,6 +1161,45 @@ QHash<QString, Source::Config>::const_iterator
 Singleton::getNetworkProfileFrom(QString const &name) const
 {
   return this->networkProfiles.constFind(name);
+}
+
+bool
+Singleton::registerToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
+{
+  if (this->toolWidgetFactories.contains(factory)) {
+    FeatureFactory *ref = static_cast<FeatureFactory *>(factory);
+    SU_ERROR("Attempting to register factory %s twice\n", ref->name());
+    return false;
+  }
+
+  this->toolWidgetFactories.push_back(factory);
+
+  return true;
+}
+
+bool
+Singleton::unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
+{
+  int index = this->toolWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->toolWidgetFactories.removeAt(index);
+
+  return true;
+}
+
+QList<SigDigger::ToolWidgetFactory *>::const_iterator
+Singleton::getFirstToolWidgetFactory() const
+{
+  return this->toolWidgetFactories.cbegin();
+}
+
+QList<SigDigger::ToolWidgetFactory *>::const_iterator
+Singleton::getLastToolWidgetFactory() const
+{
+  return this->toolWidgetFactories.cend();
 }
 
 bool

@@ -171,11 +171,6 @@ namespace SigDigger {
     void onParamsChanged(void);
     void onLoChanged(qint64);
     void onChannelBandwidthChanged(qreal);
-    void onAudioChanged(void);
-    void onAudioRecordStateChanged(void);
-    void onAudioVolumeChanged(float);
-    void onAudioSetCorrection(Suscan::Orbit);
-    void onAudioDisableCorrection(void);
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
     void onPPMChanged(void);
@@ -185,6 +180,13 @@ namespace SigDigger {
     void onAddBookmark(BookmarkInfo info);
     void onTick(void);
     void quit(void);
+
+    // Audio slots
+    void onAudioChanged(void);
+    void onAudioRecordStateChanged(void);
+    void onAudioVolumeChanged(float);
+    void onAudioSetCorrection(Suscan::Orbit);
+    void onAudioDisableCorrection(void);
 
     // Analyzer slots
     void onAnalyzerHalted(void);

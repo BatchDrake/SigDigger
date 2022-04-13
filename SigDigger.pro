@@ -88,6 +88,10 @@ SOURCES += \
     Components/SaveProfileDialog.cpp \
     Components/SourcePanel.cpp \
     Components/TimeWindow.cpp \
+    Default/Audio/AudioProcessor.cpp \
+    Default/Audio/AudioWidget.cpp \
+    Default/Audio/AudioWidgetFactory.cpp \
+    Default/Registration.cpp \
     Inspector/FACTab.cpp \
     Inspector/Inspector.cpp \
     Inspector/InspectorUI.cpp \
@@ -145,6 +149,8 @@ SOURCES += \
     Tasks/PLLSyncTask.cpp \
     Tasks/QuadDemodTask.cpp \
     Tasks/WaveSampler.cpp \
+    UIComponent/ToolWidgetFactory.cpp \
+    UIComponent/UIComponentFactory.cpp \
     UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
@@ -181,6 +187,10 @@ SOURCES += \
 
 
 HEADERS += \
+    Default/Audio/AudioProcessor.h \
+    Default/Audio/AudioWidget.h \
+    Default/Audio/AudioWidgetFactory.h \
+    Default/Registration.h \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
@@ -275,6 +285,8 @@ HEADERS += \
     include/TVProcessorWorker.h \
     include/TimeWindow.h \
     include/ToneControl.h \
+    include/ToolWidgetFactory.h \
+    include/UIComponentFactory.h \
     include/UIMediator.h \
     include/EstimatorControl.h \
     include/GenericDataSaver.h \

@@ -30,6 +30,8 @@
 #include <cstring>
 #include <getopt.h>
 
+#define MAX_LOG_MESSAGES 20
+
 using namespace SigDigger;
 
 static int
@@ -44,26 +46,82 @@ runRMSViewer(QApplication &app)
   return ret;
 }
 
+static QString
+getLogText(void)
+{
+  QString text = "";
+  std::lock_guard<Suscan::Logger> guard(*Suscan::Logger::getInstance());
+
+  auto begin = Suscan::Logger::getInstance()->begin();
+  auto end   = Suscan::Logger::getInstance()->end();
+
+  if (end - begin > MAX_LOG_MESSAGES) {
+    auto removed = end - begin - MAX_LOG_MESSAGES;
+    begin = end - MAX_LOG_MESSAGES;
+
+    text += "(" + QString::number(removed) + " previous messages omitted)\n";
+  }
+
+  for (auto p = begin; p != end; ++p) {
+    switch (p->severity) {
+      case SU_LOG_SEVERITY_CRITICAL:
+        text += "critical: ";
+        break;
+
+      case SU_LOG_SEVERITY_DEBUG:
+        text += "debug: ";
+        break;
+
+      case SU_LOG_SEVERITY_ERROR:
+        text += "error: ";
+        break;
+
+      case SU_LOG_SEVERITY_INFO:
+        text += "info: ";
+        break;
+
+      case SU_LOG_SEVERITY_WARNING:
+        text += "warning: ";
+        break;
+    }
+
+    text += p->message.c_str();
+  }
+
+  return text;
+}
+
 static int
 runSigDigger(QApplication &app)
 {
-  int ret;
-  Application main_app;
-  Loader loader(&main_app);
+  int ret = 1;
 
-  QSurfaceFormat fmt;
-  fmt.setSamples(16);
-  QSurfaceFormat::setDefaultFormat(fmt);
+  try {
+    Application main_app;
+    Loader loader(&main_app);
 
-  loader.load();
+    QSurfaceFormat fmt;
+    fmt.setSamples(16);
+    QSurfaceFormat::setDefaultFormat(fmt);
 
-  ret = app.exec();
+    loader.load();
 
-  Suscan::Singleton::get_instance()->killBackgroundTaskController();
+    ret = app.exec();
 
-  std::cout << "Saving config..." << std::endl;
+    Suscan::Singleton::get_instance()->killBackgroundTaskController();
 
-  loader.saveConfig();
+    std::cout << "Saving config..." << std::endl;
+
+    loader.saveConfig();
+  } catch (Suscan::Exception const &e) {
+    (void) QMessageBox::critical(
+          nullptr,
+          "SigDigger internal error",
+          QString(e.what())
+          + "<pre>" + getLogText() + "</pre>",
+          QMessageBox::Close);
+    app.quit();
+  }
 
   return ret;
 }

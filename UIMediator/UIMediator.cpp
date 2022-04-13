@@ -53,6 +53,9 @@
 #include "AboutDialog.h"
 #include "QuickConnectDialog.h"
 
+// Tool widget controls
+#include <ToolWidgetFactory.h>
+
 #if defined(_WIN32) && defined(interface)
 #  undef interface
 #endif /* interface */
@@ -120,6 +123,12 @@ UIMediator::setProfile(Suscan::Source::Config const &prof, bool restart)
   emit profileChanged(restart);
 }
 
+QMainWindow *
+UIMediator::getMainWindow() const
+{
+  return this->owner;
+}
+
 void
 UIMediator::refreshUI(void)
 {
@@ -130,7 +139,7 @@ UIMediator::refreshUI(void)
   Suscan::Source::Config *config = this->getProfile();
   const Suscan::Source::Device &dev = config->getDevice();
 
-  switch (this->state) {
+  switch (this->m_state) {
     case HALTED:
       stateString = QString("Idle");
       this->ui->spectrum->setCaptureMode(MainSpectrum::UNAVAILABLE);
@@ -183,12 +192,12 @@ UIMediator::refreshUI(void)
   }
 
   this->ui->inspectorPanel->setState(
-        this->state == RUNNING
+        this->m_state == RUNNING
         ? InspectorPanel::State::ATTACHED
         : InspectorPanel::State::DETACHED);
 
   this->ui->sourcePanel->setState(
-        this->state == RUNNING
+        this->m_state == RUNNING
         ? SourcePanel::State::ATTACHED
         : SourcePanel::State::DETACHED);
 
@@ -373,6 +382,31 @@ UIMediator::connectMainWindow(void)
 
 }
 
+void
+UIMediator::registerUIComponent(UIComponent *comp)
+{
+  this->m_components.push_back(comp);
+}
+
+void
+UIMediator::addToolWidgets(void)
+{
+  auto s = Suscan::Singleton::get_instance();
+
+  for (auto p = s->getFirstToolWidgetFactory();
+       p != s->getLastToolWidgetFactory();
+       ++p) {
+    ToolWidgetFactory *f = *p;
+    ToolWidget *widget = f->make(this);
+
+    this->registerUIComponent(widget);
+
+    this->ui->spectrum->addToolWidget(
+          widget,
+          f->getTitle().c_str());
+  }
+}
+
 UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 {
   this->owner = owner;
@@ -386,6 +420,8 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
             28001,
             "anonymous",
             "");
+
+  this->addToolWidgets();
 
   this->ui->spectrum->addToolWidget(this->ui->audioPanel, "Audio preview");
   this->ui->spectrum->addToolWidget(this->ui->sourcePanel, "Signal source");
@@ -452,10 +488,28 @@ UIMediator::setSampleRate(unsigned int rate)
 }
 
 void
-UIMediator::setState(State state)
+UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 {
-  if (this->state != state) {
-    this->state = state;
+  if (this->m_state != state) {
+    // Sanity check
+    switch (state) {
+      case HALTED:
+      case HALTING:
+      case RESTARTING:
+        assert(analyzer == nullptr);
+        break;
+
+      case RUNNING:
+        assert(analyzer != nullptr);
+    }
+
+    this->m_state = state;
+    this->m_analyzer = analyzer;
+
+    // Propagate state
+    for (auto p : this->m_components)
+      p->setState(state, analyzer);
+
     this->refreshUI();
   }
 }
@@ -463,7 +517,7 @@ UIMediator::setState(State state)
 UIMediator::State
 UIMediator::getState(void) const
 {
-  return this->state;
+  return this->m_state;
 }
 
 void
@@ -504,6 +558,9 @@ UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 
   for (auto i : this->ui->inspectorTable)
     i.second->setTimeStamp(timestamp);
+
+  for (auto p : this->m_components)
+    p->setTimeStamp(timestamp);
 }
 
 void
@@ -734,6 +791,10 @@ UIMediator::refreshProfile(bool updateFreqs)
           static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
     this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
   }
+
+  // Apply profile to all UI components
+  for (auto p : this->m_components)
+    p->setProfile(this->appConfig->profile);
 }
 
 Suscan::Source::Config *
@@ -783,6 +844,7 @@ UIMediator::applyConfig(void)
   QRect rec = QGuiApplication::primaryScreen()->geometry();
   unsigned int savedBw = this->appConfig->bandwidth;
   int savedLoFreq = this->appConfig->loFreq;
+  auto sus = Suscan::Singleton::get_instance();
 
   if (this->appConfig->x == -1)
     this->appConfig->x = (rec.width() - this->appConfig->width) / 2;
@@ -811,6 +873,16 @@ UIMediator::applyConfig(void)
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
   this->ui->audioPanel->setColorConfig(this->appConfig->colors);
   this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
+
+  // Apply color config to all UI components
+  for (auto p : this->m_components)
+    p->setColorConfig(this->appConfig->colors);
+
+  // Apply QTH to all UI components
+  if (sus->haveQth())
+    for (auto p : this->m_components)
+      p->setQth(sus->getQth());
+
   this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
 
   this->setAnalyzerParams(this->appConfig->analyzerParams);
@@ -835,6 +907,9 @@ UIMediator::applyConfig(void)
   this->ui->inspectorPanel->applyConfig();
   this->ui->audioPanel->applyConfig();
   this->ui->panoramicDialog->applyConfig();
+
+  for (auto p : this->m_components)
+    p->applyConfig();
 
   this->refreshProfile();
   this->refreshUI();
@@ -894,6 +969,10 @@ UIMediator::onTriggerSetup(bool)
       this->ui->spectrum->setColorConfig(this->appConfig->colors);
       this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
       this->ui->audioPanel->setColorConfig(this->appConfig->colors);
+
+      // Apply color config to all UI components
+      for (auto p : this->m_components)
+        p->setColorConfig(this->appConfig->colors);
     }
 
     if (this->ui->configDialog->guiChanged()) {
@@ -909,6 +988,10 @@ UIMediator::onTriggerSetup(bool)
       Suscan::Location loc = this->ui->configDialog->getLocation();
       sus->setQth(loc);
       this->ui->audioPanel->setQth(loc.getQth());
+
+      // Set QTH of all UI components
+      for (auto p : this->m_components)
+        p->setQth(loc);
     }
   }
 }
@@ -969,7 +1052,7 @@ UIMediator::onQuickConnectAccepted(void)
   this->refreshUI();
   emit profileChanged(true);
 
-  if (this->state == HALTED)
+  if (this->m_state == HALTED)
     emit captureStart();
 }
 

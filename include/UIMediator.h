@@ -43,7 +43,7 @@ namespace Suscan {
 };
 
 namespace SigDigger {
-
+  class UIComponent;
   class UIMediator : public PersistentWidget {
     Q_OBJECT
 
@@ -78,7 +78,6 @@ namespace SigDigger {
     unsigned int recentCount = 0;
 
     // UI State
-    State state = HALTED;
     bool settingRanges = false;
     struct timeval rtMaxDelta = {0, 10000};
     struct timeval lastPsd;
@@ -106,10 +105,22 @@ namespace SigDigger {
     void refreshSpectrumFilterShape(void);
     void setCurrentAutoGain(void);
 
+    // Refactored UI State
+    State m_state = HALTED;
+    Suscan::Analyzer *m_analyzer = nullptr;
+    QList<UIComponent *> m_components;
+
+    // Refactored methods
+    void addToolWidgets(void);
+    void registerUIComponent(UIComponent *);
+
   public:
+    // Refactored methods
+    QMainWindow *getMainWindow() const;
+    void setState(enum State, Suscan::Analyzer *analyzer = nullptr);
+
     // UI State
     void refreshUI(void);
-    void setState(enum State);
     State getState(void) const;
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
     void notifyTimeStamp(struct timeval const &timestamp);
