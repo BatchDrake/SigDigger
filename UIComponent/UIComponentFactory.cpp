@@ -44,6 +44,12 @@ UIComponent::setQth(Suscan::Location const &)
   // NO-OP
 }
 
+void
+UIComponent::setTimeStamp(struct timeval const &)
+{
+  // NO-OP
+}
+
 UIComponent::UIComponent(UIComponentFactory *factory, UIMediator *mediator)
   : FeatureObject(factory), PersistentObject(), m_mediator(mediator)
 {

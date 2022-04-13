@@ -420,22 +420,9 @@ AudioWidget::setVolume(SUFLOAT volume)
 }
 
 void
-AudioWidget::setQth(xyz_t const &qth)
-{
-  this->fcDialog->setQth(qth);
-}
-
-void
 AudioWidget::setMuted(bool muted)
 {
   this->ui->muteButton->setChecked(muted);
-}
-
-void
-AudioWidget::setColorConfig(ColorConfig const &colors)
-{
-  this->colorConfig = colors;
-  this->fcDialog->setColorConfig(colors);
 }
 
 void
@@ -547,6 +534,71 @@ AudioWidget::event(QEvent *event)
   }
 
   return QWidget::event(event);
+}
+
+void
+AudioWidget::setQth(Suscan::Location const &qth)
+{
+  this->fcDialog->setQth(qth.getQth());
+}
+
+void
+AudioWidget::setColorConfig(ColorConfig const &colors)
+{
+  this->colorConfig = colors;
+  this->fcDialog->setColorConfig(colors);
+}
+
+void
+AudioWidget::setTimeStamp(struct timeval const &timeStamp)
+{
+  this->timeStamp = timeStamp;
+  this->fcDialog->setTimestamp(timeStamp);
+}
+
+void
+AudioWidget::setProfile(Suscan::Source::Config &profile)
+{
+  struct timeval tv, start, end;
+  bool isRealTime = false;
+
+  if (!profile.isRemote()) {
+    if (profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+      isRealTime = true;
+    } else {
+      this->setTimeStamp(profile.getStartTime());
+    }
+  } else {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    this->setTimeStamp(profile.getStartTime());
+  }
+
+  if (isRealTime) {
+    gettimeofday(&tv, nullptr);
+
+    start = tv;
+    start.tv_sec -= 1;
+    start.tv_usec = 0;
+
+    end = tv;
+    end.tv_sec += 1;
+    end.tv_usec = 0;
+  } else {
+    if (profile.fileIsValid()) {
+      start = profile.getStartTime();
+      end   = profile.getEndTime();
+    } else {
+      start = profile.getStartTime();
+      end   = start;
+      end.tv_sec += 1;
+    }
+    tv = start;
+  }
+
+  this->isRealTime = isRealTime;
+  this->fcDialog->setRealTime(this->isRealTime);
+  this->fcDialog->setTimeLimits(start, end);
 }
 
 //////////////////////////// Static members ///////////////////////////////////

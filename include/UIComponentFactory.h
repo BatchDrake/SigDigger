@@ -26,6 +26,7 @@
 namespace Suscan {
   class Location;
 }
+
 namespace SigDigger {
   class UIMediator;
   class UIComponentFactory;
@@ -42,6 +43,7 @@ namespace SigDigger {
     virtual void setProfile(Suscan::Source::Config &);
     virtual void setColorConfig(ColorConfig const &);
     virtual void setQth(Suscan::Location const &);
+    virtual void setTimeStamp(struct timeval const &);
   };
 
   class UIComponentFactory : public Suscan::FeatureFactory

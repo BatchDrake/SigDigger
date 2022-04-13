@@ -558,6 +558,9 @@ UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 
   for (auto i : this->ui->inspectorTable)
     i.second->setTimeStamp(timestamp);
+
+  for (auto p : this->m_components)
+    p->setTimeStamp(timestamp);
 }
 
 void

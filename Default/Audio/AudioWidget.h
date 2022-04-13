@@ -77,32 +77,21 @@ namespace SigDigger {
     void connectAll();
     void populateRates();
     void refreshUi();
-    void notifyOrbitReport(Suscan::OrbitReport const &);
-    void notifyDisableCorrection();
-    void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
 
     // Private settes
     void setBandwidth(SUFLOAT);
     void setDemodFreq(qint64);
-    void setRealTime(bool);
     void setEnabled(bool);
     void setDemod(enum AudioDemod);
     void setSampleRate(unsigned int);
-    void setTimeStamp(struct timeval const &);
-    void setTimeLimits(
-        struct timeval const &start,
-        struct timeval const &end);
-    void resetTimeStamp(struct timeval const &);
     void setCutOff(SUFLOAT);
     void setVolume(SUFLOAT);
-    void setQth(xyz_t const &);
     void setMuted(bool);
-    void setColorConfig(ColorConfig const &);
     void setSquelchEnabled(bool);
     void setSquelchLevel(SUFLOAT);
-    void setDiskUsage(qreal);
 
     // Recorder state setters
+    void setDiskUsage(qreal);
     void refreshDiskUsage();
     void setRecordSavePath(std::string const &);
     void setSaveEnabled(bool enabled);
@@ -139,6 +128,12 @@ namespace SigDigger {
     Suscan::Serializable *allocConfig() override;
     void applyConfig() override;
     bool event(QEvent *) override;
+
+    // Overriden methods
+    void setQth(Suscan::Location const &) override;
+    void setColorConfig(ColorConfig const &) override;
+    void setTimeStamp(struct timeval const &) override;
+    void setProfile(Suscan::Source::Config &) override;
 
   public slots:
     /*void onDemodChanged();
