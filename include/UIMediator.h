@@ -110,12 +110,12 @@ namespace SigDigger {
     Suscan::Analyzer *m_analyzer = nullptr;
     QList<UIComponent *> m_components;
 
-    // Refactored new members
+    // Refactored methods
     void addToolWidgets(void);
     void registerUIComponent(UIComponent *);
 
   public:
-    // Refactored new members
+    // Refactored methods
     QMainWindow *getMainWindow() const;
     void setState(enum State, Suscan::Analyzer *analyzer = nullptr);
 

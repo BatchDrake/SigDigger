@@ -23,9 +23,13 @@
 #include <Suscan/Analyzer.h>
 #include <PersistentWidget.h>
 
+namespace Suscan {
+  class Location;
+}
 namespace SigDigger {
   class UIMediator;
   class UIComponentFactory;
+  class ColorConfig;
 
   class UIComponent : public Suscan::FeatureObject, public PersistentObject {
     class UIMediator *m_mediator = nullptr;
@@ -36,6 +40,8 @@ namespace SigDigger {
   public:
     virtual void setState(int, Suscan::Analyzer *);
     virtual void setProfile(Suscan::Source::Config &);
+    virtual void setColorConfig(ColorConfig const &);
+    virtual void setQth(Suscan::Location const &);
   };
 
   class UIComponentFactory : public Suscan::FeatureFactory

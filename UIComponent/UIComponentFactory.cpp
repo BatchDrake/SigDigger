@@ -32,6 +32,17 @@ UIComponent::setProfile(Suscan::Source::Config &)
   // NO-OP
 }
 
+void
+UIComponent::setColorConfig(ColorConfig const &)
+{
+  // NO-OP
+}
+
+void
+UIComponent::setQth(Suscan::Location const &)
+{
+  // NO-OP
+}
 
 UIComponent::UIComponent(UIComponentFactory *factory, UIMediator *mediator)
   : FeatureObject(factory), PersistentObject(), m_mediator(mediator)

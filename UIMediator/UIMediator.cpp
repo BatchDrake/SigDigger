@@ -788,6 +788,10 @@ UIMediator::refreshProfile(bool updateFreqs)
           static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
     this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
   }
+
+  // Apply profile to all UI components
+  for (auto p : this->m_components)
+    p->setProfile(this->appConfig->profile);
 }
 
 Suscan::Source::Config *
@@ -837,6 +841,7 @@ UIMediator::applyConfig(void)
   QRect rec = QGuiApplication::primaryScreen()->geometry();
   unsigned int savedBw = this->appConfig->bandwidth;
   int savedLoFreq = this->appConfig->loFreq;
+  auto sus = Suscan::Singleton::get_instance();
 
   if (this->appConfig->x == -1)
     this->appConfig->x = (rec.width() - this->appConfig->width) / 2;
@@ -865,6 +870,16 @@ UIMediator::applyConfig(void)
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
   this->ui->audioPanel->setColorConfig(this->appConfig->colors);
   this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
+
+  // Apply color config to all UI components
+  for (auto p : this->m_components)
+    p->setColorConfig(this->appConfig->colors);
+
+  // Apply QTH to all UI components
+  if (sus->haveQth())
+    for (auto p : this->m_components)
+      p->setQth(sus->getQth());
+
   this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
 
   this->setAnalyzerParams(this->appConfig->analyzerParams);
@@ -889,6 +904,9 @@ UIMediator::applyConfig(void)
   this->ui->inspectorPanel->applyConfig();
   this->ui->audioPanel->applyConfig();
   this->ui->panoramicDialog->applyConfig();
+
+  for (auto p : this->m_components)
+    p->applyConfig();
 
   this->refreshProfile();
   this->refreshUI();
@@ -948,6 +966,10 @@ UIMediator::onTriggerSetup(bool)
       this->ui->spectrum->setColorConfig(this->appConfig->colors);
       this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
       this->ui->audioPanel->setColorConfig(this->appConfig->colors);
+
+      // Apply color config to all UI components
+      for (auto p : this->m_components)
+        p->setColorConfig(this->appConfig->colors);
     }
 
     if (this->ui->configDialog->guiChanged()) {
@@ -963,6 +985,10 @@ UIMediator::onTriggerSetup(bool)
       Suscan::Location loc = this->ui->configDialog->getLocation();
       sus->setQth(loc);
       this->ui->audioPanel->setQth(loc.getQth());
+
+      // Set QTH of all UI components
+      for (auto p : this->m_components)
+        p->setQth(loc);
     }
   }
 }
