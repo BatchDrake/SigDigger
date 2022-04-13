@@ -139,7 +139,7 @@ UIMediator::refreshUI(void)
   Suscan::Source::Config *config = this->getProfile();
   const Suscan::Source::Device &dev = config->getDevice();
 
-  switch (this->state) {
+  switch (this->m_state) {
     case HALTED:
       stateString = QString("Idle");
       this->ui->spectrum->setCaptureMode(MainSpectrum::UNAVAILABLE);
@@ -192,12 +192,12 @@ UIMediator::refreshUI(void)
   }
 
   this->ui->inspectorPanel->setState(
-        this->state == RUNNING
+        this->m_state == RUNNING
         ? InspectorPanel::State::ATTACHED
         : InspectorPanel::State::DETACHED);
 
   this->ui->sourcePanel->setState(
-        this->state == RUNNING
+        this->m_state == RUNNING
         ? SourcePanel::State::ATTACHED
         : SourcePanel::State::DETACHED);
 
@@ -383,6 +383,12 @@ UIMediator::connectMainWindow(void)
 }
 
 void
+UIMediator::registerUIComponent(UIComponent *comp)
+{
+  this->m_components.push_back(comp);
+}
+
+void
 UIMediator::addToolWidgets(void)
 {
   auto s = Suscan::Singleton::get_instance();
@@ -392,6 +398,9 @@ UIMediator::addToolWidgets(void)
        ++p) {
     ToolWidgetFactory *f = *p;
     ToolWidget *widget = f->make(this);
+
+    this->registerUIComponent(widget);
+
     this->ui->spectrum->addToolWidget(
           widget,
           f->getTitle().c_str());
@@ -479,10 +488,28 @@ UIMediator::setSampleRate(unsigned int rate)
 }
 
 void
-UIMediator::setState(State state)
+UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 {
-  if (this->state != state) {
-    this->state = state;
+  if (this->m_state != state) {
+    // Sanity check
+    switch (state) {
+      case HALTED:
+      case HALTING:
+      case RESTARTING:
+        assert(analyzer == nullptr);
+        break;
+
+      case RUNNING:
+        assert(analyzer != nullptr);
+    }
+
+    this->m_state = state;
+    this->m_analyzer = analyzer;
+
+    // Propagate state
+    for (auto p : this->m_components)
+      p->setState(state, analyzer);
+
     this->refreshUI();
   }
 }
@@ -490,7 +517,7 @@ UIMediator::setState(State state)
 UIMediator::State
 UIMediator::getState(void) const
 {
-  return this->state;
+  return this->m_state;
 }
 
 void
@@ -996,7 +1023,7 @@ UIMediator::onQuickConnectAccepted(void)
   this->refreshUI();
   emit profileChanged(true);
 
-  if (this->state == HALTED)
+  if (this->m_state == HALTED)
     emit captureStart();
 }
 

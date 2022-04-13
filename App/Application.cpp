@@ -894,7 +894,7 @@ Application::startCapture(void)
 
       this->connectAnalyzer();
 
-      this->mediator->setState(UIMediator::RUNNING);
+      this->mediator->setState(UIMediator::RUNNING, this->analyzer.get());
     }
   } catch (Suscan::Exception &) {
     (void)  QMessageBox::critical(
