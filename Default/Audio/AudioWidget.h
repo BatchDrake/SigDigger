@@ -136,7 +136,7 @@ namespace SigDigger {
     void setProfile(Suscan::Source::Config &) override;
 
   public slots:
-    /*void onDemodChanged();
+    void onDemodChanged();
     void onSampleRateChanged();
     void onFilterChanged();
     void onVolumeChanged();
@@ -148,7 +148,7 @@ namespace SigDigger {
     void onRecordStartStop();
     void onToggleSquelch();
     void onSquelchLevelChanged();
-    void onOpenDopplerSettings(); */
+    void onOpenDopplerSettings();
   };
 }
 

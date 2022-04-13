@@ -25,6 +25,8 @@
 #include <util/compat-statvfs.h>
 #include "ui_AudioPanel.h"
 #include <QDir>
+#include <QFileDialog>
+#include <QMessageBox>
 
 using namespace SigDigger;
 
@@ -636,3 +638,139 @@ AudioWidget::demodToStr(AudioDemod demod)
 
   return "AM"; // Default
 }
+
+//////////////////////////////// Slots ////////////////////////////////////////
+void
+AudioWidget::onDemodChanged(void)
+{
+  this->setDemod(this->getDemod());
+
+  // TODO: Change demod in spectrum
+  // TODO: Change demod in opened inspector (if any)
+}
+
+void
+AudioWidget::onSampleRateChanged(void)
+{
+  this->setSampleRate(this->getSampleRate());
+
+  // TODO: Change sample rate in inspector (if any)
+}
+
+void
+AudioWidget::onFilterChanged(void)
+{
+  this->setCutOff(this->getCutOff());
+
+  // TODO: Change filter cutoff in inspector (if any)
+}
+
+void
+AudioWidget::onVolumeChanged(void)
+{
+  this->setVolume(this->getVolume());
+
+  // TODO: Change volume in inspector (if any)
+}
+
+void
+AudioWidget::onMuteToggled(bool)
+{
+  this->ui->volumeSlider->setEnabled(!this->isMuted());
+  this->ui->volumeLabel->setEnabled(!this->isMuted());
+
+  this->ui->muteButton->setIcon(
+        QIcon(
+          this->isMuted()
+          ? ":/icons/audio-volume-muted-panel.png"
+          : ":/icons/audio-volume-medium-panel.png"));
+
+  // TODO: Change volume in inspector (if any)
+}
+
+void
+AudioWidget::onEnabledChanged(void)
+{
+  this->setEnabled(this->getEnabled());
+
+  // TODO: Open or close inspector (if any)
+}
+
+void
+AudioWidget::onChangeSavePath(void)
+{
+  QFileDialog dialog(this->ui->saveButton);
+
+  dialog.setFileMode(QFileDialog::DirectoryOnly);
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+  dialog.setWindowTitle(QString("Select current save directory"));
+
+  if (dialog.exec()) {
+    QString path = dialog.selectedFiles().first();
+    this->ui->savePath->setText(path);
+    this->panelConfig->savePath = path.toStdString();
+    this->refreshDiskUsage();
+
+    // TODO: Start and / or stop save
+  }
+}
+
+void
+AudioWidget::onRecordStartStop(void)
+{
+  this->ui->recordStartStopButton->setText(
+        this->ui->recordStartStopButton->isChecked()
+        ? "Stop"
+        : "Record");
+
+  // TODO: Start and / or stop save
+}
+
+void
+AudioWidget::onToggleSquelch(void)
+{
+  this->setSquelchEnabled(this->getSquelchEnabled());
+
+  // TODO: Enable squelch in opened inspector (if any)
+}
+
+void
+AudioWidget::onSquelchLevelChanged(void)
+{
+  this->setSquelchLevel(this->getSquelchLevel());
+
+  // TODO: Set sequelch level in opened inspectoir (if any)
+}
+
+void
+AudioWidget::onOpenDopplerSettings(void)
+{
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  if (s->haveQth()) {
+    this->fcDialog->show();
+  } else {
+    QMessageBox::warning(
+          this,
+          "Doppler settings",
+          "Doppler settings require RX location to be properly initialized. "
+          "Plase set a receiver location in the settings dialog.");
+
+  }
+}
+
+void
+AudioWidget::onAcceptCorrectionSetting(void)
+{
+  this->panelConfig->tleCorrection = this->fcDialog->isCorrectionEnabled();
+  this->panelConfig->isSatellite   = this->fcDialog->isCorrectionFromSatellite();
+  this->panelConfig->satName       = this->fcDialog->getCurrentSatellite().toStdString();
+  this->panelConfig->tleData       = this->fcDialog->getCurrentTLE().toStdString();
+
+  if (this->fcDialog->isCorrectionEnabled()) {
+    // TODO: Set correction to the audio inspector
+  } else {
+    // TODO: Disable correction to the audio inspector
+  }
+}
+
