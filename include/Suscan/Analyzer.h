@@ -254,6 +254,9 @@ namespace Suscan {
   private:
     suscan_analyzer_t *instance = nullptr;
     AsyncThread *asyncThread = nullptr;
+    uint32_t requestId = 0;
+    uint32_t inspectorId = 0;
+
     MQ mq;
 
     static bool registered;
@@ -274,6 +277,9 @@ namespace Suscan {
     void captureMessage(quint32 type, void *data);
 
   public:
+    uint32_t allocateRequestId(void);
+    uint32_t allocateInspectorId(void);
+
     SUSCOUNT getSampleRate(void) const;
     SUSCOUNT getMeasuredSampleRate(void) const;
     struct timeval getSourceTimeStamp(void) const;

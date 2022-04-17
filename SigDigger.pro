@@ -116,6 +116,7 @@ SOURCES += \
     Settings/LocationConfigTab.cpp \
     Settings/ProfileConfigTab.cpp \
     Settings/TLESourceTab.cpp \
+    Suscan/AnalyzerRequestTracker.cpp \
     Suscan/CancellableTask.cpp \
     Suscan/FeatureFactory.cpp \
     Suscan/Messages/ChannelMessage.cpp \
@@ -194,6 +195,7 @@ HEADERS += \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
+    include/AnalyzerRequestTracker.h \
     include/AudioFileSaver.h \
     include/CarrierDetector.h \
     include/CarrierXlator.h \
