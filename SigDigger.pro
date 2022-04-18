@@ -68,7 +68,6 @@ SOURCES += \
     Audio/GenericAudioPlayer.cpp \
     Components/AboutDialog.cpp \
     Components/AddTLESourceDialog.cpp \
-    Components/AudioPanel.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
     Components/DeviceTweaks.cpp \
@@ -152,7 +151,6 @@ SOURCES += \
     Tasks/WaveSampler.cpp \
     UIComponent/ToolWidgetFactory.cpp \
     UIComponent/UIComponentFactory.cpp \
-    UIMediator/AudioMediator.cpp \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
     UIMediator/PanoramicDialogMediator.cpp \
@@ -255,7 +253,6 @@ HEADERS += \
     include/Application.h \
     include/AppUI.h \
     include/AskControl.h \
-    include/AudioPanel.h \
     include/AudioPlayback.h \
     include/AutoGain.h \
     include/Averager.h \

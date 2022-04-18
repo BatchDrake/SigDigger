@@ -22,7 +22,6 @@
 #include "SourcePanel.h"
 #include "InspectorPanel.h"
 #include "FftPanel.h"
-#include "AudioPanel.h"
 #include "MainSpectrum.h"
 #include "ConfigDialog.h"
 #include "Palette.h"
@@ -77,7 +76,6 @@ AppUI::AppUI(QMainWindow *owner)
   this->sourcePanel = new SourcePanel(nullptr);
   this->inspectorPanel = new InspectorPanel(nullptr);
   this->fftPanel = new FftPanel(nullptr);
-  this->audioPanel = new AudioPanel(nullptr);
   this->quickConnectDialog = new QuickConnectDialog(owner);
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);

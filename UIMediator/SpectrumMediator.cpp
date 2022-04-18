@@ -22,7 +22,6 @@
 #include "FftPanel.h"
 #include "MainSpectrum.h"
 #include "InspectorPanel.h"
-#include "AudioPanel.h"
 #include "Inspector.h"
 #include <SuWidgetsHelpers.h>
 
@@ -191,7 +190,6 @@ UIMediator::onFrequencyChanged(qint64)
   qint64 freq = this->ui->spectrum->getCenterFreq();
 
   this->ui->inspectorPanel->setDemodFrequency(freq);
-  this->ui->audioPanel->setDemodFreq(freq);
   this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
 
   for (auto i : this->ui->inspectorTable)
@@ -212,7 +210,6 @@ UIMediator::onLoChanged(qint64)
   qint64 freq = this->ui->spectrum->getCenterFreq()
       + this->ui->spectrum->getLoFreq();
   this->ui->inspectorPanel->setDemodFrequency(freq);
-  this->ui->audioPanel->setDemodFreq(freq);
   this->appConfig->loFreq = static_cast<int>(this->ui->spectrum->getLoFreq());
   emit loChanged(this->ui->spectrum->getLoFreq());
 }
@@ -257,11 +254,3 @@ UIMediator::onBookmarkChanged(void)
   this->ui->spectrum->updateOverlay();
 }
 
-void
-UIMediator::onModulationChanged(QString newModulation)
-{
-  this->ui->audioPanel->setDemod(
-        AudioPanel::strToDemod(
-          newModulation.toStdString()));
-  this->refreshSpectrumFilterShape();
-}

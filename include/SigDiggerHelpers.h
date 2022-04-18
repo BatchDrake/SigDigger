@@ -32,6 +32,13 @@ class QComboBox;
 namespace SigDigger {
   class MultitaskController;
 
+  enum AudioDemod {
+    AM,
+    FM,
+    USB,
+    LSB
+  };
+
   class SigDiggerHelpers
   {
     std::vector<Palette> palettes;
@@ -54,6 +61,10 @@ namespace SigDigger {
     static QString version(void);
     static QString pkgversion(void);
     static void timerdup(struct timeval *);
+
+    // Demod helpers
+    static AudioDemod strToDemod(std::string const &str);
+    static std::string demodToStr(AudioDemod);
 
     static void openSaveSamplesDialog(
         QWidget *root,

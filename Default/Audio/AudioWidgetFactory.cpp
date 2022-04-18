@@ -24,7 +24,7 @@ using namespace SigDigger;
 const char *
 AudioWidgetFactory::name(void) const
 {
-  return "AudioWidgetFactory";
+  return "AudioWidget";
 }
 
 ToolWidget *

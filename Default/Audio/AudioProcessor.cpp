@@ -96,7 +96,7 @@ AudioProcessor::openAudio()
       m_maxAudioBw =
           SU_MIN(
             SCAST(SUFREQ, m_analyzer->getSampleRate() / 2),
-            SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH);
+            2e5);
 
       // FIXME: Find a sample rate that better matches this
       if (reqRate > m_maxAudioBw)
@@ -589,6 +589,14 @@ AudioProcessor::onInspectorMessage(Suscan::InspectorMessage const &msg)
           emit audioError("Unexpected error while opening audio channel");
         }
 
+        break;
+
+      case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_TLE:
+        emit setTLE(msg);
+        break;
+
+      case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_ORBIT_REPORT:
+        emit orbitReport(msg);
         break;
 
       default:

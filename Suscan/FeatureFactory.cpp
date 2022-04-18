@@ -26,10 +26,17 @@ using namespace Suscan;
 FeatureObject::FeatureObject(FeatureFactory *factory)
 {
   assert(factory != nullptr);
-  this->m_factory = factory;
+  m_factory = factory;
 
   factory->registerInstance(this);
 }
+
+const char *
+FeatureObject::factoryName() const
+{
+  return m_factory->name();
+}
+
 
 FeatureObject::~FeatureObject()
 {

@@ -233,6 +233,8 @@ Loader::saveConfig(void)
   try {
     Suscan::Object obj = std::move(this->app->getConfig());
 
+    this->app->addComponentConfig(obj);
+
     sing->putUIConfig(this->confIndex, std::move(obj));
 
     sing->sync();

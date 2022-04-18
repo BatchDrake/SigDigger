@@ -70,6 +70,41 @@ SigDiggerHelpers::timerdup(struct timeval *tv)
   }
 }
 
+AudioDemod
+SigDiggerHelpers::strToDemod(std::string const &str)
+{
+  if (str == "AM")
+    return AudioDemod::AM;
+  else if (str == "FM")
+    return AudioDemod::FM;
+  else if (str == "USB")
+    return AudioDemod::USB;
+  else if (str == "LSB")
+    return AudioDemod::LSB;
+
+  return AudioDemod::AM;
+}
+
+std::string
+SigDiggerHelpers::demodToStr(AudioDemod demod)
+{
+  switch (demod) {
+    case AM:
+      return "AM";
+
+    case FM:
+      return "FM";
+
+    case USB:
+      return "USB";
+
+    case LSB:
+      return "LSB";
+  }
+
+  return "AM"; // Default
+}
+
 void
 SigDiggerHelpers::openSaveSamplesDialog(
     QWidget *root,

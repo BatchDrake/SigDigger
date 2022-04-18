@@ -34,7 +34,6 @@ namespace SigDigger {
   class SourcePanel;
   class InspectorPanel;
   class FftPanel;
-  class AudioPanel;
   class AboutDialog;
   class DataSaverUI;
   class LogDialog;
@@ -54,7 +53,6 @@ namespace SigDigger {
     SourcePanel *sourcePanel = nullptr;
     InspectorPanel *inspectorPanel = nullptr;
     FftPanel *fftPanel = nullptr;
-    AudioPanel *audioPanel = nullptr;
     AboutDialog *aboutDialog = nullptr;
     DataSaverUI *dataSaverUI = nullptr;
     LogDialog *logDialog = nullptr;

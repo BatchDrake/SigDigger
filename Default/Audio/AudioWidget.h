@@ -124,10 +124,6 @@ namespace SigDigger {
     bool getRecordState(void) const;
     std::string getRecordSavePath(void) const;
 
-    // Private static members
-    static AudioDemod strToDemod(std::string const &str);
-    static std::string demodToStr(AudioDemod);
-
   public:
     AudioWidget(AudioWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
     ~AudioWidget() override;
@@ -162,6 +158,10 @@ namespace SigDigger {
     void onToggleSquelch();
     void onSquelchLevelChanged();
     void onOpenDopplerSettings();
+
+    // Notifications
+    void onSetTLE(Suscan::InspectorMessage const &);
+    void onOrbitReport(Suscan::InspectorMessage const &);
 
     // Saver UI
     void onAudioSaveError(void);

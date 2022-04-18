@@ -34,10 +34,6 @@
 #define SIGDIGGER_FFT_REFRESH_RATE 25u
 
 #define SIGDIGGER_MAX_SAMPLE_RATE             3000000
-#define SIGDIGGER_AUDIO_INSPECTOR_SAMPLE_RATE 44100
-#define SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID    0xa01d10ff
-#define SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH   200000
-#define SIGDIGGER_AUDIO_INSPECTOR_REQID       0xaaaaaaaa
 
 #define SIGDIGGER_RAW_INSPECTOR_MAGIC_ID      0xe0e0e0e0
 #define SIGDIGGER_RAW_INSPECTOR_REQID         0xeeeeeeee
@@ -55,7 +51,6 @@ namespace SigDigger {
       Suscan::Serializable *sourceConfig = nullptr;
       Suscan::Serializable *fftConfig = nullptr;
       Suscan::Serializable *inspectorConfig = nullptr;
-      Suscan::Serializable *audioConfig = nullptr;
       Suscan::Serializable *panSpectrumConfig = nullptr;
 
       int version = SIGDIGGER_UICONFIG_VERSION;

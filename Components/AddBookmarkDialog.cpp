@@ -18,9 +18,9 @@
 //
 
 #include <AddBookmarkDialog.h>
+#include <SigDiggerHelpers.h>
 #include "ui_AddBookmarkDialog.h"
 #include <QTimer>
-#include "AudioPanel.h"
 
 using namespace SigDigger;
 
@@ -64,7 +64,8 @@ AddBookmarkDialog::setNameHint(QString const &name)
 void
 AddBookmarkDialog::setModulationHint(QString const &name)
 {
-  this->ui->demodCombo->setCurrentIndex(static_cast<int>(AudioPanel::strToDemod(name.toStdString())));
+  this->ui->demodCombo->setCurrentIndex(
+        static_cast<int>(SigDiggerHelpers::strToDemod(name.toStdString())));
 }
 
 void
@@ -100,7 +101,9 @@ AddBookmarkDialog::bandwidth(void) const
 QString
 AddBookmarkDialog::modulation(void) const
 {
-  return QString::fromStdString(AudioPanel::demodToStr(static_cast<enum AudioDemod>(this->ui->demodCombo->currentIndex())));
+  return QString::fromStdString(
+        SigDiggerHelpers::demodToStr(static_cast<enum AudioDemod>(
+                                       this->ui->demodCombo->currentIndex())));
 }
 
 void

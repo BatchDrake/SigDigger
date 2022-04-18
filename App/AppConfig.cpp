@@ -21,7 +21,6 @@
 #include "SourcePanel.h"
 #include "FftPanel.h"
 #include "InspectorPanel.h"
-#include "AudioPanel.h"
 #include "PanoramicDialog.h"
 
 using namespace SigDigger;
@@ -36,7 +35,6 @@ AppConfig::AppConfig(AppUI *ui)
   this->sourceConfig      = ui->sourcePanel->getConfig();
   this->fftConfig         = ui->fftPanel->getConfig();
   this->inspectorConfig   = ui->inspectorPanel->getConfig();
-  this->audioConfig       = ui->audioPanel->getConfig();
   this->panSpectrumConfig = ui->panoramicDialog->getConfig();
 }
 
@@ -67,7 +65,6 @@ AppConfig::serialize(void)
   obj.setField("tleSourceConfig", this->tleSourceConfig.serialize());
   obj.setField("sourcePanel", this->sourceConfig->serialize());
   obj.setField("fftPanel", this->fftConfig->serialize());
-  obj.setField("audioPanel", this->audioConfig->serialize());
   obj.setField("inspectorPanel", this->inspectorConfig->serialize());
   obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
 
@@ -116,7 +113,6 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->tleSourceConfig.deserialize(conf.getField("tleSourceConfig")));
     TRYSILENT(this->sourceConfig->deserialize(conf.getField("sourcePanel")));
     TRYSILENT(this->fftConfig->deserialize(conf.getField("fftPanel")));
-    TRYSILENT(this->audioConfig->deserialize(conf.getField("audioPanel")));
     TRYSILENT(this->inspectorConfig->deserialize(conf.getField("inspectorPanel")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
 

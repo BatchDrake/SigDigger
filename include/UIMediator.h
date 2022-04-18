@@ -93,7 +93,6 @@ namespace SigDigger {
     void connectSpectrum(void);
     void connectSourcePanel(void);
     void connectFftPanel(void);
-    void connectAudioPanel(void);
     void connectInspectorPanel(void);
     void connectDeviceDialog(void);
     void connectPanoramicDialog(void);
@@ -102,7 +101,6 @@ namespace SigDigger {
     void setSampleRate(unsigned int rate);
     void setBandwidth(unsigned int bandwidth);
     void refreshProfile(bool updateFreqs = true);
-    void refreshSpectrumFilterShape(void);
     void setCurrentAutoGain(void);
 
     // Refactored UI State
@@ -118,6 +116,9 @@ namespace SigDigger {
     // Refactored methods
     QMainWindow  *getMainWindow() const;
     MainSpectrum *getMainSpectrum() const;
+
+    void deserializeComponents(Suscan::Object const &conf);
+    void serializeComponents(Suscan::Object &conf);
 
     void setState(enum State, Suscan::Analyzer *analyzer = nullptr);
 
@@ -302,7 +303,6 @@ namespace SigDigger {
     void onRangeChanged(float, float);
     void onZoomChanged(float);
     void onNewBandPlan(QString);
-    void onModulationChanged(QString);
 
     // Source panel
     void onToggleRecord(void);
@@ -328,9 +328,6 @@ namespace SigDigger {
     void onGainChanged(float);
     void onZeroPointChanged(float);
     void onUnitChanged(QString, float, float);
-
-    // Audio panel
-    void onAudioChanged(void);
 
     // Inspector
     void onInspBandwidthChanged(void);

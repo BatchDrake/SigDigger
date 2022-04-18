@@ -38,7 +38,6 @@
 #include "ui_MainWindow.h"
 #include "MainWindow.h"
 #include "MainSpectrum.h"
-#include "AudioPanel.h"
 #include "FftPanel.h"
 #include "InspectorPanel.h"
 #include "SourcePanel.h"
@@ -133,6 +132,24 @@ MainSpectrum *
 UIMediator::getMainSpectrum() const
 {
   return this->ui->spectrum;
+}
+
+#define TRYSILENT(x) \
+  try { x; } catch (Suscan::Exception const &e) { printf ("Error: %s\n", e.what()); }
+
+void
+UIMediator::deserializeComponents(Suscan::Object const &conf)
+{
+  if (!conf.isHollow())
+    for (auto &p : this->m_components)
+      TRYSILENT(p->getConfig()->deserialize(conf.getField(p->factoryName())));
+}
+
+void
+UIMediator::serializeComponents(Suscan::Object &conf)
+{
+  for (auto &p : this->m_components)
+    conf.setField(p->factoryName(), p->getConfig()->serialize());
 }
 
 void
@@ -371,12 +388,6 @@ UIMediator::connectMainWindow(void)
         this,
         SLOT(onBookmarkChanged(void)));
 
-  connect(
-        this->ui->spectrum,
-        SIGNAL(modulationChanged(QString)),
-        this,
-        SLOT(onModulationChanged(QString)));
-
   this->ui->main->mainTab->tabBar()->setContextMenuPolicy(
         Qt::CustomContextMenu);
 
@@ -429,7 +440,7 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   this->addToolWidgets();
 
-  this->ui->spectrum->addToolWidget(this->ui->audioPanel, "Audio preview");
+  // TODO: Turn into default plugin tool widgets
   this->ui->spectrum->addToolWidget(this->ui->sourcePanel, "Signal source");
   this->ui->spectrum->addToolWidget(this->ui->inspectorPanel, "Inspection");
   this->ui->spectrum->addToolWidget(this->ui->fftPanel, "FFT");
@@ -449,7 +460,7 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->connectSpectrum();
   this->connectSourcePanel();
   this->connectFftPanel();
-  this->connectAudioPanel();
+
   this->connectInspectorPanel();
   this->connectDeviceDialog();
   this->connectPanoramicDialog();
@@ -475,19 +486,11 @@ UIMediator::setSampleRate(unsigned int rate)
   if (this->rate != rate) {
     unsigned int bw = rate / 30;
 
-    SUFREQ audioBw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
-
-    if (audioBw > rate / 2)
-      audioBw = rate / 2;
-
     this->ui->fftPanel->setSampleRate(rate);
     this->ui->inspectorPanel->setBandwidthLimits(0, rate);
     this->ui->spectrum->setSampleRate(rate);
     this->ui->sourcePanel->setSampleRate(rate);
     this->setBandwidth(bw);
-
-    this->ui->audioPanel->setBandwidth(static_cast<float>(audioBw));
-    this->refreshSpectrumFilterShape();
 
     this->rate = rate;
   }
@@ -550,7 +553,6 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
             SUSCAN_ANALYZER_PERM_SEEK));
   }
 
-  this->ui->audioPanel->applySourceInfo(info);
   this->ui->inspectorPanel->applySourceInfo(info);
   this->ui->sourcePanel->applySourceInfo(info);
   this->ui->fftPanel->applySourceInfo(info);
@@ -559,7 +561,6 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 void
 UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 {
-  this->ui->audioPanel->setTimeStamp(timestamp);
   this->setTimeStamp(timestamp);
 
   for (auto i : this->ui->inspectorTable)
@@ -574,25 +575,17 @@ UIMediator::notifyOrbitReport(
     Suscan::InspectorId id,
     Suscan::OrbitReport const &report)
 {
-  if (id == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
-    this->ui->audioPanel->notifyOrbitReport(report);
-  } else {
-    Inspector *insp;
-    if ((insp = this->lookupInspector(id)) != nullptr)
-      insp->notifyOrbitReport(report);
-  }
+  Inspector *insp;
+  if ((insp = this->lookupInspector(id)) != nullptr)
+    insp->notifyOrbitReport(report);
 }
 
 void
 UIMediator::notifyDisableCorrection(Suscan::InspectorId id)
 {
-  if (id == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
-    this->ui->audioPanel->notifyDisableCorrection();
-  } else {
-    Inspector *insp;
-    if ((insp = this->lookupInspector(id)) != nullptr)
-      insp->disableCorrection();
-  }
+  Inspector *insp;
+  if ((insp = this->lookupInspector(id)) != nullptr)
+    insp->disableCorrection();
 }
 
 void
@@ -729,18 +722,11 @@ UIMediator::refreshProfile(bool updateFreqs)
     } else {
       min = SIGDIGGER_MIN_RADIO_FREQ;
       max = SIGDIGGER_MAX_RADIO_FREQ;
-
-      this->ui->audioPanel->resetTimeStamp(
-            this->appConfig->profile.getStartTime());
     }
   } else {
-    struct timeval tv;
     // Remote sources receive time from the server
     min = SIGDIGGER_MIN_RADIO_FREQ;
     max = SIGDIGGER_MAX_RADIO_FREQ;
-
-    gettimeofday(&tv, nullptr);
-    this->ui->audioPanel->resetTimeStamp(tv);
   }
 
   // Dummy device should not accept modifications if we don't accept
@@ -783,10 +769,6 @@ UIMediator::refreshProfile(bool updateFreqs)
   this->ui->timeSlider->setEndTime(end);
   this->ui->timeSlider->setTimeStamp(tv);
   this->ui->timeToolbar->setVisible(!isRealTime);
-
-  // Configure audio panel
-  this->ui->audioPanel->setRealTime(isRealTime);
-  this->ui->audioPanel->setTimeLimits(start, end);
 
   // Configure spectrum
   this->ui->spectrum->setFrequencyLimits(min, max);
@@ -877,7 +859,6 @@ UIMediator::applyConfig(void)
   this->ui->configDialog->setTleSourceConfig(this->appConfig->tleSourceConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
-  this->ui->audioPanel->setColorConfig(this->appConfig->colors);
   this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
 
   // Apply color config to all UI components
@@ -911,7 +892,6 @@ UIMediator::applyConfig(void)
   this->ui->sourcePanel->applyConfig();
   this->ui->fftPanel->applyConfig();
   this->ui->inspectorPanel->applyConfig();
-  this->ui->audioPanel->applyConfig();
   this->ui->panoramicDialog->applyConfig();
 
   for (auto p : this->m_components)
@@ -974,7 +954,6 @@ UIMediator::onTriggerSetup(bool)
       this->appConfig->colors = this->ui->configDialog->getColors();
       this->ui->spectrum->setColorConfig(this->appConfig->colors);
       this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
-      this->ui->audioPanel->setColorConfig(this->appConfig->colors);
 
       // Apply color config to all UI components
       for (auto p : this->m_components)
@@ -993,7 +972,6 @@ UIMediator::onTriggerSetup(bool)
     if (this->ui->configDialog->locationChanged()) {
       Suscan::Location loc = this->ui->configDialog->getLocation();
       sus->setQth(loc);
-      this->ui->audioPanel->setQth(loc.getQth());
 
       // Set QTH of all UI components
       for (auto p : this->m_components)
@@ -1287,15 +1265,13 @@ UIMediator::onAddBookmark(void)
 
   this->ui->addBookmarkDialog->setNameHint(
         QString::asprintf(
-          "%s signal @ %s",
-          AudioPanel::demodToStr(this->ui->audioPanel->getDemod()).c_str(),
+          "Signal @ %s",
           SuWidgetsHelpers::formatQuantity(
             this->ui->spectrum->getLoFreq() + this->ui->spectrum->getCenterFreq(),
             4,
             "Hz").toStdString().c_str()));
 
   this->ui->addBookmarkDialog->setBandwidthHint(this->ui->spectrum->getBandwidth());
-  this->ui->addBookmarkDialog->setModulationHint(QString::fromStdString(AudioPanel::demodToStr(this->ui->audioPanel->getDemod())));
 
   this->ui->addBookmarkDialog->show();
 }
@@ -1325,12 +1301,6 @@ UIMediator::onJumpToBookmark(BookmarkInfo info)
 {
   this->ui->spectrum->setCenterFreq(info.frequency);
   this->ui->spectrum->setLoFreq(0);
-
-  if (!info.modulation.isEmpty()) {
-    this->ui->audioPanel->setDemod(
-          AudioPanel::strToDemod(info.modulation.toStdString()));
-    this->refreshSpectrumFilterShape();
-  }
 
   if (info.bandwidth() != 0)
     this->setBandwidth(info.bandwidth());

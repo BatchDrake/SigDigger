@@ -26,8 +26,6 @@
 #include <QMessageBox>
 #include <SuWidgetsHelpers.h>
 
-// TODO: REMOVE DEPENDS
-#include "AudioPanel.h"
 #include "MainSpectrum.h"
 #include "SourcePanel.h"
 #include "Inspector.h"
@@ -64,25 +62,22 @@ Application::Application(QWidget *parent) : QMainWindow(parent), ui(this)
   this->deviceDetectWorker = new DeviceDetectWorker();
   this->deviceDetectWorker->moveToThread(this->deviceDetectThread);
   this->deviceDetectThread->start();
-
-  try {
-    this->playBack = nullptr; // = std::make_unique<AudioPlayback>("default", 44100);
-    this->audioSampleRate = 0; //this->playBack->getSampleRate();
-  } catch (std::runtime_error &e) {
-    QMessageBox::warning(
-              this,
-              "Failed to open soundcard device",
-              "Cannot open audio device. Error was:<p /><pre>"
-              + QString(e.what())
-              + "</pre><p />Playback support will be disabled.",
-              QMessageBox::Ok);
-  }
 }
 
 Suscan::Object &&
 Application::getConfig(void)
 {
   return this->mediator->getConfig()->serialize();
+}
+
+void
+Application::addComponentConfig(Suscan::Object &config)
+{
+  Suscan::Object object(SUSCAN_OBJECT_TYPE_OBJECT);
+
+  this->mediator->serializeComponents(object);
+
+  config.setField("Components", object);
 }
 
 void
@@ -108,7 +103,13 @@ Application::run(Suscan::Object const &config)
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
   this->ui.postLoadInit(this);
 
+  // Order is important here. First deserialize component, then load
+  try {
+    this->mediator->deserializeComponents(config.getField("Components"));
+  } catch (Suscan::Exception const &) { }
+
   this->mediator->loadSerializedConfig(config);
+
   this->mediator->setState(UIMediator::HALTED);
 
   // New devices may have been discovered after config deserialization
@@ -183,35 +184,6 @@ Application::connectDataSaver()
 }
 
 void
-Application::connectAudioFileSaver()
-{
-  this->connect(
-        this->audioFileSaver.get(),
-        SIGNAL(stopped()),
-        this,
-        SLOT(onAudioSaveError()));
-
-  this->connect(
-        this->audioFileSaver.get(),
-        SIGNAL(swamped()),
-        this,
-        SLOT(onAudioSaveSwamped()));
-
-  this->connect(
-        this->audioFileSaver.get(),
-        SIGNAL(dataRate(qreal)),
-        this,
-        SLOT(onAudioSaveRate(qreal)));
-
-  this->connect(
-        this->audioFileSaver.get(),
-        SIGNAL(commit()),
-        this,
-        SLOT(onAudioCommit()));
-}
-
-
-void
 Application::installDataSaver(int fd)
 {
   if (this->dataSaver.get() == nullptr && this->analyzer.get() != nullptr) {
@@ -225,177 +197,6 @@ Application::installDataSaver(int fd)
     this->connectDataSaver();
   }
 }
-
-void
-Application::setAudioInspectorParams(
-    unsigned int rate,
-    SUFLOAT cutOff,
-    unsigned int demod,
-    bool squelch,
-    SUFLOAT squelchLevel)
-{
-  if (this->audioConfigured) {
-    Suscan::Config cfg(this->audioCfgTemplate);
-    cfg.set("audio.cutoff", cutOff);
-    cfg.set("audio.volume", 1.f);
-    cfg.set("audio.sample-rate", static_cast<uint64_t>(rate));
-    cfg.set("audio.demodulator", static_cast<uint64_t>(demod));
-    cfg.set("audio.squelch", squelch);
-    cfg.set("audio.squelch-level", squelchLevel);
-    this->analyzer->setInspectorConfig(this->audioInspHandle, cfg, 0);
-    this->assertAudioInspectorLo();
-  } else {
-    this->delayedRate      = rate;
-    this->delayedCutOff    = cutOff;
-    this->delayedDemod     = demod;
-    this->delayedEnableSql = squelch;
-    this->delayedSqlLevel  = squelchLevel;
-  }
-}
-
-bool
-Application::openAudioFileSaver(void)
-{
-  bool opened = false;
-
-  if (this->audioFileSaver == nullptr) {
-    AudioFileSaver::AudioFileParams params;
-    params.sampRate   = this->ui.audioPanel->getSampleRate();
-    params.savePath   = this->mediator->getAudioRecordSavePath();
-    params.frequency  =
-        this->ui.spectrum->getCenterFreq() + this->ui.spectrum->getLoFreq();
-    params.modulation = this->ui.audioPanel->getDemod();
-
-    this->audioFileSaver = std::make_unique<AudioFileSaver>(params, nullptr);
-    this->connectAudioFileSaver();
-    opened = true;
-  }
-
-  return opened;
-}
-
-void
-Application::closeAudioFileSaver(void)
-{
-  if (this->audioFileSaver != nullptr)
-    this->audioFileSaver = nullptr;
-
-  this->mediator->setAudioRecordSize(0);
-  this->mediator->setAudioRecordState(false);
-}
-
-bool
-Application::openAudio(unsigned int rate)
-{
-  bool opened = false;
-
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    if (this->playBack != nullptr) {
-      try {
-        Suscan::Channel ch;
-        SUFREQ maxFc = this->analyzer->getSampleRate() / 2;
-        SUFREQ bw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
-
-        // FIXME FIXME FIXME
-        if (rate > bw)
-          rate = static_cast<unsigned int>(floor(bw));
-
-        // Configure sample rate
-        this->playBack->setVolume(this->ui.audioPanel->getMuteableVolume());
-        this->playBack->setSampleRate(rate);
-        this->playBack->start();
-
-        // TODO: Recover true sample rate?
-        this->audioSampleRate = this->playBack->getSampleRate();
-        this->lastAudioLo = this->getAudioInspectorLo();
-
-        if (bw > this->analyzer->getSampleRate() / 2)
-          bw = this->analyzer->getSampleRate() / 2;
-
-        ch.bw    = bw;
-        ch.ft    = 0;
-        ch.fc    = this->getAudioInspectorLo();
-        ch.fLow  = -.5 * bw;
-        ch.fHigh = .5 * bw;
-
-        if (ch.fc > maxFc || ch.fc < -maxFc)
-          ch.fc = 0;
-
-        this->maxAudioBw = bw;
-
-        this->analyzer->openPrecise(
-              "audio",
-              ch,
-              SIGDIGGER_AUDIO_INSPECTOR_REQID);
-
-        this->setAudioInspectorParams(
-              this->audioSampleRate,
-              this->ui.audioPanel->getCutOff(),
-              this->ui.audioPanel->getDemod() + 1,
-              this->ui.audioPanel->getSquelchEnabled(),
-              this->ui.audioPanel->getSquelchLevel());
-        opened = true;
-      } catch (Suscan::Exception const &e) {
-        QMessageBox::critical(
-                  this,
-                  "Internal Suscan exception",
-                  "Failed to open inspector. Error was:<p /><pre>"
-                  + QString(e.what()) + "</pre>",
-                  QMessageBox::Ok);
-        this->playBack->stop();
-      }
-    }
-  }
-
-  return opened;
-}
-
-void
-Application::closeAudio(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING
-      && this->audioInspectorOpened) {
-    this->analyzer->closeInspector(this->audioInspHandle, 0);
-  }
-  this->closeAudioFileSaver();
-  this->audioInspectorOpened = false;
-  this->audioSampleRate = 0;
-  this->audioInspHandle = 0;
-  this->playBack->stop();
-  this->audioConfigured = false;
-}
-
-SUFREQ
-Application::getAudioInspectorBandwidth(void) const
-{
-  SUFREQ bw = this->ui.spectrum->getBandwidth();
-
-  if (this->ui.audioPanel->getDemod() > 1)
-    bw *= .5;
-
-  if (bw > this->maxAudioBw)
-    bw = this->maxAudioBw;
-  else if (bw < 1)
-    bw = 1;
-
-  return bw;
-}
-
-SUFREQ
-Application::getAudioInspectorLo(void) const
-{
-  SUFREQ lo = this->ui.spectrum->getLoFreq();
-  SUFREQ bw = this->getAudioInspectorBandwidth();
-  SUFREQ delta = 0;
-
-  if (this->ui.audioPanel->getDemod() == AudioDemod::USB)
-    delta += .5 * bw;
-  else if (this->ui.audioPanel->getDemod() == AudioDemod::LSB)
-    delta -= .5 * bw;
-
-  return lo + delta;
-}
-
 
 void
 Application::connectUI(void)
@@ -492,36 +293,6 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
-        SIGNAL(loChanged(qint64)),
-        this,
-        SLOT(onLoChanged(qint64)));
-
-  connect(
-        this->mediator,
-        SIGNAL(channelBandwidthChanged(qreal)),
-        this,
-        SLOT(onChannelBandwidthChanged(qreal)));
-
-  connect(
-        this->mediator,
-        SIGNAL(audioChanged(void)),
-        this,
-        SLOT(onAudioChanged(void)));
-
-  connect(
-        this->mediator,
-        SIGNAL(audioVolumeChanged(float)),
-        this,
-        SLOT(onAudioVolumeChanged(float)));
-
-  connect(
-        this->mediator,
-        SIGNAL(audioRecordStateChanged(void)),
-        this,
-        SLOT(onAudioRecordStateChanged(void)));
-
-  connect(
-        this->mediator,
         SIGNAL(bandwidthChanged(void)),
         this,
         SLOT(onBandwidthChanged(void)));
@@ -615,18 +386,6 @@ Application::connectUI(void)
         SIGNAL(bookmarkAdded(BookmarkInfo)),
         this,
         SLOT(onAddBookmark(BookmarkInfo)));
-
-  connect(
-        this->mediator,
-        SIGNAL(audioSetCorrection(Suscan::Orbit)),
-        this,
-        SLOT(onAudioSetCorrection(Suscan::Orbit)));
-
-  connect(
-        this->mediator,
-        SIGNAL(audioDisableCorrection(void)),
-        this,
-        SLOT(onAudioDisableCorrection(void)));
 
   connect(
         &this->uiTimer,
@@ -916,7 +675,6 @@ Application::orderedHalt(void)
   this->uninstallDataSaver();
   this->mediator->setRecordState(false);
   this->mediator->detachAllInspectors();
-  this->closeAudio();
   this->rawInspectorOpened = false;
   this->mediator->setState(UIMediator::HALTED);
 }
@@ -948,8 +706,6 @@ Application::onAnalyzerHalted(void)
 
   if (restart)
     this->startCapture();
-  else
-    this->closeAudioFileSaver();
 }
 
 void
@@ -977,14 +733,8 @@ Application::onSourceInfoMessage(const Suscan::SourceInfoMessage &msg)
 {
   this->mediator->notifySourceInfo(*msg.info());
 
-  // It may have notified a change in current frequency.
-  this->assertAudioInspectorLo();
-
-  if (!this->sourceInfoReceived) {
-    if (this->ui.audioPanel->shouldOpenAudio())
-      this->openAudio(this->ui.audioPanel->getSampleRate());
+  if (!this->sourceInfoReceived)
     this->sourceInfoReceived = true;
-  }
 }
 
 void
@@ -992,22 +742,15 @@ Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
 {
   Inspector *insp;
 
-  if (msg.getInspectorId() == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
-    if (this->playBack != nullptr && this->playBack->isRunning())
-      this->playBack->write(msg.getSamples(), msg.getCount());
-    if (this->audioFileSaver != nullptr)
-      this->audioFileSaver->write(msg.getSamples(), msg.getCount());
-  } else {
-    switch (msg.getInspectorId()) {
-      case SIGDIGGER_RAW_INSPECTOR_MAGIC_ID:
-        this->mediator->feedRawInspector(msg.getSamples(), msg.getCount());
-        break;
+  switch (msg.getInspectorId()) {
+    case SIGDIGGER_RAW_INSPECTOR_MAGIC_ID:
+      this->mediator->feedRawInspector(msg.getSamples(), msg.getCount());
+      break;
 
-      default:
-        if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
-                     != nullptr)
-            insp->feed(msg.getSamples(), msg.getCount());
-    }
+    default:
+      if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
+          != nullptr)
+        insp->feed(msg.getSamples(), msg.getCount());
   }
 }
 
@@ -1094,9 +837,7 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
       break;
 
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_CLOSE:
-      if (this->audioConfigured && this->audioInspHandle == msg.getHandle()) {
-        // Do nothing (yet).
-      } else if (this->rawInspectorOpened && this->rawInspHandle == msg.getHandle()) {
+      if (this->rawInspectorOpened && this->rawInspHandle == msg.getHandle()) {
         // Do nothing either (yet).
       } else if ((insp = this->mediator->lookupInspector(msg.getInspectorId())) != nullptr) {
         insp->setAnalyzer(nullptr);
@@ -1140,16 +881,11 @@ Application::~Application()
 {
   this->uiTimer.stop();
 
-  if (this->audioCfgTemplate != nullptr)
-    suscan_config_destroy(this->audioCfgTemplate);
-
   if (this->scanner != nullptr)
     delete this->scanner;
 
-  this->playBack = nullptr;
   this->analyzer = nullptr;
   this->uninstallDataSaver();
-  this->audioFileSaver = nullptr;
 
   this->deviceDetectThread->quit();
   this->deviceDetectThread->deleteLater();
@@ -1465,165 +1201,6 @@ Application::onCommit(void)
 }
 
 void
-Application::onAudioSaveError(void)
-{
-  if (this->audioFileSaver != nullptr) {
-    this->closeAudioFileSaver();
-
-    QMessageBox::warning(
-              this,
-              "SigDigger error",
-              "Audio saver stopped unexpectedly. Check disk usage and directory permissions and try again.",
-              QMessageBox::Ok);
-  }
-}
-
-void
-Application::onAudioSaveSwamped(void)
-{
-  if (this->audioFileSaver != nullptr) {
-    this->closeAudioFileSaver();
-
-    QMessageBox::warning(
-          this,
-          "SigDigger error",
-          "Audiofile thread swamped. Maybe your storage device is too slow",
-          QMessageBox::Ok);
-  }
-}
-
-void
-Application::onAudioSaveRate(qreal rate)
-{
-  this->mediator->setAudioRecordIORate(rate);
-}
-
-void
-Application::onAudioCommit(void)
-{
-  this->mediator->setAudioRecordSize(
-        this->audioFileSaver->getSize() * sizeof(uint16_t) / sizeof(SUCOMPLEX));
-}
-
-
-void
-Application::onLoChanged(qint64)
-{
-  if (this->audioConfigured)
-    this->assertAudioInspectorLo();
-}
-
-void
-Application::assertAudioInspectorLo(void)
-{
-  SUFREQ lo = this->getAudioInspectorLo();
-
-  if (!sufeq(lo, this->lastAudioLo, 1e-8)) {
-    if (this->audioConfigured)
-      this->analyzer->setInspectorFreq(this->audioInspHandle, lo, 0);
-    this->lastAudioLo = lo;
-  }
-}
-
-void
-Application::onChannelBandwidthChanged(qreal)
-{
-  if (this->audioConfigured) {
-    SUFREQ bw;
-    bw = this->getAudioInspectorBandwidth();
-
-    this->analyzer->setInspectorBandwidth(this->audioInspHandle, bw, 0);
-    this->assertAudioInspectorLo();
-  }
-}
-
-void
-Application::onAudioChanged(void)
-{
-  bool audioEnabled = this->ui.audioPanel->shouldOpenAudio();
-
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    if (this->audioFileSaver != nullptr) {
-      // If any parameter affecting the sample rate or even the name of
-      // the file has changed, we must stop the audio file saver and restart
-      // it again.
-
-      if (this->ui.audioPanel->getDemod()
-            != this->audioFileSaver->params.modulation
-          || this->ui.audioPanel->getSampleRate()
-            != this->audioFileSaver->params.sampRate) {
-        this->closeAudioFileSaver();
-        this->openAudioFileSaver();
-      }
-    }
-
-    if (this->playBack != nullptr) {
-      if (!this->playBack->isRunning()) {
-        if (audioEnabled) {
-          // Somehow audio was not running. Open it.
-          (void) this->openAudio(this->ui.audioPanel->getSampleRate());
-        }
-      } else {
-        if (audioEnabled) {
-          // Audio enabled, update parameters
-          if (this->ui.audioPanel->getSampleRate() != this->audioSampleRate) {
-            // XXX: MEDIATE!!
-            this->audioSampleRate = this->ui.audioPanel->getSampleRate();
-            this->playBack->setSampleRate(this->audioSampleRate);
-          }
-
-          this->setAudioInspectorParams(
-                this->audioSampleRate,
-                this->ui.audioPanel->getCutOff(),
-                this->ui.audioPanel->getDemod() + 1,
-                this->ui.audioPanel->getSquelchEnabled(),
-                this->ui.audioPanel->getSquelchLevel());
-        } else {
-          // Disable audio
-          closeAudio();
-        }
-      }
-    }
-  }
-}
-
-void
-Application::onAudioVolumeChanged(float)
-{
-  if (this->playBack != nullptr)
-    this->playBack->setVolume(this->ui.audioPanel->getMuteableVolume());
-}
-
-void
-Application::onAudioSetCorrection(Suscan::Orbit orbit)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING
-      && this->audioInspectorOpened)
-    this->analyzer->setInspectorDopplerCorrection(
-          this->audioInspHandle,
-          orbit,
-          0);
-}
-
-void
-Application::onAudioDisableCorrection(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING
-      && this->audioInspectorOpened)
-  this->analyzer->disableDopplerCorrection(this->audioInspHandle, 0);
-}
-
-void
-Application::onAudioRecordStateChanged(void)
-{
-  if (this->mediator->getAudioRecordState()) {
-    this->openAudioFileSaver();
-  } else {
-    this->closeAudioFileSaver();
-  }
-}
-
-void
 Application::onAntennaChanged(QString name)
 {
   if (this->mediator->getState() == UIMediator::RUNNING) {
@@ -1657,7 +1234,6 @@ Application::onBandwidthChanged(void)
   if (this->mediator->getState() == UIMediator::RUNNING) {
     try {
       this->analyzer->setBandwidth(this->mediator->getProfile()->getBandwidth());
-      this->assertAudioInspectorLo();
     } catch (Suscan::Exception &) {
       (void)  QMessageBox::critical(
             this,

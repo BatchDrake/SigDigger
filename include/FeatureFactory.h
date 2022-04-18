@@ -33,6 +33,7 @@ namespace Suscan {
     FeatureObject(FeatureFactory *factory);
 
   public:
+    const char *factoryName() const;
     ~FeatureObject();
   };
 
@@ -50,12 +51,12 @@ namespace Suscan {
     friend class FeatureObject;
 
   public:
-    virtual const char *name(void) const = 0;
+    virtual const char *name() const = 0;
 
-    bool canBeRemoved(void) const;
+    bool canBeRemoved() const;
 
-    virtual bool registerGlobally(void) = 0;
-    virtual bool unregisterGlobally(void) = 0;
+    virtual bool registerGlobally() = 0;
+    virtual bool unregisterGlobally() = 0;
 
     FeatureFactory(Plugin *);
     virtual ~FeatureFactory();

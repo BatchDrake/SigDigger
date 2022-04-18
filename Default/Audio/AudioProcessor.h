@@ -122,6 +122,9 @@ namespace SigDigger {
     void recSaveRate(qreal);
     void recCommit();
 
+    void orbitReport(Suscan::InspectorMessage const &);
+    void setTLE(Suscan::InspectorMessage const &);
+
   public slots:
     // These two are slots to trigger the recording stop on signal
     bool startRecording(QString);

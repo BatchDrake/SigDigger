@@ -563,7 +563,7 @@ AudioWidget::setEnabled(bool enabled)
 void
 AudioWidget::setDemod(enum AudioDemod demod)
 {
-  this->panelConfig->demod = AudioWidget::demodToStr(demod);
+  this->panelConfig->demod = SigDiggerHelpers::demodToStr(demod);
   this->ui->demodCombo->setCurrentIndex(static_cast<int>(demod));
 
   m_processor->setDemod(demod);
@@ -606,7 +606,7 @@ AudioWidget::applyConfig(void)
   this->setSampleRate(this->panelConfig->rate);
   this->setCutOff(this->panelConfig->cutOff);
   this->setVolume(this->panelConfig->volume);
-  this->setDemod(strToDemod(this->panelConfig->demod));
+  this->setDemod(SigDiggerHelpers::strToDemod(this->panelConfig->demod));
   this->setEnabled(this->panelConfig->enabled);
   this->setSquelchEnabled(this->panelConfig->squelch);
   this->setProperty("collapsed", this->panelConfig->collapsed);
@@ -651,6 +651,9 @@ AudioWidget::setState(int state, Suscan::Analyzer *analyzer)
   if (state != this->m_state)
     this->m_state = state;
 
+  m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
+  m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
+  m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
   m_processor->setAnalyzer(analyzer);
 }
 
@@ -719,42 +722,6 @@ AudioWidget::setProfile(Suscan::Source::Config &profile)
   this->fcDialog->setTimeLimits(start, end);
 
   m_processor->setTunerFreq(profile.getFreq());
-}
-
-//////////////////////////// Static members ///////////////////////////////////
-AudioDemod
-AudioWidget::strToDemod(std::string const &str)
-{
-  if (str == "AM")
-    return AudioDemod::AM;
-  else if (str == "FM")
-    return AudioDemod::FM;
-  else if (str == "USB")
-    return AudioDemod::USB;
-  else if (str == "LSB")
-    return AudioDemod::LSB;
-
-  return AudioDemod::AM;
-}
-
-std::string
-AudioWidget::demodToStr(AudioDemod demod)
-{
-  switch (demod) {
-    case AM:
-      return "AM";
-
-    case FM:
-      return "FM";
-
-    case USB:
-      return "USB";
-
-    case LSB:
-      return "LSB";
-  }
-
-  return "AM"; // Default
 }
 
 //////////////////////////////// Slots ////////////////////////////////////////
@@ -918,6 +885,25 @@ AudioWidget::onAcceptCorrectionSetting(void)
   }
 }
 
+//////////////////////////// Notification slots ////////////////////////////////
+void
+AudioWidget::onSetTLE(Suscan::InspectorMessage const &msg)
+{
+  if (!msg.isTLEEnabled())
+    this->ui->correctionLabel->setText("None");
+}
+
+void
+AudioWidget::onOrbitReport(Suscan::InspectorMessage const &msg)
+{
+  this->ui->correctionLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(msg.getOrbitReport().getFrequencyCorrection()),
+          4,
+          "Hz",
+          true));
+}
+
 ////////////////////////// AudioFileSaver slots ////////////////////////////////
 void
 AudioWidget::onAudioSaveError(void)
@@ -958,3 +944,5 @@ AudioWidget::onAudioCommit(void)
   auto len = m_processor->getSaveSize() * sizeof(uint16_t) / sizeof(SUCOMPLEX);
   this->ui->captureSizeLabel->setText(formatCaptureSize(len));
 }
+
+////////////////// TODO: implement onJumpToBookmark ////////////////////////////
