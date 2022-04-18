@@ -70,7 +70,7 @@ namespace Suscan {
     ~AnalyzerRequestTracker() override;
 
   signals:
-    void opened(AnalyzerRequest const &req);
+    void opened(AnalyzerRequest const &req, const suscan_config_t *config);
     void cancelled(AnalyzerRequest const &req);
     void error(AnalyzerRequest const &req, const std::string &);
 

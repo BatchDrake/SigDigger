@@ -26,6 +26,8 @@
 
 namespace Suscan {
   class Analyzer;
+  class AnalyzerRequestTracker;
+  struct AnalyzerRequest;
 };
 
 namespace SigDigger {
@@ -41,31 +43,45 @@ namespace SigDigger {
     bool            m_enabled = false;
     float           m_volume = 0;
     float           m_cutOff = 0;
-    SUFREQ          m_freq = 0;
+    SUFREQ          m_lo = 0;
     unsigned int    m_sampleRate = 44100;
     AudioDemod      m_demod = AudioDemod::FM;
     bool            m_correctionEnabled = false;
+    bool            m_squelch = false;
+    SUFLOAT         m_squelchLevel;
 
     // Composed objects
     AudioFileSaver *m_audioFileSaver = nullptr;
     AudioPlayback  *m_playBack = nullptr;
+    Suscan::AnalyzerRequestTracker *m_tracker = nullptr;
 
-    // Analyzer state objects
+    // Audio inspector state
+    bool              m_opened = false;
+    bool              m_opening = true;
+    bool              m_settingRate = false;
     Suscan::Analyzer *m_analyzer = nullptr;
-    Suscan::Handle    m_audioInspHandle = 0;
+    Suscan::Handle    m_audioInspHandle = -1;
+    uint32_t          m_audioInspId = 0xffffffff;
     suscan_config_t  *m_audioCfgTemplate = nullptr;
     bool              m_audioInspectorOpened = false;
     float             m_maxAudioBw = 2e5;
-    SUFREQ            m_lastLo = 0;
 
     // Private methods
+    void connectAll();
     void connectAnalyzer();
+    void disconnectAnalyzer();
+    bool openAudio();
+    bool closeAudio();
+    void setParams();
 
   public:
     explicit AudioProcessor(UIMediator *, QObject *parent = nullptr);
 
     void setAnalyzer(Suscan::Analyzer *);
+    void setEnabled(bool);
     void setVolume(float);
+    void setSquelchEnabled(bool);
+    void setSquelchLevel(float);
     void setAudioCorrection(Suscan::Orbit const &);
     void setCorrectionEnabled(bool);
     void setDemod(AudioDemod);
@@ -75,8 +91,17 @@ namespace SigDigger {
     void startRecording(QString);
     void stopRecording(void);
 
+  signals:
+    void audioClosed();
+    void audioOpened();
+    void audioError(QString);
+
   public slots:
-    // Here: process Analyzer messages
+    void onInspectorMessage(Suscan::InspectorMessage const &);
+    void onInspectorSamples(Suscan::SamplesMessage const &);
+    void onOpened(Suscan::AnalyzerRequest const &, const suscan_config_t *);
+    void onCancelled(Suscan::AnalyzerRequest const &);
+    void onError(Suscan::AnalyzerRequest const &, std::string const &);
   };
 }
 

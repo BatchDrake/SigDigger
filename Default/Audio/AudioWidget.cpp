@@ -27,6 +27,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <UIMediator.h>
 #include "AudioProcessor.h"
 
 using namespace SigDigger;
@@ -539,6 +540,20 @@ AudioWidget::event(QEvent *event)
   }
 
   return QWidget::event(event);
+}
+
+void
+AudioWidget::setState(int state, Suscan::Analyzer *analyzer)
+{
+  this->m_analyzer = analyzer;
+
+  if (state != this->m_state) {
+    this->m_state = state;
+
+    if (state == UIMediator::State::RUNNING) {
+
+    }
+  }
 }
 
 void

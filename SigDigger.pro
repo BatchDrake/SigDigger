@@ -195,7 +195,6 @@ HEADERS += \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
-    include/AnalyzerRequestTracker.h \
     include/AudioFileSaver.h \
     include/CarrierDetector.h \
     include/CarrierXlator.h \
@@ -226,6 +225,7 @@ HEADERS += \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
     include/SigDiggerHelpers.h \
+    include/Suscan/AnalyzerRequestTracker.h \
     include/Suscan/CancellableTask.h \
     include/Suscan/Messages/ChannelMessage.h \
     include/Suscan/Messages/GenericMessage.h \

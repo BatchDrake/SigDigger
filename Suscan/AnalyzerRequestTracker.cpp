@@ -16,7 +16,7 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include "AnalyzerRequestTracker.h"
+#include <Suscan/AnalyzerRequestTracker.h>
 #include <Suscan/Analyzer.h>
 
 using namespace Suscan;
@@ -38,12 +38,16 @@ AnalyzerRequestTracker::executeOpenRequest(AnalyzerRequest const &req)
 
   this->m_pendingRequests[req.requestId] = req;
 
-  this->m_analyzer->openEx(
-        req.inspClass,
-        req.channel,
-        req.precise,
-        req.parent,
-        req.requestId);
+  try {
+    this->m_analyzer->openEx(
+          req.inspClass,
+          req.channel,
+          req.precise,
+          req.parent,
+          req.requestId);
+  } catch (Suscan::Exception &) {
+    return false;
+  }
 
   return true;
 }
@@ -53,7 +57,11 @@ AnalyzerRequestTracker::executeSetInspectorId(AnalyzerRequest const &req)
 {
   assert(this->m_analyzer != nullptr);
 
-  this->m_analyzer->setInspectorId(req.handle, req.inspectorId, req.requestId);
+  try {
+    this->m_analyzer->setInspectorId(req.handle, req.inspectorId, req.requestId);
+  } catch (Suscan::Exception &) {
+    return false;
+  }
 
   return true;
 }
@@ -127,7 +135,7 @@ AnalyzerRequestTracker::onInspectorMessage(
 
       case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_ID:
         it->idSet = true;
-        emit opened(*it);
+        emit opened(*it, message.getCConfig());
         this->m_pendingRequests.remove(it->requestId);
         break;
 

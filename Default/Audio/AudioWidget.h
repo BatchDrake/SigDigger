@@ -69,9 +69,11 @@ namespace SigDigger {
     struct timeval timeStamp  = {0, 0};
 
     // Processing members
-    AudioProcessor *m_processor = nullptr;
+    AudioProcessor *m_processor  = nullptr;
+    Suscan::Analyzer *m_analyzer = nullptr; // Borrowed
 
     // UI members
+    int m_state;
     Ui::AudioPanel *ui = nullptr;
     ColorConfig colorConfig;
     FrequencyCorrectionDialog *fcDialog = nullptr;
@@ -134,6 +136,7 @@ namespace SigDigger {
     bool event(QEvent *) override;
 
     // Overriden methods
+    void setState(int, Suscan::Analyzer *) override;
     void setQth(Suscan::Location const &) override;
     void setColorConfig(ColorConfig const &) override;
     void setTimeStamp(struct timeval const &) override;
