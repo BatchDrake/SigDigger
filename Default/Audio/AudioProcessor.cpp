@@ -143,6 +143,9 @@ AudioProcessor::closeAudio()
     m_playBack->stop();
   }
 
+  // Just in case
+  this->stopRecording();
+
   m_opening = false;
   m_opened  = false;
   m_audioInspectorOpened = false;
@@ -181,7 +184,54 @@ AudioProcessor::connectAnalyzer()
         SIGNAL(inspector_message(const Suscan::InspectorMessage &)),
         this,
         SLOT(onInspectorMessage(const Suscan::InspectorMessage &)));
+
+  connect(
+        m_analyzer,
+        SIGNAL(samples_message(const Suscan::SamplesMessage &)),
+        this,
+        SLOT(onInspectorSamples(const Suscan::SamplesMessage &)));
 }
+
+void
+AudioProcessor::connectAudioFileSaver()
+{
+  connect(
+        m_audioFileSaver,
+        SIGNAL(stopped()),
+        this,
+        SIGNAL(recStopped()));
+
+  connect(
+        m_audioFileSaver,
+        SIGNAL(stopped()),
+        this,
+        SLOT(stopRecording()));
+
+  connect(
+        m_audioFileSaver,
+        SIGNAL(swamped()),
+        this,
+        SIGNAL(recSwamped()));
+
+  connect(
+        m_audioFileSaver,
+        SIGNAL(swamped()),
+        this,
+        SLOT(stopRecording()));
+
+  connect(
+        m_audioFileSaver,
+        SIGNAL(dataRate(qreal)),
+        this,
+        SIGNAL(recSaveRate(qreal)));
+
+  connect(
+        m_audioFileSaver,
+        SIGNAL(commit()),
+        this,
+        SIGNAL(recCommit()));
+}
+
 
 void
 AudioProcessor::setAnalyzer(Suscan::Analyzer *analyzer)
@@ -195,9 +245,11 @@ AudioProcessor::setAnalyzer(Suscan::Analyzer *analyzer)
   m_tracker->setAnalyzer(analyzer);
 
   // Was audio enabled? Open it back
-  if (m_analyzer != nullptr)
+  if (m_analyzer != nullptr) {
+    this->connectAnalyzer();
     if (m_enabled)
       this->openAudio();
+  }
 }
 
 void
@@ -277,6 +329,11 @@ AudioProcessor::setDemod(AudioDemod demod)
 
     if (m_audioInspectorOpened)
       this->setParams();
+
+    if (m_audioFileSaver != nullptr) {
+      this->stopRecording();
+      this->startRecording(m_savedPath);
+    }
   }
 }
 
@@ -295,6 +352,11 @@ AudioProcessor::setSampleRate(unsigned rate)
       m_settingRate = true;
       this->setParams();
     }
+
+    if (m_audioFileSaver != nullptr) {
+      this->stopRecording();
+      this->startRecording(m_savedPath);
+    }
   }
 }
 
@@ -310,7 +372,14 @@ AudioProcessor::setCutOff(float cutOff)
 }
 
 void
-AudioProcessor::setDemodFreq(SUFREQ lo)
+AudioProcessor::setTunerFreq(SUFREQ tuner)
+{
+  // No need to signal anything
+  m_tuner = tuner;
+}
+
+void
+AudioProcessor::setLoFreq(SUFREQ lo)
 {
   // If changed, set frequency
   if (!sufeq(m_lo, lo, 1e-8f)) {
@@ -321,18 +390,39 @@ AudioProcessor::setDemodFreq(SUFREQ lo)
   }
 }
 
-void
-AudioProcessor::startRecording(QString)
+bool
+AudioProcessor::startRecording(QString path)
 {
-  // TODO
+  bool opened = false;
+
+  if (m_audioFileSaver == nullptr && m_opened) {
+    AudioFileSaver::AudioFileParams params;
+    m_savedPath       = path;
+
+    params.sampRate   = m_sampleRate;
+    params.savePath   = path.toStdString();
+    params.frequency  = m_tuner + m_lo;
+    params.modulation = m_demod;
+
+    m_audioFileSaver = new AudioFileSaver(params, nullptr);
+    this->connectAudioFileSaver();
+
+    opened = true;
+  }
+
+  return opened;
 }
 
 void
 AudioProcessor::stopRecording(void)
 {
-  // TODO
+  if (m_audioFileSaver != nullptr) {
+    delete m_audioFileSaver;
+    m_audioFileSaver = nullptr;
+  }
 }
 
+///////////////////////////// Analyzer slots //////////////////////////////////
 void
 AudioProcessor::onInspectorMessage(Suscan::InspectorMessage const &msg)
 {
@@ -402,9 +492,13 @@ AudioProcessor::onInspectorSamples(Suscan::SamplesMessage const &msg)
     }
 
     m_playBack->write(samples, count);
+
+    if (m_audioFileSaver != nullptr)
+      m_audioFileSaver->write(samples, count);
   }
 }
 
+////////////////////////// Request tracker slots ///////////////////////////////
 void
 AudioProcessor::onOpened(
     Suscan::AnalyzerRequest const &req,

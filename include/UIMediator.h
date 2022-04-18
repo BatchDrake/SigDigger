@@ -116,7 +116,9 @@ namespace SigDigger {
 
   public:
     // Refactored methods
-    QMainWindow *getMainWindow() const;
+    QMainWindow  *getMainWindow() const;
+    MainSpectrum *getMainSpectrum() const;
+
     void setState(enum State, Suscan::Analyzer *analyzer = nullptr);
 
     // UI State

@@ -129,6 +129,12 @@ UIMediator::getMainWindow() const
   return this->owner;
 }
 
+MainSpectrum *
+UIMediator::getMainSpectrum() const
+{
+  return this->ui->spectrum;
+}
+
 void
 UIMediator::refreshUI(void)
 {

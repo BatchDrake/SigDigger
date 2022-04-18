@@ -33,6 +33,7 @@ namespace Suscan {
 namespace SigDigger {
   class UIMediator;
   class AudioPlayback;
+  class MainSpectrum;
 
   class AudioProcessor : public QObject
   {
@@ -44,6 +45,7 @@ namespace SigDigger {
     float           m_volume = 0;
     float           m_cutOff = 0;
     SUFREQ          m_lo = 0;
+    SUFREQ          m_tuner = 0;
     unsigned int    m_sampleRate = 44100;
     AudioDemod      m_demod = AudioDemod::FM;
     bool            m_correctionEnabled = false;
@@ -52,6 +54,7 @@ namespace SigDigger {
 
     // Composed objects
     AudioFileSaver *m_audioFileSaver = nullptr;
+    QString         m_savedPath;
     AudioPlayback  *m_playBack = nullptr;
     Suscan::AnalyzerRequestTracker *m_tracker = nullptr;
 
@@ -66,8 +69,12 @@ namespace SigDigger {
     bool              m_audioInspectorOpened = false;
     float             m_maxAudioBw = 2e5;
 
+    // Other references
+    MainSpectrum     *m_spectrum;
+
     // Private methods
     void connectAll();
+    void connectAudioFileSaver();
     void connectAnalyzer();
     void disconnectAnalyzer();
     bool openAudio();
@@ -87,16 +94,24 @@ namespace SigDigger {
     void setDemod(AudioDemod);
     void setSampleRate(unsigned);
     void setCutOff(float);
-    void setDemodFreq(SUFREQ);
-    void startRecording(QString);
-    void stopRecording(void);
+    void setTunerFreq(SUFREQ);
+    void setLoFreq(SUFREQ);
 
   signals:
     void audioClosed();
     void audioOpened();
     void audioError(QString);
 
+    void recStopped();
+    void recSwamped();
+    void recSaveRate(qreal);
+    void recCommit();
+
   public slots:
+    // These two are slots to trigger the recording stop on signal
+    bool startRecording(QString);
+    void stopRecording(void);
+
     void onInspectorMessage(Suscan::InspectorMessage const &);
     void onInspectorSamples(Suscan::SamplesMessage const &);
     void onOpened(Suscan::AnalyzerRequest const &, const suscan_config_t *);
