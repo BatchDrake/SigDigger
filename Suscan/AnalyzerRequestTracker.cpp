@@ -34,12 +34,12 @@ AnalyzerRequestTracker::AnalyzerRequestTracker(QObject *parent) :
 bool
 AnalyzerRequestTracker::executeOpenRequest(AnalyzerRequest const &req)
 {
-  assert(this->m_analyzer != nullptr);
+  assert(m_analyzer != nullptr);
 
-  this->m_pendingRequests[req.requestId] = req;
+  m_pendingRequests[req.requestId] = req;
 
   try {
-    this->m_analyzer->openEx(
+    m_analyzer->openEx(
           req.inspClass,
           req.channel,
           req.precise,
@@ -55,10 +55,10 @@ AnalyzerRequestTracker::executeOpenRequest(AnalyzerRequest const &req)
 bool
 AnalyzerRequestTracker::executeSetInspectorId(AnalyzerRequest const &req)
 {
-  assert(this->m_analyzer != nullptr);
+  assert(m_analyzer != nullptr);
 
   try {
-    this->m_analyzer->setInspectorId(req.handle, req.inspectorId, req.requestId);
+    m_analyzer->setInspectorId(req.handle, req.inspectorId, req.requestId);
   } catch (Suscan::Exception &) {
     return false;
   }
@@ -81,11 +81,11 @@ AnalyzerRequestTracker::requestOpen(
     g_registered = true;
   }
 
-  if (this->m_analyzer == nullptr)
+  if (m_analyzer == nullptr)
     return false;
 
-  request.requestId   = this->m_analyzer->allocateRequestId();
-  request.inspectorId = this->m_analyzer->allocateInspectorId();
+  request.requestId   = m_analyzer->allocateRequestId();
+  request.inspectorId = m_analyzer->allocateInspectorId();
   request.inspClass   = inspClass;
   request.channel     = channel;
   request.precise     = precise;
@@ -98,14 +98,14 @@ AnalyzerRequestTracker::requestOpen(
 void
 AnalyzerRequestTracker::cancelAll()
 {
-  for (auto &r : this->m_pendingRequests) {
-    if (this->m_analyzer != nullptr && r.opened)
-      this->m_analyzer->closeInspector(r.handle, r.requestId);
+  for (auto &r : m_pendingRequests) {
+    if (m_analyzer != nullptr && r.opened)
+      m_analyzer->closeInspector(r.handle, r.requestId);
 
     emit cancelled(r);
   }
 
-  this->m_pendingRequests.clear();
+  m_pendingRequests.clear();
 }
 
 void
@@ -114,20 +114,30 @@ AnalyzerRequestTracker::setAnalyzer(Analyzer *analyzer)
   // Cancel all requests
   this->cancelAll();
 
-  this->m_pendingRequests.clear();
+  m_pendingRequests.clear();
 
-  this->m_analyzer = analyzer;
+  m_analyzer = analyzer;
+
+  if (m_analyzer != nullptr)
+    connect(
+          m_analyzer,
+          SIGNAL(inspector_message(const Suscan::InspectorMessage &)),
+          this,
+          SLOT(onInspectorMessage(const Suscan::InspectorMessage &)));
 }
 
 void
 AnalyzerRequestTracker::onInspectorMessage(
     const Suscan::InspectorMessage &message)
 {
-  auto it = this->m_pendingRequests.find(message.getRequestId());
+  auto it = m_pendingRequests.find(message.getRequestId());
 
-  if (it != this->m_pendingRequests.end()) {
+  if (it != m_pendingRequests.end()) {
     switch (message.getKind()) {
       case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_OPEN:
+        if (it->config == nullptr) {
+          it->config = suscan_config_dup(message.getCConfig());
+        }
         it->handle = message.getHandle();
         it->opened = true;
         this->executeSetInspectorId(*it);
@@ -135,23 +145,23 @@ AnalyzerRequestTracker::onInspectorMessage(
 
       case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_ID:
         it->idSet = true;
-        emit opened(*it, message.getCConfig());
-        this->m_pendingRequests.remove(it->requestId);
+        emit opened(*it);
+        m_pendingRequests.remove(it->requestId);
         break;
 
       case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_WRONG_HANDLE:
         emit error(*it, "Wrong handle (server desync?)");
-        this->m_pendingRequests.remove(it->requestId);
+        m_pendingRequests.remove(it->requestId);
         break;
 
       case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_WRONG_OBJECT:
         emit error(*it, "Wrong object");
-        this->m_pendingRequests.remove(it->requestId);
+        m_pendingRequests.remove(it->requestId);
         break;
 
       case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_WRONG_KIND:
         emit error(*it, "Invalid message kind");
-        this->m_pendingRequests.remove(it->requestId);
+        m_pendingRequests.remove(it->requestId);
         break;
 
       default:
@@ -163,4 +173,10 @@ AnalyzerRequestTracker::onInspectorMessage(
 AnalyzerRequestTracker::~AnalyzerRequestTracker()
 {
 
+}
+
+AnalyzerRequest::~AnalyzerRequest()
+{
+  if (this->config != nullptr)
+    suscan_config_destroy(this->config);
 }

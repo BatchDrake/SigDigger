@@ -66,8 +66,8 @@ Application::Application(QWidget *parent) : QMainWindow(parent), ui(this)
   this->deviceDetectThread->start();
 
   try {
-    this->playBack = std::make_unique<AudioPlayback>("default", 44100);
-    this->audioSampleRate = this->playBack->getSampleRate();
+    this->playBack = nullptr; // = std::make_unique<AudioPlayback>("default", 44100);
+    this->audioSampleRate = 0; //this->playBack->getSampleRate();
   } catch (std::runtime_error &e) {
     QMessageBox::warning(
               this,
@@ -1044,52 +1044,18 @@ Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_OPEN:
       // Audio path: set inspector Id
 
-      if (msg.getClass() == "audio") {
-        this->audioInspHandle = msg.getHandle();
-        this->audioInspectorOpened = true;
+      if (msg.getClass() == "raw") {
+        this->rawInspHandle = msg.getHandle();
+        this->rawInspectorOpened = true;
+
         this->analyzer->setInspectorId(
               msg.getHandle(),
-              SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID,
+              SIGDIGGER_RAW_INSPECTOR_MAGIC_ID,
               0);
-        this->analyzer->setInspectorWatermark(
-              msg.getHandle(),
-              SIGDIGGER_AUDIO_BUFFER_SIZE / 2,
-              0);
-        this->analyzer->setInspectorBandwidth(
-              msg.getHandle(),
-              this->getAudioInspectorBandwidth(),
-              0);
-        if (this->audioCfgTemplate == nullptr)
-          SU_ATTEMPT(this->audioCfgTemplate = suscan_config_dup(msg.getCConfig()));
 
-        this->audioConfigured = true;
-
-        /* Set params for good */
-        this->setAudioInspectorParams(
-              this->audioSampleRate,
-              this->delayedCutOff,
-              this->delayedDemod,
-              this->delayedEnableSql,
-              this->delayedSqlLevel);
-
-        /* Enable Doppler correction */
-        if (this->mediator->isAudioDopplerCorrectionEnabled())
-          this->analyzer->setInspectorDopplerCorrection(
-              this->audioInspHandle,
-              this->mediator->getAudioOrbit(),
-              0);
-      } else if (msg.getClass() == "raw") {
-          this->rawInspHandle = msg.getHandle();
-          this->rawInspectorOpened = true;
-
-          this->analyzer->setInspectorId(
-                msg.getHandle(),
-                SIGDIGGER_RAW_INSPECTOR_MAGIC_ID,
-                0);
-
-          this->mediator->resetRawInspector(
-                static_cast<qreal>(msg.getEquivSampleRate()));
-      } else {
+        this->mediator->resetRawInspector(
+              static_cast<qreal>(msg.getEquivSampleRate()));
+      } else if (msg.getClass() != "audio") {
           insp = this->mediator->addInspector(msg, oId);
           insp->setAnalyzer(this->analyzer.get());
           this->analyzer->setInspectorId(msg.getHandle(), oId, 0);

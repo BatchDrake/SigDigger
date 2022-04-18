@@ -34,9 +34,19 @@ AudioProcessor::AudioProcessor(UIMediator *, QObject *parent)
 
     // Connects the tracker
     this->connectAll();
-  } catch (std::runtime_error &) {
+  } catch (std::runtime_error &e) {
+    m_audioError = e.what();
     m_playBack = nullptr;
   }
+}
+
+AudioProcessor::~AudioProcessor()
+{
+  if (m_audioCfgTemplate != nullptr)
+    suscan_config_destroy(m_audioCfgTemplate);
+
+  if (m_playBack != nullptr)
+    delete m_playBack;
 }
 
 void
@@ -44,21 +54,21 @@ AudioProcessor::connectAll()
 {
   connect(
         this->m_tracker,
-        SIGNAL(opened(AnalyzerRequest const &req)),
+        SIGNAL(opened(Suscan::AnalyzerRequest const &)),
         this,
         SLOT(onOpened(Suscan::AnalyzerRequest const &)));
 
   connect(
         this->m_tracker,
-        SIGNAL(cancelled(AnalyzerRequest const &req)),
+        SIGNAL(cancelled(Suscan::AnalyzerRequest const &)),
         this,
         SLOT(onCancelled(Suscan::AnalyzerRequest const &)));
 
   connect(
         this->m_tracker,
-        SIGNAL(error(AnalyzerRequest const &req, const std::string &)),
+        SIGNAL(error(Suscan::AnalyzerRequest const &, const std::string &)),
         this,
-        SLOT(onError(Suscan::AnalyzerRequest const &, , const std::string &)));
+        SLOT(onError(Suscan::AnalyzerRequest const &, const std::string &)));
 }
 
 bool
@@ -81,34 +91,30 @@ AudioProcessor::openAudio()
   if (!m_opened) {
     if (m_playBack != nullptr) {
       Suscan::Channel ch;
-      SUFREQ bw    = m_bw;
       unsigned int reqRate = m_sampleRate;
 
+      m_maxAudioBw =
+          SU_MIN(
+            SCAST(SUFREQ, m_analyzer->getSampleRate() / 2),
+            SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH);
+
       // FIXME: Find a sample rate that better matches this
-      if (reqRate > bw)
-        reqRate = SCAST(unsigned int, floor(bw));
+      if (reqRate > m_maxAudioBw)
+        reqRate = SCAST(unsigned int, floor(m_maxAudioBw));
 
       // Configure sample rate
       m_playBack->setVolume(m_volume);
       m_playBack->setSampleRate(reqRate);
       m_playBack->start();
 
-      // TODO: Recover true sample rate?
-      m_maxAudioBw =
-          SU_MIN(
-            SCAST(SUFREQ, m_analyzer->getSampleRate() / 2),
-            SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH);
       m_sampleRate = m_playBack->getSampleRate();
 
-      if (bw > m_maxAudioBw)
-        bw = m_maxAudioBw;
-
       // Prepare channel
-      ch.bw    = bw;
+      ch.bw    = m_maxAudioBw;
       ch.ft    = 0;
-      ch.fc    = m_lo;
-      ch.fLow  = -.5 * bw;
-      ch.fHigh = +.5 * bw;
+      ch.fc    = this->calcTrueLoFreq();
+      ch.fLow  = -.5 * m_maxAudioBw;
+      ch.fHigh = +.5 * m_maxAudioBw;
 
       if (ch.fc > m_maxAudioBw || ch.fc < -m_maxAudioBw)
         ch.fc = 0;
@@ -156,6 +162,56 @@ AudioProcessor::closeAudio()
   return true;
 }
 
+SUFREQ
+AudioProcessor::calcTrueBandwidth()
+{
+  SUFREQ bw = m_bw;
+
+  if (m_demod == AudioDemod::USB || m_demod == AudioDemod::LSB)
+    bw *= .5;
+
+  if (bw > m_maxAudioBw)
+    bw = m_maxAudioBw;
+  else if (bw < 1)
+    bw = 1;
+
+  return bw;
+}
+
+SUFREQ
+AudioProcessor::calcTrueLoFreq()
+{
+  SUFREQ delta = 0;
+  SUFREQ bw = this->calcTrueBandwidth();
+
+  if (m_demod == AudioDemod::USB)
+    delta += .5 * bw;
+  else if (m_demod == AudioDemod::LSB)
+    delta -= .5 * bw;
+
+  return m_lo + delta;
+}
+
+void
+AudioProcessor::setTrueLoFreq()
+{
+  assert(m_analyzer != nullptr);
+  assert(m_audioInspectorOpened);
+
+  m_analyzer->setInspectorFreq(m_audioInspHandle, this->calcTrueLoFreq());
+}
+
+void
+AudioProcessor::setTrueBandwidth()
+{
+  assert(m_analyzer != nullptr);
+  assert(m_audioInspectorOpened);
+
+  m_analyzer->setInspectorBandwidth(
+        m_audioInspHandle,
+        this->calcTrueBandwidth());
+}
+
 void
 AudioProcessor::setParams()
 {
@@ -167,7 +223,7 @@ AudioProcessor::setParams()
   cfg.set("audio.cutoff", m_cutOff);
   cfg.set("audio.volume", 1.f); // We handle this at UI level
   cfg.set("audio.sample-rate", SCAST(uint64_t, m_sampleRate));
-  cfg.set("audio.demodulator", SCAST(uint64_t, m_sampleRate));
+  cfg.set("audio.demodulator", SCAST(uint64_t, m_demod + 1));
   cfg.set("audio.squelch", m_squelch);
   cfg.set("audio.squelch-level", m_squelchLevel);
 
@@ -263,12 +319,14 @@ AudioProcessor::setEnabled(bool enabled)
   if (m_enabled != enabled) {
     m_enabled = enabled;
 
-    if (enabled) {
-      if (!m_opened && !m_opening)
-        this->openAudio();
-    } else {
-      if (m_opened || m_opening)
-        this->closeAudio();
+    if (m_analyzer != nullptr) {
+      if (enabled) {
+        if (!m_opened && !m_opening)
+          this->openAudio();
+      } else {
+        if (m_opened || m_opening)
+          this->closeAudio();
+      }
     }
   }
 }
@@ -301,8 +359,8 @@ AudioProcessor::setVolume(float volume)
   if (!sufeq(m_volume, volume, 1e-1f)) {
     m_volume = volume;
 
-    if (m_audioInspectorOpened)
-      this->setParams();
+    if (m_playBack != nullptr)
+      m_playBack->setVolume(volume);
   }
 }
 
@@ -332,8 +390,11 @@ AudioProcessor::setDemod(AudioDemod demod)
   if (m_demod != demod) {
     m_demod = demod;
 
-    if (m_audioInspectorOpened)
+    if (m_audioInspectorOpened) {
+      this->setTrueLoFreq();
+      this->setTrueBandwidth();
       this->setParams();
+    }
 
     if (m_audioFileSaver != nullptr) {
       this->stopRecording();
@@ -345,17 +406,16 @@ AudioProcessor::setDemod(AudioDemod demod)
 void
 AudioProcessor::setSampleRate(unsigned rate)
 {
-  // Seting the rate is a somewhat delicate process that involves
-  // cancelling current audio samples and setting the config back
-
   if (m_sampleRate != rate) {
     m_sampleRate = rate;
 
-    m_playBack->setSampleRate(rate);
-
+    // We temptatively set the corresponding parameter and wait for its
+    // acknowledgment to call setSampleRate
     if (m_audioInspectorOpened) {
       m_settingRate = true;
       this->setParams();
+    } else {
+      m_playBack->setSampleRate(rate);
     }
 
     if (m_audioFileSaver != nullptr) {
@@ -391,7 +451,7 @@ AudioProcessor::setLoFreq(SUFREQ lo)
     m_lo = lo;
 
     if (m_audioInspectorOpened)
-      m_analyzer->setInspectorFreq(m_audioInspHandle, m_lo);
+      this->setTrueLoFreq();
   }
 }
 
@@ -403,11 +463,32 @@ AudioProcessor::setBandwidth(SUFREQ bw)
     bw = m_maxAudioBw;
 
   if (!sufeq(m_bw, bw, 1e-8f)) {
+    SUFREQ trueLo = this->calcTrueLoFreq();
+    SUFREQ newLo;
+
     m_bw = bw;
 
-    if (m_audioInspectorOpened)
-      m_analyzer->setInspectorBandwidth(m_audioInspHandle, m_bw);
+    newLo = this->calcTrueLoFreq();
+
+    if (m_audioInspectorOpened) {
+      this->setTrueBandwidth();
+
+      if (!sufeq(trueLo, newLo, 1e-8f))
+        this->setTrueLoFreq();
+    }
   }
+}
+
+bool
+AudioProcessor::isAudioAvailable() const
+{
+  return m_playBack != nullptr;
+}
+
+QString
+AudioProcessor::getAudioError() const
+{
+  return m_audioError;
 }
 
 bool
@@ -484,8 +565,10 @@ AudioProcessor::onInspectorMessage(Suscan::InspectorMessage const &msg)
 
           // Value is the same as requested? Go ahead
           if (value != nullptr) {
-            if (m_sampleRate == value->as_int)
+            if (m_sampleRate == value->as_int) {
               m_settingRate = false;
+              m_playBack->setSampleRate(m_sampleRate);
+            }
           } else {
             // This should never happen, but just in case the server is not
             // behaving as expected
@@ -515,19 +598,9 @@ void
 AudioProcessor::onInspectorSamples(Suscan::SamplesMessage const &msg)
 {
   // Feed samples, only if the sample rate is right
-
   if (m_opened && msg.getInspectorId() == m_audioInspId) {
     const SUCOMPLEX *samples = msg.getSamples();
     unsigned int count = msg.getCount();
-    std::vector<SUCOMPLEX> silence;
-
-    // Sample rate is still changing, replace this message with silence to
-    // prevent playing back stuff at the wrong rate
-    if (m_settingRate) {
-      silence.resize(count);
-      std::fill(silence.begin(), silence.end(), 0);
-      samples = silence.data();
-    }
 
     m_playBack->write(samples, count);
 
@@ -538,12 +611,9 @@ AudioProcessor::onInspectorSamples(Suscan::SamplesMessage const &msg)
 
 ////////////////////////// Request tracker slots ///////////////////////////////
 void
-AudioProcessor::onOpened(
-    Suscan::AnalyzerRequest const &req,
-    const suscan_config_t *config)
+AudioProcessor::onOpened(Suscan::AnalyzerRequest const &req)
 {
-  // Async step 2: set inspector parameters
-
+  // Async step 2: update state
   m_opening = false;
 
   if (m_analyzer != nullptr) {
@@ -554,13 +624,15 @@ AudioProcessor::onOpened(
 
     if (m_audioCfgTemplate != nullptr) {
       suscan_config_destroy(m_audioCfgTemplate);
-      m_audioCfgTemplate = suscan_config_dup(config);
+      m_audioCfgTemplate = nullptr;
+    }
 
-      if (m_audioCfgTemplate == nullptr) {
-        m_analyzer->closeInspector(req.handle);
-        emit audioError("Failed to duplicate audio configuration");
-        return;
-      }
+    m_audioCfgTemplate = suscan_config_dup(req.config);
+
+    if (m_audioCfgTemplate == nullptr) {
+      m_analyzer->closeInspector(req.handle);
+      emit audioError("Failed to duplicate audio configuration");
+      return;
     }
 
     // Async step 3: set parameters
@@ -568,6 +640,8 @@ AudioProcessor::onOpened(
     m_audioInspId          = req.inspectorId;
     m_audioInspectorOpened = true;
 
+    this->setTrueBandwidth();
+    this->setTrueLoFreq();
     this->setParams();
 
     if (m_correctionEnabled)

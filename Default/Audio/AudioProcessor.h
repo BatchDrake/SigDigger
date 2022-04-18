@@ -58,10 +58,11 @@ namespace SigDigger {
     QString         m_savedPath;
     AudioPlayback  *m_playBack = nullptr;
     Suscan::AnalyzerRequestTracker *m_tracker = nullptr;
+    QString         m_audioError;
 
     // Audio inspector state
     bool              m_opened = false;
-    bool              m_opening = true;
+    bool              m_opening = false;
     bool              m_settingRate = false;
     Suscan::Analyzer *m_analyzer = nullptr;
     Suscan::Handle    m_audioInspHandle = -1;
@@ -71,7 +72,7 @@ namespace SigDigger {
     SUFREQ            m_maxAudioBw = 2e5; // Hz
 
     // Other references
-    MainSpectrum     *m_spectrum;
+    MainSpectrum     *m_spectrum = nullptr;
 
     // Private methods
     void connectAll();
@@ -81,9 +82,14 @@ namespace SigDigger {
     bool openAudio();
     bool closeAudio();
     void setParams();
+    void setTrueLoFreq();
+    void setTrueBandwidth();
+    SUFREQ calcTrueLoFreq();
+    SUFREQ calcTrueBandwidth();
 
   public:
     explicit AudioProcessor(UIMediator *, QObject *parent = nullptr);
+    virtual ~AudioProcessor() override;
 
     void setAnalyzer(Suscan::Analyzer *);
     void setEnabled(bool);
@@ -97,8 +103,11 @@ namespace SigDigger {
     void setCutOff(float);
     void setTunerFreq(SUFREQ);
     void setLoFreq(SUFREQ);
+
     void setBandwidth(SUFREQ);
 
+    bool isAudioAvailable() const;
+    QString getAudioError() const;
     bool isRecording() const;
     bool isOpened() const;
     size_t getSaveSize() const;
@@ -120,7 +129,7 @@ namespace SigDigger {
 
     void onInspectorMessage(Suscan::InspectorMessage const &);
     void onInspectorSamples(Suscan::SamplesMessage const &);
-    void onOpened(Suscan::AnalyzerRequest const &, const suscan_config_t *);
+    void onOpened(Suscan::AnalyzerRequest const &);
     void onCancelled(Suscan::AnalyzerRequest const &);
     void onError(Suscan::AnalyzerRequest const &, std::string const &);
   };

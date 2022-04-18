@@ -114,8 +114,8 @@ AudioWidget::AudioWidget(
 {
   ui->setupUi(this);
 
-  this->m_processor = new AudioProcessor(mediator, this);
-  this->m_spectrum  = mediator->getMainSpectrum();
+  m_processor = new AudioProcessor(mediator, this);
+  m_spectrum  = mediator->getMainSpectrum();
 
   this->setRecordSavePath(QDir::currentPath().toStdString());
 
@@ -248,25 +248,25 @@ AudioWidget::connectAll(void)
 
   this->connect(
         m_processor,
-        SIGNAL(stopped()),
+        SIGNAL(recStopped()),
         this,
         SLOT(onAudioSaveError()));
 
   this->connect(
         m_processor,
-        SIGNAL(swamped()),
+        SIGNAL(recSwamped()),
         this,
         SLOT(onAudioSaveSwamped()));
 
   this->connect(
         m_processor,
-        SIGNAL(dataRate(qreal)),
+        SIGNAL(recSaveRate(qreal)),
         this,
         SLOT(onAudioSaveRate(qreal)));
 
   this->connect(
         m_processor,
-        SIGNAL(commit()),
+        SIGNAL(recCommit()),
         this,
         SLOT(onAudioCommit()));
 }
@@ -274,8 +274,9 @@ AudioWidget::connectAll(void)
 bool
 AudioWidget::shouldOpenAudio(void) const
 {
+  bool audioAvailable = m_processor->isAudioAvailable();
   bool validRate = this->bandwidth >= supportedRates[0];
-  return this->audioAllowed && this->getEnabled() && validRate;
+  return this->audioAllowed && audioAvailable && this->getEnabled() && validRate;
 }
 
 void
@@ -285,8 +286,10 @@ AudioWidget::refreshUi(void)
   bool validRate = this->bandwidth >= supportedRates[0];
   MainSpectrum::Skewness skewness = MainSpectrum::SYMMETRIC;
   bool recording = m_processor->isRecording();
+  bool audioAvailable = m_processor->isAudioAvailable();
 
-  this->ui->audioPreviewCheck->setEnabled(validRate && this->audioAllowed);
+  this->ui->audioPreviewCheck->setEnabled(
+        audioAvailable && validRate && this->audioAllowed);
   this->ui->demodCombo->setEnabled(shouldOpenAudio);
   this->ui->sampleRateCombo->setEnabled(shouldOpenAudio);
   this->ui->cutoffSlider->setEnabled(shouldOpenAudio);
@@ -619,6 +622,11 @@ AudioWidget::applyConfig(void)
   // Recorder
   if (this->panelConfig->savePath.size() > 0)
     this->setRecordSavePath(this->panelConfig->savePath);
+
+  // Update processor parameters
+  m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
+  m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
+  m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
 }
 
 bool
@@ -638,15 +646,12 @@ AudioWidget::event(QEvent *event)
 void
 AudioWidget::setState(int state, Suscan::Analyzer *analyzer)
 {
-  this->m_analyzer = analyzer;
+  m_analyzer = analyzer;
 
-  if (state != this->m_state) {
+  if (state != this->m_state)
     this->m_state = state;
 
-    if (state == UIMediator::State::RUNNING) {
-
-    }
-  }
+  m_processor->setAnalyzer(analyzer);
 }
 
 void
@@ -807,13 +812,22 @@ AudioWidget::onMuteToggled(bool)
           ? ":/icons/audio-volume-muted-panel.png"
           : ":/icons/audio-volume-medium-panel.png"));
 
-  // TODO: Change volume in inspector (if any)
+  this->setVolume(this->getVolume());
 }
 
 void
 AudioWidget::onEnabledChanged(void)
 {
-  this->setEnabled(this->getEnabled());
+  if (!m_processor->isAudioAvailable()) {
+    QMessageBox::warning(
+          this,
+          "Audio preview error",
+          "Audio playback was disabled due to errors. Reason: "
+          + m_processor->getAudioError());
+    this->setEnabled(false);
+  } else {
+    this->setEnabled(this->getEnabled());
+  }
 }
 
 void

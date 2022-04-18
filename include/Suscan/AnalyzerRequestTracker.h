@@ -40,10 +40,14 @@ namespace Suscan {
 
     Handle      handle;
 
+    suscan_config_t *config = nullptr;
+
     QVariant    data;
 
     bool opened = false;
     bool idSet  = false;
+
+    ~AnalyzerRequest();
   };
 
   class AnalyzerRequestTracker: public QObject {
@@ -70,9 +74,10 @@ namespace Suscan {
     ~AnalyzerRequestTracker() override;
 
   signals:
-    void opened(AnalyzerRequest const &req, const suscan_config_t *config);
-    void cancelled(AnalyzerRequest const &req);
-    void error(AnalyzerRequest const &req, const std::string &);
+    // Always remember to put full namespaces here
+    void opened(Suscan::AnalyzerRequest const &);
+    void cancelled(Suscan::AnalyzerRequest const &);
+    void error(Suscan::AnalyzerRequest const &, const std::string &);
 
   public slots:
     void onInspectorMessage(const Suscan::InspectorMessage &message);
