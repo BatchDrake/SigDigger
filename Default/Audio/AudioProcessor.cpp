@@ -414,6 +414,9 @@ AudioProcessor::setSampleRate(unsigned rate)
     if (m_audioInspectorOpened) {
       m_settingRate = true;
       this->setParams();
+      m_analyzer->setInspectorWatermark(
+            m_audioInspHandle,
+            PlaybackWorker::calcBufferSizeForRate(m_sampleRate) / 2);
     } else {
       m_playBack->setSampleRate(rate);
     }
@@ -643,6 +646,10 @@ AudioProcessor::onOpened(Suscan::AnalyzerRequest const &req)
     this->setTrueBandwidth();
     this->setTrueLoFreq();
     this->setParams();
+
+    m_analyzer->setInspectorWatermark(
+          m_audioInspHandle,
+          PlaybackWorker::calcBufferSizeForRate(m_sampleRate) / 2);
 
     if (m_correctionEnabled)
       m_analyzer->setInspectorDopplerCorrection(m_audioInspHandle, m_orbit);
