@@ -51,6 +51,7 @@ namespace SigDigger {
     bool            m_correctionEnabled = false;
     bool            m_squelch = false;
     SUFLOAT         m_squelchLevel;
+    SUFREQ          m_bw = 2e5; // Hz
 
     // Composed objects
     AudioFileSaver *m_audioFileSaver = nullptr;
@@ -67,7 +68,7 @@ namespace SigDigger {
     uint32_t          m_audioInspId = 0xffffffff;
     suscan_config_t  *m_audioCfgTemplate = nullptr;
     bool              m_audioInspectorOpened = false;
-    float             m_maxAudioBw = 2e5;
+    SUFREQ            m_maxAudioBw = 2e5; // Hz
 
     // Other references
     MainSpectrum     *m_spectrum;
@@ -96,6 +97,11 @@ namespace SigDigger {
     void setCutOff(float);
     void setTunerFreq(SUFREQ);
     void setLoFreq(SUFREQ);
+    void setBandwidth(SUFREQ);
+
+    bool isRecording() const;
+    bool isOpened() const;
+    size_t getSaveSize() const;
 
   signals:
     void audioClosed();

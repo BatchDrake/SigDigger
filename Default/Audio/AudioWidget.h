@@ -31,6 +31,7 @@ namespace SigDigger {
   class AudioProcessor;
   class AudioWidgetFactory;
   class FrequencyCorrectionDialog;
+  class MainSpectrum;
 
   class AudioWidgetConfig : public Suscan::Serializable {
   public:
@@ -74,6 +75,7 @@ namespace SigDigger {
 
     // UI members
     int m_state;
+    MainSpectrum *m_spectrum;
     Ui::AudioPanel *ui = nullptr;
     ColorConfig colorConfig;
     FrequencyCorrectionDialog *fcDialog = nullptr;
@@ -143,6 +145,11 @@ namespace SigDigger {
     void setProfile(Suscan::Source::Config &) override;
 
   public slots:
+    void onSpectrumBandwidthChanged(void);
+    void onSpectrumLoChanged(qint64);
+    void onSpectrumFrequencyChanged(qint64 freq);
+
+    // Generic UI
     void onDemodChanged();
     void onSampleRateChanged();
     void onFilterChanged();
@@ -150,12 +157,17 @@ namespace SigDigger {
     void onMuteToggled(bool);
     void onEnabledChanged();
     void onAcceptCorrectionSetting();
-
     void onChangeSavePath();
     void onRecordStartStop();
     void onToggleSquelch();
     void onSquelchLevelChanged();
     void onOpenDopplerSettings();
+
+    // Saver UI
+    void onAudioSaveError(void);
+    void onAudioSaveSwamped(void);
+    void onAudioSaveRate(qreal rate);
+    void onAudioCommit(void);
   };
 }
 

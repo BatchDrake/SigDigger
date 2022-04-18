@@ -81,8 +81,7 @@ AudioProcessor::openAudio()
   if (!m_opened) {
     if (m_playBack != nullptr) {
       Suscan::Channel ch;
-      SUFREQ maxFc = SCAST(SUFREQ, m_analyzer->getSampleRate() / 2);
-      SUFREQ bw  = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
+      SUFREQ bw    = m_bw;
       unsigned int reqRate = m_sampleRate;
 
       // FIXME: Find a sample rate that better matches this
@@ -95,10 +94,14 @@ AudioProcessor::openAudio()
       m_playBack->start();
 
       // TODO: Recover true sample rate?
+      m_maxAudioBw =
+          SU_MIN(
+            SCAST(SUFREQ, m_analyzer->getSampleRate() / 2),
+            SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH);
       m_sampleRate = m_playBack->getSampleRate();
 
-      if (bw > maxFc)
-        bw = maxFc;
+      if (bw > m_maxAudioBw)
+        bw = m_maxAudioBw;
 
       // Prepare channel
       ch.bw    = bw;
@@ -107,7 +110,7 @@ AudioProcessor::openAudio()
       ch.fLow  = -.5 * bw;
       ch.fHigh = +.5 * bw;
 
-      if (ch.fc > maxFc || ch.fc < -maxFc)
+      if (ch.fc > m_maxAudioBw || ch.fc < -m_maxAudioBw)
         ch.fc = 0;
 
       // Async step 1: track request
@@ -149,6 +152,8 @@ AudioProcessor::closeAudio()
   m_opening = false;
   m_opened  = false;
   m_audioInspectorOpened = false;
+
+  return true;
 }
 
 void
@@ -199,11 +204,17 @@ AudioProcessor::connectAudioFileSaver()
         m_audioFileSaver,
         SIGNAL(stopped()),
         this,
-        SIGNAL(recStopped()));
+        SLOT(stopRecording()));
 
   connect(
         m_audioFileSaver,
         SIGNAL(stopped()),
+        this,
+        SIGNAL(recStopped()));
+
+  connect(
+        m_audioFileSaver,
+        SIGNAL(swamped()),
         this,
         SLOT(stopRecording()));
 
@@ -212,12 +223,6 @@ AudioProcessor::connectAudioFileSaver()
         SIGNAL(swamped()),
         this,
         SIGNAL(recSwamped()));
-
-  connect(
-        m_audioFileSaver,
-        SIGNAL(swamped()),
-        this,
-        SLOT(stopRecording()));
 
   connect(
         m_audioFileSaver,
@@ -390,6 +395,39 @@ AudioProcessor::setLoFreq(SUFREQ lo)
   }
 }
 
+void
+AudioProcessor::setBandwidth(SUFREQ bw)
+{
+  // If changed, set frequency
+  if (bw > m_maxAudioBw)
+    bw = m_maxAudioBw;
+
+  if (!sufeq(m_bw, bw, 1e-8f)) {
+    m_bw = bw;
+
+    if (m_audioInspectorOpened)
+      m_analyzer->setInspectorBandwidth(m_audioInspHandle, m_bw);
+  }
+}
+
+bool
+AudioProcessor::isRecording() const
+{
+  return m_audioFileSaver != nullptr;
+}
+
+bool
+AudioProcessor::isOpened() const
+{
+  return m_opened;
+}
+
+size_t
+AudioProcessor::getSaveSize() const
+{
+  return m_audioFileSaver == nullptr ? 0 : m_audioFileSaver->getSize();
+}
+
 bool
 AudioProcessor::startRecording(QString path)
 {
@@ -417,7 +455,7 @@ void
 AudioProcessor::stopRecording(void)
 {
   if (m_audioFileSaver != nullptr) {
-    delete m_audioFileSaver;
+    m_audioFileSaver->deleteLater();
     m_audioFileSaver = nullptr;
   }
 }
