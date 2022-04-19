@@ -315,11 +315,11 @@ HEADERS += \
 
 
 FORMS += \
+    Default/Audio/AudioWidget.ui \
     ui/AboutDialog.ui \
     ui/AddTLESourceDialog.ui \
     ui/AfcControl.ui \
     ui/AskControl.ui \
-    ui/AudioPanel.ui \
     ui/ClockRecovery.ui \
     ui/ColorConfigTab.ui \
     ui/Config.ui \
