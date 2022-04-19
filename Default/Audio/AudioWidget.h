@@ -72,6 +72,8 @@ namespace SigDigger {
     // Processing members
     AudioProcessor *m_processor  = nullptr;
     Suscan::Analyzer *m_analyzer = nullptr; // Borrowed
+    bool m_haveSourceInfo = false;
+    bool m_audioAllowed = true;
 
     // UI members
     int m_state;
@@ -79,7 +81,7 @@ namespace SigDigger {
     Ui::AudioPanel *ui = nullptr;
     ColorConfig colorConfig;
     FrequencyCorrectionDialog *fcDialog = nullptr;
-    bool audioAllowed = true;
+
 
     // Private methods
     void connectAll();
@@ -168,6 +170,9 @@ namespace SigDigger {
     void onAudioSaveSwamped(void);
     void onAudioSaveRate(qreal rate);
     void onAudioCommit(void);
+
+    // Analyzer slots
+    void onSourceInfoMessage(Suscan::SourceInfoMessage const &);
   };
 }
 

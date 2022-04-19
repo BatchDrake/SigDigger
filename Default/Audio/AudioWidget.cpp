@@ -276,7 +276,7 @@ AudioWidget::shouldOpenAudio(void) const
 {
   bool audioAvailable = m_processor->isAudioAvailable();
   bool validRate = this->bandwidth >= supportedRates[0];
-  return this->audioAllowed && audioAvailable && this->getEnabled() && validRate;
+  return m_audioAllowed && audioAvailable && this->getEnabled() && validRate;
 }
 
 void
@@ -289,7 +289,7 @@ AudioWidget::refreshUi(void)
   bool audioAvailable = m_processor->isAudioAvailable();
 
   this->ui->audioPreviewCheck->setEnabled(
-        audioAvailable && validRate && this->audioAllowed);
+        audioAvailable && validRate && m_audioAllowed);
   this->ui->demodCombo->setEnabled(shouldOpenAudio);
   this->ui->sampleRateCombo->setEnabled(shouldOpenAudio);
   this->ui->cutoffSlider->setEnabled(shouldOpenAudio);
@@ -646,6 +646,19 @@ AudioWidget::event(QEvent *event)
 void
 AudioWidget::setState(int state, Suscan::Analyzer *analyzer)
 {
+  if (m_analyzer == nullptr && analyzer != nullptr) {
+    m_haveSourceInfo = false;
+    m_audioAllowed = true;
+
+    connect(
+          analyzer,
+          SIGNAL(source_info_message(const Suscan::SourceInfoMessage &)),
+          this,
+          SLOT(onSourceInfoMessage(const Suscan::SourceInfoMessage &)));
+
+    this->refreshUi();
+  }
+
   m_analyzer = analyzer;
 
   if (state != this->m_state)
@@ -943,6 +956,17 @@ AudioWidget::onAudioCommit(void)
 {
   auto len = m_processor->getSaveSize() * sizeof(uint16_t) / sizeof(SUCOMPLEX);
   this->ui->captureSizeLabel->setText(formatCaptureSize(len));
+}
+
+void
+AudioWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
+{
+  if (!m_haveSourceInfo) {
+    m_audioAllowed =
+        msg.info()->testPermission(SUSCAN_ANALYZER_PERM_OPEN_AUDIO);
+    m_haveSourceInfo = true;
+    this->refreshUi();
+  }
 }
 
 ////////////////// TODO: implement onJumpToBookmark ////////////////////////////
