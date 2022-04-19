@@ -244,6 +244,27 @@ SigDiggerHelpers::populatePaletteCombo(QComboBox *cb)
   }
 }
 
+void
+SigDiggerHelpers::populateAntennaCombo(
+    Suscan::Source::Config &profile,
+    QComboBox *combo)
+{
+  int index = 0;
+  combo->clear();
+
+  for (auto i = profile.getDevice().getFirstAntenna();
+       i != profile.getDevice().getLastAntenna();
+       ++i) {
+    combo->addItem(QString::fromStdString(*i));
+
+    if (profile.getAntenna() == *i)
+      index = static_cast<int>(
+            i - profile.getDevice().getFirstAntenna());
+  }
+
+  combo->setCurrentIndex(index);
+}
+
 const Palette *
 SigDiggerHelpers::getPalette(int index) const
 {

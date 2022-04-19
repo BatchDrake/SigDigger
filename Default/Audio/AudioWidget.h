@@ -82,7 +82,6 @@ namespace SigDigger {
     ColorConfig colorConfig;
     FrequencyCorrectionDialog *fcDialog = nullptr;
 
-
     // Private methods
     void connectAll();
     void populateRates();

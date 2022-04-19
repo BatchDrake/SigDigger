@@ -91,6 +91,8 @@ SOURCES += \
     Default/Audio/AudioWidget.cpp \
     Default/Audio/AudioWidgetFactory.cpp \
     Default/Registration.cpp \
+    Default/Source/SourceWidget.cpp \
+    Default/Source/SourceWidgetFactory.cpp \
     Inspector/FACTab.cpp \
     Inspector/Inspector.cpp \
     Inspector/InspectorUI.cpp \
@@ -190,6 +192,8 @@ HEADERS += \
     Default/Audio/AudioWidget.h \
     Default/Audio/AudioWidgetFactory.h \
     Default/Registration.h \
+    Default/Source/SourceWidget.h \
+    Default/Source/SourceWidgetFactory.h \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \

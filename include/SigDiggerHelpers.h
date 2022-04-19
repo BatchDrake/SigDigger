@@ -80,6 +80,9 @@ namespace SigDigger {
     const Palette *getPalette(std::string const &) const;
     const Palette *getPalette(int index) const;
     void populatePaletteCombo(QComboBox *combo);
+    static void populateAntennaCombo(
+        Suscan::Source::Config &profile,
+        QComboBox *combo);
     void deserializePalettes(void);
 
     void pushLocalTZ(void);
