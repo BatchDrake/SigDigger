@@ -75,7 +75,6 @@ namespace SigDigger{
     int m_state;
     Suscan::Analyzer *m_analyzer = nullptr; // Borrowed
     bool m_haveSourceInfo = false;
-    bool m_audioAllowed = true;
     Ui::SourcePanel *ui = nullptr;
     std::vector<DeviceGain *> gainControls;
     DataSaverUI *saverUI = nullptr;
@@ -148,6 +147,8 @@ namespace SigDigger{
     void setProfile(Suscan::Source::Config &) override;
 
   public slots:
+    void onSourceInfoMessage(Suscan::SourceInfoMessage const &msg);
+    void onPSDMessage(Suscan::PSDMessage const &msg);
     void onGainChanged(QString name, float val);
     void onAntennaChanged(int);
     void onRecordStartStop(void);

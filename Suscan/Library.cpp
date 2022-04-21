@@ -1193,13 +1193,13 @@ Singleton::unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
 QList<SigDigger::ToolWidgetFactory *>::const_iterator
 Singleton::getFirstToolWidgetFactory() const
 {
-  return this->toolWidgetFactories.cbegin();
+  return this->toolWidgetFactories.begin();
 }
 
 QList<SigDigger::ToolWidgetFactory *>::const_iterator
 Singleton::getLastToolWidgetFactory() const
 {
-  return this->toolWidgetFactories.cend();
+  return this->toolWidgetFactories.end();
 }
 
 bool

@@ -135,7 +135,15 @@ SourceWidget::SourceWidget(
 {
   ui->setupUi(this);
 
+  this->saverUI = new DataSaverUI(this);
+  this->ui->dataSaverGrid->addWidget(this->saverUI);
+  this->ui->throttleSpin->setUnits("sps");
+  this->ui->throttleSpin->setMinimum(0);
 
+  this->assertConfig();
+  this->connectAll();
+
+  this->setProperty("collapsed", this->panelConfig->collapsed);
 }
 
 SourceWidget::~SourceWidget()
@@ -144,6 +152,83 @@ SourceWidget::~SourceWidget()
 }
 
 // Private methods
+void
+SourceWidget::connectAll(void)
+{
+  connect(
+        this->ui->throttleCheck,
+        SIGNAL(stateChanged(int)),
+        this,
+        SLOT(onThrottleChanged(void)));
+
+  connect(
+        this->ui->throttleSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onThrottleChanged(void)));
+
+  connect(
+        this->saverUI,
+        SIGNAL(recordStateChanged(bool)),
+        this,
+        SLOT(onRecordStartStop()));
+
+  connect(
+        this->ui->autoGainCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onSelectAutoGain(void)));
+
+  connect(
+        this->ui->autoGainSlider,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onChangeAutoGain(void)));
+
+  connect(
+        this->ui->gainPresetCheck,
+        SIGNAL(stateChanged(int)),
+        this,
+        SLOT(onToggleAutoGain(void)));
+
+  connect(
+        this->ui->dcRemoveCheck,
+        SIGNAL(stateChanged(int)),
+        this,
+        SLOT(onToggleDCRemove(void)));
+
+  connect(
+        this->ui->swapIQCheck,
+        SIGNAL(stateChanged(int)),
+        this,
+        SLOT(onToggleIQReverse(void)));
+
+  connect(
+        this->ui->agcEnabledCheck,
+        SIGNAL(stateChanged(int)),
+        this,
+        SLOT(onToggleAGCEnabled(void)));
+
+  connect(
+        this->ui->antennaCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onAntennaChanged(int)));
+
+  connect(
+        this->ui->bwSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onBandwidthChanged(void)));
+
+  connect(
+        this->ui->ppmSpinBox,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onPPMChanged(void)));
+}
+
+
 DeviceGain *
 SourceWidget::lookupGain(std::string const &name)
 {
@@ -734,8 +819,35 @@ SourceWidget::setBlockingSignals(bool blocking)
 void
 SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
 {
+  if (m_analyzer != analyzer) {
+    m_analyzer = analyzer;
+
+    if (m_analyzer == nullptr) {
+      this->haveSourceInfo = false;
+      this->sourceInfo = Suscan::AnalyzerSourceInfo();
+      this->refreshUi();
+    } else {
+      // Switched to running! Then, do the following:
+      // 1. Connect source_info_message
+      // 2. Request a gain adjustmenet to fit the saved preset, if applicable
+
+      connect(
+            analyzer,
+            SIGNAL(source_info_message(const Suscan::SourceInfoMessage &)),
+            this,
+            SLOT(onSourceInfoMessage(const Suscan::SourceInfoMessage &)));
+      connect(
+            analyzer,
+            SIGNAL(psd_message(const Suscan::PSDMessage &)),
+            this,
+            SLOT(onPSDMessage(const Suscan::PSDMessage &)));
+
+      if (this->panelConfig->gainPresetEnabled)
+        this->applyCurrentAutogain();
+    }
+  }
+
   m_state = state;
-  m_analyzer = analyzer;
 }
 
 void
@@ -792,6 +904,18 @@ SourceWidget::setProfile(Suscan::Source::Config &profile)
 }
 
 ////////////////////////////////////// Slots ///////////////////////////////////
+void
+SourceWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
+{
+  this->applySourceInfo(*msg.info());
+}
+
+void
+SourceWidget::onPSDMessage(Suscan::PSDMessage const &msg)
+{
+  this->setProcessRate(msg.getMeasuredSampleRate());
+}
+
 void
 SourceWidget::onGainChanged(QString, float)
 {

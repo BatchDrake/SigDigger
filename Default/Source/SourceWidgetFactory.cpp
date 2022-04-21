@@ -39,5 +39,5 @@ SourceWidgetFactory::SourceWidgetFactory(Suscan::Plugin *plugin) :
 std::string
 SourceWidgetFactory::getTitle() const
 {
-  return "Source preview";
+  return "Signal source";
 }

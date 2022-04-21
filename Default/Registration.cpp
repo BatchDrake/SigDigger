@@ -19,6 +19,7 @@
 
 #include "Registration.h"
 #include "Audio/AudioWidgetFactory.h"
+#include "Source/SourceWidgetFactory.h"
 
 #include <Suscan/Library.h>
 
@@ -26,6 +27,7 @@ bool
 SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
 {
   new AudioWidgetFactory(plugin);
+  new SourceWidgetFactory(plugin);
 
   return true;
 }
