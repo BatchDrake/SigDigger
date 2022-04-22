@@ -89,6 +89,8 @@ SOURCES += \
     Default/Audio/AudioProcessor.cpp \
     Default/Audio/AudioWidget.cpp \
     Default/Audio/AudioWidgetFactory.cpp \
+    Default/FFT/FFTWidget.cpp \
+    Default/FFT/FFTWidgetFactory.cpp \
     Default/Registration.cpp \
     Default/Source/SourceWidget.cpp \
     Default/Source/SourceWidgetFactory.cpp \
@@ -189,6 +191,8 @@ HEADERS += \
     Default/Audio/AudioProcessor.h \
     Default/Audio/AudioWidget.h \
     Default/Audio/AudioWidgetFactory.h \
+    Default/FFT/FFTWidget.h \
+    Default/FFT/FFTWidgetFactory.h \
     Default/Registration.h \
     Default/Source/SourceWidget.h \
     Default/Source/SourceWidgetFactory.h \
@@ -317,6 +321,7 @@ HEADERS += \
 
 FORMS += \
     Default/Audio/AudioWidget.ui \
+    Default/Source/SourceWidget.ui \
     ui/AboutDialog.ui \
     ui/AddTLESourceDialog.ui \
     ui/AfcControl.ui \
@@ -345,7 +350,6 @@ FORMS += \
     ui/ProfileConfigTab.ui \
     ui/QuickConnectDialog.ui \
     ui/SamplerDialog.ui \
-    ui/SourcePanel.ui \
     ui/TLESourceTab.ui \
     ui/TimeWindow.ui \
     ui/ToneControl.ui \

@@ -28,7 +28,7 @@ namespace Ui {
   class SourcePanel;
 }
 
-namespace SigDigger{
+namespace SigDigger {
   class SourceWidgetFactory;
   class FileDataSaver;
 
