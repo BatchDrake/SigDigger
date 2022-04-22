@@ -1,5 +1,5 @@
 //
-//    SourceWidget.cpp: description
+//    SourceWidget.cpp: Source control widget
 //    Copyright (C) 2022 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 #include "SuWidgetsHelpers.h"
 #include "SigDiggerHelpers.h"
 #include "ui_SourcePanel.h"
+#include <QMessageBox>
 
 using namespace SigDigger;
 
@@ -360,7 +361,7 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   this->ui->throttleCheck->setChecked(throttleEnabled);
 
   // Populate antennas
-  populateAntennaCombo(info);
+  this->populateAntennaCombo(info);
 
   // What if SoapySDR lies? We consider the case in which the antenna is
   // not reported in the antenna list
@@ -933,11 +934,15 @@ SourceWidget::onPSDMessage(Suscan::PSDMessage const &msg)
 }
 
 void
-SourceWidget::onGainChanged(QString, float)
+SourceWidget::onGainChanged(QString name, float val)
 {
   this->setAGCEnabled(false);
 
-  // TODO: Change gain in analyzer
+  if (this->profile != nullptr)
+    this->profile->setGain(name.toStdString(), val);
+
+  if (m_analyzer != nullptr)
+    m_analyzer->setGain(name.toStdString(), val);
 }
 
 void
@@ -958,19 +963,50 @@ SourceWidget::onThrottleChanged(void)
   this->ui->throttleSpin->setEnabled(
         throttling && this->ui->throttleCheck->isChecked());
 
-  // TODO: set throttle in analyzer
+  if (m_analyzer != nullptr) {
+    try {
+      m_analyzer->setThrottle(throttling ? this->panelConfig->throttleRate : 0);
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow changing the throttle config",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
 SourceWidget::onBandwidthChanged(void)
 {
-  // TODO: set bandwidth in analyzer
+  float bandwidth = SCAST(float, this->ui->bwSpin->value());
+
+  if (this->profile != nullptr)
+    this->profile->setBandwidth(bandwidth);
+
+  if (m_analyzer != nullptr) {
+    try {
+      m_analyzer->setBandwidth(bandwidth);
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow setting the bandwidth",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
 SourceWidget::onPPMChanged(void)
 {
-  // TODO: set PPM in analyzer
+  float ppm = SCAST(float, this->ui->ppmSpinBox->value());
+
+  if (this->profile !=  nullptr)
+    this->profile->setPPM(ppm);
+
+  if (m_analyzer != nullptr)
+    m_analyzer->setPPM(ppm);
 }
 
 void
@@ -1004,7 +1040,8 @@ SourceWidget::onToggleDCRemove(void)
 {
   this->setDCRemove(this->ui->dcRemoveCheck->isChecked());
 
-  // TODO: set DC remove in analyzer
+  if (m_analyzer != nullptr)
+    m_analyzer->setDCRemove(this->panelConfig->dcRemove);
 }
 
 void
@@ -1012,7 +1049,8 @@ SourceWidget::onToggleIQReverse(void)
 {
   this->setIQReverse(this->ui->swapIQCheck->isChecked());
 
-  // TODO: set IQ reverse in analyzer
+  if (m_analyzer != nullptr)
+    m_analyzer->setIQReverse(this->panelConfig->iqRev);
 }
 
 void
@@ -1020,11 +1058,22 @@ SourceWidget::onToggleAGCEnabled(void)
 {
   this->setAGCEnabled(this->ui->agcEnabledCheck->isChecked());
 
-  // TODO: set AGC in analyzer
+  if (m_analyzer != nullptr)
+    m_analyzer->setAGC(this->panelConfig->agcEnabled);
 }
 
 void
 SourceWidget::onAntennaChanged(int)
 {
-  // TODO: set antenna in analyzer (this->ui->antennaCombo->itemText(i)))
+  int i = this->ui->antennaCombo->currentIndex();
+
+  if (i >= 0) {
+    std::string antenna = this->ui->antennaCombo->itemText(i).toStdString();
+
+    if (this->profile != nullptr)
+      this->profile->setAntenna(antenna);
+
+    if (m_analyzer != nullptr)
+      m_analyzer->setAntenna(antenna);
+  }
 }

@@ -105,17 +105,14 @@ namespace SigDigger{
     void connectAll(void);
     void refreshUi(void);
 
-    void deserializeAutoGains(void);
-
     void setThrottleable(bool val);
-    void setProfile(Suscan::Source::Config *);
     void setSampleRate(unsigned int rate);
+    unsigned int getEffectiveRate(void) const;
     void setProcessRate(unsigned int rate);
     void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
     void setGain(std::string const &name, SUFLOAT val);
 
     void setCaptureSize(quint64);
-    void setDiskUsage(qreal);
     void setIORate(qreal);
     void setRecordState(bool state);
     void setSavePath(std::string const &path);
@@ -123,15 +120,7 @@ namespace SigDigger{
     void setIQReverse(bool rev);
     void setAGCEnabled(bool enabled);
 
-
     bool setBlockingSignals(bool);
-
-    // Getters
-    unsigned int getEffectiveRate(void) const;
-    bool getRecordState(void) const;
-    std::string getAntenna(void) const;
-    float getBandwidth(void) const;
-    float getPPM(void) const;
 
   public:
     SourceWidget(SourceWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
