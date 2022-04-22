@@ -115,6 +115,7 @@ namespace SigDigger {
     // Refactored methods
     QMainWindow  *getMainWindow() const;
     MainSpectrum *getMainSpectrum() const;
+    Averager     *getSpectrumAverager();
 
     void deserializeComponents(Suscan::Object const &conf);
     void serializeComponents(Suscan::Object &conf);

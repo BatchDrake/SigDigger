@@ -133,8 +133,14 @@ UIMediator::getMainSpectrum() const
   return this->ui->spectrum;
 }
 
+Averager *
+UIMediator::getSpectrumAverager()
+{
+  return &this->averager;
+}
+
 #define TRYSILENT(x) \
-  try { x; } catch (Suscan::Exception const &e) { printf ("Error: %s\n", e.what()); }
+  try { x; } catch (Suscan::Exception const &e) { }
 
 void
 UIMediator::deserializeComponents(Suscan::Object const &conf)

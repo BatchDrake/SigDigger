@@ -34,9 +34,11 @@ namespace Ui {
 namespace SigDigger {
   class FFTWidgetFactory;
   class Palette;
+  class UIMediator;
+  class MainSpectrum;
 
   struct FFTWidgetConfig : public Suscan::Serializable {
-    bool collapsed = true;
+    bool collapsed = false;
     float averaging = 1;
     float panWfRatio = 0.3f;
     bool peakDetect = false;
@@ -65,7 +67,7 @@ namespace SigDigger {
 
     // Overriden methods·
     void deserialize(Suscan::Object const &conf) override;
-    Suscan::Object &&serialize(void) override;
+    Suscan::Object &&serialize() override;
   };
 
 
@@ -78,6 +80,9 @@ namespace SigDigger {
 
     // UI Objects
     Ui::FftPanel *ui = nullptr;
+    MainSpectrum *m_spectrum = nullptr;
+    UIMediator   *m_mediator = nullptr;
+    Suscan::Analyzer *m_analyzer = nullptr;
 
     // UI Data
     unsigned int rate = 0;
@@ -98,42 +103,42 @@ namespace SigDigger {
     void addFftSize(unsigned int sz);
     void addTimeSpan(unsigned int timeSpan);
     void addRefreshRate(unsigned int rate);
-    void updateRefreshRates(void);
-    void updateFftSizes(void);
-    void updateTimeSpans(void);
-    void connectAll(void);
-    void populateUnits(void);
-    void updateRbw(void);
+    void updateRefreshRates();
+    void updateFftSizes();
+    void updateTimeSpans();
+    void connectAll();
+    void populateUnits();
+    void updateRbw();
 
-    void refreshPalettes(void);
+    void refreshPalettes();
 
     // Getters
-    const QColor *getPaletteGradient(void) const;
-    std::string getPalette(void) const;
-    float getPandRangeMin(void) const;
-    float getPandRangeMax(void) const;
-    float getWfRangeMin(void) const;
-    float getWfRangeMax(void) const;
-    float getAveraging(void) const;
-    float getPanWfRatio(void) const;
-    unsigned int getFreqZoom(void) const;
-    unsigned int getFftSize(void) const;
-    unsigned int getTimeSpan(void) const;
-    unsigned int getRefreshRate(void) const;
-    bool getPeakHold(void) const;
-    bool getPeakDetect(void) const;
-    bool getRangeLock(void) const;
-    bool getTimeStamps(void) const;
-    bool getBookmarks(void) const;
-    bool getFilled(void) const;
+    const QColor *getPaletteGradient() const;
+    std::string getPalette() const;
+    float getPandRangeMin() const;
+    float getPandRangeMax() const;
+    float getWfRangeMin() const;
+    float getWfRangeMax() const;
+    float getAveraging() const;
+    float getPanWfRatio() const;
+    unsigned int getFreqZoom() const;
+    unsigned int getFftSize() const;
+    unsigned int getTimeSpan() const;
+    unsigned int getRefreshRate() const;
+    bool getPeakHold() const;
+    bool getPeakDetect() const;
+    bool getRangeLock() const;
+    bool getTimeStamps() const;
+    bool getBookmarks() const;
+    bool getFilled() const;
 
-    QString getUnitName(void) const;
-    float getZeroPoint(void) const;
-    float getGain(void) const;
-    float getCompleteZeroPoint(void) const;
-    float getdBPerUnit(void) const;
+    QString getUnitName() const;
+    float getZeroPoint() const;
+    float getGain() const;
+    float getCompleteZeroPoint() const;
+    float getdBPerUnit() const;
 
-    enum Suscan::AnalyzerParams::WindowFunction getWindowFunction(void) const;
+    enum Suscan::AnalyzerParams::WindowFunction getWindowFunction() const;
 
     void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
 
@@ -165,8 +170,17 @@ namespace SigDigger {
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
 
+    // Refresh logic
+    void refreshSpectrumSettings();
+    void refreshSpectrumScaleSettings();
+    void refreshSpectrumAxesSettings();
+    void refreshSpectrumRepresentationSettings();
+    void refreshSpectrumWaterfallSettings();
+    void refreshParamControls(Suscan::AnalyzerParams const &params);
+    void updateAnalyzerParams();
+
     float
-    zeroPointToDb(void) const
+    zeroPointToDb() const
     {
       return this->getZeroPoint() * this->currentUnit.dBPerUnit;
     }
@@ -188,6 +202,7 @@ namespace SigDigger {
 
     // Overriden methods
     void setState(int, Suscan::Analyzer *) override;
+    void setProfile(Suscan::Source::Config &) override;
 
   public slots:
     void onPandRangeChanged(int min, int max);
@@ -196,20 +211,28 @@ namespace SigDigger {
     void onAspectRatioChanged(int val);
     void onPaletteChanged(int);
     void onFreqZoomChanged(int);
-    void onFftSizeChanged(void);
-    void onTimeSpanChanged(void);
-    void onRefreshRateChanged(void);
-    void onRangeLockChanged(void);
-    void onPeakChanged(void);
-    void onFilledChanged(void);
-    void onWindowFunctionChanged(void);
-    void onTimeStampsChanged(void);
-    void onBookmarksChanged(void);
+    void onFftSizeChanged();
+    void onTimeSpanChanged();
+    void onRefreshRateChanged();
+    void onRangeLockChanged();
+    void onPeakChanged();
+    void onFilledChanged();
+    void onWindowFunctionChanged();
+    void onTimeStampsChanged();
+    void onBookmarksChanged();
 
     // Unit handling slots
-    void onUnitChanged(void);
-    void onZeroPointChanged(void);
-    void onGainChanged(void);
+    void onUnitChanged();
+    void onZeroPointChanged();
+    void onGainChanged();
+
+    // Analyzer slots
+    void onAnalyzerParams(const Suscan::AnalyzerParams &params);
+    void onSourceInfoMessage(Suscan::SourceInfoMessage const &msg);
+
+    // Spectrum slots
+    void onRangeChanged(float min, float max);
+    void onZoomChanged(float level);
   };
 }
 
