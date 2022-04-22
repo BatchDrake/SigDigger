@@ -48,7 +48,6 @@ namespace SigDigger {
       ColorConfig colors;
       GuiConfig guiConfig;
       TLESourceConfig tleSourceConfig;
-      Suscan::Serializable *fftConfig = nullptr;
       Suscan::Serializable *inspectorConfig = nullptr;
       Suscan::Serializable *panSpectrumConfig = nullptr;
 

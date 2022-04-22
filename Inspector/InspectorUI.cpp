@@ -44,7 +44,6 @@
 #include <fcntl.h>
 
 #include "InspectorPanel.h"
-#include "FftPanel.h"
 
 #include "Waterfall.h"
 #include "GLWaterfall.h"
@@ -1349,11 +1348,9 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
 {
   ColorConfig const &colors = cfg.colors;
   InspectorPanelConfig panelConfig;
-  FftPanelConfig fftConfig;
 
   this->colors = colors;
 
-  fftConfig.deserialize(cfg.fftConfig->serialize());
   panelConfig.deserialize(cfg.inspectorConfig->serialize());
 
   this->fcDialog->setColorConfig(colors);
@@ -1404,7 +1401,7 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   this->facTab->setColorConfig(colors);
 
   // Set palette
-  (void) this->setPalette(fftConfig.palette);
+  // (void) this->setPalette(fftConfig.palette);
 }
 
 void

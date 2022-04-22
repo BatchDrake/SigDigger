@@ -20,7 +20,6 @@
 
 #include "AboutDialog.h"
 #include "InspectorPanel.h"
-#include "FftPanel.h"
 #include "MainSpectrum.h"
 #include "ConfigDialog.h"
 #include "Palette.h"
@@ -73,7 +72,6 @@ AppUI::AppUI(QMainWindow *owner)
   
   this->spectrum = new MainSpectrum(owner);
   this->inspectorPanel = new InspectorPanel(nullptr);
-  this->fftPanel = new FftPanel(nullptr);
   this->quickConnectDialog = new QuickConnectDialog(owner);
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);
@@ -91,7 +89,6 @@ AppUI::postLoadInit(QMainWindow *owner)
   SigDiggerHelpers::instance()->deserializePalettes();
 
   this->configDialog = new ConfigDialog(owner);
-  this->fftPanel->refreshPalettes();
   this->spectrum->deserializeFATs();
   this->inspectorPanel->postLoadInit();
 

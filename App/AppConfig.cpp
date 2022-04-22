@@ -18,9 +18,10 @@
 //
 
 #include "AppConfig.h"
-#include "FftPanel.h"
 #include "InspectorPanel.h"
 #include "PanoramicDialog.h"
+
+#include <Suscan/Library.h>
 
 using namespace SigDigger;
 
@@ -31,7 +32,6 @@ AppConfig::AppConfig(AppUI *ui)
   guiConfig{},
   enabledBandPlans{}
 {
-  this->fftConfig         = ui->fftPanel->getConfig();
   this->inspectorConfig   = ui->inspectorPanel->getConfig();
   this->panSpectrumConfig = ui->panoramicDialog->getConfig();
 }
@@ -61,7 +61,6 @@ AppConfig::serialize(void)
   obj.setField("colors", this->colors.serialize());
   obj.setField("guiConfig", this->guiConfig.serialize());
   obj.setField("tleSourceConfig", this->tleSourceConfig.serialize());
-  obj.setField("fftPanel", this->fftConfig->serialize());
   obj.setField("inspectorPanel", this->inspectorConfig->serialize());
   obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
 
@@ -108,7 +107,6 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->colors.deserialize(conf.getField("colors")));
     TRYSILENT(this->guiConfig.deserialize(conf.getField("guiConfig")));
     TRYSILENT(this->tleSourceConfig.deserialize(conf.getField("tleSourceConfig")));
-    TRYSILENT(this->fftConfig->deserialize(conf.getField("fftPanel")));
     TRYSILENT(this->inspectorConfig->deserialize(conf.getField("inspectorPanel")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
 

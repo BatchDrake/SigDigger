@@ -72,7 +72,6 @@ SOURCES += \
     Components/DeviceGain.cpp \
     Components/DeviceTweaks.cpp \
     Components/DopplerDialog.cpp \
-    Components/FftPanel.cpp \
     Components/FrequencyCorrectionDialog.cpp \
     Components/GainSlider.cpp \
     Components/GenericDataSaverUI.cpp \
@@ -154,7 +153,6 @@ SOURCES += \
     Tasks/WaveSampler.cpp \
     UIComponent/ToolWidgetFactory.cpp \
     UIComponent/UIComponentFactory.cpp \
-    UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
     UIMediator/PanoramicDialogMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
@@ -269,7 +267,6 @@ HEADERS += \
     include/DefaultGradient.h \
     include/DeviceGain.h \
     include/EqualizerControl.h \
-    include/FftPanel.h \
     include/GainControl.h \
     include/GainSlider.h \
     include/Inspector.h \

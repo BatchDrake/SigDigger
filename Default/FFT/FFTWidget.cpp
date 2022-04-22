@@ -129,6 +129,9 @@ FFTWidget::applyConfig(void)
   this->setGain(savedConfig.gain);
 
   this->setProperty("collapsed", savedConfig.collapsed);
+
+  // Apply all spectrum settings, all at once
+  this->refreshSpectrumSettings();
 }
 
 bool
@@ -929,11 +932,21 @@ FFTWidget::refreshSpectrumWaterfallSettings()
 }
 
 void
+FFTWidget::refreshSpectrumUnits()
+{
+  m_spectrum->setUnits(
+        this->getUnitName(),
+        this->getdBPerUnit(),
+        this->getCompleteZeroPoint());
+}
+
+void
 FFTWidget::refreshSpectrumSettings(void)
 {
   this->refreshSpectrumScaleSettings();
   this->refreshSpectrumAxesSettings();
   this->refreshSpectrumRepresentationSettings();
+  this->refreshSpectrumUnits();
   this->refreshSpectrumWaterfallSettings();
 }
 

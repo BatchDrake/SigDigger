@@ -176,6 +176,7 @@ namespace SigDigger {
     void refreshSpectrumAxesSettings();
     void refreshSpectrumRepresentationSettings();
     void refreshSpectrumWaterfallSettings();
+    void refreshSpectrumUnits();
     void refreshParamControls(Suscan::AnalyzerParams const &params);
     void updateAnalyzerParams();
 

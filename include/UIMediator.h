@@ -91,7 +91,6 @@ namespace SigDigger {
     void connectMainWindow(void);
     void connectTimeSlider(void);
     void connectSpectrum(void);
-    void connectFftPanel(void);
     void connectInspectorPanel(void);
     void connectDeviceDialog(void);
     void connectPanoramicDialog(void);
@@ -282,23 +281,7 @@ namespace SigDigger {
     void onSpectrumBandwidthChanged(void);
     void onFrequencyChanged(qint64);
     void onLoChanged(qint64);
-    void onRangeChanged(float, float);
-    void onZoomChanged(float);
     void onNewBandPlan(QString);
-
-    // Fft Panel
-    void onPaletteChanged(void);
-    void onRangesChanged(void);
-    void onAveragerChanged(void);
-    void onFftSizeChanged(void);
-    void onWindowFunctionChanged(void);
-    void onRefreshRateChanged(void);
-    void onTimeSpanChanged(void);
-    void onTimeStampsChanged(void);
-    void onBookmarksButtonChanged(void);
-    void onGainChanged(float);
-    void onZeroPointChanged(float);
-    void onUnitChanged(QString, float, float);
 
     // Inspector
     void onInspBandwidthChanged(void);

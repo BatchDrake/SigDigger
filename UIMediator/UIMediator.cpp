@@ -38,7 +38,6 @@
 #include "ui_MainWindow.h"
 #include "MainWindow.h"
 #include "MainSpectrum.h"
-#include "FftPanel.h"
 #include "InspectorPanel.h"
 #include "BookmarkManagerDialog.h"
 #include "BackgroundTasksDialog.h"
@@ -441,14 +440,9 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   // TODO: Turn into default plugin tool widgets
   this->ui->spectrum->addToolWidget(this->ui->inspectorPanel, "Inspection");
-  this->ui->spectrum->addToolWidget(this->ui->fftPanel, "FFT");
 
   // Add baseband analyzer tab
   this->ui->main->mainTab->addTab(this->ui->spectrum, "Radio spectrum");
-
-  // Configure main spectrum
-  this->ui->spectrum->setPaletteGradient(
-        this->ui->fftPanel->getPaletteGradient());
 
   // Create background task controller dialog
   this->ui->backgroundTasksDialog->setController(
@@ -456,7 +450,6 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   this->connectMainWindow();
   this->connectSpectrum();
-  this->connectFftPanel();
 
   this->connectInspectorPanel();
   this->connectDeviceDialog();
@@ -477,7 +470,6 @@ UIMediator::setSampleRate(unsigned int rate)
   if (this->rate != rate) {
     unsigned int bw = rate / 30;
 
-    this->ui->fftPanel->setSampleRate(rate);
     this->ui->inspectorPanel->setBandwidthLimits(0, rate);
     this->ui->spectrum->setSampleRate(rate);
     this->setBandwidth(bw);
@@ -544,7 +536,6 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   }
 
   this->ui->inspectorPanel->applySourceInfo(info);
-  this->ui->fftPanel->applySourceInfo(info);
 }
 
 void
@@ -647,18 +638,9 @@ UIMediator::notifyStartupErrors(void)
 void
 UIMediator::setAnalyzerParams(Suscan::AnalyzerParams const &params)
 {
-  bool prev;
+  this->appConfig->analyzerParams = params;
   this->ui->spectrum->setExpectedRate(
         static_cast<int>(1.f / params.psdUpdateInterval));
-
-  this->appConfig->analyzerParams = params;
-
-  prev = this->ui->fftPanel->blockSignals(true);
-  this->ui->fftPanel->setWindowFunction(params.windowFunction);
-  this->ui->fftPanel->setFftSize(params.windowSize);
-  this->ui->fftPanel->setRefreshRate(
-        static_cast<unsigned int>(1.f / params.psdUpdateInterval));
-  this->ui->fftPanel->blockSignals(prev);
 }
 
 void
@@ -844,9 +826,6 @@ UIMediator::applyConfig(void)
 
   this->setAnalyzerParams(this->appConfig->analyzerParams);
 
-  this->ui->fftPanel->setDefaultFftSize(SIGDIGGER_FFT_WINDOW_SIZE);
-  this->ui->fftPanel->setDefaultRefreshRate(SIGDIGGER_FFT_REFRESH_RATE);
-
   // Apply enabled bandplans
   for (auto p : this->appConfig->enabledBandPlans)
     if (this->bandPlanMap.find(p) != this->bandPlanMap.cend()) {
@@ -858,8 +837,8 @@ UIMediator::applyConfig(void)
         this->ui->spectrum->pushFAT(table);
       }
     }
+
   // The rest of them are automatically deserialized
-  this->ui->fftPanel->applyConfig();
   this->ui->inspectorPanel->applyConfig();
   this->ui->panoramicDialog->applyConfig();
 
@@ -873,21 +852,6 @@ UIMediator::applyConfig(void)
   this->ui->spectrum->setLoFreq(savedLoFreq);
   if (savedBw > 0)
     this->setBandwidth(savedBw);
-
-  // Configure spectrum
-  this->ui->spectrum->setUnits(
-        this->ui->fftPanel->getUnitName(),
-        this->ui->fftPanel->getdBPerUnit(),
-        this->ui->fftPanel->getCompleteZeroPoint());
-  this->ui->spectrum->setGain(this->ui->fftPanel->getGain());
-
-  // Artificially trigger slots to synchronize UI
-  this->onPaletteChanged();
-  this->onRangesChanged();
-  this->onAveragerChanged();
-  this->onTimeSpanChanged();
-  this->onTimeStampsChanged();
-  this->onBookmarksButtonChanged();
 }
 
 UIMediator::~UIMediator()
@@ -911,7 +875,6 @@ UIMediator::onTriggerSetup(bool)
 
   if (this->ui->configDialog->run()) {
     this->appConfig->analyzerParams = this->ui->configDialog->getAnalyzerParams();
-    this->ui->fftPanel->setFftSize(this->getFftSize());
 
     if (this->ui->configDialog->profileChanged())
       this->setProfile(
