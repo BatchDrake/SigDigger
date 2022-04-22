@@ -91,7 +91,6 @@ namespace SigDigger {
     void connectMainWindow(void);
     void connectTimeSlider(void);
     void connectSpectrum(void);
-    void connectSourcePanel(void);
     void connectFftPanel(void);
     void connectInspectorPanel(void);
     void connectDeviceDialog(void);
@@ -139,7 +138,6 @@ namespace SigDigger {
     void addBandPlan(std::string const &);
 
     // Data methods
-    void setProcessRate(unsigned int rate);
     void feedPSD(const Suscan::PSDMessage &msg);
     void setMinPanSpectrumBw(quint64 bw);
     void feedPanSpectrum(
@@ -147,7 +145,6 @@ namespace SigDigger {
         quint64 freqEnd,
         float *data,
         size_t size);
-    void setCaptureSize(quint64 size);
     void refreshDevicesDone(void);
 
     QMessageBox::StandardButton shouldReduceRate(
@@ -189,11 +186,6 @@ namespace SigDigger {
     // Mediated setters
     void setAnalyzerParams(Suscan::AnalyzerParams const &params);
     void setStatusMessage(QString const &);
-    void setRecordState(bool state);
-    void setAudioRecordState(bool);
-    void setAudioRecordSize(quint64 size);
-    void setAudioRecordIORate(qreal rate);
-    void setIORate(qreal rate);
     void saveUIConfig(void);
     void setProfile(Suscan::Source::Config const &config, bool restart = false);
     void setPanSpectrumRunning(bool state);
@@ -223,17 +215,6 @@ namespace SigDigger {
     void channelBandwidthChanged(qreal bw);
     void seek(struct timeval tv);
 
-    void toggleRecord(void);
-    void throttleConfigChanged(void);
-    void gainChanged(QString name, float val);
-    void toggleIQReverse(void);
-    void toggleDCRemove(void);
-    void toggleAGCEnabled(void);
-    void antennaChanged(QString);
-    void bandwidthChanged(void);
-    void ppmChanged(void);
-
-    void saveStateChanged(void);
     void requestOpenInspector(void);
     void requestOpenRawInspector(void);
     void inspectorClosed(Suscan::Handle handle);
@@ -303,17 +284,6 @@ namespace SigDigger {
     void onRangeChanged(float, float);
     void onZoomChanged(float);
     void onNewBandPlan(QString);
-
-    // Source panel
-    void onToggleRecord(void);
-    void onThrottleConfigChanged(void);
-    void onGainChanged(QString name, float val);
-    void onToggleDCRemove(void);
-    void onToggleIQReverse(void);
-    void onToggleAGCEnabled(void);
-    void onAntennaChanged(QString name);
-    void onBandwidthChanged(void);
-    void onPPMChanged(void);
 
     // Fft Panel
     void onPaletteChanged(void);

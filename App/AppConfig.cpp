@@ -18,7 +18,6 @@
 //
 
 #include "AppConfig.h"
-#include "SourcePanel.h"
 #include "FftPanel.h"
 #include "InspectorPanel.h"
 #include "PanoramicDialog.h"
@@ -32,7 +31,6 @@ AppConfig::AppConfig(AppUI *ui)
   guiConfig{},
   enabledBandPlans{}
 {
-  this->sourceConfig      = ui->sourcePanel->getConfig();
   this->fftConfig         = ui->fftPanel->getConfig();
   this->inspectorConfig   = ui->inspectorPanel->getConfig();
   this->panSpectrumConfig = ui->panoramicDialog->getConfig();
@@ -63,7 +61,6 @@ AppConfig::serialize(void)
   obj.setField("colors", this->colors.serialize());
   obj.setField("guiConfig", this->guiConfig.serialize());
   obj.setField("tleSourceConfig", this->tleSourceConfig.serialize());
-  obj.setField("sourcePanel", this->sourceConfig->serialize());
   obj.setField("fftPanel", this->fftConfig->serialize());
   obj.setField("inspectorPanel", this->inspectorConfig->serialize());
   obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
@@ -100,7 +97,7 @@ AppConfig::loadDefaults(void)
 }
 
 #define TRYSILENT(x) \
-  try { x; } catch (Suscan::Exception const &e) { printf ("Error: %s\n", e.what()); }
+  try { x; } catch (Suscan::Exception const &e) { }
 void
 AppConfig::deserialize(Suscan::Object const &conf)
 {
@@ -111,7 +108,6 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->colors.deserialize(conf.getField("colors")));
     TRYSILENT(this->guiConfig.deserialize(conf.getField("guiConfig")));
     TRYSILENT(this->tleSourceConfig.deserialize(conf.getField("tleSourceConfig")));
-    TRYSILENT(this->sourceConfig->deserialize(conf.getField("sourcePanel")));
     TRYSILENT(this->fftConfig->deserialize(conf.getField("fftPanel")));
     TRYSILENT(this->inspectorConfig->deserialize(conf.getField("inspectorPanel")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));

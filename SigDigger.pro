@@ -85,7 +85,6 @@ SOURCES += \
     Components/QuickConnectDialog.cpp \
     Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
-    Components/SourcePanel.cpp \
     Components/TimeWindow.cpp \
     Default/Audio/AudioProcessor.cpp \
     Default/Audio/AudioWidget.cpp \
@@ -156,7 +155,6 @@ SOURCES += \
     UIMediator/FftMediator.cpp \
     UIMediator/InspectorMediator.cpp \
     UIMediator/PanoramicDialogMediator.cpp \
-    UIMediator/SourceMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
     UIMediator/TimeSliderMediator.cpp \
     UIMediator/UIMediator.cpp \
@@ -282,7 +280,6 @@ HEADERS += \
     include/PersistentWidget.h \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
-    include/SourcePanel.h \
     include/TLESourceConfig.h \
     include/TLESourceTab.h \
     include/TVProcessorWorker.h \

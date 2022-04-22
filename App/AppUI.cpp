@@ -19,7 +19,6 @@
 
 
 #include "AboutDialog.h"
-#include "SourcePanel.h"
 #include "InspectorPanel.h"
 #include "FftPanel.h"
 #include "MainSpectrum.h"
@@ -73,7 +72,6 @@ AppUI::AppUI(QMainWindow *owner)
 #endif // __APPLE__
   
   this->spectrum = new MainSpectrum(owner);
-  this->sourcePanel = new SourcePanel(nullptr);
   this->inspectorPanel = new InspectorPanel(nullptr);
   this->fftPanel = new FftPanel(nullptr);
   this->quickConnectDialog = new QuickConnectDialog(owner);
@@ -94,7 +92,6 @@ AppUI::postLoadInit(QMainWindow *owner)
 
   this->configDialog = new ConfigDialog(owner);
   this->fftPanel->refreshPalettes();
-  this->sourcePanel->deserializeAutoGains();
   this->spectrum->deserializeFATs();
   this->inspectorPanel->postLoadInit();
 

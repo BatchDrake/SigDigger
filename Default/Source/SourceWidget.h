@@ -106,6 +106,7 @@ namespace SigDigger{
     bool tryApplyGains(Suscan::AnalyzerSourceInfo const &info);
     void selectAutoGain(unsigned int);
     bool selectAutoGain(std::string const &);
+    void deserializeAutoGains(void);
     void refreshAutoGains(Suscan::Source::Config &config);
     void refreshCurrentAutoGain(std::string const &);
     void applyCurrentAutogain();

@@ -19,7 +19,6 @@
 
 #include <QApplication>
 #include <Suscan/Library.h>
-#include <fcntl.h>
 
 #include "Application.h"
 
@@ -27,7 +26,6 @@
 #include <SuWidgetsHelpers.h>
 
 #include "MainSpectrum.h"
-#include "SourcePanel.h"
 #include "Inspector.h"
 #include "InspectorPanel.h"
 
@@ -133,71 +131,6 @@ Application::getSaver(void) const
   return this->dataSaver.get();
 }
 
-SUPRIVATE SUBOOL
-onBaseBandData(
-    void *privdata,
-    suscan_analyzer_t *,
-    const SUCOMPLEX *samples,
-    SUSCOUNT length)
-{
-  Application *app = static_cast<Application *>(privdata);
-  FileDataSaver *saver;
-
-  if ((saver = app->getSaver()) != nullptr)
-    saver->write(samples, length);
-
-  return SU_TRUE;
-}
-
-void
-Application::uninstallDataSaver()
-{
-  this->dataSaver = nullptr;
-}
-
-void
-Application::connectDataSaver()
-{
-  this->connect(
-        this->dataSaver.get(),
-        SIGNAL(stopped()),
-        this,
-        SLOT(onSaveError()));
-
-  this->connect(
-        this->dataSaver.get(),
-        SIGNAL(swamped()),
-        this,
-        SLOT(onSaveSwamped()));
-
-  this->connect(
-        this->dataSaver.get(),
-        SIGNAL(dataRate(qreal)),
-        this,
-        SLOT(onSaveRate(qreal)));
-
-  this->connect(
-        this->dataSaver.get(),
-        SIGNAL(commit()),
-        this,
-        SLOT(onCommit()));
-}
-
-void
-Application::installDataSaver(int fd)
-{
-  if (this->dataSaver.get() == nullptr && this->analyzer.get() != nullptr) {
-    this->dataSaver = std::make_unique<FileDataSaver>(fd, this);
-    this->dataSaver->setSampleRate(
-          this->mediator->getProfile()->getDecimatedSampleRate());
-    if (!this->filterInstalled) {
-      this->analyzer->registerBaseBandFilter(onBaseBandData, this);
-      this->filterInstalled = true;
-    }
-    this->connectDataSaver();
-  }
-}
-
 void
 Application::connectUI(void)
 {
@@ -227,27 +160,9 @@ Application::connectUI(void)
 
   connect(
         this->mediator,
-        SIGNAL(toggleRecord(void)),
-        this,
-        SLOT(onToggleRecord(void)));
-
-  connect(
-        this->mediator,
-        SIGNAL(throttleConfigChanged(void)),
-        this,
-        SLOT(onThrottleConfigChanged(void)));
-
-  connect(
-        this->mediator,
         SIGNAL(seek(struct timeval)),
         this,
         SLOT(onSeek(struct timeval)));
-
-  connect(
-        this->mediator,
-        SIGNAL(gainChanged(QString, float)),
-        this,
-        SLOT(onGainChanged(QString, float)));
 
   connect(
         this->mediator,
@@ -268,40 +183,10 @@ Application::connectUI(void)
         SLOT(onCloseRawInspector(void)));
 
   connect(
-        this->mediator,
-        SIGNAL(toggleDCRemove(void)),
-        this,
-        SLOT(onToggleDCRemove(void)));
-
-  connect(
-        this->mediator,
-        SIGNAL(toggleIQReverse(void)),
-        this,
-        SLOT(onToggleIQReverse(void)));
-
-  connect(
-        this->mediator,
-        SIGNAL(toggleAGCEnabled(void)),
-        this,
-        SLOT(onToggleAGCEnabled(void)));
-
-  connect(
       this->mediator,
         SIGNAL(analyzerParamsChanged(void)),
         this,
         SLOT(onParamsChanged(void)));
-
-  connect(
-        this->mediator,
-        SIGNAL(bandwidthChanged(void)),
-        this,
-        SLOT(onBandwidthChanged(void)));
-
-  connect(
-        this->mediator,
-        SIGNAL(ppmChanged(void)),
-        this,
-        SLOT(onPPMChanged(void)));
 
   connect(
         this->mediator,
@@ -594,62 +479,10 @@ Application::startCapture(void)
 
       analyzer = std::make_unique<Suscan::Analyzer>(params, profile);
 
-      // Enable throttling, if requested
-      if (this->ui.sourcePanel->isThrottleEnabled()) {
-        try {
-          analyzer->setThrottle(this->ui.sourcePanel->getThrottleRate());
-        } catch (Suscan::Exception &) {
-          (void)  QMessageBox::critical(
-                this,
-                "SigDigger error",
-                "Source does not allow adjusting the current throttle config",
-                QMessageBox::Ok);
-        }
-      }
-
-      try {
-        analyzer->setDCRemove(this->ui.sourcePanel->getDCremove());
-      } catch (Suscan::Exception &) {
-        (void)  QMessageBox::critical(
-              this,
-              "SigDigger error",
-              "Source does not allow toggling DC removal",
-              QMessageBox::Ok);
-      }
-
-      try {
-        analyzer->setIQReverse(this->ui.sourcePanel->getIQReverse());
-      } catch (Suscan::Exception &) {
-        (void)  QMessageBox::critical(
-              this,
-              "SigDigger error",
-              "Source does not allow toggling IQ reverse",
-              QMessageBox::Ok);
-      }
-
-      if (this->ui.sourcePanel->getAGCEnabled()) {
-        try {
-          analyzer->setAGC(true);
-        } catch (Suscan::Exception &) {
-          (void)  QMessageBox::critical(
-                this,
-                "SigDigger error",
-                "Source does not allow toggling the AGC",
-                QMessageBox::Ok);
-        }
-      }
-
       this->sourceInfoReceived = false;
 
       // All set, move to application
       this->analyzer = std::move(analyzer);
-
-      // If there is a capture file configured, install data saver
-      if (this->ui.sourcePanel->getRecordState()) {
-        int fd = this->openCaptureFile();
-        if (fd != -1)
-          this->installDataSaver(fd);
-      }
 
       this->connectAnalyzer();
 
@@ -672,8 +505,6 @@ Application::orderedHalt(void)
 {
   this->mediator->setState(UIMediator::HALTING);
   this->analyzer = nullptr;
-  this->uninstallDataSaver();
-  this->mediator->setRecordState(false);
   this->mediator->detachAllInspectors();
   this->rawInspectorOpened = false;
   this->mediator->setState(UIMediator::HALTED);
@@ -885,7 +716,6 @@ Application::~Application()
     delete this->scanner;
 
   this->analyzer = nullptr;
-  this->uninstallDataSaver();
 
   this->deviceDetectThread->quit();
   this->deviceDetectThread->deleteLater();
@@ -954,54 +784,6 @@ Application::onFrequencyChanged(qint64 freq, qint64 lnb)
 }
 
 void
-Application::onToggleIQReverse(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    try {
-      this->analyzer->setIQReverse(this->ui.sourcePanel->getIQReverse());
-    } catch (Suscan::Exception &) {
-      (void)  QMessageBox::critical(
-            this,
-            "SigDigger error",
-            "Source does not allow toggling IQ reversal",
-            QMessageBox::Ok);
-    }
-  }
-}
-
-void
-Application::onToggleDCRemove(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    try {
-      this->analyzer->setDCRemove(this->ui.sourcePanel->getDCremove());
-    } catch (Suscan::Exception &) {
-      (void)  QMessageBox::critical(
-            this,
-            "SigDigger error",
-            "Source does not allow toggling DC removal",
-            QMessageBox::Ok);
-    }
-  }
-}
-
-void
-Application::onToggleAGCEnabled(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    try {
-      this->analyzer->setAGC(this->ui.sourcePanel->getAGCEnabled());
-    } catch (Suscan::Exception &) {
-      (void)  QMessageBox::critical(
-            this,
-            "SigDigger error",
-            "Source does not allow toggling the AGC",
-            QMessageBox::Ok);
-    }
-  }
-}
-
-void
 Application::onParamsChanged(void)
 {
   if (this->mediator->getState() == UIMediator::RUNNING)
@@ -1062,82 +844,12 @@ Application::onCloseRawInspector(void)
 }
 
 void
-Application::onThrottleConfigChanged(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    if (this->ui.sourcePanel->isThrottleEnabled()) {
-      // TODO: Modify dataSaver
-      this->analyzer->setThrottle(this->ui.sourcePanel->getThrottleRate());
-    } else {
-      this->analyzer->setThrottle(0);
-    }
-  }
-}
-
-void
 Application::hotApplyProfile(Suscan::Source::Config const *profile)
 {
   this->analyzer->setFrequency(profile->getFreq(), profile->getLnbFreq());
   this->analyzer->setBandwidth(profile->getBandwidth());
   this->analyzer->setDCRemove(profile->getDCRemove());
   this->analyzer->setAntenna(profile->getAntenna());
-}
-
-//
-// sigdigger_XXXXXXXX_XXXXXXZ_XXXXXXXXXX_XXXXXXXXXXXXXXXXXXXX_float32_iq.raw
-//
-int
-Application::openCaptureFile(void)
-{
-  int fd = -1;
-  char baseName[80];
-  char datetime[17];
-  time_t unixtime;
-  struct tm tm;
-
-  unixtime = time(NULL);
-  gmtime_r(&unixtime, &tm);
-  strftime(datetime, sizeof(datetime), "%Y%m%d_%H%M%SZ", &tm);
-
-  snprintf(
-        baseName,
-        sizeof(baseName),
-        "sigdigger_%s_%d_%.0lf_float32_iq.raw",
-        datetime,
-        this->mediator->getProfile()->getDecimatedSampleRate(),
-        this->mediator->getProfile()->getFreq());
-
-  std::string fullPath =
-      this->ui.sourcePanel->getRecordSavePath() + "/" + baseName;
-
-  if ((fd = creat(fullPath.c_str(), 0600)) == -1) {
-    QMessageBox::warning(
-              this,
-              "SigDigger error",
-              "Failed to open capture file for writing: " +
-              QString(strerror(errno)),
-              QMessageBox::Ok);
-  }
-
-  return fd;
-}
-
-void
-Application::onToggleRecord(void)
-{
-  if (this->ui.sourcePanel->getRecordState()) {
-    if (this->mediator->getState() == UIMediator::RUNNING) {
-      int fd = this->openCaptureFile();
-      if (fd != -1)
-        this->installDataSaver(fd);
-
-      this->ui.sourcePanel->setRecordState(fd != -1);
-    }
-  } else {
-    this->uninstallDataSaver();
-    this->mediator->setCaptureSize(0);
-    this->ui.sourcePanel->setRecordState(false);
-  }
 }
 
 void
@@ -1154,50 +866,6 @@ Application::onSeek(struct timeval tv)
             QMessageBox::Ok);
     }
   }
-}
-
-void
-Application::onSaveError(void)
-{
-  if (this->dataSaver.get() != nullptr) {
-    this->uninstallDataSaver();
-
-    QMessageBox::warning(
-              this,
-              "SigDigger error",
-              "Capture file write error. Disk full?",
-              QMessageBox::Ok);
-
-    this->mediator->setRecordState(false);
-  }
-}
-
-void
-Application::onSaveSwamped(void)
-{
-  if (this->dataSaver.get() != nullptr) {
-    this->uninstallDataSaver();
-
-    QMessageBox::warning(
-          this,
-          "SigDigger error",
-          "Capture thread swamped. Maybe your storage device is too slow",
-          QMessageBox::Ok);
-
-    this->mediator->setRecordState(false);
-  }
-}
-
-void
-Application::onSaveRate(qreal rate)
-{
-  this->mediator->setIORate(rate);
-}
-
-void
-Application::onCommit(void)
-{
-  this->mediator->setCaptureSize(this->dataSaver->getSize());
 }
 
 void

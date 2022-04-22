@@ -767,6 +767,19 @@ SourceWidget::selectAutoGain(std::string const &name)
   return true;
 }
 
+void
+SourceWidget::deserializeAutoGains(void)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  for (auto i = sus->getFirstAutoGain();
+       i != sus->getLastAutoGain();
+       i++) {
+    AutoGain ag(*i);
+    this->autoGains[ag.getDriver()].push_back(ag);
+  }
+}
+
 // Configuration methods
 Suscan::Serializable *
 SourceWidget::allocConfig()
@@ -790,6 +803,8 @@ SourceWidget::applyConfig()
   this->setProperty("collapsed", this->panelConfig->collapsed);
 
   this->saverUI->applyConfig();
+
+  this->deserializeAutoGains();
 }
 
 bool
@@ -847,6 +862,7 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
     if (m_analyzer == nullptr) {
       this->haveSourceInfo = false;
       this->sourceInfo = Suscan::AnalyzerSourceInfo();
+      this->setProcessRate(0);
       this->refreshUi();
     } else {
       // Switched to running! Then, do the following:
@@ -867,6 +883,11 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
 
       if (this->panelConfig->gainPresetEnabled)
         this->applyCurrentAutogain();
+
+      this->onThrottleChanged();
+      this->onToggleDCRemove();
+      this->onToggleIQReverse();
+      this->onToggleAGCEnabled();
 
       this->onRecordStartStop();
     }

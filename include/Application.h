@@ -86,14 +86,10 @@ namespace SigDigger {
     QString getLogText(void);
     void connectUI(void);
     void connectAnalyzer(void);
-    void connectDataSaver(void);
     void connectDeviceDetect(void);
     void connectScanner(void);
 
     void hotApplyProfile(Suscan::Source::Config const *);
-    int  openCaptureFile(void);
-    void installDataSaver(int fd);
-    void uninstallDataSaver(void);
     void orderedHalt(void);
 
   public:
@@ -131,12 +127,7 @@ namespace SigDigger {
     void onOpenInspector(void);
     void onOpenRawInspector(void);
     void onCloseRawInspector(void);
-    void onThrottleConfigChanged(void);
     void onSeek(struct timeval);
-    void onToggleRecord(void);
-    void onToggleDCRemove(void);
-    void onToggleIQReverse(void);
-    void onToggleAGCEnabled(void);
     void onParamsChanged(void);
     void onAntennaChanged(QString antenna);
     void onBandwidthChanged(void);
@@ -158,12 +149,6 @@ namespace SigDigger {
     void onSourceInfoMessage(const Suscan::SourceInfoMessage &);
     void onStatusMessage(const Suscan::StatusMessage &);
     void onAnalyzerParams(const Suscan::AnalyzerParams &);
-
-    // DataSaver slots
-    void onSaveError(void);
-    void onSaveSwamped(void);
-    void onSaveRate(qreal rate);
-    void onCommit(void);
 
     // Device detect slots
     void onDetectFinished(void);

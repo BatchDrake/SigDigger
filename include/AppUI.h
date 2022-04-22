@@ -31,7 +31,6 @@ namespace SigDigger {
   class DeviceDialog;
   class PanoramicDialog;
   class MainSpectrum;
-  class SourcePanel;
   class InspectorPanel;
   class FftPanel;
   class AboutDialog;
@@ -50,7 +49,6 @@ namespace SigDigger {
     DeviceDialog *deviceDialog = nullptr;
     PanoramicDialog *panoramicDialog = nullptr;
     MainSpectrum *spectrum = nullptr;
-    SourcePanel *sourcePanel = nullptr;
     InspectorPanel *inspectorPanel = nullptr;
     FftPanel *fftPanel = nullptr;
     AboutDialog *aboutDialog = nullptr;

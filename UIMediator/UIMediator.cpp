@@ -40,7 +40,6 @@
 #include "MainSpectrum.h"
 #include "FftPanel.h"
 #include "InspectorPanel.h"
-#include "SourcePanel.h"
 #include "BookmarkManagerDialog.h"
 #include "BackgroundTasksDialog.h"
 #include "AddBookmarkDialog.h"
@@ -166,7 +165,6 @@ UIMediator::refreshUI(void)
     case HALTED:
       stateString = QString("Idle");
       this->ui->spectrum->setCaptureMode(MainSpectrum::UNAVAILABLE);
-      this->setProcessRate(0);
       this->ui->main->actionRun->setEnabled(true);
       this->ui->main->actionRun->setChecked(false);
       this->ui->main->actionStart_capture->setEnabled(true);
@@ -218,11 +216,6 @@ UIMediator::refreshUI(void)
         this->m_state == RUNNING
         ? InspectorPanel::State::ATTACHED
         : InspectorPanel::State::DETACHED);
-
-  this->ui->sourcePanel->setState(
-        this->m_state == RUNNING
-        ? SourcePanel::State::ATTACHED
-        : SourcePanel::State::DETACHED);
 
   if (config->isRemote()) {
     QString user = QString::fromStdString(config->getParam("user"));
@@ -441,7 +434,6 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->addToolWidgets();
 
   // TODO: Turn into default plugin tool widgets
-  this->ui->spectrum->addToolWidget(this->ui->sourcePanel, "Signal source");
   this->ui->spectrum->addToolWidget(this->ui->inspectorPanel, "Inspection");
   this->ui->spectrum->addToolWidget(this->ui->fftPanel, "FFT");
 
@@ -458,7 +450,6 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   this->connectMainWindow();
   this->connectSpectrum();
-  this->connectSourcePanel();
   this->connectFftPanel();
 
   this->connectInspectorPanel();
@@ -475,12 +466,6 @@ UIMediator::setBandwidth(unsigned int bw)
 }
 
 void
-UIMediator::setProcessRate(unsigned int rate)
-{
-  this->ui->sourcePanel->setProcessRate(rate);
-}
-
-void
 UIMediator::setSampleRate(unsigned int rate)
 {
   if (this->rate != rate) {
@@ -489,7 +474,6 @@ UIMediator::setSampleRate(unsigned int rate)
     this->ui->fftPanel->setSampleRate(rate);
     this->ui->inspectorPanel->setBandwidthLimits(0, rate);
     this->ui->spectrum->setSampleRate(rate);
-    this->ui->sourcePanel->setSampleRate(rate);
     this->setBandwidth(bw);
 
     this->rate = rate;
@@ -554,7 +538,6 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   }
 
   this->ui->inspectorPanel->applySourceInfo(info);
-  this->ui->sourcePanel->applySourceInfo(info);
   this->ui->fftPanel->applySourceInfo(info);
 }
 
@@ -656,12 +639,6 @@ UIMediator::notifyStartupErrors(void)
 }
 
 void
-UIMediator::setCaptureSize(quint64 size)
-{
-  this->ui->sourcePanel->setCaptureSize(size);
-}
-
-void
 UIMediator::setAnalyzerParams(Suscan::AnalyzerParams const &params)
 {
   bool prev;
@@ -685,24 +662,11 @@ UIMediator::setStatusMessage(QString const &message)
 }
 
 void
-UIMediator::setRecordState(bool state)
-{
-  this->ui->sourcePanel->setRecordState(state);
-}
-
-void
-UIMediator::setIORate(qreal rate)
-{
-  this->ui->sourcePanel->setIORate(rate);
-}
-
-void
 UIMediator::refreshProfile(bool updateFreqs)
 {
   qint64 min = 0, max = 0;
   bool isRealTime = false;
   struct timeval tv, start, end;
-  this->ui->sourcePanel->setProfile(&this->appConfig->profile);
 
   std::string user, pass, interface;
 
@@ -889,7 +853,6 @@ UIMediator::applyConfig(void)
       }
     }
   // The rest of them are automatically deserialized
-  this->ui->sourcePanel->applyConfig();
   this->ui->fftPanel->applyConfig();
   this->ui->inspectorPanel->applyConfig();
   this->ui->panoramicDialog->applyConfig();
@@ -916,7 +879,6 @@ UIMediator::applyConfig(void)
   this->onPaletteChanged();
   this->onRangesChanged();
   this->onAveragerChanged();
-  this->onThrottleConfigChanged();
   this->onTimeSpanChanged();
   this->onTimeStampsChanged();
   this->onBookmarksButtonChanged();

@@ -113,7 +113,6 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
   this->setSampleRate(msg.getSampleRate());
 
   if (!expired) {
-    this->setProcessRate(msg.getMeasuredSampleRate());
     this->averager.feed(msg);
     this->ui->spectrum->feed(
           this->averager.get(),
