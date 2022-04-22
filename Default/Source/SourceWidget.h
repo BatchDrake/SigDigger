@@ -30,6 +30,13 @@ namespace Ui {
 
 namespace SigDigger{
   class SourceWidgetFactory;
+  class FileDataSaver;
+
+  SUBOOL onBaseBandData(
+      void *privdata,
+      suscan_analyzer_t *,
+      const SUCOMPLEX *samples,
+      SUSCOUNT length);
 
   struct GainPresetSetting : public Suscan::Serializable {
     std::string driver;
@@ -38,7 +45,7 @@ namespace SigDigger{
 
     // Overriden methods
     void deserialize(Suscan::Object const &conf) override;
-    Suscan::Object &&serialize(void) override;
+    Suscan::Object &&serialize() override;
   };
 
   class SourceWidgetConfig : public Suscan::Serializable {
@@ -56,7 +63,7 @@ namespace SigDigger{
 
       // Overriden methods
       void deserialize(Suscan::Object const &conf) override;
-      Suscan::Object &&serialize(void) override;
+      Suscan::Object &&serialize() override;
   };
 
   class SourceWidget : public ToolWidget
@@ -88,26 +95,30 @@ namespace SigDigger{
     std::vector<AutoGain> *currAutoGainSet = nullptr;
     AutoGain *currentAutoGain = nullptr;
 
+    // Data saving state
+    bool m_filterInstalled = false;
+    FileDataSaver *m_dataSaver = nullptr;
+
     // Private methods
     DeviceGain *lookupGain(std::string const &name);
-    void clearGains(void);
+    void clearGains();
     void refreshGains(Suscan::Source::Config &config);
     bool tryApplyGains(Suscan::AnalyzerSourceInfo const &info);
     void selectAutoGain(unsigned int);
     bool selectAutoGain(std::string const &);
     void refreshAutoGains(Suscan::Source::Config &config);
     void refreshCurrentAutoGain(std::string const &);
-    void applyCurrentAutogain(void);
+    void applyCurrentAutogain();
     void selectAntenna(std::string const &name);
     void setBandwidth(float bw);
     void setPPM(float ppm);
     void populateAntennaCombo(Suscan::AnalyzerSourceInfo const &info);
-    void connectAll(void);
-    void refreshUi(void);
+    void connectAll();
+    void refreshUi();
 
     void setThrottleable(bool val);
     void setSampleRate(unsigned int rate);
-    unsigned int getEffectiveRate(void) const;
+    unsigned int getEffectiveRate() const;
     void setProcessRate(unsigned int rate);
     void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
     void setGain(std::string const &name, SUFLOAT val);
@@ -122,6 +133,12 @@ namespace SigDigger{
 
     bool setBlockingSignals(bool);
 
+    // Data saver
+    int openCaptureFile();
+    void installDataSaver(int fd);
+    void connectDataSaver();
+    void uninstallDataSaver();
+
   public:
     SourceWidget(SourceWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
     ~SourceWidget() override;
@@ -135,21 +152,34 @@ namespace SigDigger{
     void setState(int, Suscan::Analyzer *) override;
     void setProfile(Suscan::Source::Config &) override;
 
+    friend SUBOOL
+    onBaseBandData(
+        void *privdata,
+        suscan_analyzer_t *,
+        const SUCOMPLEX *samples,
+        SUSCOUNT length);
+
   public slots:
     void onSourceInfoMessage(Suscan::SourceInfoMessage const &msg);
     void onPSDMessage(Suscan::PSDMessage const &msg);
     void onGainChanged(QString name, float val);
     void onAntennaChanged(int);
-    void onRecordStartStop(void);
-    void onSelectAutoGain(void);
-    void onToggleAutoGain(void);
-    void onChangeAutoGain(void);
-    void onThrottleChanged(void);
-    void onToggleDCRemove(void);
-    void onToggleIQReverse(void);
-    void onToggleAGCEnabled(void);
-    void onBandwidthChanged(void);
-    void onPPMChanged(void);
+    void onRecordStartStop();
+    void onSelectAutoGain();
+    void onToggleAutoGain();
+    void onChangeAutoGain();
+    void onThrottleChanged();
+    void onToggleDCRemove();
+    void onToggleIQReverse();
+    void onToggleAGCEnabled();
+    void onBandwidthChanged();
+    void onPPMChanged();
+
+    // Saver UI
+    void onSaveError(void);
+    void onSaveSwamped(void);
+    void onSaveRate(qreal rate);
+    void onCommit(void);
   };
 }
 

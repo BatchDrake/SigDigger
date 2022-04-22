@@ -23,6 +23,8 @@
 #include "SigDiggerHelpers.h"
 #include "ui_SourcePanel.h"
 #include <QMessageBox>
+#include <FileDataSaver.h>
+#include <fcntl.h>
 
 using namespace SigDigger;
 
@@ -836,6 +838,10 @@ void
 SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
 {
   if (m_analyzer != analyzer) {
+    // Uninstall any datasaver
+    this->uninstallDataSaver();
+    m_filterInstalled = false; // The filter is not installed anymore.
+
     m_analyzer = analyzer;
 
     if (m_analyzer == nullptr) {
@@ -846,6 +852,7 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
       // Switched to running! Then, do the following:
       // 1. Connect source_info_message
       // 2. Request a gain adjustmenet to fit the saved preset, if applicable
+      // 3. If recording is enabled, go ahead.
 
       connect(
             analyzer,
@@ -860,6 +867,8 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
 
       if (this->panelConfig->gainPresetEnabled)
         this->applyCurrentAutogain();
+
+      this->onRecordStartStop();
     }
   }
 
@@ -919,6 +928,119 @@ SourceWidget::setProfile(Suscan::Source::Config &profile)
   this->setBlockingSignals(oldBlocking);
 }
 
+//////////////////////////////// Data saving ///////////////////////////////////
+int
+SourceWidget::openCaptureFile(void)
+{
+  int fd = -1;
+  char baseName[80];
+  char datetime[17];
+  time_t unixtime;
+  struct tm tm;
+
+  if (this->profile == nullptr)
+    return -1;
+
+  unixtime = time(nullptr);
+  gmtime_r(&unixtime, &tm);
+  strftime(datetime, sizeof(datetime), "%Y%m%d_%H%M%SZ", &tm);
+
+  snprintf(
+        baseName,
+        sizeof(baseName),
+        "sigdigger_%s_%d_%.0lf_float32_iq.raw",
+        datetime,
+        this->profile->getDecimatedSampleRate(),
+        this->profile->getFreq());
+
+  std::string fullPath =
+      this->saverUI->getRecordSavePath() + "/" + baseName;
+
+  if ((fd = creat(fullPath.c_str(), 0600)) == -1) {
+    QMessageBox::warning(
+              this,
+              "SigDigger error",
+              "Failed to open capture file for writing: " +
+              QString(strerror(errno)),
+              QMessageBox::Ok);
+  }
+
+  return fd;
+}
+
+void
+SourceWidget::uninstallDataSaver()
+{
+  if (m_dataSaver != nullptr)
+    delete m_dataSaver;
+
+  m_dataSaver = nullptr;
+}
+
+void
+SourceWidget::connectDataSaver()
+{
+  this->connect(
+        m_dataSaver,
+        SIGNAL(stopped()),
+        this,
+        SLOT(onSaveError()));
+
+  this->connect(
+        m_dataSaver,
+        SIGNAL(swamped()),
+        this,
+        SLOT(onSaveSwamped()));
+
+  this->connect(
+        m_dataSaver,
+        SIGNAL(dataRate(qreal)),
+        this,
+        SLOT(onSaveRate(qreal)));
+
+  this->connect(
+        m_dataSaver,
+        SIGNAL(commit()),
+        this,
+        SLOT(onCommit()));
+}
+
+// I wish this could be static
+SUBOOL
+SigDigger::onBaseBandData(
+    void *privdata,
+    suscan_analyzer_t *,
+    const SUCOMPLEX *samples,
+    SUSCOUNT length)
+{
+  SourceWidget *widget = static_cast<SourceWidget *>(privdata);
+  FileDataSaver *saver;
+
+  if ((saver = widget->m_dataSaver) != nullptr)
+    saver->write(samples, length);
+
+  return SU_TRUE;
+}
+
+void
+SourceWidget::installDataSaver(int fd)
+{
+  if (m_dataSaver == nullptr) {
+    if (this->profile != nullptr && m_analyzer != nullptr) {
+      m_dataSaver = new FileDataSaver(fd, this);
+      m_dataSaver->setSampleRate(this->profile->getDecimatedSampleRate());
+
+      if (!m_filterInstalled) {
+        m_analyzer->registerBaseBandFilter(onBaseBandData, this);
+        m_filterInstalled = true;
+      }
+
+      this->connectDataSaver();
+    }
+  }
+}
+
+
 ////////////////////////////////////// Slots ///////////////////////////////////
 void
 SourceWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
@@ -948,7 +1070,21 @@ SourceWidget::onGainChanged(QString name, float val)
 void
 SourceWidget::onRecordStartStop(void)
 {
-  // TODO: Toggle recording
+  if (m_analyzer != nullptr) {
+    bool recordState =  this->saverUI->isEnabled()
+        && this->saverUI->getRecordState();
+
+    if (recordState) {
+      int fd = this->openCaptureFile();
+      if (fd != -1)
+        this->installDataSaver(fd);
+      this->setRecordState(fd != -1);
+    } else {
+      this->uninstallDataSaver();
+      this->setCaptureSize(0);
+      this->setRecordState(false);
+    }
+  }
 }
 
 void
@@ -1076,4 +1212,51 @@ SourceWidget::onAntennaChanged(int)
     if (m_analyzer != nullptr)
       m_analyzer->setAntenna(antenna);
   }
+}
+
+//////////////////////////// Datasaver slots ///////////////////////////////////
+void
+SourceWidget::onSaveError(void)
+{
+  if (m_dataSaver != nullptr) {
+    this->uninstallDataSaver();
+
+    QMessageBox::warning(
+              this,
+              "SigDigger error",
+              "Capture file write error. Disk full?",
+              QMessageBox::Ok);
+
+    this->setRecordState(false);
+  }
+}
+
+void
+SourceWidget::onSaveSwamped(void)
+{
+  if (m_dataSaver != nullptr) {
+    this->uninstallDataSaver();
+
+    QMessageBox::warning(
+          this,
+          "SigDigger error",
+          "Capture thread swamped. Maybe the selected storage device is too slow",
+          QMessageBox::Ok);
+
+    this->setRecordState(false);
+  }
+}
+
+void
+SourceWidget::onSaveRate(qreal rate)
+{
+  if (m_dataSaver != nullptr)
+    this->setIORate(rate);
+}
+
+void
+SourceWidget::onCommit(void)
+{
+  if (m_dataSaver != nullptr)
+    this->setCaptureSize(m_dataSaver->getSize());
 }
