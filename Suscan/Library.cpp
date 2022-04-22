@@ -1166,11 +1166,9 @@ Singleton::getNetworkProfileFrom(QString const &name) const
 bool
 Singleton::registerToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
 {
-  if (this->toolWidgetFactories.contains(factory)) {
-    FeatureFactory *ref = static_cast<FeatureFactory *>(factory);
-    SU_ERROR("Attempting to register factory %s twice\n", ref->name());
-    return false;
-  }
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->toolWidgetFactories.contains(factory))
+    return true;
 
   this->toolWidgetFactories.push_back(factory);
 

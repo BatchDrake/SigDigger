@@ -25,14 +25,20 @@
 
 using namespace SigDigger;
 
-static AudioWidgetFactory  *g_audioWidgetFactory;
-static SourceWidgetFactory *g_sourceWidgetFactory;
-
 bool
 SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
 {
-  g_audioWidgetFactory  = new AudioWidgetFactory(plugin);
-  g_sourceWidgetFactory = new SourceWidgetFactory(plugin);
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  // Please note: it is not strictly necessary to call registerToolWidgetFactory
+  // to register these tool factories. registerGlobally will traverse all
+  // the created factories and register them accordingly. Calling register here
+  // ensures that these factories are registered in order prior to any bulk
+  // registration triggered by Suscan::Plugin. This is the order in which
+  // they will show up in the GUI
+
+  sus->registerToolWidgetFactory(new AudioWidgetFactory(plugin));
+  sus->registerToolWidgetFactory(new SourceWidgetFactory(plugin));
 
   return true;
 }
