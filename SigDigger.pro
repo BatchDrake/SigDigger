@@ -318,6 +318,7 @@ HEADERS += \
 
 FORMS += \
     Default/Audio/AudioWidget.ui \
+    Default/FFT/FFTWidget.ui \
     Default/Source/SourceWidget.ui \
     ui/AboutDialog.ui \
     ui/AddTLESourceDialog.ui \
@@ -332,7 +333,6 @@ FORMS += \
     ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
     ui/FACTab.ui \
-    ui/FftPanel.ui \
     ui/FrequencyCorrectionDialog.ui \
     ui/GainControl.ui \
     ui/GainSlider.ui \

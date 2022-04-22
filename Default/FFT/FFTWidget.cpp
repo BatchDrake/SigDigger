@@ -25,7 +25,7 @@
 #include <SuWidgetsHelpers.h>
 #include <UIMediator.h>
 #include <MainSpectrum.h>
-#include "ui_FftPanel.h"
+#include "ui_FFTWidget.h"
 
 using namespace SigDigger;
 
