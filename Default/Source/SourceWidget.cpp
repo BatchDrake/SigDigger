@@ -341,10 +341,16 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
     this->haveSourceInfo = true;
   }
 
+  this->setSampleRate(SCAST(unsigned, info.getSampleRate()));
+
+  if (info.getMeasuredSampleRate() > 0)
+    this->setProcessRate(SCAST(unsigned, info.getMeasuredSampleRate()));
+
   this->setDCRemove(info.getDCRemove());
   this->setIQReverse(info.getIQReverse());
   this->setAGCEnabled(info.getAGC());
   this->setBandwidth(info.getBandwidth());
+  this->setPPM(info.getPPM());
 
   throttleEnabled = !sufeq(
         info.getEffectiveSampleRate(),
@@ -922,6 +928,7 @@ SourceWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
 void
 SourceWidget::onPSDMessage(Suscan::PSDMessage const &msg)
 {
+  this->setSampleRate(msg.getSampleRate());
   this->setProcessRate(msg.getMeasuredSampleRate());
 }
 

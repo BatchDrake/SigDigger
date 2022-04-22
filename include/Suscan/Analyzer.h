@@ -195,6 +195,12 @@ namespace Suscan {
       return this->c_info->agc != SU_FALSE;
     }
 
+    inline float
+    getPPM(void) const
+    {
+      return this->c_info->ppm;
+    }
+
     inline bool
     isSeekable(void) const
     {
