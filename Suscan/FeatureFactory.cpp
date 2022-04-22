@@ -40,7 +40,7 @@ FeatureObject::factoryName() const
 
 FeatureObject::~FeatureObject()
 {
-  this->m_factory->unregisterInstance(this);
+  m_factory->unregisterInstance(this);
 }
 
 ///////////////////////////// FeatureFactory //////////////////////////////////
@@ -51,7 +51,7 @@ FeatureFactory::FeatureFactory(Plugin *plugin)
   if (plugin == nullptr)
     plugin = Suscan::Plugin::getDefaultPlugin();
 
-  this->m_plugin = plugin;
+  m_plugin = plugin;
 
   plugin->registerFactory(this);
 }
@@ -59,27 +59,30 @@ FeatureFactory::FeatureFactory(Plugin *plugin)
 FeatureFactory::~FeatureFactory()
 {
   // Destruction of a FeatureFactory: notify the plugin about this removal
-  assert(this->m_plugin->unregisterFactory(this));
+  assert(m_plugin->unregisterFactory(this));
 }
 
 void
 FeatureFactory::registerInstance(FeatureObject *object)
 {
-  assert(this->m_plugin != nullptr);
+  assert(m_plugin != nullptr);
 
-  this->m_refSet.insert(object);
+  m_refSet.push_back(object);
 }
 
 void
 FeatureFactory::unregisterInstance(FeatureObject *object)
 {
-  assert(this->m_plugin != nullptr);
+  int index;
 
-  this->m_refSet.remove(object);
+  assert(m_plugin != nullptr);
+
+  if ((index = m_refSet.indexOf(object)) != -1)
+    m_refSet.removeAt(index);
 }
 
 bool
 FeatureFactory::canBeRemoved(void) const
 {
-  return this->m_refSet.empty();
+  return m_refSet.empty();
 }

@@ -23,11 +23,16 @@
 
 #include <Suscan/Library.h>
 
+using namespace SigDigger;
+
+static AudioWidgetFactory  *g_audioWidgetFactory;
+static SourceWidgetFactory *g_sourceWidgetFactory;
+
 bool
 SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
 {
-  new AudioWidgetFactory(plugin);
-  new SourceWidgetFactory(plugin);
+  g_audioWidgetFactory  = new AudioWidgetFactory(plugin);
+  g_sourceWidgetFactory = new SourceWidgetFactory(plugin);
 
   return true;
 }

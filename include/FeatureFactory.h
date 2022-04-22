@@ -19,7 +19,7 @@
 #ifndef SUSCAN_FEATUREFACTORY_H
 #define SUSCAN_FEATUREFACTORY_H
 
-#include <QSet>
+#include <QList>
 
 namespace Suscan {
   class FeatureFactory;
@@ -41,7 +41,7 @@ namespace Suscan {
   // and globally (whatever that means)
 
   class FeatureFactory {
-    QSet<FeatureObject *> m_refSet;
+    QList<FeatureObject *> m_refSet;
     Plugin *m_plugin = nullptr;
 
   protected:
