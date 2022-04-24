@@ -105,6 +105,7 @@ namespace SigDigger {
 
     // Refactored UI State
     State m_state = HALTED;
+    Suscan::Object              *m_compConfig = nullptr;
     Suscan::Analyzer            *m_analyzer = nullptr;
     QList<UIComponent *>         m_components;
     QList<TabWidget *>           m_tabWidgets;

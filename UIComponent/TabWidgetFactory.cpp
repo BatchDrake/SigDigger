@@ -29,33 +29,33 @@ TabWidget::TabWidget(
     TabWidgetFactory *factory, UIMediator *mediator, QWidget *parent) :
   QWidget(parent), UIComponent(factory, mediator)
 {
-  m_inspectorMenu = new QMenu(this);
-  m_renameInspectorTab = new QAction("&Rename...", this);
-  m_detachInspectorTab = new QAction("&Detach to a separate window", this);
-  m_closeInspectorTab = new QAction("&Close", this);
+  m_menu = new QMenu(this);
+  m_renameTab = new QAction("&Rename...", this);
+  m_floatTab = new QAction("&Detach to a separate window", this);
+  m_closeTab = new QAction("&Close", this);
 
-  m_inspectorMenu->addAction(m_renameInspectorTab);
-  m_inspectorMenu->addAction(m_detachInspectorTab);
-  m_inspectorMenu->addSeparator();
-  m_inspectorMenu->addAction(m_closeInspectorTab);
-
-  connect(
-        m_renameInspectorTab,
-        SIGNAL(triggered()),
-        this,
-        SLOT(onInspectorRename()));
+  m_menu->addAction(m_renameTab);
+  m_menu->addAction(m_floatTab);
+  m_menu->addSeparator();
+  m_menu->addAction(m_closeTab);
 
   connect(
-        m_closeInspectorTab,
+        m_renameTab,
         SIGNAL(triggered()),
         this,
-        SIGNAL(closeRequested()));
+        SLOT(onRename()));
 
   connect(
-        m_detachInspectorTab,
+        m_closeTab,
         SIGNAL(triggered()),
         this,
-        SIGNAL(detachRequested()));
+        SLOT(onPopupMenuClose()));
+
+  connect(
+        m_floatTab,
+        SIGNAL(triggered()),
+        this,
+        SLOT(onFloat()));
 }
 
 TabWidget::~TabWidget()
@@ -67,7 +67,7 @@ TabWidget::~TabWidget()
 void
 TabWidget::popupMenu()
 {
-  m_inspectorMenu->popup(QCursor::pos());
+  m_menu->popup(QCursor::pos());
 }
 
 void
@@ -102,7 +102,7 @@ TabWidget::onRename()
 }
 
 void
-TabWidget::onDetach()
+TabWidget::onFloat()
 {
   m_mediator->floatTabWidget(this);
 }

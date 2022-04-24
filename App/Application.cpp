@@ -720,6 +720,9 @@ Application::~Application()
   this->deviceDetectThread->quit();
   this->deviceDetectThread->deleteLater();
   this->deviceDetectWorker->deleteLater();
+
+  if (this->mediator != nullptr)
+    delete this->mediator;
 }
 
 /////////////////////////////// Overrides //////////////////////////////////////

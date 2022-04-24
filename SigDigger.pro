@@ -88,6 +88,8 @@ SOURCES += \
     Default/Audio/AudioProcessor.cpp \
     Default/Audio/AudioWidget.cpp \
     Default/Audio/AudioWidgetFactory.cpp \
+    Default/DefaultTab/DefaultTabWidget.cpp \
+    Default/DefaultTab/DefaultTabWidgetFactory.cpp \
     Default/FFT/FFTWidget.cpp \
     Default/FFT/FFTWidgetFactory.cpp \
     Default/Registration.cpp \
@@ -190,6 +192,8 @@ HEADERS += \
     Default/Audio/AudioProcessor.h \
     Default/Audio/AudioWidget.h \
     Default/Audio/AudioWidgetFactory.h \
+    Default/DefaultTab/DefaultTabWidget.h \
+    Default/DefaultTab/DefaultTabWidgetFactory.h \
     Default/FFT/FFTWidget.h \
     Default/FFT/FFTWidgetFactory.h \
     Default/Registration.h \
@@ -320,6 +324,7 @@ HEADERS += \
 
 FORMS += \
     Default/Audio/AudioWidget.ui \
+    Default/DefaultTab/DefaultTabWidget.ui \
     Default/FFT/FFTWidget.ui \
     Default/Source/SourceWidget.ui \
     ui/AboutDialog.ui \

@@ -36,7 +36,6 @@ namespace SigDigger {
   protected:
     class UIMediator *m_mediator = nullptr;
     UIComponent(UIComponentFactory *, UIMediator *);
-    virtual ~UIComponent() override;
 
   public:
     virtual void setState(int, Suscan::Analyzer *);
@@ -44,6 +43,8 @@ namespace SigDigger {
     virtual void setColorConfig(ColorConfig const &);
     virtual void setQth(Suscan::Location const &);
     virtual void setTimeStamp(struct timeval const &);
+
+    virtual ~UIComponent() override;
   };
 
   class UIComponentFactory : public Suscan::FeatureFactory

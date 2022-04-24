@@ -164,17 +164,24 @@ UIMediator::addTabWidget(TabWidget *tabWidget)
   // 1. Checking whether it exists.
   // 2. Adding it to the tab list
   // 3. Register a slot to remove it from the tab list when destroyed
-  // 4. Open a tab with the corresponding title
-  // 5. Switch focus
+  // 4. Sync state
+  // 5. Open a tab with the corresponding title
+  // 6. Switch focus
   int index;
 
   assert(m_tabWidgets.indexOf(tabWidget) == -1);
 
   m_tabWidgets.push_back(tabWidget);
 
-  index = this->ui->main->mainTab->addTab(
+  index = this->ui->main->mainTab->insertTab(
+        this->ui->main->mainTab->count(),
         tabWidget,
         QString::fromStdString(tabWidget->getLabel()));
+
+  // TODO: Apply inspector config!
+  tabWidget->assertConfig();
+  tabWidget->setProfile(this->appConfig->profile);
+  tabWidget->setState(m_state, m_analyzer);
 
   this->ui->main->mainTab->setCurrentIndex(index);
 
@@ -279,6 +286,7 @@ UIMediator::floatTabWidget(TabWidget *tabWidget)
 void
 UIMediator::deserializeComponents(Suscan::Object const &conf)
 {
+  // TODO: COPY conf!!!
   if (!conf.isHollow())
     for (auto &p : this->m_components)
       TRYSILENT(p->getConfig()->deserialize(conf.getField(p->factoryName())));
@@ -287,6 +295,8 @@ UIMediator::deserializeComponents(Suscan::Object const &conf)
 void
 UIMediator::serializeComponents(Suscan::Object &conf)
 {
+  // TODO: COPY conf!!!
+
   for (auto &p : this->m_components)
     conf.setField(p->factoryName(), p->getConfig()->serialize());
 }
@@ -467,11 +477,11 @@ UIMediator::connectMainWindow(void)
         this,
         SLOT(onToggleAbout(bool)));
 
-  connect(
+  /*connect(
         this->ui->main->mainTab,
         SIGNAL(tabCloseRequested(int)),
         this,
-        SLOT(onCloseInspectorTab(int)));
+        SLOT(onCloseInspectorTab(int))); */
 
   connect(
         this->ui->main->mainTab,
@@ -530,11 +540,13 @@ UIMediator::connectMainWindow(void)
   this->ui->main->mainTab->tabBar()->setContextMenuPolicy(
         Qt::CustomContextMenu);
 
+  /*
   connect(
         this->ui->main->mainTab->tabBar(),
         SIGNAL(customContextMenuRequested(const QPoint &)),
         this,
         SLOT(onInspectorMenuRequested(const QPoint &)));
+*/
 
   connect(
         this->ui->main->mainTab->tabBar(),
@@ -990,11 +1002,26 @@ UIMediator::applyConfig(void)
   this->ui->spectrum->setLoFreq(savedLoFreq);
   if (savedBw > 0)
     this->setBandwidth(savedBw);
+
+  //////////////// COMMENT THIS OUT IF YOU ARE DONE WITH THE TEST //////////////
+  auto p = sus->getFirstTabWidgetFactory();
+
+  if (p != sus->getLastTabWidgetFactory()) {
+    TabWidgetFactory *f = *p;
+    TabWidget *w = f->make(this);
+
+    this->addTabWidget(w);
+  }
 }
 
 UIMediator::~UIMediator()
 {
+  if (m_compConfig != nullptr)
+    delete m_compConfig;
 
+  // Delete UI components in an ordered way
+  for (auto p : m_components)
+    delete p;
 }
 
 /////////////////////////////// Slots //////////////////////////////////////////

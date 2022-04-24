@@ -30,14 +30,13 @@ namespace SigDigger {
   class TabWidget : public QWidget, public UIComponent {
     Q_OBJECT
 
-    QMenu   *m_inspectorMenu = nullptr;
-    QAction *m_closeInspectorTab = nullptr;
-    QAction *m_renameInspectorTab = nullptr;
-    QAction *m_detachInspectorTab = nullptr;
+    QMenu   *m_menu = nullptr;
+    QAction *m_closeTab = nullptr;
+    QAction *m_renameTab = nullptr;
+    QAction *m_floatTab = nullptr;
 
   protected:
     TabWidget(TabWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
-    ~TabWidget();
 
   public:
     virtual std::string getLabel() const = 0;
@@ -47,10 +46,12 @@ namespace SigDigger {
 
     void popupMenu();
 
+    ~TabWidget();
+
   public slots:
     void onPopupMenuClose();
     void onRename();
-    void onDetach();
+    void onFloat();
   };
 
   class TabWidgetFactory : public UIComponentFactory {
