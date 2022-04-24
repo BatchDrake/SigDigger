@@ -34,6 +34,8 @@ namespace Suscan {
 
   public:
     const char *factoryName() const;
+    FeatureFactory *factory() const;
+
     ~FeatureObject();
   };
 

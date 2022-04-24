@@ -38,6 +38,12 @@ FeatureObject::factoryName() const
 }
 
 
+FeatureFactory *
+FeatureObject::factory() const
+{
+  return m_factory;
+}
+
 FeatureObject::~FeatureObject()
 {
   m_factory->unregisterInstance(this);

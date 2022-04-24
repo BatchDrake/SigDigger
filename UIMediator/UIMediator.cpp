@@ -52,6 +52,7 @@
 
 // Tool widget controls
 #include <ToolWidgetFactory.h>
+#include <TabWidgetFactory.h>
 
 #if defined(_WIN32) && defined(interface)
 #  undef interface
@@ -137,6 +138,140 @@ UIMediator::getSpectrumAverager()
 {
   return &this->averager;
 }
+
+void
+UIMediator::registerUIComponent(UIComponent *comp)
+{
+  assert(m_components.indexOf(comp) == -1);
+
+  this->m_components.push_back(comp);
+}
+
+void
+UIMediator::unregisterUIComponent(UIComponent *comp)
+{
+  int index = m_components.indexOf(comp);
+
+  if (index != -1)
+    this->m_components.removeAt(index);
+}
+
+
+bool
+UIMediator::addTabWidget(TabWidget *tabWidget)
+{
+  // Adding a tab widget involves:
+  // 1. Checking whether it exists.
+  // 2. Adding it to the tab list
+  // 3. Register a slot to remove it from the tab list when destroyed
+  // 4. Open a tab with the corresponding title
+  // 5. Switch focus
+  int index;
+
+  assert(m_tabWidgets.indexOf(tabWidget) == -1);
+
+  m_tabWidgets.push_back(tabWidget);
+
+  index = this->ui->main->mainTab->addTab(
+        tabWidget,
+        QString::fromStdString(tabWidget->getLabel()));
+
+  this->ui->main->mainTab->setCurrentIndex(index);
+
+  return true;
+}
+
+//
+// NOTE: Adding a tab widget just exposes it. In any case deletes it.
+// This is something that has to be handled later.
+//
+
+bool
+UIMediator::closeTabWidget(TabWidget *tabWidget)
+{
+  // 1. Find whether the tab exists
+  // 2. Remove from the tabWidget list
+  // 3. Check whether it is a tab or a floating tab, close it accordingly
+
+  int index;
+
+  index = m_tabWidgets.indexOf(tabWidget);
+  if (index == -1)
+    return false;
+
+  m_tabWidgets.removeAt(index);
+
+  index = this->ui->main->mainTab->indexOf(tabWidget);
+  if (index != -1) {
+    this->ui->main->mainTab->removeTab(index);
+    tabWidget->setParent(nullptr);
+  } else {
+    auto p = m_floatingTabs.find(tabWidget);
+    if (p != m_floatingTabs.end()) {
+      QDialog *d = p.value();
+
+      m_floatingTabs.erase(p);
+
+      tabWidget->setParent(nullptr);
+
+      d->setProperty("tab-ptr", QVariant::fromValue<TabWidget *>(nullptr));
+
+      d->close();
+      d->deleteLater();
+    }
+  }
+
+  return true;
+}
+
+bool
+UIMediator::floatTabWidget(TabWidget *tabWidget)
+{
+  int index = this->ui->main->mainTab->indexOf(tabWidget);
+  auto p = m_floatingTabs.find(tabWidget);
+
+  // Not a TabWidget of ours
+  if (index == -1)
+    return false;
+
+  // Already floated
+  if (p != m_floatingTabs.end())
+    return true;
+
+  QDialog *dialog = new QDialog(this->owner);
+  QVBoxLayout *layout = new QVBoxLayout;
+
+  tabWidget->floatStart();
+  this->closeTabWidget(tabWidget);
+
+  dialog->setProperty(
+        "tab-ptr",
+        QVariant::fromValue<TabWidget *>(tabWidget));
+  dialog->setLayout(layout);
+  dialog->setWindowFlags(Qt::Window);
+
+  connect(
+        dialog,
+        SIGNAL(finished(int)),
+        this,
+        SLOT(onCloseTabWindow()));
+
+  layout->addWidget(tabWidget);
+
+  tabWidget->floatEnd();
+  tabWidget->show();
+
+  dialog->move(this->owner->pos());
+  dialog->setWindowTitle(
+        "SigDigger - " + QString::fromStdString(tabWidget->getLabel()));
+
+  m_floatingTabs[tabWidget] = dialog;
+
+  dialog->show();
+
+  return true;
+}
+
 
 #define TRYSILENT(x) \
   try { x; } catch (Suscan::Exception const &e) { }
@@ -339,6 +474,12 @@ UIMediator::connectMainWindow(void)
         SLOT(onCloseInspectorTab(int)));
 
   connect(
+        this->ui->main->mainTab,
+        SIGNAL(tabCloseRequested(int)),
+        this,
+        SLOT(onTabCloseRequested(int)));
+
+  connect(
         this->ui->main->actionPanoramicSpectrum,
         SIGNAL(triggered(bool)),
         this,
@@ -395,12 +536,11 @@ UIMediator::connectMainWindow(void)
         this,
         SLOT(onInspectorMenuRequested(const QPoint &)));
 
-}
-
-void
-UIMediator::registerUIComponent(UIComponent *comp)
-{
-  this->m_components.push_back(comp);
+  connect(
+        this->ui->main->mainTab->tabBar(),
+        SIGNAL(customContextMenuRequested(const QPoint &)),
+        this,
+        SLOT(onTabMenuRequested(const QPoint &)));
 }
 
 void
@@ -412,9 +552,7 @@ UIMediator::addToolWidgets(void)
        p != s->getLastToolWidgetFactory();
        ++p) {
     ToolWidgetFactory *f = *p;
-    ToolWidget *widget = f->make(this);
-
-    this->registerUIComponent(widget);
+    ToolWidget *widget = f->make(this); // Triggers registration as UIComponent
 
     this->ui->spectrum->addToolWidget(
           widget,
@@ -1237,4 +1375,53 @@ UIMediator::onJumpToBookmark(BookmarkInfo info)
     this->setBandwidth(info.bandwidth());
 
   this->onFrequencyChanged(info.frequency);
+}
+
+void
+UIMediator::onCloseTabWindow()
+{
+  QDialog *sender = qobject_cast<QDialog *>(QObject::sender());
+  TabWidget *tabWidget;
+
+  tabWidget = sender->property("tab-ptr").value<TabWidget *>();
+
+  // We simply tell the tab widget that someone requested its closure
+  tabWidget->closeRequested();
+}
+
+void
+UIMediator::onTabCloseRequested(int i)
+{
+  QWidget *widget = this->ui->main->mainTab->widget(i);
+
+  if (widget != nullptr) {
+    TabWidget *asTabWidget = SCAST(TabWidget *, widget);
+    int index = m_tabWidgets.indexOf(asTabWidget);
+
+    // If it is an opened tab, just notify the closure request
+    if (index != -1)
+      asTabWidget->closeRequested();
+  }
+}
+
+void
+UIMediator::onTabMenuRequested(const QPoint &point)
+{
+  int index;
+
+  if (point.isNull())
+    return;
+
+  index = this->ui->main->mainTab->tabBar()->tabAt(point);
+
+  QWidget *widget = this->ui->main->mainTab->widget(index);
+
+  if (widget != nullptr) {
+    TabWidget *asTabWidget = SCAST(TabWidget *, widget);
+    int index = m_tabWidgets.indexOf(asTabWidget);
+
+    // If it is an opened tab, just notify the closure request
+    if (index != -1)
+      asTabWidget->popupMenu();
+  }
 }

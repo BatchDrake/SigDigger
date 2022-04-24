@@ -45,6 +45,7 @@
 
 namespace SigDigger {
   class ToolWidgetFactory;
+  class TabWidgetFactory;
 };
 
 namespace Suscan {
@@ -224,6 +225,7 @@ namespace Suscan {
     QMap<std::string, SpectrumUnit> spectrumUnits;
     QHash<QString, Source::Config> networkProfiles;
     QList<SigDigger::ToolWidgetFactory *> toolWidgetFactories;
+    QList<SigDigger::TabWidgetFactory *> tabWidgetFactories;
     std::list<std::string> recentProfiles;
 
     bool codecs_initd;
@@ -352,6 +354,11 @@ namespace Suscan {
     bool unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *);
     QList<SigDigger::ToolWidgetFactory *>::const_iterator getFirstToolWidgetFactory() const;
     QList<SigDigger::ToolWidgetFactory *>::const_iterator getLastToolWidgetFactory() const;
+
+    bool registerTabWidgetFactory(SigDigger::TabWidgetFactory *);
+    bool unregisterTabWidgetFactory(SigDigger::TabWidgetFactory *);
+    QList<SigDigger::TabWidgetFactory *>::const_iterator getFirstTabWidgetFactory() const;
+    QList<SigDigger::TabWidgetFactory *>::const_iterator getLastTabWidgetFactory() const;
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);

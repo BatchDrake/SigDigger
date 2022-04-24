@@ -151,6 +151,7 @@ SOURCES += \
     Tasks/PLLSyncTask.cpp \
     Tasks/QuadDemodTask.cpp \
     Tasks/WaveSampler.cpp \
+    UIComponent/TabWidgetFactory.cpp \
     UIComponent/ToolWidgetFactory.cpp \
     UIComponent/UIComponentFactory.cpp \
     UIMediator/InspectorMediator.cpp \
@@ -284,6 +285,7 @@ HEADERS += \
     include/TLESourceConfig.h \
     include/TLESourceTab.h \
     include/TVProcessorWorker.h \
+    include/TabWidgetFactory.h \
     include/TimeWindow.h \
     include/ToneControl.h \
     include/ToolWidgetFactory.h \

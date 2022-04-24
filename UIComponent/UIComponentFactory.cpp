@@ -17,6 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include <UIComponentFactory.h>
+#include <UIMediator.h>
 
 using namespace SigDigger;
 
@@ -53,7 +54,15 @@ UIComponent::setTimeStamp(struct timeval const &)
 UIComponent::UIComponent(UIComponentFactory *factory, UIMediator *mediator)
   : FeatureObject(factory), PersistentObject(), m_mediator(mediator)
 {
+  assert(mediator != nullptr);
 
+  m_mediator->registerUIComponent(this);
+}
+
+UIComponent::~UIComponent()
+{
+  if (m_mediator != nullptr)
+    m_mediator->unregisterUIComponent(this);
 }
 
 UIComponentFactory::UIComponentFactory(

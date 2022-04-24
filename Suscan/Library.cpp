@@ -1201,6 +1201,43 @@ Singleton::getLastToolWidgetFactory() const
 }
 
 bool
+Singleton::registerTabWidgetFactory(SigDigger::TabWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->tabWidgetFactories.contains(factory))
+    return true;
+
+  this->tabWidgetFactories.push_back(factory);
+
+  return true;
+}
+
+bool
+Singleton::unregisterTabWidgetFactory(SigDigger::TabWidgetFactory *factory)
+{
+  int index = this->tabWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->tabWidgetFactories.removeAt(index);
+
+  return true;
+}
+
+QList<SigDigger::TabWidgetFactory *>::const_iterator
+Singleton::getFirstTabWidgetFactory() const
+{
+  return this->tabWidgetFactories.begin();
+}
+
+QList<SigDigger::TabWidgetFactory *>::const_iterator
+Singleton::getLastTabWidgetFactory() const
+{
+  return this->tabWidgetFactories.end();
+}
+
+bool
 Singleton::notifyRecent(std::string const &name)
 {
   bool found = false;
