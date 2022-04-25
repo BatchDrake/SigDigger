@@ -19,14 +19,12 @@
 
 
 #include "AboutDialog.h"
-#include "InspectorPanel.h"
 #include "MainSpectrum.h"
 #include "ConfigDialog.h"
 #include "Palette.h"
 #include "AutoGain.h"
 #include "Averager.h"
 #include "DeviceGain.h"
-#include "Inspector.h"
 #include "ui_MainWindow.h"
 #include "ConfigDialog.h"
 #include "DeviceDialog.h"
@@ -71,7 +69,6 @@ AppUI::AppUI(QMainWindow *owner)
 #endif // __APPLE__
   
   this->spectrum = new MainSpectrum(owner);
-  this->inspectorPanel = new InspectorPanel(nullptr);
   this->quickConnectDialog = new QuickConnectDialog(owner);
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);
@@ -90,7 +87,6 @@ AppUI::postLoadInit(QMainWindow *owner)
 
   this->configDialog = new ConfigDialog(owner);
   this->spectrum->deserializeFATs();
-  this->inspectorPanel->postLoadInit();
 
   this->spectrum->adjustSizes();
 }

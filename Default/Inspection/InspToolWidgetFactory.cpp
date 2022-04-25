@@ -1,6 +1,6 @@
 //
-//    AfcControl.h: Phase carrier recovery control
-//    Copyright (C) 2019 Gonzalo José Carracedo Carballal
+//    InspToolWidgetFactory.cpp: description
+//    Copyright (C) 2022 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,35 +16,29 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+//
+#include "InspToolWidgetFactory.h"
+#include "InspToolWidget.h"
 
-#ifndef AFCCONTROL_H
-#define AFCCONTROL_H
+using namespace SigDigger;
 
-#include <QWidget>
-#include <InspectorCtl.h>
-
-namespace Ui {
-  class AfcControl;
+const char *
+InspToolWidgetFactory::name(void) const
+{
+  return "InspToolWidget";
 }
 
-namespace SigDigger {
-  class AfcControl : public InspectorCtl
-  {
-      Q_OBJECT
-
-    public:
-      explicit AfcControl(
-          QWidget *parent,
-          Suscan::Config *config);
-      ~AfcControl() override;
-
-      bool applicable(QString const &key) override;
-      void refreshUi(void) override;
-      void parseConfig(void) override;
-
-    private:
-      Ui::AfcControl *ui;
-  };
+ToolWidget *
+InspToolWidgetFactory::make(UIMediator *mediator)
+{
+  return new InspToolWidget(this, mediator);
 }
 
-#endif // AFCCONTROL_H
+InspToolWidgetFactory::InspToolWidgetFactory(Suscan::Plugin *plugin) :
+  ToolWidgetFactory(plugin) { }
+
+std::string
+InspToolWidgetFactory::getTitle() const
+{
+  return "Channel inspection";
+}

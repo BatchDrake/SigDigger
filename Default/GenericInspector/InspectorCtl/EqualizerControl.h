@@ -1,5 +1,5 @@
 //
-//    ToneControl.h: FSK tone control
+//    EqualizerControl.h: Equalizer configuration
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,34 +17,32 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#ifndef TONECONTROL_H
-#define TONECONTROL_H
+#ifndef EQUALIZERCONTROL_H
+#define EQUALIZERCONTROL_H
 
 #include <QWidget>
-#include <InspectorCtl.h>
+#include "InspectorCtl.h"
 
 namespace Ui {
-  class ToneControl;
+  class EqualizerControl;
 }
 
 namespace SigDigger {
-  class ToneControl : public InspectorCtl
+  class EqualizerControl : public InspectorCtl
   {
       Q_OBJECT
 
     public:
-      explicit ToneControl(
-          QWidget *parent,
-          Suscan::Config *config);
-      ~ToneControl() override;
+      explicit EqualizerControl(QWidget *parent, Suscan::Config *config);
+      ~EqualizerControl() override;
 
       bool applicable(QString const &key) override;
       void refreshUi(void) override;
       void parseConfig(void) override;
 
     private:
-      Ui::ToneControl *ui;
+      Ui::EqualizerControl *ui;
   };
 }
 
-#endif // TONECONTROL_H
+#endif // EQUALIZERCONTROL_H

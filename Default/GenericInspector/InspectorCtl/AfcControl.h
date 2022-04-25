@@ -1,5 +1,5 @@
 //
-//    InspectorUI.h: Gain Control widget
+//    AfcControl.h: Phase carrier recovery control
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,35 +17,34 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#ifndef GAINCONTROL_H
-#define GAINCONTROL_H
+#ifndef AFCCONTROL_H
+#define AFCCONTROL_H
 
 #include <QWidget>
-#include <InspectorCtl.h>
+#include "InspectorCtl.h"
 
 namespace Ui {
-  class GainControl;
+  class AfcControl;
 }
 
 namespace SigDigger {
-  class GainControl : public InspectorCtl
+  class AfcControl : public InspectorCtl
   {
       Q_OBJECT
-      bool refreshing = false;
 
     public:
-      explicit GainControl(
+      explicit AfcControl(
           QWidget *parent,
           Suscan::Config *config);
-      ~GainControl() override;
+      ~AfcControl() override;
 
       bool applicable(QString const &key) override;
       void refreshUi(void) override;
       void parseConfig(void) override;
 
     private:
-      Ui::GainControl *ui;
+      Ui::AfcControl *ui;
   };
 }
 
-#endif // GAINCONTROL_H
+#endif // AFCCONTROL_H

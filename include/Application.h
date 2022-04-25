@@ -69,10 +69,6 @@ namespace SigDigger {
     QTimer uiTimer;
     bool sourceInfoReceived = false;
 
-    // Raw inspector for time view
-    Suscan::Handle rawInspHandle = 0;
-    bool rawInspectorOpened = false;
-
     // Panoramic spectrum
     Scanner *scanner = nullptr;
     SUFREQ scanMinFreq;
@@ -124,9 +120,6 @@ namespace SigDigger {
     void onProfileChanged(bool);
     void onGainChanged(QString name, float val);
     void onFrequencyChanged(qint64, qint64);
-    void onOpenInspector(void);
-    void onOpenRawInspector(void);
-    void onCloseRawInspector(void);
     void onSeek(struct timeval);
     void onParamsChanged(void);
     void onAntennaChanged(QString antenna);
@@ -144,8 +137,6 @@ namespace SigDigger {
     void onAnalyzerReadError(void);
     void onAnalyzerEos(void);
     void onPSDMessage(const Suscan::PSDMessage &);
-    void onInspectorMessage(const Suscan::InspectorMessage &);
-    void onInspectorSamples(const Suscan::SamplesMessage &);
     void onSourceInfoMessage(const Suscan::SourceInfoMessage &);
     void onStatusMessage(const Suscan::StatusMessage &);
     void onAnalyzerParams(const Suscan::AnalyzerParams &);

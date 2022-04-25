@@ -26,8 +26,6 @@
 #include <SuWidgetsHelpers.h>
 
 #include "MainSpectrum.h"
-#include "Inspector.h"
-#include "InspectorPanel.h"
 
 using namespace SigDigger;
 
@@ -163,24 +161,6 @@ Application::connectUI(void)
         SIGNAL(seek(struct timeval)),
         this,
         SLOT(onSeek(struct timeval)));
-
-  connect(
-        this->mediator,
-        SIGNAL(requestOpenInspector(void)),
-        this,
-        SLOT(onOpenInspector(void)));
-
-  connect(
-        this->mediator,
-        SIGNAL(requestOpenRawInspector(void)),
-        this,
-        SLOT(onOpenRawInspector(void)));
-
-  connect(
-        this->mediator,
-        SIGNAL(requestCloseRawInspector(void)),
-        this,
-        SLOT(onCloseRawInspector(void)));
 
   connect(
       this->mediator,
@@ -323,18 +303,6 @@ Application::connectAnalyzer(void)
         SIGNAL(analyzer_params(const Suscan::AnalyzerParams &)),
         this,
         SLOT(onAnalyzerParams(const Suscan::AnalyzerParams &)));
-
-  connect(
-        this->analyzer.get(),
-        SIGNAL(inspector_message(const Suscan::InspectorMessage &)),
-        this,
-        SLOT(onInspectorMessage(const Suscan::InspectorMessage &)));
-
-  connect(
-        this->analyzer.get(),
-        SIGNAL(samples_message(const Suscan::SamplesMessage &)),
-        this,
-        SLOT(onInspectorSamples(const Suscan::SamplesMessage &)));
 }
 
 void
@@ -505,8 +473,6 @@ Application::orderedHalt(void)
 {
   this->mediator->setState(UIMediator::HALTING);
   this->analyzer = nullptr;
-  this->mediator->detachAllInspectors();
-  this->rawInspectorOpened = false;
   this->mediator->setState(UIMediator::HALTED);
 }
 
@@ -569,23 +535,6 @@ Application::onSourceInfoMessage(const Suscan::SourceInfoMessage &msg)
 }
 
 void
-Application::onInspectorSamples(const Suscan::SamplesMessage &msg)
-{
-  Inspector *insp;
-
-  switch (msg.getInspectorId()) {
-    case SIGDIGGER_RAW_INSPECTOR_MAGIC_ID:
-      this->mediator->feedRawInspector(msg.getSamples(), msg.getCount());
-      break;
-
-    default:
-      if ((insp = this->mediator->lookupInspector(msg.getInspectorId()))
-          != nullptr)
-        insp->feed(msg.getSamples(), msg.getCount());
-  }
-}
-
-void
 Application::onStatusMessage(const Suscan::StatusMessage &message)
 {
   if (message.getCode() == SUSCAN_ANALYZER_INIT_FAILURE) {
@@ -603,95 +552,6 @@ void
 Application::onAnalyzerParams(const Suscan::AnalyzerParams &params)
 {
   this->mediator->setAnalyzerParams(params);
-}
-
-void
-Application::onInspectorMessage(const Suscan::InspectorMessage &msg)
-{
-  Inspector *insp = nullptr;
-  SUFLOAT *data;
-  SUSCOUNT len, p;
-  Suscan::InspectorId oId;
-  float x;
-
-  switch (msg.getKind()) {
-    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_OPEN:
-      // Audio path: set inspector Id
-
-      if (msg.getClass() == "raw") {
-        this->rawInspHandle = msg.getHandle();
-        this->rawInspectorOpened = true;
-
-        this->analyzer->setInspectorId(
-              msg.getHandle(),
-              SIGDIGGER_RAW_INSPECTOR_MAGIC_ID,
-              0);
-
-        this->mediator->resetRawInspector(
-              static_cast<qreal>(msg.getEquivSampleRate()));
-      } else if (msg.getClass() != "audio") {
-          insp = this->mediator->addInspector(msg, oId);
-          insp->setAnalyzer(this->analyzer.get());
-          this->analyzer->setInspectorId(msg.getHandle(), oId, 0);
-      }
-      break;
-
-    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SPECTRUM:
-       if ((insp = this->mediator->lookupInspector(msg.getInspectorId())) != nullptr) {
-         data = msg.getSpectrumData();
-         len = msg.getSpectrumLength();
-         p = len / 2;
-
-         for (auto i = 0u; i < len; ++i)
-           data[i] = SU_POWER_DB(data[i]);
-
-         for (auto i = 0u; i < len / 2; ++i) {
-           x = data[i];
-           data[i] = data[p];
-           data[p] = x;
-
-           if (++p == len)
-             p = 0;
-         }
-         insp->feedSpectrum(
-               data,
-               len,
-               msg.getSpectrumRate(),
-               msg.getSpectrumSourceId());
-       }
-      break;
-
-    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_ESTIMATOR:
-      if ((insp = this->mediator->lookupInspector(msg.getInspectorId())) != nullptr)
-        insp->updateEstimator(msg.getEstimatorId(), msg.getEstimation());
-
-      break;
-
-    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_CLOSE:
-      if (this->rawInspectorOpened && this->rawInspHandle == msg.getHandle()) {
-        // Do nothing either (yet).
-      } else if ((insp = this->mediator->lookupInspector(msg.getInspectorId())) != nullptr) {
-        insp->setAnalyzer(nullptr);
-        this->mediator->closeInspector(insp);
-      }
-
-      break;
-
-    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_TLE:
-      if (!msg.isTLEEnabled())
-        this->mediator->notifyDisableCorrection(msg.getInspectorId());
-      break;
-
-    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_ORBIT_REPORT:
-      this->mediator->notifyOrbitReport(
-            msg.getInspectorId(),
-            msg.getOrbitReport());
-      break;
-
-    default:
-      // printf("Ignored inspector message of type %d\n", msg.getKind());
-      break;
-  }
 }
 
 void
@@ -791,59 +651,6 @@ Application::onParamsChanged(void)
 {
   if (this->mediator->getState() == UIMediator::RUNNING)
     this->analyzer->setParams(*this->mediator->getAnalyzerParams());
-}
-
-void
-Application::onOpenInspector(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    Suscan::Channel ch;
-
-    ch.bw    = this->ui.inspectorPanel->getBandwidth();
-    ch.ft    = 0;
-    ch.fc    = this->ui.spectrum->getLoFreq();
-    ch.fLow  = - .5 * ch.bw;
-    ch.fHigh = + .5 * ch.bw;
-
-    if (this->ui.inspectorPanel->getPrecise())
-      this->analyzer->openPrecise(
-          this->ui.inspectorPanel->getInspectorClass(),
-          ch,
-          0);
-    else
-      this->analyzer->open(
-          this->ui.inspectorPanel->getInspectorClass(),
-          ch,
-          0);
-  }
-}
-
-void
-Application::onOpenRawInspector(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING
-      && !this->rawInspectorOpened) {
-    Suscan::Channel ch;
-
-    ch.bw    = this->ui.inspectorPanel->getBandwidth();
-    ch.ft    = 0;
-    ch.fc    = this->ui.spectrum->getLoFreq();
-    ch.fLow  = - .5 * ch.bw;
-    ch.fHigh = + .5 * ch.bw;
-
-    this->analyzer->openPrecise("raw", ch, SIGDIGGER_RAW_INSPECTOR_REQID);
-  }
-}
-
-void
-Application::onCloseRawInspector(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    if (this->rawInspectorOpened) {
-      this->analyzer->closeInspector(this->rawInspHandle, 0);
-      this->rawInspectorOpened = false;
-    }
-  }
 }
 
 void

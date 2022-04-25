@@ -2,7 +2,7 @@
 #define ASKCONTROL_H
 
 #include <QWidget>
-#include <InspectorCtl.h>
+#include "InspectorCtl.h"
 
 namespace Ui {
   class AskControl;

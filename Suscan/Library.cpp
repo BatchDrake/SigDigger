@@ -25,6 +25,8 @@
 #include <Plugin.h>
 #include <FeatureFactory.h>
 #include <ToolWidgetFactory.h>
+#include <TabWidgetFactory.h>
+#include <InspectionWidgetFactory.h>
 
 using namespace Suscan;
 
@@ -1208,6 +1210,7 @@ Singleton::registerTabWidgetFactory(SigDigger::TabWidgetFactory *factory)
     return true;
 
   this->tabWidgetFactories.push_back(factory);
+  this->tabWidgetFactoryTable[factory->name()] = factory;
 
   return true;
 }
@@ -1221,8 +1224,18 @@ Singleton::unregisterTabWidgetFactory(SigDigger::TabWidgetFactory *factory)
     return false;
 
   this->tabWidgetFactories.removeAt(index);
+  this->tabWidgetFactoryTable.remove(factory->name());
 
   return true;
+}
+
+SigDigger::TabWidgetFactory *
+Singleton::findTabWidgetFactory(QString const &name) const
+{
+  if (!this->tabWidgetFactoryTable.contains(name))
+    return nullptr;
+
+  return this->tabWidgetFactoryTable[name];
 }
 
 QList<SigDigger::TabWidgetFactory *>::const_iterator
@@ -1235,6 +1248,54 @@ QList<SigDigger::TabWidgetFactory *>::const_iterator
 Singleton::getLastTabWidgetFactory() const
 {
   return this->tabWidgetFactories.end();
+}
+
+bool
+Singleton::registerInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->inspectionWidgetFactories.contains(factory))
+    return true;
+
+  this->inspectionWidgetFactories.push_back(factory);
+  this->inspectionWidgetFactoryTable[factory->name()] = factory;
+
+  return true;
+}
+
+bool
+Singleton::unregisterInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *factory)
+{
+  int index = this->inspectionWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->inspectionWidgetFactories.removeAt(index);
+  this->inspectionWidgetFactoryTable.remove(factory->name());
+
+  return true;
+}
+
+SigDigger::InspectionWidgetFactory *
+Singleton::findInspectionWidgetFactory(QString const &name) const
+{
+  if (!this->inspectionWidgetFactoryTable.contains(name))
+    return nullptr;
+
+  return this->inspectionWidgetFactoryTable[name];
+}
+
+QList<SigDigger::InspectionWidgetFactory *>::const_iterator
+Singleton::getFirstInspectionWidgetFactory() const
+{
+  return this->inspectionWidgetFactories.begin();
+}
+
+QList<SigDigger::InspectionWidgetFactory *>::const_iterator
+Singleton::getLastInspectionWidgetFactory() const
+{
+  return this->inspectionWidgetFactories.end();
 }
 
 bool

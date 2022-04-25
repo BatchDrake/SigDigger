@@ -26,7 +26,7 @@
 #include <QMenu>
 #include <memory>
 #include <map>
-#include <InspectorCtl.h>
+#include "InspectorCtl/InspectorCtl.h"
 #include <Suscan/SpectrumSource.h>
 #include <Suscan/Analyzer.h>
 #include <Suscan/Library.h>
@@ -41,7 +41,6 @@
 #include "ColorConfig.h"
 #include "DataSaverUI.h"
 #include "FileDataSaver.h"
-#include "EstimatorControl.h"
 #include "NetForwarderUI.h"
 
 #include "SymViewTab.h"
@@ -65,6 +64,7 @@ class GLWaterfall;
 namespace SigDigger {
   class FrequencyCorrectionDialog;
   class AppConfig;
+  class EstimatorControl;
 
   class InspectorUI : public QObject {
     Q_OBJECT
@@ -166,7 +166,6 @@ namespace SigDigger {
     void connectDataSaver(void);
     void connectNetForwarder(void);
     void refreshSizes(void);
-    void setQth(xyz_t const &);
     std::string captureFileName(void) const;
     unsigned int getVScrollPageSize(void) const;
     unsigned int getHScrollOffset(void) const;
@@ -206,7 +205,7 @@ namespace SigDigger {
       void feed(const SUCOMPLEX *data, unsigned int size);
       void feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate);
       void updateEstimator(Suscan::EstimatorId id, float val);
-
+      void setQth(xyz_t const &);
       void setState(enum State state);
       void refreshUi(void);
       bool setPalette(std::string const &str);

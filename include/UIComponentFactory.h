@@ -34,10 +34,12 @@ namespace SigDigger {
 
   class UIComponent : public Suscan::FeatureObject, public PersistentObject {
   protected:
-    class UIMediator *m_mediator = nullptr;
+    UIMediator *m_mediator = nullptr;
     UIComponent(UIComponentFactory *, UIMediator *);
 
   public:
+    UIMediator *mediator() const;
+
     virtual void setState(int, Suscan::Analyzer *);
     virtual void setProfile(Suscan::Source::Config &);
     virtual void setColorConfig(ColorConfig const &);

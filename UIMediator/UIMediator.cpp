@@ -38,12 +38,10 @@
 #include "ui_MainWindow.h"
 #include "MainWindow.h"
 #include "MainSpectrum.h"
-#include "InspectorPanel.h"
 #include "BookmarkManagerDialog.h"
 #include "BackgroundTasksDialog.h"
 #include "AddBookmarkDialog.h"
 #include "PanoramicDialog.h"
-#include "Inspector.h"
 #include "LogDialog.h"
 #include "ConfigDialog.h"
 #include "DeviceDialog.h"
@@ -139,12 +137,18 @@ UIMediator::getSpectrumAverager()
   return &this->averager;
 }
 
+AppConfig *
+UIMediator::getAppConfig() const
+{
+  return this->appConfig;
+}
+
 void
 UIMediator::registerUIComponent(UIComponent *comp)
 {
   assert(m_components.indexOf(comp) == -1);
 
-  this->m_components.push_back(comp);
+  m_components.push_back(comp);
 }
 
 void
@@ -153,7 +157,7 @@ UIMediator::unregisterUIComponent(UIComponent *comp)
   int index = m_components.indexOf(comp);
 
   if (index != -1)
-    this->m_components.removeAt(index);
+    m_components.removeAt(index);
 }
 
 
@@ -168,6 +172,7 @@ UIMediator::addTabWidget(TabWidget *tabWidget)
   // 5. Open a tab with the corresponding title
   // 6. Switch focus
   int index;
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
 
   assert(m_tabWidgets.indexOf(tabWidget) == -1);
 
@@ -180,6 +185,11 @@ UIMediator::addTabWidget(TabWidget *tabWidget)
 
   // TODO: Apply inspector config!
   tabWidget->assertConfig();
+
+  if (s->haveQth())
+    tabWidget->setQth(s->getQth());
+
+  tabWidget->setTimeStamp(m_lastTimeStamp);
   tabWidget->setProfile(this->appConfig->profile);
   tabWidget->setState(m_state, m_analyzer);
 
@@ -288,7 +298,7 @@ UIMediator::deserializeComponents(Suscan::Object const &conf)
 {
   // TODO: COPY conf!!!
   if (!conf.isHollow())
-    for (auto &p : this->m_components)
+    for (auto &p : m_components)
       TRYSILENT(p->getConfig()->deserialize(conf.getField(p->factoryName())));
 }
 
@@ -297,7 +307,7 @@ UIMediator::serializeComponents(Suscan::Object &conf)
 {
   // TODO: COPY conf!!!
 
-  for (auto &p : this->m_components)
+  for (auto &p : m_components)
     conf.setField(p->factoryName(), p->getConfig()->serialize());
 }
 
@@ -311,7 +321,7 @@ UIMediator::refreshUI(void)
   Suscan::Source::Config *config = this->getProfile();
   const Suscan::Source::Device &dev = config->getDevice();
 
-  switch (this->m_state) {
+  switch (m_state) {
     case HALTED:
       stateString = QString("Idle");
       this->ui->spectrum->setCaptureMode(MainSpectrum::UNAVAILABLE);
@@ -361,11 +371,6 @@ UIMediator::refreshUI(void)
       this->ui->main->actionStop_capture->setEnabled(false);
       break;
   }
-
-  this->ui->inspectorPanel->setState(
-        this->m_state == RUNNING
-        ? InspectorPanel::State::ATTACHED
-        : InspectorPanel::State::DETACHED);
 
   if (config->isRemote()) {
     QString user = QString::fromStdString(config->getParam("user"));
@@ -579,6 +584,8 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   this->lastPsd.tv_sec = this->lastPsd.tv_usec = 0;
 
+  m_requestTracker = new Suscan::AnalyzerRequestTracker(this);
+
   this->remoteDevice = Suscan::Source::Device(
             "Remote device",
             "localhost",
@@ -588,9 +595,6 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   this->addToolWidgets();
 
-  // TODO: Turn into default plugin tool widgets
-  this->ui->spectrum->addToolWidget(this->ui->inspectorPanel, "Inspection");
-
   // Add baseband analyzer tab
   this->ui->main->mainTab->addTab(this->ui->spectrum, "Radio spectrum");
 
@@ -598,10 +602,11 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->ui->backgroundTasksDialog->setController(
         Suscan::Singleton::get_instance()->getBackgroundTaskController());
 
+
+  this->connectRequestTracker();
   this->connectMainWindow();
   this->connectSpectrum();
 
-  this->connectInspectorPanel();
   this->connectDeviceDialog();
   this->connectPanoramicDialog();
   this->connectTimeSlider();
@@ -611,7 +616,6 @@ void
 UIMediator::setBandwidth(unsigned int bw)
 {
   this->ui->spectrum->setFilterBandwidth(bw);
-  this->ui->inspectorPanel->setBandwidth(bw);
 }
 
 void
@@ -620,7 +624,6 @@ UIMediator::setSampleRate(unsigned int rate)
   if (this->rate != rate) {
     unsigned int bw = rate / 30;
 
-    this->ui->inspectorPanel->setBandwidthLimits(0, rate);
     this->ui->spectrum->setSampleRate(rate);
     this->setBandwidth(bw);
 
@@ -631,7 +634,7 @@ UIMediator::setSampleRate(unsigned int rate)
 void
 UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 {
-  if (this->m_state != state) {
+  if (m_state != state) {
     // Sanity check
     switch (state) {
       case HALTED:
@@ -644,11 +647,16 @@ UIMediator::setState(State state, Suscan::Analyzer *analyzer)
         assert(analyzer != nullptr);
     }
 
-    this->m_state = state;
-    this->m_analyzer = analyzer;
+    m_state = state;
+    m_analyzer = analyzer;
+
+    if (m_analyzer != nullptr)
+      this->connectAnalyzer();
+
+    m_requestTracker->setAnalyzer(m_analyzer);
 
     // Propagate state
-    for (auto p : this->m_components)
+    for (auto p : m_components)
       p->setState(state, analyzer);
 
     this->refreshUI();
@@ -658,7 +666,7 @@ UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 UIMediator::State
 UIMediator::getState(void) const
 {
-  return this->m_state;
+  return m_state;
 }
 
 void
@@ -684,8 +692,6 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
           info.testPermission(
             SUSCAN_ANALYZER_PERM_SEEK));
   }
-
-  this->ui->inspectorPanel->applySourceInfo(info);
 }
 
 void
@@ -693,29 +699,8 @@ UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 {
   this->setTimeStamp(timestamp);
 
-  for (auto i : this->ui->inspectorTable)
-    i.second->setTimeStamp(timestamp);
-
-  for (auto p : this->m_components)
+  for (auto p : m_components)
     p->setTimeStamp(timestamp);
-}
-
-void
-UIMediator::notifyOrbitReport(
-    Suscan::InspectorId id,
-    Suscan::OrbitReport const &report)
-{
-  Inspector *insp;
-  if ((insp = this->lookupInspector(id)) != nullptr)
-    insp->notifyOrbitReport(report);
-}
-
-void
-UIMediator::notifyDisableCorrection(Suscan::InspectorId id)
-{
-  Inspector *insp;
-  if ((insp = this->lookupInspector(id)) != nullptr)
-    insp->disableCorrection();
 }
 
 void
@@ -883,7 +868,7 @@ UIMediator::refreshProfile(bool updateFreqs)
   }
 
   // Apply profile to all UI components
-  for (auto p : this->m_components)
+  for (auto p : m_components)
     p->setProfile(this->appConfig->profile);
 }
 
@@ -961,15 +946,14 @@ UIMediator::applyConfig(void)
   this->ui->configDialog->setTleSourceConfig(this->appConfig->tleSourceConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
-  this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
 
   // Apply color config to all UI components
-  for (auto p : this->m_components)
+  for (auto p : m_components)
     p->setColorConfig(this->appConfig->colors);
 
   // Apply QTH to all UI components
   if (sus->haveQth())
-    for (auto p : this->m_components)
+    for (auto p : m_components)
       p->setQth(sus->getQth());
 
   this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
@@ -989,10 +973,9 @@ UIMediator::applyConfig(void)
     }
 
   // The rest of them are automatically deserialized
-  this->ui->inspectorPanel->applyConfig();
   this->ui->panoramicDialog->applyConfig();
 
-  for (auto p : this->m_components)
+  for (auto p : m_components)
     p->applyConfig();
 
   this->refreshProfile();
@@ -1049,10 +1032,9 @@ UIMediator::onTriggerSetup(bool)
     if (this->ui->configDialog->colorsChanged()) {
       this->appConfig->colors = this->ui->configDialog->getColors();
       this->ui->spectrum->setColorConfig(this->appConfig->colors);
-      this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
 
       // Apply color config to all UI components
-      for (auto p : this->m_components)
+      for (auto p : m_components)
         p->setColorConfig(this->appConfig->colors);
     }
 
@@ -1070,7 +1052,7 @@ UIMediator::onTriggerSetup(bool)
       sus->setQth(loc);
 
       // Set QTH of all UI components
-      for (auto p : this->m_components)
+      for (auto p : m_components)
         p->setQth(loc);
     }
   }
@@ -1132,7 +1114,7 @@ UIMediator::onQuickConnectAccepted(void)
   this->refreshUI();
   emit profileChanged(true);
 
-  if (this->m_state == HALTED)
+  if (m_state == HALTED)
     emit captureStart();
 }
 

@@ -20,8 +20,7 @@
 #include "UIMediator.h"
 #include "MainWindow.h"
 #include "MainSpectrum.h"
-#include "InspectorPanel.h"
-#include "Inspector.h"
+#include <InspectionWidgetFactory.h>
 #include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
@@ -164,7 +163,6 @@ UIMediator::connectSpectrum(void)
 void
 UIMediator::onSpectrumBandwidthChanged(void)
 {
-  this->ui->inspectorPanel->setBandwidth(this->ui->spectrum->getBandwidth());
   this->appConfig->bandwidth =
       static_cast<unsigned int>(this->ui->spectrum->getBandwidth());
   emit channelBandwidthChanged(this->ui->spectrum->getBandwidth());
@@ -175,12 +173,7 @@ UIMediator::onFrequencyChanged(qint64)
 {
   qint64 freq = this->ui->spectrum->getCenterFreq();
 
-  this->ui->inspectorPanel->setDemodFrequency(freq);
   this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
-
-  for (auto i : this->ui->inspectorTable)
-    i.second->setTunerFrequency(
-          this->ui->spectrum->getCenterFreq());
 
   emit frequencyChanged(
         this->ui->spectrum->getCenterFreq(),
@@ -193,9 +186,6 @@ UIMediator::onFrequencyChanged(qint64)
 void
 UIMediator::onLoChanged(qint64)
 {
-  qint64 freq = this->ui->spectrum->getCenterFreq()
-      + this->ui->spectrum->getLoFreq();
-  this->ui->inspectorPanel->setDemodFrequency(freq);
   this->appConfig->loFreq = static_cast<int>(this->ui->spectrum->getLoFreq());
   emit loChanged(this->ui->spectrum->getLoFreq());
 }

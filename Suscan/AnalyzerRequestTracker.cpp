@@ -138,14 +138,25 @@ AnalyzerRequestTracker::onInspectorMessage(
         if (it->config == nullptr) {
           it->config = suscan_config_dup(message.getCConfig());
         }
-        it->handle = message.getHandle();
-        it->opened = true;
+        it->basebandRate = message.getBasebandRate();
+        it->equivRate    = message.getEquivSampleRate();
+        it->bandwidth    = message.getBandwidth();
+        it->lo           = message.getLo();
+        it->handle       = message.getHandle();
+        it->spectSources = message.getSpectrumSources();
+        it->estimators   = message.getEstimators();
+        it->opened       = true;
         this->executeSetInspectorId(*it);
         break;
 
       case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_ID:
         it->idSet = true;
         emit opened(*it);
+        m_pendingRequests.remove(it->requestId);
+        break;
+
+      case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_INVALID_CHANNEL:
+        emit error(*it, "Invalid channel specification (invalid bandwidth / frequency)");
         m_pendingRequests.remove(it->requestId);
         break;
 
@@ -173,6 +184,46 @@ AnalyzerRequestTracker::onInspectorMessage(
 AnalyzerRequestTracker::~AnalyzerRequestTracker()
 {
 
+}
+
+AnalyzerRequest::AnalyzerRequest()
+{
+
+}
+
+AnalyzerRequest::AnalyzerRequest(AnalyzerRequest const &prev)
+{
+  *this = prev;
+}
+
+AnalyzerRequest &
+AnalyzerRequest::operator=(AnalyzerRequest const &prev)
+{
+  if (this->config != nullptr)
+    free(this->config);
+
+  this->requestId    = prev.requestId;
+  this->inspectorId  = prev.inspectorId;
+  this->inspClass    = prev.inspClass;
+  this->channel      = prev.channel;
+  this->precise      = prev.precise;
+  this->parent       = prev.parent;
+  this->handle       = prev.handle;
+  this->data         = prev.data;
+  this->opened       = prev.opened;
+  this->idSet        = prev.idSet;
+  this->basebandRate = prev.basebandRate;
+  this->equivRate    = prev.equivRate;
+  this->bandwidth    = prev.bandwidth;
+  this->lo           = prev.lo;
+  this->spectSources = prev.spectSources;
+  this->estimators   = prev.estimators;
+
+  this->config = nullptr;
+  if (prev.config != nullptr)
+    SU_ATTEMPT(this->config = suscan_config_dup(prev.config));
+
+  return *this;
 }
 
 AnalyzerRequest::~AnalyzerRequest()

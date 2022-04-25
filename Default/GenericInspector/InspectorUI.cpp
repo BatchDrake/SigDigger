@@ -20,13 +20,14 @@
 #include "InspectorUI.h"
 #include "ui_Inspector.h"
 
-#include "AskControl.h"
-#include "GainControl.h"
-#include "AfcControl.h"
-#include "ToneControl.h"
-#include "MfControl.h"
-#include "EqualizerControl.h"
-#include "ClockRecovery.h"
+#include "InspectorCtl/AskControl.h"
+#include "InspectorCtl/GainControl.h"
+#include "InspectorCtl/AfcControl.h"
+#include "InspectorCtl/ToneControl.h"
+#include "InspectorCtl/MfControl.h"
+#include "InspectorCtl/EqualizerControl.h"
+#include "InspectorCtl/ClockRecovery.h"
+#include "InspectorCtl/EstimatorControl.h"
 
 #include "AppConfig.h"
 
@@ -42,8 +43,6 @@
 #include <suscan.h>
 #include <iomanip>
 #include <fcntl.h>
-
-#include "InspectorPanel.h"
 
 #include "Waterfall.h"
 #include "GLWaterfall.h"
@@ -1347,11 +1346,8 @@ void
 InspectorUI::setAppConfig(AppConfig const &cfg)
 {
   ColorConfig const &colors = cfg.colors;
-  InspectorPanelConfig panelConfig;
 
   this->colors = colors;
-
-  panelConfig.deserialize(cfg.inspectorConfig->serialize());
 
   this->fcDialog->setColorConfig(colors);
 
@@ -1393,10 +1389,11 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
 
   // Set Waveform colors
   this->wfTab->setColorConfig(colors);
+#if 0
   this->wfTab->setPalette(panelConfig.palette);
   this->wfTab->setPaletteOffset(panelConfig.paletteOffset);
   this->wfTab->setPaletteContrast(panelConfig.paletteContrast);
-
+#endif
   // Set FAC colors
   this->facTab->setColorConfig(colors);
 

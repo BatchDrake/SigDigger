@@ -21,6 +21,12 @@
 
 using namespace SigDigger;
 
+UIMediator *
+UIComponent::mediator() const
+{
+  return m_mediator;
+}
+
 void
 UIComponent::setState(int, Suscan::Analyzer *)
 {

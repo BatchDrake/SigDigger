@@ -30,22 +30,34 @@ namespace Suscan {
   class Analyzer;
 
   struct AnalyzerRequest {
-    uint32_t    requestId;
-    uint32_t    inspectorId;
-
+    // Request fields
+    uint32_t    requestId = 0;
+    uint32_t    inspectorId = 0;
     std::string inspClass;
     Channel     channel;
-    bool        precise;
-    Handle      parent;
+    bool        precise = false;
+    Handle      parent = -1;
+    QVariant    data;
 
-    Handle      handle;
+    // Request state
+    bool opened = false;
+    bool idSet  = false;
+
+    // Response fields
+    Handle      handle = -1;
+    unsigned    basebandRate = 0;
+    float       equivRate = 0;
+    float       bandwidth = 0;
+    float       lo = 0;
+
+    std::vector<SpectrumSource> spectSources;
+    std::vector<Estimator> estimators;
 
     suscan_config_t *config = nullptr;
 
-    QVariant    data;
-
-    bool opened = false;
-    bool idSet  = false;
+    AnalyzerRequest();
+    AnalyzerRequest(AnalyzerRequest const &);
+    AnalyzerRequest &operator= (AnalyzerRequest const &);
 
     ~AnalyzerRequest();
   };

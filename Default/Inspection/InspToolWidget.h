@@ -1,5 +1,5 @@
 //
-//    InspectorPanel.h: Dockable inspector panel
+//    InspToolWidget.h: Dockable inspector panel
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,13 +16,14 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef INSPECTORPANEL_H
-#define INSPECTORPANEL_H
+#ifndef InspToolWidget_H
+#define InspToolWidget_H
 
-#include <PersistentWidget.h>
+#include <ToolWidgetFactory.h>
 #include <TimeWindow.h>
 #include <ColorConfig.h>
 #include <Suscan/Analyzer.h>
+#include <Suscan/AnalyzerRequestTracker.h>
 
 #define SIGDIGGER_DEFAULT_SQUELCH_TRIGGER  10
 #define SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS 250.
@@ -31,10 +32,16 @@ namespace Ui {
   class InspectorPanel;
 }
 
+namespace Suscan {
+  class AnalyzerRequestTracker;
+  struct AnalyzerRequest;
+}
+
 namespace SigDigger {
   class MultitaskController;
+  class InspToolWidgetFactory;
 
-  class InspectorPanelConfig : public Suscan::Serializable {
+  class InspToolWidgetConfig : public Suscan::Serializable {
   public:
     bool collapsed = true;
     std::string inspectorClass = "psk";
@@ -49,7 +56,7 @@ namespace SigDigger {
     Suscan::Object &&serialize(void) override;
   };
 
-  class InspectorPanel : public PersistentWidget
+  class InspToolWidget : public ToolWidget
   {
     Q_OBJECT
 
@@ -61,7 +68,7 @@ namespace SigDigger {
 
   private:
     // Convenience pointer
-    InspectorPanelConfig *panelConfig = nullptr;
+    InspToolWidgetConfig *panelConfig = nullptr;
 
     // UI objects
     Ui::InspectorPanel *ui = nullptr;
@@ -75,6 +82,10 @@ namespace SigDigger {
     bool autoSquelch = false;
     bool autoSquelchTriggered = false;
 
+    Suscan::AnalyzerRequestTracker *m_tracker = nullptr;
+    Suscan::Analyzer               *m_analyzer = nullptr;
+    bool                            m_opened = false;
+    Suscan::AnalyzerRequest         m_request;
     // UI State
     State state = DETACHED;
     Suscan::AnalyzerSourceInfo sourceInfo =
@@ -103,18 +114,15 @@ namespace SigDigger {
     void openTimeWindow(void);
     void transferHistory(void);
 
-  public:
-    explicit InspectorPanel(QWidget *parent = nullptr);
-    void postLoadInit(void);
-    ~InspectorPanel() override;
-
     void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
-    void setColorConfig(ColorConfig const &);
     void setDemodFrequency(qint64);
     void setBandwidthLimits(unsigned int min, unsigned int max);
     void setBandwidth(unsigned int freq);
     void setPrecise(bool precise);
     void setState(enum State state);
+
+    void startRawCapture();
+    void stopRawCapture();
 
     void resetRawInspector(qreal sampleRate);
     void feedRawInspector(const SUCOMPLEX *data, size_t size);
@@ -124,12 +132,24 @@ namespace SigDigger {
     bool getPrecise(void) const;
     enum State getState(void) const;
 
+  public:
+    explicit InspToolWidget(
+        InspToolWidgetFactory *factory,
+        UIMediator *mediator,
+        QWidget *parent = nullptr);
+
+    ~InspToolWidget() override;
+
     // Overriden methods
+    void setState(int, Suscan::Analyzer *) override;
+    void setProfile(Suscan::Source::Config &) override;
+    void setColorConfig(ColorConfig const &) override;
     Suscan::Serializable *allocConfig(void) override;
     void applyConfig(void) override;
     bool event(QEvent *) override;
 
   public slots:
+    // UI slots
     void onOpenInspector(void);
     void onBandwidthChanged(double);
     void onPreciseChanged(void);
@@ -143,12 +163,20 @@ namespace SigDigger {
     void onTimeWindowConfigChanged(void);
     void onTriggerSNRChanged(double val);
 
-  signals:
-    void bandwidthChanged(int);
-    void requestOpenInspector(QString);
-    void startRawCapture(void);
-    void stopRawCapture(void);
+    // Main UI slots
+    void onSpectrumBandwidthChanged(void);
+    void onSpectrumFrequencyChanged(void);
+
+    // Request tracker slots
+    void onOpened(Suscan::AnalyzerRequest const &);
+    void onCancelled(Suscan::AnalyzerRequest const &);
+    void onError(Suscan::AnalyzerRequest const &, std::string const &);
+
+    // Analyzer slots
+    void onSourceInfoMessage(Suscan::SourceInfoMessage const &);
+    void onInspectorMessage(Suscan::InspectorMessage const &);
+    void onInspectorSamples(Suscan::SamplesMessage const &);
   };
 }
 
-#endif // INSPECTORPANEL_H
+#endif // InspToolWidget_H

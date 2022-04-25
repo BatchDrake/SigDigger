@@ -1,5 +1,5 @@
 //
-//    InspectorPanel.cpp: Dockable inspector panel
+//    InspToolWidget.cpp: Dockable inspector panel
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,13 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include "InspectorPanel.h"
-#include "ui_InspectorPanel.h"
-
+#include "InspToolWidgetFactory.h"
+#include "InspToolWidget.h"
+#include "ui_InspToolWidget.h"
+#include <UIMediator.h>
+#include <MainSpectrum.h>
 #include <SuWidgetsHelpers.h>
+#include <QMessageBox>
 
 using namespace SigDigger;
 
@@ -30,7 +33,7 @@ using namespace SigDigger;
 #define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
 
 void
-InspectorPanelConfig::deserialize(Suscan::Object const &conf)
+InspToolWidgetConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(collapsed);
   LOAD(inspectorClass);
@@ -42,11 +45,11 @@ InspectorPanelConfig::deserialize(Suscan::Object const &conf)
 }
 
 Suscan::Object &&
-InspectorPanelConfig::serialize(void)
+InspToolWidgetConfig::serialize(void)
 {
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
-  obj.setClass("InspectorPanelConfig");
+  obj.setClass("InspToolWidgetConfig");
 
   STORE(collapsed);
   STORE(inspectorClass);
@@ -61,13 +64,16 @@ InspectorPanelConfig::serialize(void)
 
 ////////////////////////// Inspector panel widget //////////////////////////////
 Suscan::Serializable *
-InspectorPanel::allocConfig(void)
+InspToolWidget::allocConfig(void)
 {
-  return this->panelConfig = new InspectorPanelConfig();
+  if (this->timeWindow == nullptr)
+    this->timeWindow = new TimeWindow(this);
+
+  return this->panelConfig = new InspToolWidgetConfig();
 }
 
 void
-InspectorPanel::applyConfig(void)
+InspToolWidget::applyConfig(void)
 {
   this->setInspectorClass(this->panelConfig->inspectorClass);
   this->setPrecise(this->panelConfig->precise);
@@ -90,7 +96,7 @@ InspectorPanel::applyConfig(void)
 }
 
 bool
-InspectorPanel::event(QEvent *event)
+InspToolWidget::event(QEvent *event)
 {
   if (event->type() == QEvent::DynamicPropertyChange) {
     QDynamicPropertyChangeEvent *const propEvent =
@@ -100,11 +106,11 @@ InspectorPanel::event(QEvent *event)
       this->panelConfig->collapsed = this->property("collapsed").value<bool>();
   }
 
-  return PersistentWidget::event(event);
+  return ToolWidget::event(event);
 }
 
 void
-InspectorPanel::connectAll(void)
+InspToolWidget::connectAll(void)
 {
   connect(
         this->ui->bandwidthSpin,
@@ -159,17 +165,53 @@ InspectorPanel::connectAll(void)
         SIGNAL(valueChanged(double)),
         this,
         SLOT(onTriggerSNRChanged(double)));
+
+  connect(
+        this->mediator()->getMainSpectrum(),
+        SIGNAL(bandwidthChanged()),
+        this,
+        SLOT(onSpectrumBandwidthChanged()));
+
+  connect(
+        this->mediator()->getMainSpectrum(),
+        SIGNAL(frequencyChanged(qint64)),
+        this,
+        SLOT(onSpectrumFrequencyChanged()));
+
+  connect(
+        this->mediator()->getMainSpectrum(),
+        SIGNAL(loChanged(qint64)),
+        this,
+        SLOT(onSpectrumFrequencyChanged()));
+
+  connect(
+        this->m_tracker,
+        SIGNAL(opened(Suscan::AnalyzerRequest const &)),
+        this,
+        SLOT(onOpened(Suscan::AnalyzerRequest const &)));
+
+  connect(
+        this->m_tracker,
+        SIGNAL(cancelled(Suscan::AnalyzerRequest const &)),
+        this,
+        SLOT(onCancelled(Suscan::AnalyzerRequest const &)));
+
+  connect(
+        this->m_tracker,
+        SIGNAL(error(Suscan::AnalyzerRequest const &, const std::string &)),
+        this,
+        SLOT(onError(Suscan::AnalyzerRequest const &, const std::string &)));
 }
 
 void
-InspectorPanel::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
+InspToolWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
   this->sourceInfo = info;
   this->refreshUi();
 }
 
 void
-InspectorPanel::refreshUi(void)
+InspToolWidget::refreshUi(void)
 {
   bool inspAllowed = this->sourceInfo.testPermission(
         SUSCAN_ANALYZER_PERM_OPEN_INSPECTOR);
@@ -194,45 +236,39 @@ InspectorPanel::refreshUi(void)
 }
 
 void
-InspectorPanel::postLoadInit(void)
-{
-  this->timeWindow = new TimeWindow(this);
-}
-
-void
-InspectorPanel::setDemodFrequency(qint64 freq)
+InspToolWidget::setDemodFrequency(qint64 freq)
 {
   this->ui->frequencySpinBox->setValue(freq);
   this->demodFreq = freq;
 }
 
 void
-InspectorPanel::setColorConfig(ColorConfig const &config)
+InspToolWidget::setColorConfig(ColorConfig const &config)
 {
   this->timeWindow->setColorConfig(config);
 }
 
 void
-InspectorPanel::setBandwidthLimits(unsigned int min, unsigned int max)
+InspToolWidget::setBandwidthLimits(unsigned int min, unsigned int max)
 {
   this->ui->bandwidthSpin->setMinimum(static_cast<int>(min));
   this->ui->bandwidthSpin->setMaximum(static_cast<int>(max));
 }
 
 void
-InspectorPanel::setBandwidth(unsigned int freq)
+InspToolWidget::setBandwidth(unsigned int freq)
 {
   this->ui->bandwidthSpin->setValue(static_cast<int>(freq));
 }
 
 void
-InspectorPanel::setPrecise(bool precise)
+InspToolWidget::setPrecise(bool precise)
 {
   this->ui->preciseCheck->setChecked(precise);
 }
 
 void
-InspectorPanel::setState(enum State state)
+InspToolWidget::setState(enum State state)
 {
   if (this->state != state) {
     this->sourceInfo = Suscan::AnalyzerSourceInfo();
@@ -241,20 +277,20 @@ InspectorPanel::setState(enum State state)
   }
 }
 
-enum InspectorPanel::State
-InspectorPanel::getState(void) const
+enum InspToolWidget::State
+InspToolWidget::getState(void) const
 {
   return this->state;
 }
 
 bool
-InspectorPanel::getPrecise(void) const
+InspToolWidget::getPrecise(void) const
 {
   return this->ui->preciseCheck->isChecked();
 }
 
 void
-InspectorPanel::setInspectorClass(std::string const &cls)
+InspToolWidget::setInspectorClass(std::string const &cls)
 {
   if (cls == "psk")
     this->ui->pskRadio->setChecked(true);
@@ -265,7 +301,7 @@ InspectorPanel::setInspectorClass(std::string const &cls)
 }
 
 std::string
-InspectorPanel::getInspectorClass(void) const
+InspToolWidget::getInspectorClass(void) const
 {
   if (this->ui->pskRadio->isChecked())
     return "psk";
@@ -278,13 +314,13 @@ InspectorPanel::getInspectorClass(void) const
 }
 
 unsigned int
-InspectorPanel::getBandwidth(void) const
+InspToolWidget::getBandwidth(void) const
 {
   return static_cast<unsigned int>(this->ui->bandwidthSpin->value());
 }
 
 void
-InspectorPanel::resetRawInspector(qreal fs)
+InspToolWidget::resetRawInspector(qreal fs)
 {
   this->timeWindowFs = fs;
   this->uiRefreshSamples =
@@ -306,7 +342,7 @@ InspectorPanel::resetRawInspector(qreal fs)
 }
 
 void
-InspectorPanel::refreshCaptureInfo(void)
+InspToolWidget::refreshCaptureInfo(void)
 {
   this->ui->durationLabel->setText(
         SuWidgetsHelpers::formatQuantityFromDelta(
@@ -319,7 +355,7 @@ InspectorPanel::refreshCaptureInfo(void)
 }
 
 void
-InspectorPanel::transferHistory(void)
+InspToolWidget::transferHistory(void)
 {
   // Insert older samples
   this->data.insert(
@@ -335,7 +371,7 @@ InspectorPanel::transferHistory(void)
 }
 
 void
-InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
+InspToolWidget::feedRawInspector(const SUCOMPLEX *data, size_t size)
 {
   this->totalSamples += size;
   bool refreshUi =
@@ -449,7 +485,7 @@ InspectorPanel::feedRawInspector(const SUCOMPLEX *data, size_t size)
 }
 
 void
-InspectorPanel::openTimeWindow(void)
+InspToolWidget::openTimeWindow(void)
 {
   this->timeWindow->setData(
         this->data,
@@ -471,7 +507,7 @@ InspectorPanel::openTimeWindow(void)
 }
 
 void
-InspectorPanel::enableAutoSquelch(void)
+InspToolWidget::enableAutoSquelch(void)
 {
   // Enable autoSquelch
   this->autoSquelch = true;
@@ -484,11 +520,12 @@ InspectorPanel::enableAutoSquelch(void)
   this->ui->hangTimeSpin->setEnabled(false);
   this->ui->maxMemSpin->setEnabled(false);
   this->ui->triggerSpin->setEnabled(false);
-  emit startRawCapture();
+
+  this->startRawCapture();
 }
 
 void
-InspectorPanel::cancelAutoSquelch(void)
+InspToolWidget::cancelAutoSquelch(void)
 {
   // Cancel autoSquelch
   this->autoSquelch = false;
@@ -503,14 +540,86 @@ InspectorPanel::cancelAutoSquelch(void)
   this->ui->maxMemSpin->setEnabled(true);
   this->ui->triggerSpin->setEnabled(true);
   this->ui->autoSquelchButton->setText("Autosquelch");
-  emit stopRawCapture();
+
+  this->stopRawCapture();
+  this->resetRawInspector(1);
 }
 
-InspectorPanel::InspectorPanel(QWidget *parent) :
-  PersistentWidget(parent),
+void
+InspToolWidget::startRawCapture()
+{
+  if (m_analyzer != nullptr && !m_opened) {
+    Suscan::Channel ch;
+    ch.bw    = this->getBandwidth();
+    ch.ft    = 0;
+    ch.fc    = SCAST(SUFREQ, this->mediator()->getMainSpectrum()->getLoFreq());
+    ch.fLow  = - .5 * ch.bw;
+    ch.fHigh = + .5 * ch.bw;
+
+    m_tracker->requestOpen("raw", ch, QVariant(), true);
+  }
+}
+
+void
+InspToolWidget::stopRawCapture()
+{
+  if (m_analyzer != nullptr) {
+    if (m_opened)
+      m_analyzer->closeInspector(m_request.handle);
+    else
+      m_tracker->cancelAll();
+  }
+}
+
+void
+InspToolWidget::setState(int, Suscan::Analyzer *analyzer)
+{
+  if (m_analyzer != analyzer) {
+    m_analyzer = analyzer;
+
+    m_tracker->setAnalyzer(analyzer);
+    m_opened = false;
+
+    connect(
+          m_analyzer,
+          SIGNAL(source_info_message(Suscan::SourceInfoMessage const &)),
+          this,
+          SLOT(onSourceInfoMessage(Suscan::SourceInfoMessage const &)));
+
+    connect(
+          m_analyzer,
+          SIGNAL(inspector_message(Suscan::InspectorMessage const &)),
+          this,
+          SLOT(onInspectorMessage(Suscan::InspectorMessage const &)));
+
+    connect(
+          m_analyzer,
+          SIGNAL(samples_message(Suscan::SamplesMessage const &)),
+          this,
+          SLOT(onInspectorSamples(Suscan::SamplesMessage const &)));
+
+    this->setState(m_analyzer == nullptr ? DETACHED : ATTACHED);
+  }
+}
+
+void
+InspToolWidget::setProfile(Suscan::Source::Config &config)
+{
+  this->setBandwidthLimits(
+        1,
+        config.getDecimatedSampleRate());
+
+  this->setBandwidth(this->mediator()->getMainSpectrum()->getBandwidth());
+}
+
+InspToolWidget::InspToolWidget
+(InspToolWidgetFactory *factory, UIMediator *mediator, QWidget *parent) :
+  ToolWidget(factory, mediator, parent),
   ui(new Ui::InspectorPanel)
 {
   ui->setupUi(this);
+
+  m_tracker = new Suscan::AnalyzerRequestTracker(this);
 
   this->assertConfig();
   this->setState(DETACHED);
@@ -520,34 +629,46 @@ InspectorPanel::InspectorPanel(QWidget *parent) :
   this->setProperty("collapsed", this->panelConfig->collapsed);
 }
 
-InspectorPanel::~InspectorPanel()
+InspToolWidget::~InspToolWidget()
 {
   delete ui;
 }
 
 /////////////////////////////////// Slots /////////////////////////////////////
 void
-InspectorPanel::onOpenInspector(void)
+InspToolWidget::onOpenInspector(void)
 {
+  Suscan::Channel ch;
+  ch.bw    = this->getBandwidth();
+  ch.ft    = 0;
+  ch.fc    = SCAST(SUFREQ, this->mediator()->getMainSpectrum()->getLoFreq());
+  ch.fLow  = - .5 * ch.bw;
+  ch.fHigh = + .5 * ch.bw;
+
   this->panelConfig->inspectorClass = this->getInspectorClass();
-  emit requestOpenInspector(QString::fromStdString(this->getInspectorClass()));
+
+  this->mediator()->openInspectorTab(
+        "GenericInspectorFactory",
+        this->panelConfig->inspectorClass.c_str(),
+        ch,
+        this->ui->preciseCheck->isChecked());
 }
 
 void
-InspectorPanel::onBandwidthChanged(double bw)
+InspToolWidget::onBandwidthChanged(double bw)
 {
-  /* this->mainWindow->mainSpectrum->setHiLowCutFrequencies(-bw / 2, bw / 2); */
-  emit bandwidthChanged(static_cast<int>(bw));
+  // TODO: getBandwidth, setFilterBandwidth??
+  this->mediator()->getMainSpectrum()->setFilterBandwidth(SCAST(unsigned, bw));
 }
 
 void
-InspectorPanel::onPreciseChanged(void)
+InspToolWidget::onPreciseChanged(void)
 {
   this->panelConfig->precise = this->ui->preciseCheck->isChecked();
 }
 
 void
-InspectorPanel::onPressAutoSquelch(void)
+InspToolWidget::onPressAutoSquelch(void)
 {
   if (!this->autoSquelch) {
     this->enableAutoSquelch();
@@ -560,7 +681,7 @@ InspectorPanel::onPressAutoSquelch(void)
 }
 
 void
-InspectorPanel::onReleaseAutoSquelch(void)
+InspToolWidget::onReleaseAutoSquelch(void)
 {
   if (this->autoSquelch) {
     if (this->powerSamples == 0) {
@@ -578,28 +699,28 @@ InspectorPanel::onReleaseAutoSquelch(void)
 }
 
 void
-InspectorPanel::onToggleAutoSquelch(void)
+InspToolWidget::onToggleAutoSquelch(void)
 {
   this->ui->autoSquelchButton->setChecked(this->autoSquelch);
 }
 
 void
-InspectorPanel::onPressHold(void)
+InspToolWidget::onPressHold(void)
 {
-  emit startRawCapture();
+  startRawCapture();
 }
 
 void
-InspectorPanel::onReleaseHold(void)
+InspToolWidget::onReleaseHold(void)
 {
-  emit stopRawCapture();
+  stopRawCapture();
 
   if (this->data.size() > 0)
     this->openTimeWindow();
 }
 
 void
-InspectorPanel::onTimeWindowConfigChanged(void)
+InspToolWidget::onTimeWindowConfigChanged(void)
 {
   this->panelConfig->palette = this->timeWindow->getPalette();
   this->panelConfig->paletteOffset = this->timeWindow->getPaletteOffset();
@@ -607,7 +728,77 @@ InspectorPanel::onTimeWindowConfigChanged(void)
 }
 
 void
-InspectorPanel::onTriggerSNRChanged(double val)
+InspToolWidget::onTriggerSNRChanged(double val)
 {
   this->panelConfig->autoSquelchTriggerSNR = static_cast<SUFLOAT>(val);
+}
+
+
+// Main UI slots
+void
+InspToolWidget::onSpectrumBandwidthChanged(void)
+{
+  this->setBandwidth(this->mediator()->getMainSpectrum()->getBandwidth());
+}
+
+void
+InspToolWidget::onSpectrumFrequencyChanged(void)
+{
+  this->setDemodFrequency(
+        this->mediator()->getMainSpectrum()->getLoFreq()
+        + this->mediator()->getMainSpectrum()->getCenterFreq());
+}
+
+// Request tracker slots
+void
+InspToolWidget::onOpened(Suscan::AnalyzerRequest const &request)
+{
+  m_opened = true;
+  m_request = request;
+
+  this->resetRawInspector(SCAST(qreal, request.equivRate));
+}
+
+void
+InspToolWidget::onCancelled(Suscan::AnalyzerRequest const &)
+{
+
+}
+
+void
+InspToolWidget::onError(Suscan::AnalyzerRequest const &, std::string const &error)
+{
+  QMessageBox::critical(
+        this,
+        "Failed to open raw inspector",
+        "Failed to open raw inspector in the selected channel: "
+        + QString::fromStdString(error));
+}
+
+// Analyzer slots
+void
+InspToolWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
+{
+  this->setBandwidthLimits(
+        1,
+        SCAST(unsigned, msg.info()->getSampleRate()));
+
+  this->applySourceInfo(*msg.info());
+}
+
+void
+InspToolWidget::onInspectorMessage(Suscan::InspectorMessage const &msg)
+{
+  if (
+      m_opened
+      && msg.getKind() == SUSCAN_ANALYZER_INSPECTOR_MSGKIND_CLOSE
+      && msg.getInspectorId() == m_request.inspectorId)
+    m_opened = false;
+}
+
+void
+InspToolWidget::onInspectorSamples(Suscan::SamplesMessage const &msg)
+{
+  if (m_opened && msg.getInspectorId() == m_request.inspectorId)
+    this->feedRawInspector(msg.getSamples(), msg.getCount());
 }

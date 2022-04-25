@@ -18,7 +18,6 @@
 //
 
 #include "AppConfig.h"
-#include "InspectorPanel.h"
 #include "PanoramicDialog.h"
 
 #include <Suscan/Library.h>
@@ -32,7 +31,6 @@ AppConfig::AppConfig(AppUI *ui)
   guiConfig{},
   enabledBandPlans{}
 {
-  this->inspectorConfig   = ui->inspectorPanel->getConfig();
   this->panSpectrumConfig = ui->panoramicDialog->getConfig();
 }
 
@@ -61,7 +59,6 @@ AppConfig::serialize(void)
   obj.setField("colors", this->colors.serialize());
   obj.setField("guiConfig", this->guiConfig.serialize());
   obj.setField("tleSourceConfig", this->tleSourceConfig.serialize());
-  obj.setField("inspectorPanel", this->inspectorConfig->serialize());
   obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
 
   obj.setField("bandPlans", bandPlans);
@@ -107,7 +104,6 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->colors.deserialize(conf.getField("colors")));
     TRYSILENT(this->guiConfig.deserialize(conf.getField("guiConfig")));
     TRYSILENT(this->tleSourceConfig.deserialize(conf.getField("tleSourceConfig")));
-    TRYSILENT(this->inspectorConfig->deserialize(conf.getField("inspectorPanel")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
 
     TRYSILENT(this->version    = conf.get("version", SIGDIGGER_UICONFIG_DEFAULT_VERSION));

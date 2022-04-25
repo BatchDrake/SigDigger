@@ -46,6 +46,7 @@
 namespace SigDigger {
   class ToolWidgetFactory;
   class TabWidgetFactory;
+  class InspectionWidgetFactory;
 };
 
 namespace Suscan {
@@ -225,7 +226,13 @@ namespace Suscan {
     QMap<std::string, SpectrumUnit> spectrumUnits;
     QHash<QString, Source::Config> networkProfiles;
     QList<SigDigger::ToolWidgetFactory *> toolWidgetFactories;
-    QList<SigDigger::TabWidgetFactory *> tabWidgetFactories;
+    QList<SigDigger::TabWidgetFactory *>        tabWidgetFactories;
+    QList<SigDigger::InspectionWidgetFactory *> inspectionWidgetFactories;
+
+    // Used for search only
+    QHash<QString, SigDigger::TabWidgetFactory *>        tabWidgetFactoryTable;
+    QHash<QString, SigDigger::InspectionWidgetFactory *> inspectionWidgetFactoryTable;
+
     std::list<std::string> recentProfiles;
 
     bool codecs_initd;
@@ -359,6 +366,13 @@ namespace Suscan {
     bool unregisterTabWidgetFactory(SigDigger::TabWidgetFactory *);
     QList<SigDigger::TabWidgetFactory *>::const_iterator getFirstTabWidgetFactory() const;
     QList<SigDigger::TabWidgetFactory *>::const_iterator getLastTabWidgetFactory() const;
+    SigDigger::TabWidgetFactory *findTabWidgetFactory(QString const &) const;
+
+    bool registerInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *);
+    bool unregisterInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *);
+    QList<SigDigger::InspectionWidgetFactory *>::const_iterator getFirstInspectionWidgetFactory() const;
+    QList<SigDigger::InspectionWidgetFactory *>::const_iterator getLastInspectionWidgetFactory() const;
+    SigDigger::InspectionWidgetFactory *findInspectionWidgetFactory(QString const &) const;
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);

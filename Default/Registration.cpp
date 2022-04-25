@@ -20,8 +20,10 @@
 #include "Registration.h"
 #include "Audio/AudioWidgetFactory.h"
 #include "Source/SourceWidgetFactory.h"
+#include "Inspection/InspToolWidgetFactory.h"
 #include "FFT/FFTWidgetFactory.h"
 #include "DefaultTab/DefaultTabWidgetFactory.h"
+#include "GenericInspector/GenericInspectorFactory.h"
 
 #include <Suscan/Library.h>
 
@@ -41,9 +43,12 @@ SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
 
   sus->registerToolWidgetFactory(new AudioWidgetFactory(plugin));
   sus->registerToolWidgetFactory(new SourceWidgetFactory(plugin));
+  sus->registerToolWidgetFactory(new InspToolWidgetFactory(plugin));
   sus->registerToolWidgetFactory(new FFTWidgetFactory(plugin));
 
   sus->registerTabWidgetFactory(new DefaultTabWidgetFactory(plugin));
+
+  sus->registerInspectionWidgetFactory(new GenericInspectorFactory(plugin));
 
   return true;
 }

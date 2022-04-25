@@ -1,5 +1,5 @@
 //
-//    MfControl.h: Matched filter control
+//    ClockRecovery.h: Clock recovery control
 //    Copyright (C) 2019 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -17,34 +17,32 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#ifndef MFCONTROL_H
-#define MFCONTROL_H
+#ifndef CLOCKRECOVERY_H
+#define CLOCKRECOVERY_H
 
 #include <QWidget>
-#include <InspectorCtl.h>
+#include "InspectorCtl.h"
 
 namespace Ui {
-  class MfControl;
+  class ClockRecovery;
 }
 
 namespace SigDigger {
-  class MfControl : public InspectorCtl
+  class ClockRecovery : public InspectorCtl
   {
       Q_OBJECT
 
     public:
-      explicit MfControl(
-          QWidget *parent,
-          Suscan::Config *config);
-      ~MfControl() override;
+      explicit ClockRecovery(QWidget *parent, Suscan::Config *config);
+      ~ClockRecovery() override;
 
       bool applicable(QString const &key) override;
       void refreshUi(void) override;
       void parseConfig(void) override;
 
     private:
-      Ui::MfControl *ui;
+      Ui::ClockRecovery *ui;
   };
 }
 
-#endif // MFCONTROL_H
+#endif // CLOCKRECOVERY_H
