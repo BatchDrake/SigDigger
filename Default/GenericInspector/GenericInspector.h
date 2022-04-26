@@ -12,6 +12,10 @@ namespace SigDigger {
   class AppConfig;
 
   struct GenericInspectorConfig : public Suscan::Serializable {
+    std::string  spectrumPalette   = "Inferno (Feely)";
+    std::string  waveFormPalette   = "Inferno (Feely)";
+    unsigned int waveFormOffset    = 0;
+    int          waveFormContrast  = 1;
     void deserialize(Suscan::Object const &conf) override;
     Suscan::Object &&serialize() override;
   };

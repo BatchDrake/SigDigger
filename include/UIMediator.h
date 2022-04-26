@@ -107,12 +107,12 @@ namespace SigDigger {
 
     // Refactored UI State
     State                              m_state = HALTED;
-    Suscan::Object                    *m_compConfig = nullptr;
     Suscan::Analyzer                  *m_analyzer = nullptr;
     QList<UIComponent *>               m_components;
     QList<TabWidget *>                 m_tabWidgets;
     QMap<TabWidget *, QDialog *>       m_floatingTabs;
     struct timeval                     m_lastTimeStamp;
+    Suscan::Object                     m_hollowConfig;
 
     Suscan::AnalyzerRequestTracker    *m_requestTracker = nullptr;
     QList<InspectionWidget *>          m_inspectors;
@@ -187,6 +187,8 @@ namespace SigDigger {
     // Convenience getters
     Suscan::Source::Config *getProfile() const;
     Suscan::AnalyzerParams *getAnalyzerParams() const;
+    bool applyComponentConfig(UIComponent *);
+    void saveComponentConfig(UIComponent *);
 
     // panSpectrum functions
     bool         getPanSpectrumDevice(Suscan::Source::Device &) const;

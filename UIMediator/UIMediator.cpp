@@ -183,8 +183,8 @@ UIMediator::addTabWidget(TabWidget *tabWidget)
         tabWidget,
         QString::fromStdString(tabWidget->getLabel()));
 
-  // TODO: Apply inspector config!
-  tabWidget->assertConfig();
+  // TODO: Maybe apply on registration?
+  this->applyComponentConfig(tabWidget);
 
   if (s->haveQth())
     tabWidget->setQth(s->getQth());
@@ -237,6 +237,9 @@ UIMediator::closeTabWidget(TabWidget *tabWidget)
       d->deleteLater();
     }
   }
+
+  // TODO: Maybe apply on unregistration? Why are these special?
+  this->saveComponentConfig(tabWidget);
 
   return true;
 }
@@ -883,6 +886,51 @@ UIMediator::getAnalyzerParams(void) const
   return &this->appConfig->analyzerParams;
 }
 
+bool
+UIMediator::applyComponentConfig(UIComponent *component)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  const char *name = component->factoryName();
+
+  try {
+    for (auto p = sus->getFirstUIConfig(); p != sus->getLastUIConfig(); ++p) {
+      if (p->getClass() == "qtui") {
+        auto obj = p->getField("Components");
+        if (!obj.isHollow()) {
+          auto cfgObj = obj.getField(name);
+          if (!cfgObj.isHollow()) {
+            printf("Config found!\n");
+            component->loadSerializedConfig(cfgObj);
+            return true;
+          }
+        }
+      }
+    }
+  } catch (Suscan::Exception const &) {
+
+  }
+
+  return false;
+}
+
+void
+UIMediator::saveComponentConfig(UIComponent *component)
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  const char *name = component->factoryName();
+
+  for (auto p = sus->getFirstUIConfig(); p != sus->getLastUIConfig(); ++p) {
+    if (p->getClass() == "qtui") {
+      auto obj = p->getField("Components");
+      if (!obj.isHollow()) {
+        printf("Config saved!\n");
+        obj.setField(name, component->getSerializedConfig());
+        return;
+      }
+    }
+  }
+}
+
 Suscan::Serializable *
 UIMediator::allocConfig(void)
 {
@@ -992,9 +1040,6 @@ UIMediator::applyConfig(void)
 
 UIMediator::~UIMediator()
 {
-  if (m_compConfig != nullptr)
-    delete m_compConfig;
-
   // Delete UI components in an ordered way
   for (auto p : m_components)
     delete p;

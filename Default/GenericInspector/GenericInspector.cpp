@@ -24,10 +24,18 @@
 
 using namespace SigDigger;
 
-void
-GenericInspectorConfig::deserialize(Suscan::Object const &)
-{
+#define STRINGFY(x) #x
+#define STORE(field) obj.set(STRINGFY(field), this->field)
+#define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
 
+
+void
+GenericInspectorConfig::deserialize(Suscan::Object const &conf)
+{
+  LOAD(spectrumPalette);
+  LOAD(waveFormPalette);
+  LOAD(waveFormOffset);
+  LOAD(waveFormContrast);
 }
 
 Suscan::Object &&
@@ -36,6 +44,11 @@ GenericInspectorConfig::serialize(void)
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
   obj.setClass("GenericInspectorConfig");
+
+  STORE(spectrumPalette);
+  STORE(waveFormPalette);
+  STORE(waveFormOffset);
+  STORE(waveFormContrast);
 
   return this->persist(obj);
 }
@@ -49,9 +62,12 @@ GenericInspector::GenericInspector(
 {
   QString name = getInspectorTabTitle();
 
+  this->assertConfig();
+
   this->ui = new InspectorUI(
         this,
         name,
+        m_uiConfig,
         &m_config,
         *mediator->getAppConfig());
 
@@ -257,13 +273,15 @@ GenericInspector::getLabel() const
 Suscan::Serializable *
 GenericInspector::allocConfig(void)
 {
-  return new GenericInspectorConfig();
+  m_uiConfig = new GenericInspectorConfig();
+
+  return m_uiConfig;
 }
 
 void
 GenericInspector::applyConfig(void)
 {
-
+  this->ui->setAppConfig(*this->mediator()->getAppConfig());
 }
 
 ///////////////////////////// Private methods /////////////////////////////////

@@ -65,6 +65,7 @@ namespace SigDigger {
   class FrequencyCorrectionDialog;
   class AppConfig;
   class EstimatorControl;
+  class GenericInspectorConfig;
 
   class InspectorUI : public QObject {
     Q_OBJECT
@@ -96,6 +97,7 @@ namespace SigDigger {
     unsigned int spectrumAdjustCounter = 0;
 
     // Inspector config
+    GenericInspectorConfig *m_tabConfig = nullptr; // Weak
     Suscan::Config *config; // Weak
     QWidget *owner;
     bool haveQth = false;
@@ -188,7 +190,8 @@ namespace SigDigger {
       InspectorUI(
           QWidget *owner,
           QString name,
-          Suscan::Config *config,
+          GenericInspectorConfig *inspTabConfig,
+          Suscan::Config *inspConfig,
           AppConfig const &appConfig);
       ~InspectorUI();
 

@@ -43,6 +43,7 @@
 #include <suscan.h>
 #include <iomanip>
 #include <fcntl.h>
+#include "GenericInspector.h"
 
 #include "Waterfall.h"
 #include "GLWaterfall.h"
@@ -208,8 +209,10 @@ InspectorUI::connectGLWf()
 InspectorUI::InspectorUI(
     QWidget *owner,
     QString name,
+    GenericInspectorConfig *inspTabConfig,
     Suscan::Config *config,
-    AppConfig const &appConfig)
+    AppConfig const &appConfig) :
+  m_tabConfig(inspTabConfig)
 {
   struct timeval tv;
 
@@ -304,8 +307,6 @@ void
 InspectorUI::initUi(void)
 {
   SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
-
-  this->setPalette("Suscan");
 
   this->populateUnits();
   this->populate();
@@ -451,6 +452,8 @@ InspectorUI::setPalette(std::string const &str)
   WATERFALL_CALL(setPalette(
         SigDiggerHelpers::instance()->getPalette(index)->getGradient()));
   this->ui->paletteCombo->setCurrentIndex(index);
+
+  m_tabConfig->spectrumPalette = str;
 
   return true;
 }
@@ -1356,16 +1359,16 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
 
   // Set Waveform colors
   this->wfTab->setColorConfig(colors);
-#if 0
-  this->wfTab->setPalette(panelConfig.palette);
-  this->wfTab->setPaletteOffset(panelConfig.paletteOffset);
-  this->wfTab->setPaletteContrast(panelConfig.paletteContrast);
-#endif
+
+  this->wfTab->setPalette(m_tabConfig->waveFormPalette);
+  this->wfTab->setPaletteOffset(m_tabConfig->waveFormOffset);
+  this->wfTab->setPaletteContrast(m_tabConfig->waveFormContrast);
+
   // Set FAC colors
   this->facTab->setColorConfig(colors);
 
   // Set palette
-  // (void) this->setPalette(fftConfig.palette);
+  (void) this->setPalette(m_tabConfig->spectrumPalette);
 }
 
 void
@@ -1458,9 +1461,8 @@ InspectorUI::onFPSChanged(void)
 void
 InspectorUI::onSpectrumConfigChanged(void)
 {
-  int index = this->ui->paletteCombo->currentIndex();
-  WATERFALL_CALL(setPalette(
-        SigDiggerHelpers::instance()->getPalette(index)->getGradient()));
+  this->setPalette(this->ui->paletteCombo->currentText().toStdString());
+
   WATERFALL_CALL(setPeakDetection(
         this->ui->peakDetectionButton->isChecked(), 3));
 
