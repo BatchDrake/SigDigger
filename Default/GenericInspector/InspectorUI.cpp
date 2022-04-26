@@ -240,15 +240,6 @@ InspectorUI::InspectorUI(
   this->tvTab = new TVProcessorTab(this->ui->toolTab, 0);
   this->ui->toolTab->addTab(this->tvTab, "Analog TV");
 
-  this->inspectorMenu = new QMenu(owner);
-  this->renameInspectorTab = new QAction("&Rename...", owner);
-  this->detachInspectorTab = new QAction("&Detach to a separate window", owner);
-  this->closeInspectorTab = new QAction("&Close", owner);
-  this->inspectorMenu->addAction(this->renameInspectorTab);
-  this->inspectorMenu->addAction(this->detachInspectorTab);
-  this->inspectorMenu->addSeparator();
-  this->inspectorMenu->addAction(this->closeInspectorTab);
-
   this->fcDialog = new FrequencyCorrectionDialog(
         owner,
         0,
@@ -437,12 +428,6 @@ InspectorUI::refreshInspectorCtls(void)
     p->refreshUi();
 }
 
-void
-InspectorUI::popupContextMenu(void)
-{
-  this->inspectorMenu->popup(QCursor::pos());
-}
-
 unsigned int
 InspectorUI::getBandwidth(void) const
 {
@@ -628,24 +613,6 @@ InspectorUI::connectAll()
         SIGNAL(clicked(bool)),
         this,
         SLOT(onScOpenInspector(void)));
-
-  connect(
-        this->renameInspectorTab,
-        SIGNAL(triggered()),
-        this,
-        SLOT(onInspectorRename()));
-
-  connect(
-        this->closeInspectorTab,
-        SIGNAL(triggered()),
-        this,
-        SIGNAL(closeRequested()));
-
-  connect(
-        this->detachInspectorTab,
-        SIGNAL(triggered()),
-        this,
-        SIGNAL(detachRequested()));
 }
 
 void
@@ -1801,6 +1768,7 @@ InspectorUI::onScOpenInspector(void)
         this->ui->scPreciseCheck->isChecked());
 }
 
+#if 0
 void
 InspectorUI::onInspectorRename(void)
 {
@@ -1818,3 +1786,4 @@ InspectorUI::onInspectorRename(void)
     emit nameChanged();
   }
 }
+#endif

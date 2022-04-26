@@ -128,10 +128,6 @@ namespace SigDigger {
     ThrottleControl throttle;
     Ui::Inspector *ui = nullptr;
     QString name;
-    QMenu *inspectorMenu = nullptr;
-    QAction *closeInspectorTab = nullptr;
-    QAction *renameInspectorTab = nullptr;
-    QAction *detachInspectorTab = nullptr;
     std::vector<InspectorCtl *> controls;
     DataSaverUI *saverUI = nullptr;
     NetForwarderUI *netForwarderUI = nullptr;
@@ -231,7 +227,6 @@ namespace SigDigger {
       void beginReparenting(void);
       void doneReparenting(void);
       void setLo(int lo);
-      void popupContextMenu(void);
       void resetSpectrumLimits(void);
       void refreshInspectorCtls(void);
       unsigned int getBandwidth(void) const;
@@ -259,7 +254,6 @@ namespace SigDigger {
       void onApplyEstimation(QString, float);
       void onOpenDopplerSettings(void);
       void onDopplerAccepted(void);
-      void onInspectorRename(void);
 
       // Spectrum slots
       void onUnitChanged(void);
@@ -287,9 +281,6 @@ namespace SigDigger {
       void onNetCommit(void);
 
     signals:
-      void nameChanged(void);
-      void closeRequested(void);
-      void detachRequested(void);
       void configChanged(void);
       void setSpectrumSource(unsigned int index);
       void loChanged(void);

@@ -115,24 +115,6 @@ GenericInspector::GenericInspector(
         this,
         SLOT(onOpenInspector(QString, qint64, qreal, bool)));
 
-  connect(
-        this->ui,
-        SIGNAL(nameChanged()),
-        this,
-        SIGNAL(nameChanged()));
-
-  connect(
-        this->ui,
-        SIGNAL(closeRequested()),
-        this,
-        SIGNAL(closeRequested()));
-
-  connect(
-        this->ui,
-        SIGNAL(detachRequested()),
-        this,
-        SIGNAL(detachRequested()));
-
   for (auto p = request.spectSources.begin();
        p != request.spectSources.end();
        ++p)
