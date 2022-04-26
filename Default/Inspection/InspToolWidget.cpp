@@ -580,23 +580,25 @@ InspToolWidget::setState(int, Suscan::Analyzer *analyzer)
     m_tracker->setAnalyzer(analyzer);
     m_opened = false;
 
-    connect(
-          m_analyzer,
-          SIGNAL(source_info_message(Suscan::SourceInfoMessage const &)),
-          this,
-          SLOT(onSourceInfoMessage(Suscan::SourceInfoMessage const &)));
+    if (m_analyzer != nullptr) {
+      connect(
+            m_analyzer,
+            SIGNAL(source_info_message(Suscan::SourceInfoMessage const &)),
+            this,
+            SLOT(onSourceInfoMessage(Suscan::SourceInfoMessage const &)));
 
-    connect(
-          m_analyzer,
-          SIGNAL(inspector_message(Suscan::InspectorMessage const &)),
-          this,
-          SLOT(onInspectorMessage(Suscan::InspectorMessage const &)));
+      connect(
+            m_analyzer,
+            SIGNAL(inspector_message(Suscan::InspectorMessage const &)),
+            this,
+            SLOT(onInspectorMessage(Suscan::InspectorMessage const &)));
 
-    connect(
-          m_analyzer,
-          SIGNAL(samples_message(Suscan::SamplesMessage const &)),
-          this,
-          SLOT(onInspectorSamples(Suscan::SamplesMessage const &)));
+      connect(
+            m_analyzer,
+            SIGNAL(samples_message(Suscan::SamplesMessage const &)),
+            this,
+            SLOT(onInspectorSamples(Suscan::SamplesMessage const &)));
+    }
 
     this->setState(m_analyzer == nullptr ? DETACHED : ATTACHED);
   }
