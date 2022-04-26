@@ -163,12 +163,6 @@ Application::connectUI(void)
         SLOT(onSeek(struct timeval)));
 
   connect(
-      this->mediator,
-        SIGNAL(analyzerParamsChanged(void)),
-        this,
-        SLOT(onParamsChanged(void)));
-
-  connect(
         this->mediator,
         SIGNAL(uiQuit(void)),
         this,
@@ -245,12 +239,6 @@ Application::connectUI(void)
         SIGNAL(panSpectrumGainChanged(QString, float)),
         this,
         SLOT(onPanSpectrumGainChanged(QString, float)));
-
-  connect(
-        this->mediator,
-        SIGNAL(bookmarkAdded(BookmarkInfo)),
-        this,
-        SLOT(onAddBookmark(BookmarkInfo)));
 
   connect(
         &this->uiTimer,
@@ -628,15 +616,6 @@ Application::onProfileChanged(bool needsRestart)
 }
 
 void
-Application::onGainChanged(QString name, float val)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    this->mediator->getProfile()->setGain(name.toStdString(), val);
-    this->analyzer->setGain(name.toStdString(), val);
-  }
-}
-
-void
 Application::onFrequencyChanged(qint64 freq, qint64 lnb)
 {
   this->mediator->getProfile()->setFreq(freq);
@@ -644,13 +623,6 @@ Application::onFrequencyChanged(qint64 freq, qint64 lnb)
 
   if (this->mediator->getState() == UIMediator::RUNNING)
     this->analyzer->setFrequency(freq, lnb);
-}
-
-void
-Application::onParamsChanged(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING)
-    this->analyzer->setParams(*this->mediator->getAnalyzerParams());
 }
 
 void
@@ -679,22 +651,6 @@ Application::onSeek(struct timeval tv)
 }
 
 void
-Application::onAntennaChanged(QString name)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    try {
-      this->analyzer->setAntenna(name.toStdString());
-    } catch (Suscan::Exception &) {
-      (void)  QMessageBox::critical(
-            this,
-            "SigDigger error",
-            "Source does not allow changing the current RX antenna",
-            QMessageBox::Ok);
-    }
-  }
-}
-
-void
 Application::onDeviceRefresh(void)
 {
   emit detectDevices();
@@ -704,38 +660,6 @@ void
 Application::onDetectFinished(void)
 {
   this->mediator->refreshDevicesDone();
-}
-
-void
-Application::onBandwidthChanged(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    try {
-      this->analyzer->setBandwidth(this->mediator->getProfile()->getBandwidth());
-    } catch (Suscan::Exception &) {
-      (void)  QMessageBox::critical(
-            this,
-            "SigDigger error",
-            "Source does not allow setting the bandwidth",
-            QMessageBox::Ok);
-    }
-  }
-}
-
-void
-Application::onPPMChanged(void)
-{
-  if (this->mediator->getState() == UIMediator::RUNNING) {
-    try {
-      this->analyzer->setPPM(this->mediator->getProfile()->getPPM());
-    } catch (Suscan::Exception &) {
-      (void)  QMessageBox::critical(
-            this,
-            "SigDigger error",
-            "Source does not allow manual PPM adjustment",
-            QMessageBox::Ok);
-    }
-  }
 }
 
 void
@@ -935,25 +859,6 @@ Application::onScannerUpdated(void)
         static_cast<quint64>(view.freqMax),
         view.psd,
         SIGDIGGER_SCANNER_SPECTRUM_SIZE);
-}
-
-void
-Application::onAddBookmark(BookmarkInfo info)
-{
-  if (!Suscan::Singleton::get_instance()->registerBookmark(info)) {
-    QMessageBox *mb = new QMessageBox(
-          QMessageBox::Warning,
-          "Cannot create bookmark",
-          "A bookmark already exists for frequency "
-          + SuWidgetsHelpers::formatQuantity(info.frequency, "Hz. If you wish to "
-          "edit this bookmark use the bookmark manager instead."),
-          QMessageBox::Ok,
-          this);
-    mb->setAttribute(Qt::WA_DeleteOnClose);
-    mb->show();
-  }
-
-  this->ui.spectrum->updateOverlay();
 }
 
 void

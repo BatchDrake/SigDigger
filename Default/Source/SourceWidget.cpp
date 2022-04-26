@@ -1084,8 +1084,17 @@ SourceWidget::onGainChanged(QString name, float val)
   if (this->profile != nullptr)
     this->profile->setGain(name.toStdString(), val);
 
-  if (m_analyzer != nullptr)
-    m_analyzer->setGain(name.toStdString(), val);
+  if (m_analyzer != nullptr) {
+    try {
+      m_analyzer->setGain(name.toStdString(), val);
+    } catch (Suscan::Exception &) {
+    (void)  QMessageBox::critical(
+          this,
+          "SigDigger error",
+          "Source does not allow adjusting gain settings",
+          QMessageBox::Ok);
+    }
+  }
 }
 
 void
@@ -1162,8 +1171,17 @@ SourceWidget::onPPMChanged(void)
   if (this->profile !=  nullptr)
     this->profile->setPPM(ppm);
 
-  if (m_analyzer != nullptr)
-    m_analyzer->setPPM(ppm);
+  if (m_analyzer != nullptr) {
+    try {
+      m_analyzer->setPPM(ppm);
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow adjusting the receiver's PPM",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
@@ -1197,8 +1215,17 @@ SourceWidget::onToggleDCRemove(void)
 {
   this->setDCRemove(this->ui->dcRemoveCheck->isChecked());
 
-  if (m_analyzer != nullptr)
-    m_analyzer->setDCRemove(this->panelConfig->dcRemove);
+  if (m_analyzer != nullptr) {
+    try {
+      m_analyzer->setDCRemove(this->panelConfig->dcRemove);
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow toggling the DC setting",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
@@ -1206,8 +1233,17 @@ SourceWidget::onToggleIQReverse(void)
 {
   this->setIQReverse(this->ui->swapIQCheck->isChecked());
 
-  if (m_analyzer != nullptr)
-    m_analyzer->setIQReverse(this->panelConfig->iqRev);
+  if (m_analyzer != nullptr) {
+    try {
+      m_analyzer->setIQReverse(this->panelConfig->iqRev);
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow reversing the IQ components",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
@@ -1215,8 +1251,17 @@ SourceWidget::onToggleAGCEnabled(void)
 {
   this->setAGCEnabled(this->ui->agcEnabledCheck->isChecked());
 
-  if (m_analyzer != nullptr)
-    m_analyzer->setAGC(this->panelConfig->agcEnabled);
+  if (m_analyzer != nullptr) {
+    try {
+      m_analyzer->setAGC(this->panelConfig->agcEnabled);
+    } catch (Suscan::Exception &) {
+      (void)  QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Source does not allow toggling the AGC setting",
+            QMessageBox::Ok);
+    }
+  }
 }
 
 void
@@ -1230,8 +1275,17 @@ SourceWidget::onAntennaChanged(int)
     if (this->profile != nullptr)
       this->profile->setAntenna(antenna);
 
-    if (m_analyzer != nullptr)
-      m_analyzer->setAntenna(antenna);
+    if (m_analyzer != nullptr) {
+      try {
+        m_analyzer->setAntenna(antenna);
+      } catch (Suscan::Exception &) {
+        (void)  QMessageBox::critical(
+              this,
+              "SigDigger error",
+              "Source does not allow changing the current RX antenna",
+              QMessageBox::Ok);
+      }
+    }
   }
 }
 

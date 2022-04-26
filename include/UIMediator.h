@@ -67,7 +67,6 @@ namespace SigDigger {
     std::map<std::string, QAction *> bandPlanMap;
 
     // Cached members
-    bool isRealTime;
     struct timeval profileStart;
     struct timeval profileEnd;
     Suscan::Source::Device remoteDevice;
@@ -102,14 +101,18 @@ namespace SigDigger {
     void refreshProfile(bool updateFreqs = true);
     void setCurrentAutoGain();
 
+    // Other setters
+    void setSourceTimeStart(struct timeval const &);
+    void setSourceTimeEnd(struct timeval const &);
+
     // Refactored UI State
-    State m_state = HALTED;
-    Suscan::Object                 *m_compConfig = nullptr;
-    Suscan::Analyzer               *m_analyzer = nullptr;
-    QList<UIComponent *>            m_components;
-    QList<TabWidget *>              m_tabWidgets;
-    QMap<TabWidget *, QDialog *>    m_floatingTabs;
-    struct timeval                  m_lastTimeStamp;
+    State                              m_state = HALTED;
+    Suscan::Object                    *m_compConfig = nullptr;
+    Suscan::Analyzer                  *m_analyzer = nullptr;
+    QList<UIComponent *>               m_components;
+    QList<TabWidget *>                 m_tabWidgets;
+    QMap<TabWidget *, QDialog *>       m_floatingTabs;
+    struct timeval                     m_lastTimeStamp;
 
     Suscan::AnalyzerRequestTracker    *m_requestTracker = nullptr;
     QList<InspectionWidget *>          m_inspectors;
@@ -184,31 +187,24 @@ namespace SigDigger {
     // Convenience getters
     Suscan::Source::Config *getProfile() const;
     Suscan::AnalyzerParams *getAnalyzerParams() const;
-    bool getAudioRecordState() const;
-    std::string getAudioRecordSavePath() const;
-    bool isAudioDopplerCorrectionEnabled() const;
-    Suscan::Orbit getAudioOrbit() const;
 
-    bool getPanSpectrumDevice(Suscan::Source::Device &) const;
-    bool getPanSpectrumRange(qint64 &min, qint64 &max) const;
+    // panSpectrum functions
+    bool         getPanSpectrumDevice(Suscan::Source::Device &) const;
+    bool         getPanSpectrumRange(qint64 &min, qint64 &max) const;
     unsigned int getPanSpectrumRttMs() const;
-    float getPanSpectrumRelBw() const;
-    float getPanSpectrumGain(QString const &) const;
-    SUFREQ getPanSpectrumLnbOffset() const;
-    float getPanSpectrumPreferredSampleRate() const;
-    QString getPanSpectrumStrategy() const;
-    QString getPanSpectrumPartition() const;
-    unsigned int getFftSize() const;
+    float        getPanSpectrumRelBw() const;
+    float        getPanSpectrumGain(QString const &) const;
+    SUFREQ       getPanSpectrumLnbOffset() const;
+    float        getPanSpectrumPreferredSampleRate() const;
+    QString      getPanSpectrumStrategy() const;
+    QString      getPanSpectrumPartition() const;
+    void         setPanSpectrumRunning(bool state);
 
     // Mediated setters
     void setAnalyzerParams(Suscan::AnalyzerParams const &params);
     void setStatusMessage(QString const &);
     void saveUIConfig();
     void setProfile(Suscan::Source::Config const &config, bool restart = false);
-    void setPanSpectrumRunning(bool state);
-
-    void setSourceTimeStart(struct timeval const &);
-    void setSourceTimeEnd(struct timeval const &);
     void setTimeStamp(struct timeval const &);
 
     // Overriden methods
@@ -221,28 +217,15 @@ namespace SigDigger {
   signals:
     void captureStart();
     void captureEnd();
-    void profileChanged(bool);
-    void colorsChanged(ColorConfig config);
-    void bookmarkAdded(BookmarkInfo);
-
-    void frequencyChanged(qint64, qint64);
-    void loChanged(qint64);
-    void channelBandwidthChanged(qreal bw);
     void seek(struct timeval tv);
-
-    void analyzerParamsChanged();
     void refreshDevices();
     void uiQuit();
-
     void recentSelected(QString);
     void recentCleared();
+    void profileChanged(bool);
+    void frequencyChanged(qint64, qint64);
 
-    void audioChanged();
-    void audioVolumeChanged(float);
-    void audioRecordStateChanged();
-    void audioSetCorrection(Suscan::Orbit);
-    void audioDisableCorrection();
-
+    // Panspectrum signals
     void panSpectrumStart();
     void panSpectrumStop();
     void panSpectrumRangeChanged(qint64 min, qint64 max, bool);

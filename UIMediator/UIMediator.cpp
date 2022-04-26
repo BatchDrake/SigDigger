@@ -849,7 +849,6 @@ UIMediator::refreshProfile(bool updateFreqs)
   // Set cached members
   this->profileStart = start;
   this->profileEnd   = end;
-  this->isRealTime   = isRealTime;
 
   // Configure timeslider
   this->ui->timeSlider->setStartTime(start);
@@ -882,12 +881,6 @@ Suscan::AnalyzerParams *
 UIMediator::getAnalyzerParams(void) const
 {
   return &this->appConfig->analyzerParams;
-}
-
-unsigned int
-UIMediator::getFftSize(void) const
-{
-  return this->appConfig->analyzerParams.windowSize;
 }
 
 Suscan::Serializable *
@@ -1357,15 +1350,32 @@ UIMediator::onAddBookmark(void)
 void
 UIMediator::onBookmarkAccepted(void)
 {
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   BookmarkInfo info;
+
   info.name = this->ui->addBookmarkDialog->name();
   info.frequency = this->ui->addBookmarkDialog->frequency();
   info.color = this->ui->addBookmarkDialog->color();
-  info.lowFreqCut = this->ui->spectrum->computeLowCutFreq(this->ui->addBookmarkDialog->bandwidth());
-  info.highFreqCut = this->ui->spectrum->computeHighCutFreq(this->ui->addBookmarkDialog->bandwidth());
+  info.lowFreqCut = this->ui->spectrum->computeLowCutFreq(
+        this->ui->addBookmarkDialog->bandwidth());
+  info.highFreqCut = this->ui->spectrum->computeHighCutFreq(
+        this->ui->addBookmarkDialog->bandwidth());
   info.modulation = this->ui->addBookmarkDialog->modulation();
 
-  emit bookmarkAdded(info);
+  if (!sus->registerBookmark(info)) {
+    QMessageBox *mb = new QMessageBox(
+          QMessageBox::Warning,
+          "Cannot create bookmark",
+          "A bookmark already exists for frequency "
+          + SuWidgetsHelpers::formatQuantity(info.frequency, "Hz. If you wish to "
+          "edit this bookmark use the bookmark manager instead."),
+          QMessageBox::Ok,
+          this->owner);
+    mb->setAttribute(Qt::WA_DeleteOnClose);
+    mb->show();
+  }
+
+  this->ui->spectrum->updateOverlay();
 }
 
 void

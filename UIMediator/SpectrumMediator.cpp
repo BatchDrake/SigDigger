@@ -165,7 +165,6 @@ UIMediator::onSpectrumBandwidthChanged(void)
 {
   this->appConfig->bandwidth =
       static_cast<unsigned int>(this->ui->spectrum->getBandwidth());
-  emit channelBandwidthChanged(this->ui->spectrum->getBandwidth());
 }
 
 void
@@ -178,16 +177,12 @@ UIMediator::onFrequencyChanged(qint64)
   emit frequencyChanged(
         this->ui->spectrum->getCenterFreq(),
         this->ui->spectrum->getLnbFreq());
-
-  emit loChanged(this->ui->spectrum->getLoFreq());
-
 }
 
 void
 UIMediator::onLoChanged(qint64)
 {
   this->appConfig->loFreq = static_cast<int>(this->ui->spectrum->getLoFreq());
-  emit loChanged(this->ui->spectrum->getLoFreq());
 }
 
 void

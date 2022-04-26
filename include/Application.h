@@ -39,7 +39,7 @@ namespace SigDigger {
 
   public:
       DeviceDetectWorker();
-      ~DeviceDetectWorker();
+      ~DeviceDetectWorker() override;
 
   public slots:
       void process();
@@ -104,11 +104,11 @@ namespace SigDigger {
     FileDataSaver *getSaver(void) const;
 
     explicit Application(QWidget *parent = nullptr);
-    ~Application();
+    ~Application() override;
 
 
   protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 
   signals:
     void detectDevices(void);
@@ -118,17 +118,11 @@ namespace SigDigger {
     void onCaptureStart(void);
     void onCaptureStop(void);
     void onProfileChanged(bool);
-    void onGainChanged(QString name, float val);
     void onFrequencyChanged(qint64, qint64);
     void onSeek(struct timeval);
-    void onParamsChanged(void);
-    void onAntennaChanged(QString antenna);
-    void onBandwidthChanged(void);
-    void onPPMChanged(void);
     void onDeviceRefresh(void);
     void onRecentSelected(QString profile);
     void onRecentCleared(void);
-    void onAddBookmark(BookmarkInfo info);
     void onTick(void);
     void quit(void);
 
