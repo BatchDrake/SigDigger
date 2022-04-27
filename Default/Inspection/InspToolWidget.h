@@ -46,6 +46,7 @@ namespace SigDigger {
     bool collapsed = true;
     std::string inspectorClass = "psk";
     std::string palette = "Suscan";
+    std::string inspFactory = "GenericInspector";
     SUFLOAT autoSquelchTriggerSNR = SIGDIGGER_DEFAULT_SQUELCH_TRIGGER;
     unsigned int paletteOffset;
     int paletteContrast;
@@ -131,6 +132,7 @@ namespace SigDigger {
     std::string getInspectorClass(void) const;
     bool getPrecise(void) const;
     enum State getState(void) const;
+    void refreshInspectorCombo();
 
   public:
     explicit InspToolWidget(

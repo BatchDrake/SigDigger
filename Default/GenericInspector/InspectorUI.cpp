@@ -122,10 +122,10 @@ InspectorUI::doneReparenting(void)
     float zp = SCAST(float, this->ui->zeroPointSpin->value());
 
     WATERFALL_CALL(setDemodRanges(
-          static_cast<int>(-rate / 2),
+          SCAST(int, -rate / 2),
           1,
           1,
-          static_cast<int>(+rate / 2),
+          SCAST(int, +rate / 2),
           true));
 
     if (index != -1)
@@ -150,14 +150,14 @@ InspectorUI::doneReparenting(void)
 
     WATERFALL_CALL(setPercent2DScreen(this->ui->aspectSlider->value()));
     WATERFALL_CALL(setGain(
-          static_cast<float>(this->ui->gainSpinBox->value())));
+          SCAST(float, this->ui->gainSpinBox->value())));
     WATERFALL_CALL(setFilterOffset(
-          static_cast<qint64>(
+          SCAST(qint64,
             this->ui->scFreqSpin->value())));
     WATERFALL_CALL(setHiLowCutFrequencies(
-          -static_cast<qint64>(
+          -SCAST(qint64,
             this->ui->scBandwidth->value() / 2),
-          +static_cast<qint64>(
+          +SCAST(qint64,
             this->ui->scBandwidth->value() / 2)));
   }
 }
@@ -355,47 +355,47 @@ InspectorUI::adjustSizes(void)
 float
 InspectorUI::getZeroPoint(void) const
 {
-  return static_cast<float>(this->ui->zeroPointSpin->value());
+  return SCAST(float, this->ui->zeroPointSpin->value());
 }
 
 void
 InspectorUI::setBasebandRate(unsigned int rate)
 {
   this->basebandSampleRate = rate;
-  this->ui->loLcd->setMin(-static_cast<int>(rate) / 2);
-  this->ui->loLcd->setMax(static_cast<int>(rate) / 2);
+  this->ui->loLcd->setMin(-SCAST(int, rate) / 2);
+  this->ui->loLcd->setMax(SCAST(int, rate) / 2);
 
-  this->ui->scFreqSpin->setMinimum(-static_cast<qreal>(rate) / 2);
-  this->ui->scFreqSpin->setMaximum(static_cast<qreal>(rate) / 2);
-  this->ui->scBandwidth->setMaximum(static_cast<qreal>(rate));
+  this->ui->scFreqSpin->setMinimum(-SCAST(qreal, rate) / 2);
+  this->ui->scFreqSpin->setMaximum(SCAST(qreal, rate) / 2);
+  this->ui->scBandwidth->setMaximum(SCAST(qreal, rate));
 }
 
 void
 InspectorUI::setSampleRate(float rate)
 {
   this->sampleRate = rate;
-  this->ui->scBandwidth->setValue(static_cast<qreal>(rate) / 20);
+  this->ui->scBandwidth->setValue(SCAST(qreal, rate) / 20);
 
   this->ui->sampleRateLabel->setText(
         "Sample rate: "
         + SuWidgetsHelpers::formatQuantity(
-            static_cast<qreal>(rate),
+            SCAST(qreal, rate),
             4,
             "sp/s"));
   this->ui->bwLcd->setMin(0);
-  this->ui->bwLcd->setMax(static_cast<qint64>(rate));
+  this->ui->bwLcd->setMax(SCAST(qint64, rate));
 
   WATERFALL_CALL(setClickResolution(1));
   WATERFALL_CALL(setFilterClickResolution(1));
   WATERFALL_CALL(setDemodRanges(
-        static_cast<int>(-rate / 2),
+        SCAST(int, -rate / 2),
         1,
         1,
-        static_cast<int>(+rate / 2),
+        SCAST(int, +rate / 2),
         true));
 
   if (this->config->hasPrefix("fsk"))
-    this->ui->histogram->overrideDisplayRange(static_cast<qreal>(rate));
+    this->ui->histogram->overrideDisplayRange(SCAST(qreal, rate));
 
   for (auto p : this->controls)
     p->setSampleRate(rate);
@@ -405,7 +405,7 @@ void
 InspectorUI::setBandwidth(unsigned int bandwidth)
 {
   // More COBOL
-  this->ui->bwLcd->setValue(static_cast<int>(bandwidth));
+  this->ui->bwLcd->setValue(SCAST(int, bandwidth));
 }
 
 void
@@ -432,13 +432,13 @@ InspectorUI::refreshInspectorCtls(void)
 unsigned int
 InspectorUI::getBandwidth(void) const
 {
-  return static_cast<unsigned int>(this->ui->bwLcd->getValue());
+  return SCAST(unsigned int, this->ui->bwLcd->getValue());
 }
 
 int
 InspectorUI::getLo(void) const
 {
-  return static_cast<int>(this->ui->loLcd->getValue());
+  return SCAST(int, this->ui->loLcd->getValue());
 }
 
 bool
@@ -468,7 +468,7 @@ InspectorUI::addSpectrumSource(Suscan::SpectrumSource const &src)
 void
 InspectorUI::addEstimator(Suscan::Estimator const &estimator)
 {
-  int position = static_cast<int>(this->estimators.size());
+  int position = SCAST(int, this->estimators.size());
   EstimatorControl *ctl;
   this->ui->estimatorsGrid->setAlignment(Qt::AlignTop);
 
@@ -853,7 +853,7 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
       this->ui->histogram->setSNRModel(this->estimator.getModel());
       this->ui->snrLabel->setText(
             QString::number(
-              floor(20. * log10(static_cast<qreal>(this->estimator.getSNR()))))
+              floor(20. * log10(SCAST(qreal, this->estimator.getSNR()))))
             + " dB");
       this->last_estimator_update = tv;
     }
@@ -964,7 +964,7 @@ void
 InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
 {
   if (this->lastRate != rate) {
-    WATERFALL_CALL(setSampleRate(static_cast<float>(rate)));
+    WATERFALL_CALL(setSampleRate(SCAST(float, rate)));
     this->lastRate = rate;
   }
 
@@ -973,7 +973,7 @@ InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
 
   WATERFALL_CALL(setNewFftData(
         static_cast<float *>(this->fftData.data()),
-        static_cast<int>(len)));
+        SCAST(int, len)));
 
   if (!this->haveSpectrumLimits) {
     SUFLOAT min = +INFINITY;
@@ -1007,8 +1007,8 @@ InspectorUI::feedSpectrum(const SUFLOAT *data, SUSCOUNT len, SUSCOUNT rate)
   }
 
   if (this->lastLen != len) {
-    int res = static_cast<int>(
-          round(static_cast<qreal>(rate) / static_cast<qreal>(len)));
+    int res = SCAST(int,
+          round(SCAST(qreal, rate) / SCAST(qreal, len)));
     if (res < 1)
       res = 1;
 
@@ -1065,7 +1065,7 @@ InspectorUI::getState(void) const
 void
 InspectorUI::pushControl(InspectorCtl *ctl)
 {
-  int position = static_cast<int>(this->controls.size());
+  int position = SCAST(int, this->controls.size());
 
   this->controls.push_back(ctl);
 
@@ -1150,22 +1150,22 @@ InspectorUI::redrawMeasures(void)
 {
   this->ui->centerLabel->setText(
         SuWidgetsHelpers::formatQuantity(
-          static_cast<qreal>(
+          SCAST(qreal,
             WATERFALL_FUNC(getFilterOffset(), 0)),
           6,
           "Hz",
           true));
   this->ui->scFreqSpin->setValue(
-        static_cast<qreal>(
+        SCAST(qreal,
           WATERFALL_FUNC(getFilterOffset(), 0)));
 
   this->ui->bwLabel->setText(
         SuWidgetsHelpers::formatQuantity(
-          static_cast<qreal>(WATERFALL_FUNC(getFilterBw(), 0)),
+          SCAST(qreal, WATERFALL_FUNC(getFilterBw(), 0)),
           6,
           "Hz"));
   this->ui->scBandwidth->setValue(
-        static_cast<qreal>(
+        SCAST(qreal,
           WATERFALL_FUNC(getFilterBw(), 0)));
 
 }
@@ -1205,7 +1205,7 @@ InspectorUI::setBps(unsigned int bps)
 unsigned int
 InspectorUI::getBaudRate(void) const
 {
-  return static_cast<unsigned int>(this->getBaudRateFloat());
+  return SCAST(unsigned int, this->getBaudRateFloat());
 }
 
 SUFLOAT
@@ -1242,11 +1242,11 @@ InspectorUI::getBps(void) const
 
   // Check if bits per symbol have changed
   if ((val = this->config->get("afc.bits-per-symbol")) != nullptr)
-    bps = static_cast<unsigned int>(val->getUint64());
+    bps = SCAST(unsigned int, val->getUint64());
   else if ((val = this->config->get("fsk.bits-per-symbol")) != nullptr)
-    bps = static_cast<unsigned int>(val->getUint64());
+    bps = SCAST(unsigned int, val->getUint64());
   else if ((val = this->config->get("ask.bits-per-symbol")) != nullptr)
-    bps = static_cast<unsigned int>(val->getUint64());
+    bps = SCAST(unsigned int, val->getUint64());
 
   if (bps == 0)
     bps = 1;
@@ -1369,6 +1369,12 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
 
   // Set palette
   (void) this->setPalette(m_tabConfig->spectrumPalette);
+  this->ui->peakHoldButton->setChecked(m_tabConfig->peakHold);
+  this->ui->peakDetectionButton->setChecked(m_tabConfig->peakDetect);
+  this->ui->aspectSlider->setValue(SCAST(int, 100 * m_tabConfig->spectrumRatio));
+  this->ui->unitsCombo->setCurrentText(QString::fromStdString(m_tabConfig->units));
+  this->ui->gainSpinBox->setValue(SCAST(qreal, m_tabConfig->gain));
+  this->ui->zeroPointSpin->setValue(SCAST(qreal, m_tabConfig->zeroPoint));
 }
 
 void
@@ -1383,7 +1389,7 @@ InspectorUI::setOrbitReport(Suscan::OrbitReport const &report)
 
   this->ui->dopplerLabel->setText(
         SuWidgetsHelpers::formatQuantity(
-          static_cast<qreal>(report.getFrequencyCorrection()),
+          SCAST(qreal, report.getFrequencyCorrection()),
           3,
           "Hz",
           true));
@@ -1455,18 +1461,23 @@ void
 InspectorUI::onFPSChanged(void)
 {
   this->throttle.setRate(
-        static_cast<unsigned int>(this->ui->fpsSpin->value()));
+        SCAST(unsigned int, this->ui->fpsSpin->value()));
 }
 
 void
 InspectorUI::onSpectrumConfigChanged(void)
 {
-  this->setPalette(this->ui->paletteCombo->currentText().toStdString());
+  if (QObject::sender() == this->ui->paletteCombo)
+    this->setPalette(this->ui->paletteCombo->currentText().toStdString());
 
-  WATERFALL_CALL(setPeakDetection(
-        this->ui->peakDetectionButton->isChecked(), 3));
+  if (QObject::sender() == this->ui->peakDetectionButton)
+    m_tabConfig->peakDetect = this->ui->peakDetectionButton->isChecked();
 
-  WATERFALL_CALL(setPeakHold(this->ui->peakHoldButton->isChecked()));
+  if (QObject::sender() == this->ui->peakHoldButton)
+    m_tabConfig->peakHold = this->ui->peakHoldButton->isChecked();
+
+  WATERFALL_CALL(setPeakDetection(m_tabConfig->peakHold, 3));
+  WATERFALL_CALL(setPeakHold(m_tabConfig->peakDetect));
 }
 
 void
@@ -1503,6 +1514,8 @@ InspectorUI::onApplyEstimation(QString name, float value)
 void
 InspectorUI::onAspectSliderChanged(int ratio)
 {
+  m_tabConfig->spectrumRatio = SCAST(float, ratio) * 1e-2f;
+
   WATERFALL_CALL(setPercent2DScreen(ratio));
 }
 
@@ -1677,21 +1690,28 @@ InspectorUI::onUnitChanged(void)
   WATERFALL_CALL(setUnitName(
         QString::fromStdString(this->currentUnit.name)));
   WATERFALL_CALL(setdBPerUnit(this->currentUnit.dBPerUnit));
+
+  m_tabConfig->units = this->currentUnit.name;
+
   this->setZeroPoint(newZp);
 }
 
 void
 InspectorUI::onZeroPointChanged(void)
 {
-  float currZP = static_cast<float>(this->ui->zeroPointSpin->value());
+  float currZP = SCAST(float, this->ui->zeroPointSpin->value());
+
+  m_tabConfig->zeroPoint = currZP;
+
   WATERFALL_CALL(setZeroPoint(this->currentUnit.zeroPoint + currZP));
 }
 
 void
 InspectorUI::onGainChanged(void)
 {
-  WATERFALL_CALL(setGain(
-        static_cast<float>(this->ui->gainSpinBox->value())));
+  m_tabConfig->gain = SCAST(float, this->ui->gainSpinBox->value());
+
+  WATERFALL_CALL(setGain(m_tabConfig->gain));
 }
 
 void
@@ -1736,7 +1756,7 @@ void
 InspectorUI::onScFrequencyChanged(void)
 {
   WATERFALL_CALL(setFilterOffset(
-        static_cast<qint64>(
+        SCAST(qint64,
           this->ui->scFreqSpin->value())));
 
 }
@@ -1745,9 +1765,9 @@ void
 InspectorUI::onScBandwidthChanged(void)
 {
   WATERFALL_CALL(setHiLowCutFrequencies(
-        -static_cast<qint64>(
+        -SCAST(qint64,
           this->ui->scBandwidth->value() / 2),
-        +static_cast<qint64>(
+        +SCAST(qint64,
           this->ui->scBandwidth->value() / 2)));
 }
 
@@ -1765,7 +1785,7 @@ InspectorUI::onScOpenInspector(void)
 
   emit openInspector(
         inspClass,
-        static_cast<qint64>(this->ui->scFreqSpin->value()),
+        SCAST(qint64, this->ui->scFreqSpin->value()),
         this->ui->scBandwidth->value(),
         this->ui->scPreciseCheck->isChecked());
 }

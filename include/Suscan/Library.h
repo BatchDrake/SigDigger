@@ -47,6 +47,7 @@ namespace SigDigger {
   class ToolWidgetFactory;
   class TabWidgetFactory;
   class InspectionWidgetFactory;
+  class UIListenerFactory;
 };
 
 namespace Suscan {
@@ -218,16 +219,20 @@ namespace Suscan {
     std::vector<Object> uiConfig;
     std::vector<Object> FATs;
 
-    Location qth;
-    QMap<QString, Orbit> satellites;
-    QMap<QString, Location> locations;
-    QMap<std::string, TLESource> tleSources;
-    QMap<qint64, Bookmark> bookmarks;
+    // Singleton config
+    Location                        qth;
+    QMap<QString, Orbit>            satellites;
+    QMap<QString, Location>         locations;
+    QMap<std::string, TLESource>    tleSources;
+    QMap<qint64, Bookmark>          bookmarks;
     QMap<std::string, SpectrumUnit> spectrumUnits;
-    QHash<QString, Source::Config> networkProfiles;
-    QList<SigDigger::ToolWidgetFactory *> toolWidgetFactories;
+    QHash<QString, Source::Config>  networkProfiles;
+
+    // Feature object factories
+    QList<SigDigger::ToolWidgetFactory *>       toolWidgetFactories;
     QList<SigDigger::TabWidgetFactory *>        tabWidgetFactories;
     QList<SigDigger::InspectionWidgetFactory *> inspectionWidgetFactories;
+    QList<SigDigger::UIListenerFactory *>       uiListenerFactories;
 
     // Used for search only
     QHash<QString, SigDigger::TabWidgetFactory *>        tabWidgetFactoryTable;
@@ -373,6 +378,11 @@ namespace Suscan {
     QList<SigDigger::InspectionWidgetFactory *>::const_iterator getFirstInspectionWidgetFactory() const;
     QList<SigDigger::InspectionWidgetFactory *>::const_iterator getLastInspectionWidgetFactory() const;
     SigDigger::InspectionWidgetFactory *findInspectionWidgetFactory(QString const &) const;
+
+    bool registerUIListenerFactory(SigDigger::UIListenerFactory *);
+    bool unregisterUIListenerFactory(SigDigger::UIListenerFactory *);
+    QList<SigDigger::UIListenerFactory *>::const_iterator getFirstUIListenerFactory() const;
+    QList<SigDigger::UIListenerFactory *>::const_iterator getLastUIListenerFactory() const;
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);

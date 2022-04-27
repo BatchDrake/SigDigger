@@ -19,6 +19,7 @@
 
 #include "InspToolWidgetFactory.h"
 #include "InspToolWidget.h"
+#include "InspectionWidgetFactory.h"
 #include "ui_InspToolWidget.h"
 #include <UIMediator.h>
 #include <MainSpectrum.h>
@@ -73,8 +74,39 @@ InspToolWidget::allocConfig(void)
 }
 
 void
+InspToolWidget::refreshInspectorCombo()
+{
+  std::string factory = this->panelConfig->inspFactory;
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  int index = -1;
+  int i = 0;
+
+  this->ui->inspectorCombo->clear();
+
+  for (auto p = sus->getFirstInspectionWidgetFactory();
+       p != sus->getLastInspectionWidgetFactory();
+       ++p, ++i) {
+    this->ui->inspectorCombo->addItem(
+          QString((*p)->description()),
+          QVariant::fromValue<QString>((*p)->name()));
+
+    if ((*p)->name() == factory)
+      index = i;
+  }
+
+  this->ui->inspectorCombo->setEnabled(index != -1);
+
+  if (index != -1)
+    this->ui->inspectorCombo->setCurrentIndex(index);
+
+  this->refreshUi();
+}
+
+void
 InspToolWidget::applyConfig(void)
 {
+  this->refreshInspectorCombo();
   this->setInspectorClass(this->panelConfig->inspectorClass);
   this->setPrecise(this->panelConfig->precise);
   this->timeWindow->setPalette(this->panelConfig->palette);
@@ -213,10 +245,14 @@ InspToolWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 void
 InspToolWidget::refreshUi(void)
 {
+  bool haveInspFactories = this->ui->inspectorCombo->count() > 0;
   bool inspAllowed = this->sourceInfo.testPermission(
-        SUSCAN_ANALYZER_PERM_OPEN_INSPECTOR);
+        SUSCAN_ANALYZER_PERM_OPEN_INSPECTOR)
+      && haveInspFactories;
   bool rawAllowed = this->sourceInfo.testPermission(
         SUSCAN_ANALYZER_PERM_OPEN_RAW);
+
+  this->ui->inspectorCombo->setEnabled(haveInspFactories);
 
   switch (this->state) {
     case DETACHED:
@@ -647,10 +683,16 @@ InspToolWidget::onOpenInspector(void)
   ch.fLow  = - .5 * ch.bw;
   ch.fHigh = + .5 * ch.bw;
 
+  if (this->ui->inspectorCombo->currentIndex() == -1)
+    return;
+
+  this->panelConfig->inspFactory =
+    this->ui->inspectorCombo->currentData().value<QString>().toStdString();
+
   this->panelConfig->inspectorClass = this->getInspectorClass();
 
   this->mediator()->openInspectorTab(
-        "GenericInspectorFactory",
+        this->panelConfig->inspFactory.c_str(),
         this->panelConfig->inspectorClass.c_str(),
         ch,
         this->ui->preciseCheck->isChecked());

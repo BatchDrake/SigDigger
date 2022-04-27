@@ -134,6 +134,13 @@ InspectionWidget::closeRequested()
     this->deleteLater();
 }
 
+
+const char *
+InspectionWidgetFactory::description() const
+{
+  return this->name();
+}
+
 TabWidget *
 InspectionWidgetFactory::make(UIMediator *)
 {

@@ -43,6 +43,7 @@ namespace SigDigger {
   class UIComponent;
   class TabWidget;
   class InspectionWidget;
+  class UIListener;
 
   class UIMediator : public PersistentWidget {
     Q_OBJECT
@@ -120,6 +121,7 @@ namespace SigDigger {
 
     // Refactored methods
     void initSidePanel();
+    void initUIListeners();
     void registerUIComponent(UIComponent *);
     void unregisterUIComponent(UIComponent *);
     void configureUIComponent(UIComponent *);
@@ -136,6 +138,7 @@ namespace SigDigger {
     Averager     *getSpectrumAverager();
     AppConfig    *getAppConfig() const;
     bool          addTabWidget(TabWidget *);
+    bool          addUIListener(UIListener *);
     bool          closeTabWidget(TabWidget *);
     bool          floatTabWidget(TabWidget *);
     void          detachInspectionWidget(InspectionWidget *);

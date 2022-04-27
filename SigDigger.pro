@@ -162,6 +162,7 @@ SOURCES += \
     UIComponent/TabWidgetFactory.cpp \
     UIComponent/ToolWidgetFactory.cpp \
     UIComponent/UIComponentFactory.cpp \
+    UIComponent/UIListenerFactory.cpp \
     UIMediator/InspectorMediator.cpp \
     UIMediator/PanoramicDialogMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
@@ -304,6 +305,7 @@ HEADERS += \
     include/TimeWindow.h \
     include/ToolWidgetFactory.h \
     include/UIComponentFactory.h \
+    include/UIListenerFactory.h \
     include/UIMediator.h \
     include/GenericDataSaver.h \
     include/FileDataSaver.h \

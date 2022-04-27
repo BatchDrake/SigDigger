@@ -63,6 +63,8 @@ namespace SigDigger {
   class InspectionWidgetFactory : public TabWidgetFactory
   {
   public:
+    virtual const char *description() const;
+
     virtual TabWidget *make(UIMediator *) override; // This one should fail.
     virtual InspectionWidget *make(
         Suscan::AnalyzerRequest const &,

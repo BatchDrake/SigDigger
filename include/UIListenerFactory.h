@@ -1,5 +1,5 @@
 //
-//    TabWidgetFactory.h: Make tab widget
+//    include/UIListenerFactory.h: description
 //    Copyright (C) 2022 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,55 +16,35 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef TABWIDGETFACTORY_H
-#define TABWIDGETFACTORY_H
+#ifndef UILISTENERFACTORY_H
+#define UILISTENERFACTORY_H
 
 #include <UIComponentFactory.h>
-
-class QMenu;
+#include <QObject>
 
 namespace SigDigger {
   class UIMediator;
-  class TabWidgetFactory;
-  class UIListener;
+  class UIListenerFactory;
 
-  class TabWidget : public QWidget, public UIComponent {
+  class UIListener : public QObject, public UIComponent {
     Q_OBJECT
 
-    QMenu   *m_menu = nullptr;
-    QAction *m_closeTab = nullptr;
-    QAction *m_renameTab = nullptr;
-    QAction *m_floatTab = nullptr;
-
   protected:
-    TabWidget(TabWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
-
-  public:
-    virtual std::string getLabel() const = 0;
-    virtual void floatStart();
-    virtual void floatEnd();
-    virtual void closeRequested();
-
-    void popupMenu();
-
-    ~TabWidget() override;
-
-  public slots:
-    void onPopupMenuClose();
-    void onRename();
-    void onFloat();
+    UIListener(UIListenerFactory *, UIMediator *, QObject *parent = nullptr);
   };
 
-  class TabWidgetFactory : public UIComponentFactory {
+  class UIListenerFactory : public UIComponentFactory {
   public:
-    virtual TabWidget *make(UIMediator *) = 0;
+    virtual UIListener *make(UIMediator *) = 0;
 
     // Overriden methods
     bool registerGlobally(void) override;
     bool unregisterGlobally(void) override;
 
-    TabWidgetFactory(Suscan::Plugin *);
+    UIListenerFactory(Suscan::Plugin *);
+
+    virtual std::string getTitle() const = 0; // Returns the title in the side panel
   };
 }
 
-#endif // TABWIDGETFACTORY_H
+#endif // UILISTENERFACTORY_H

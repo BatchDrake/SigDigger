@@ -1,5 +1,5 @@
 //
-//    GenericInspectorFactory.cpp: description
+//    UIListenerFactory.cpp: QObject that listens to UI events
 //    Copyright (C) 2022 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,28 +16,36 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#include "GenericInspectorFactory.h"
-#include "GenericInspector.h"
+#include "UIListenerFactory.h"
+#include <Suscan/Library.h>
 
 using namespace SigDigger;
 
-GenericInspectorFactory::GenericInspectorFactory(Suscan::Plugin *plugin) :
-  InspectionWidgetFactory(plugin)
+UIListener::UIListener(
+    UIListenerFactory *factory, UIMediator *mediator, QObject *parent) :
+  QObject(parent), UIComponent(factory, mediator)
 {
 
 }
 
-const char *
-GenericInspectorFactory::name() const
+bool
+UIListenerFactory::registerGlobally(void)
 {
-  return "Generic channel inspector";
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  return s->registerUIListenerFactory(this);
 }
 
-
-InspectionWidget *
-GenericInspectorFactory::make(
-    Suscan::AnalyzerRequest const &request,
-    UIMediator *mediator)
+bool
+UIListenerFactory::unregisterGlobally(void)
 {
-  return new GenericInspector(this, request, mediator, nullptr);
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  return s->unregisterUIListenerFactory(this);
+}
+
+UIListenerFactory::UIListenerFactory(Suscan::Plugin *plugin)
+  : UIComponentFactory(plugin)
+{
+
 }

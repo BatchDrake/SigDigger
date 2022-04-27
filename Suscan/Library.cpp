@@ -26,6 +26,7 @@
 #include <FeatureFactory.h>
 #include <ToolWidgetFactory.h>
 #include <TabWidgetFactory.h>
+#include <UIListenerFactory.h>
 #include <InspectionWidgetFactory.h>
 
 using namespace Suscan;
@@ -1296,6 +1297,43 @@ QList<SigDigger::InspectionWidgetFactory *>::const_iterator
 Singleton::getLastInspectionWidgetFactory() const
 {
   return this->inspectionWidgetFactories.end();
+}
+
+bool
+Singleton::registerUIListenerFactory(SigDigger::UIListenerFactory *factory)
+{
+  // Not a bug. The plugin got ahead of ourselves.
+  if (this->uiListenerFactories.contains(factory))
+    return true;
+
+  this->uiListenerFactories.push_back(factory);
+
+  return true;
+}
+
+bool
+Singleton::unregisterUIListenerFactory(SigDigger::UIListenerFactory *factory)
+{
+  int index = this->uiListenerFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->uiListenerFactories.removeAt(index);
+
+  return true;
+}
+
+QList<SigDigger::UIListenerFactory *>::const_iterator
+Singleton::getFirstUIListenerFactory() const
+{
+  return this->uiListenerFactories.begin();
+}
+
+QList<SigDigger::UIListenerFactory *>::const_iterator
+Singleton::getLastUIListenerFactory() const
+{
+  return this->uiListenerFactories.end();
 }
 
 bool

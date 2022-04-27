@@ -51,6 +51,7 @@
 // Tool widget controls
 #include <ToolWidgetFactory.h>
 #include <TabWidgetFactory.h>
+#include <UIListenerFactory.h>
 
 #if defined(_WIN32) && defined(interface)
 #  undef interface
@@ -70,11 +71,11 @@ UIMediator::addBandPlan(std::string const &name)
   this->ui->main->menuBand_plans->addAction(action);
   this->bandPlanMap[name] = action;
 
-  connect(action, SIGNAL(triggered(bool)), this, SLOT(onTriggerBandPlan(void)));
+  connect(action, SIGNAL(triggered(bool)), this, SLOT(onTriggerBandPlan()));
 }
 
 void
-UIMediator::clearRecent(void)
+UIMediator::clearRecent()
 {
   this->ui->main->menuStart->clear();
   this->recentCount = 0;
@@ -94,7 +95,7 @@ UIMediator::addRecent(std::string const &name)
 }
 
 void
-UIMediator::finishRecent(void)
+UIMediator::finishRecent()
 {
   QAction *action = new QAction("Clear", this->ui->main->menuStart);
 
@@ -214,6 +215,21 @@ UIMediator::addTabWidget(TabWidget *tabWidget)
   return true;
 }
 
+bool
+UIMediator::addUIListener(UIListener *listener)
+{
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  if (s->haveQth())
+    listener->setQth(s->getQth());
+
+  listener->setTimeStamp(m_lastTimeStamp);
+  listener->setProfile(this->appConfig->profile);
+  listener->setState(m_state, m_analyzer);
+
+  return true;
+}
+
 //
 // NOTE: Adding a tab widget just exposes it. In any case deletes it.
 // This is something that has to be handled later.
@@ -306,7 +322,7 @@ UIMediator::floatTabWidget(TabWidget *tabWidget)
 }
 
 void
-UIMediator::refreshUI(void)
+UIMediator::refreshUI()
 {
   QString stateString;
   QString sourceDesc;
@@ -394,7 +410,7 @@ UIMediator::refreshUI(void)
 }
 
 void
-UIMediator::connectMainWindow(void)
+UIMediator::connectMainWindow()
 {
   connect(
         this->ui->main->actionSetup,
@@ -430,13 +446,13 @@ UIMediator::connectMainWindow(void)
         this->ui->main->actionQuick_connect,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onQuickConnect(void)));
+        SLOT(onQuickConnect()));
 
   connect(
         this->ui->quickConnectDialog,
-        SIGNAL(accepted(void)),
+        SIGNAL(accepted()),
         this,
-        SLOT(onQuickConnectAccepted(void)));
+        SLOT(onQuickConnectAccepted()));
 
   connect(
         this->ui->main->actionStart_capture,
@@ -476,12 +492,6 @@ UIMediator::connectMainWindow(void)
         this,
         SLOT(onToggleAbout(bool)));
 
-  /*connect(
-        this->ui->main->mainTab,
-        SIGNAL(tabCloseRequested(int)),
-        this,
-        SLOT(onCloseInspectorTab(int))); */
-
   connect(
         this->ui->main->mainTab,
         SIGNAL(tabCloseRequested(int)),
@@ -498,31 +508,31 @@ UIMediator::connectMainWindow(void)
         this->ui->main->actionLogMessages,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onTriggerLogMessages(void)));
+        SLOT(onTriggerLogMessages()));
 
   connect(
         this->ui->main->action_Background_tasks,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onTriggerBackgroundTasks(void)));
+        SLOT(onTriggerBackgroundTasks()));
 
   connect(
         this->ui->main->actionAddBookmark,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onAddBookmark(void)));
+        SLOT(onAddBookmark()));
 
   connect(
         this->ui->addBookmarkDialog,
-        SIGNAL(accepted(void)),
+        SIGNAL(accepted()),
         this,
-        SLOT(onBookmarkAccepted(void)));
+        SLOT(onBookmarkAccepted()));
 
   connect(
         this->ui->main->actionManageBookmarks,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onOpenBookmarkManager(void)));
+        SLOT(onOpenBookmarkManager()));
 
   connect(
         this->ui->bookmarkManagerDialog,
@@ -532,20 +542,12 @@ UIMediator::connectMainWindow(void)
 
   connect(
         this->ui->bookmarkManagerDialog,
-        SIGNAL(bookmarkChanged(void)),
+        SIGNAL(bookmarkChanged()),
         this,
-        SLOT(onBookmarkChanged(void)));
+        SLOT(onBookmarkChanged()));
 
   this->ui->main->mainTab->tabBar()->setContextMenuPolicy(
         Qt::CustomContextMenu);
-
-  /*
-  connect(
-        this->ui->main->mainTab->tabBar(),
-        SIGNAL(customContextMenuRequested(const QPoint &)),
-        this,
-        SLOT(onInspectorMenuRequested(const QPoint &)));
-*/
 
   connect(
         this->ui->main->mainTab->tabBar(),
@@ -555,7 +557,7 @@ UIMediator::connectMainWindow(void)
 }
 
 void
-UIMediator::initSidePanel(void)
+UIMediator::initSidePanel()
 {
   auto s = Suscan::Singleton::get_instance();
 
@@ -563,11 +565,24 @@ UIMediator::initSidePanel(void)
        p != s->getLastToolWidgetFactory();
        ++p) {
     ToolWidgetFactory *f = *p;
-    ToolWidget *widget = f->make(this); // Triggers registration as UIComponent
-
+    ToolWidget *widget = f->make(this);
     this->ui->spectrum->addToolWidget(
           widget,
           f->getTitle().c_str());
+  }
+}
+
+void
+UIMediator::initUIListeners()
+{
+  auto s = Suscan::Singleton::get_instance();
+
+  for (auto p = s->getFirstUIListenerFactory();
+       p != s->getLastUIListenerFactory();
+       ++p) {
+    UIListenerFactory *f = *p;
+    UIListener *listener = f->make(this);
+    this->addUIListener(listener);
   }
 }
 
@@ -661,7 +676,7 @@ UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 }
 
 UIMediator::State
-UIMediator::getState(void) const
+UIMediator::getState() const
 {
   return m_state;
 }
@@ -701,7 +716,7 @@ UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 }
 
 void
-UIMediator::refreshDevicesDone(void)
+UIMediator::refreshDevicesDone()
 {
   this->ui->deviceDialog->refreshDone();
   this->ui->configDialog->notifySingletonChanges();
@@ -750,7 +765,7 @@ UIMediator::shouldReduceRate(
 }
 
 void
-UIMediator::notifyStartupErrors(void)
+UIMediator::notifyStartupErrors()
 {
   if (this->ui->logDialog->haveErrorMessages()) {
       QMessageBox msgbox(this->owner);
@@ -869,25 +884,25 @@ UIMediator::refreshProfile(bool updateFreqs)
 }
 
 Suscan::Source::Config *
-UIMediator::getProfile(void) const
+UIMediator::getProfile() const
 {
   return &this->appConfig->profile;
 }
 
 Suscan::AnalyzerParams *
-UIMediator::getAnalyzerParams(void) const
+UIMediator::getAnalyzerParams() const
 {
   return &this->appConfig->analyzerParams;
 }
 
 Suscan::Serializable *
-UIMediator::allocConfig(void)
+UIMediator::allocConfig()
 {
   return this->appConfig = new AppConfig(this->ui);
 }
 
 void
-UIMediator::saveUIConfig(void)
+UIMediator::saveUIConfig()
 {
   this->appConfig->x = this->owner->geometry().x();
   this->appConfig->y = this->owner->geometry().y();
@@ -908,7 +923,7 @@ UIMediator::saveUIConfig(void)
 }
 
 void
-UIMediator::applyConfig(void)
+UIMediator::applyConfig()
 {
   // Apply window config
   QRect rec = QGuiApplication::primaryScreen()->geometry();
@@ -982,16 +997,6 @@ UIMediator::applyConfig(void)
   this->ui->spectrum->setLoFreq(savedLoFreq);
   if (savedBw > 0)
     this->setBandwidth(savedBw);
-
-  //////////////// COMMENT THIS OUT IF YOU ARE DONE WITH THE TEST //////////////
-  auto p = sus->getFirstTabWidgetFactory();
-
-  if (p != sus->getLastTabWidgetFactory()) {
-    TabWidgetFactory *f = *p;
-    TabWidget *w = f->make(this);
-
-    this->addTabWidget(w);
-  }
 }
 
 UIMediator::~UIMediator()
@@ -1077,14 +1082,14 @@ UIMediator::onToggleAbout(bool)
 }
 
 void
-UIMediator::onQuickConnect(void)
+UIMediator::onQuickConnect()
 {
   this->ui->quickConnectDialog->setProfile(this->appConfig->profile);
   this->ui->quickConnectDialog->exec();
 }
 
 void
-UIMediator::onQuickConnectAccepted(void)
+UIMediator::onQuickConnectAccepted()
 {
   this->appConfig->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
   this->appConfig->profile.setDevice(this->remoteDevice);
@@ -1303,7 +1308,7 @@ UIMediator::onTriggerPanoramicSpectrum(bool)
 }
 
 void
-UIMediator::onTriggerBandPlan(void)
+UIMediator::onTriggerBandPlan()
 {
   QObject* obj = sender();
   QAction *asAction = qobject_cast<QAction *>(obj);
@@ -1318,19 +1323,19 @@ UIMediator::onTriggerBandPlan(void)
 }
 
 void
-UIMediator::onTriggerLogMessages(void)
+UIMediator::onTriggerLogMessages()
 {
   this->ui->logDialog->show();
 }
 
 void
-UIMediator::onTriggerBackgroundTasks(void)
+UIMediator::onTriggerBackgroundTasks()
 {
   this->ui->backgroundTasksDialog->show();
 }
 
 void
-UIMediator::onAddBookmark(void)
+UIMediator::onAddBookmark()
 {
   this->ui->addBookmarkDialog->setFrequencyHint(
         this->ui->spectrum->getLoFreq() + this->ui->spectrum->getCenterFreq());
@@ -1349,7 +1354,7 @@ UIMediator::onAddBookmark(void)
 }
 
 void
-UIMediator::onBookmarkAccepted(void)
+UIMediator::onBookmarkAccepted()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   BookmarkInfo info;
@@ -1380,7 +1385,7 @@ UIMediator::onBookmarkAccepted(void)
 }
 
 void
-UIMediator::onOpenBookmarkManager(void)
+UIMediator::onOpenBookmarkManager()
 {
   this->ui->bookmarkManagerDialog->show();
 }

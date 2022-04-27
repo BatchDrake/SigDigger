@@ -33,9 +33,15 @@ void
 GenericInspectorConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(spectrumPalette);
+  LOAD(spectrumRatio);
   LOAD(waveFormPalette);
   LOAD(waveFormOffset);
   LOAD(waveFormContrast);
+  LOAD(peakHold);
+  LOAD(peakDetect);
+  LOAD(units);
+  LOAD(gain);
+  LOAD(zeroPoint);
 }
 
 Suscan::Object &&
@@ -46,9 +52,15 @@ GenericInspectorConfig::serialize(void)
   obj.setClass("GenericInspectorConfig");
 
   STORE(spectrumPalette);
+  STORE(spectrumRatio);
   STORE(waveFormPalette);
   STORE(waveFormOffset);
   STORE(waveFormContrast);
+  STORE(peakHold);
+  STORE(peakDetect);
+  STORE(units);
+  STORE(gain);
+  STORE(zeroPoint);
 
   return this->persist(obj);
 }
