@@ -29,6 +29,7 @@ AppConfig::AppConfig(AppUI *ui)
   analyzerParams{},
   colors{},
   guiConfig{},
+  cachedComponentConfig(SUSCAN_OBJECT_TYPE_OBJECT),
   enabledBandPlans{}
 {
   this->panSpectrumConfig = ui->panoramicDialog->getConfig();
@@ -63,6 +64,8 @@ AppConfig::serialize(void)
 
   obj.setField("bandPlans", bandPlans);
 
+  obj.setField("Components", this->cachedComponentConfig);
+
   for (auto p : this->enabledBandPlans) {
     Suscan::Object entry(SUSCAN_OBJECT_TYPE_FIELD);
     entry.setValue(p);
@@ -92,8 +95,24 @@ AppConfig::loadDefaults(void)
 
 }
 
+Suscan::Object
+AppConfig::getComponentConfig(const char *obj)
+{
+  return this->cachedComponentConfig.getField(obj);
+}
+
+void
+AppConfig::setComponentConfig(const char *field, Suscan::Object const &obj)
+{
+  if (!obj.isHollow()) {
+    Suscan::Object dup;
+    dup.copyFrom(obj);
+    this->cachedComponentConfig.setField(field, dup);
+  }
+}
+
 #define TRYSILENT(x) \
-  try { x; } catch (Suscan::Exception const &e) { }
+  try { x; } catch (Suscan::Exception const &) {}
 void
 AppConfig::deserialize(Suscan::Object const &conf)
 {
@@ -124,6 +143,14 @@ AppConfig::deserialize(Suscan::Object const &conf)
     } catch (Suscan::Exception &) {
 
     }
+
+    try {
+      this->cachedComponentConfig.copyFrom(conf.getField("Components"));
+      if (this->cachedComponentConfig.getType() != SUSCAN_OBJECT_TYPE_OBJECT)
+        this->cachedComponentConfig = Suscan::Object(SUSCAN_OBJECT_TYPE_OBJECT);    
+    } catch (Suscan::Exception const &) {
+      this->cachedComponentConfig = Suscan::Object(SUSCAN_OBJECT_TYPE_OBJECT);
+    }   
   }
 }
 

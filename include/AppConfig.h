@@ -50,6 +50,11 @@ namespace SigDigger {
       TLESourceConfig tleSourceConfig;
       Suscan::Serializable *panSpectrumConfig = nullptr;
 
+      // We cannot keep a pointer to the deserialized object. This is because
+      // these objects may be created and destroyed during the application
+      // lifecycle.
+      Suscan::Object cachedComponentConfig;
+
       int version = SIGDIGGER_UICONFIG_VERSION;
       int width = 1280;
       int height = 1024;
@@ -71,6 +76,9 @@ namespace SigDigger {
       void loadDefaults(void);
 
       // Overriden methods
+      Suscan::Object getComponentConfig(const char *);
+      void setComponentConfig(const char *, Suscan::Object const &);
+
       void deserialize(Suscan::Object const &conf) override;
       Suscan::Object &&serialize(void) override;
   };

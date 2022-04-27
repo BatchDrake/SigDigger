@@ -144,6 +144,19 @@ UIMediator::getAppConfig() const
 }
 
 void
+UIMediator::configureUIComponent(UIComponent *comp)
+{
+  try {
+    Suscan::Object config;
+    config = this->appConfig->getComponentConfig(comp->factoryName());
+    comp->loadSerializedConfig(config);
+  } catch (Suscan::Exception &) {
+    comp->assertConfig();
+    comp->applyConfig();
+  }
+}
+
+void
 UIMediator::registerUIComponent(UIComponent *comp)
 {
   assert(m_components.indexOf(comp) == -1);
@@ -156,8 +169,12 @@ UIMediator::unregisterUIComponent(UIComponent *comp)
 {
   int index = m_components.indexOf(comp);
 
-  if (index != -1)
+  if (index != -1) {
+    this->appConfig->setComponentConfig(
+          comp->factoryName(),
+          comp->getSerializedConfig());
     m_components.removeAt(index);
+  }
 }
 
 
@@ -183,8 +200,7 @@ UIMediator::addTabWidget(TabWidget *tabWidget)
         tabWidget,
         QString::fromStdString(tabWidget->getLabel()));
 
-  // TODO: Maybe apply on registration?
-  this->applyComponentConfig(tabWidget);
+  this->configureUIComponent(tabWidget);
 
   if (s->haveQth())
     tabWidget->setQth(s->getQth());
@@ -238,9 +254,6 @@ UIMediator::closeTabWidget(TabWidget *tabWidget)
     }
   }
 
-  // TODO: Maybe apply on unregistration? Why are these special?
-  this->saveComponentConfig(tabWidget);
-
   return true;
 }
 
@@ -290,28 +303,6 @@ UIMediator::floatTabWidget(TabWidget *tabWidget)
   dialog->show();
 
   return true;
-}
-
-
-#define TRYSILENT(x) \
-  try { x; } catch (Suscan::Exception const &e) { }
-
-void
-UIMediator::deserializeComponents(Suscan::Object const &conf)
-{
-  // TODO: COPY conf!!!
-  if (!conf.isHollow())
-    for (auto &p : m_components)
-      TRYSILENT(p->getConfig()->deserialize(conf.getField(p->factoryName())));
-}
-
-void
-UIMediator::serializeComponents(Suscan::Object &conf)
-{
-  // TODO: COPY conf!!!
-
-  for (auto &p : m_components)
-    conf.setField(p->factoryName(), p->getConfig()->serialize());
 }
 
 void
@@ -564,7 +555,7 @@ UIMediator::connectMainWindow(void)
 }
 
 void
-UIMediator::addToolWidgets(void)
+UIMediator::initSidePanel(void)
 {
   auto s = Suscan::Singleton::get_instance();
 
@@ -596,7 +587,10 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
             "anonymous",
             "");
 
-  this->addToolWidgets();
+  this->assertConfig();
+
+  // Now we can create UI components
+  this->initSidePanel();
 
   // Add baseband analyzer tab
   this->ui->main->mainTab->addTab(this->ui->spectrum, "Radio spectrum");
@@ -886,51 +880,6 @@ UIMediator::getAnalyzerParams(void) const
   return &this->appConfig->analyzerParams;
 }
 
-bool
-UIMediator::applyComponentConfig(UIComponent *component)
-{
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  const char *name = component->factoryName();
-
-  try {
-    for (auto p = sus->getFirstUIConfig(); p != sus->getLastUIConfig(); ++p) {
-      if (p->getClass() == "qtui") {
-        auto obj = p->getField("Components");
-        if (!obj.isHollow()) {
-          auto cfgObj = obj.getField(name);
-          if (!cfgObj.isHollow()) {
-            printf("Config found!\n");
-            component->loadSerializedConfig(cfgObj);
-            return true;
-          }
-        }
-      }
-    }
-  } catch (Suscan::Exception const &) {
-
-  }
-
-  return false;
-}
-
-void
-UIMediator::saveComponentConfig(UIComponent *component)
-{
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  const char *name = component->factoryName();
-
-  for (auto p = sus->getFirstUIConfig(); p != sus->getLastUIConfig(); ++p) {
-    if (p->getClass() == "qtui") {
-      auto obj = p->getField("Components");
-      if (!obj.isHollow()) {
-        printf("Config saved!\n");
-        obj.setField(name, component->getSerializedConfig());
-        return;
-      }
-    }
-  }
-}
-
 Suscan::Serializable *
 UIMediator::allocConfig(void)
 {
@@ -951,6 +900,11 @@ UIMediator::saveUIConfig(void)
   for (auto p : this->bandPlanMap)
     if (p.second->isChecked())
       this->appConfig->enabledBandPlans.push_back(p.first);
+
+  for (auto p : m_components)
+    this->appConfig->setComponentConfig(
+          p->factoryName(),
+          p->getSerializedConfig());
 }
 
 void
@@ -1016,8 +970,10 @@ UIMediator::applyConfig(void)
   // The rest of them are automatically deserialized
   this->ui->panoramicDialog->applyConfig();
 
+  // Component config in each component is kept in serialized format,
+  // so we have to instruct each component to parse it every time
   for (auto p : m_components)
-    p->applyConfig();
+    this->configureUIComponent(p);
 
   this->refreshProfile();
   this->refreshUI();

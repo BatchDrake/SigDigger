@@ -91,7 +91,6 @@ namespace SigDigger {
   public:
     // Application methods
     Suscan::Object &&getConfig(void);
-    void addComponentConfig(Suscan::Object &);
     void refreshConfig(void);
     void run(Suscan::Object const &config);
 

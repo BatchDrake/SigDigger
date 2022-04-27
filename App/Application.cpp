@@ -67,16 +67,6 @@ Application::getConfig(void)
 }
 
 void
-Application::addComponentConfig(Suscan::Object &config)
-{
-  Suscan::Object object(SUSCAN_OBJECT_TYPE_OBJECT);
-
-  this->mediator->serializeComponents(object);
-
-  config.setField("Components", object);
-}
-
-void
 Application::refreshConfig(void)
 {
   this->mediator->saveUIConfig();
@@ -98,11 +88,6 @@ Application::run(Suscan::Object const &config)
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
   this->ui.postLoadInit(this);
-
-  // Order is important here. First deserialize component, then load
-  try {
-    this->mediator->deserializeComponents(config.getField("Components"));
-  } catch (Suscan::Exception const &) { }
 
   this->mediator->loadSerializedConfig(config);
 

@@ -56,7 +56,7 @@ namespace SigDigger {
     };
 
   private:
-    // Convenience pointers
+    // Static part of the configuration
     AppConfig *appConfig = nullptr;
 
     // Static part of UI
@@ -119,9 +119,10 @@ namespace SigDigger {
     QMap<uint32_t, InspectionWidget *> m_inspTable;
 
     // Refactored methods
-    void addToolWidgets();
+    void initSidePanel();
     void registerUIComponent(UIComponent *);
     void unregisterUIComponent(UIComponent *);
+    void configureUIComponent(UIComponent *);
 
     // Other private methods
     void detachAllInspectors();
@@ -146,9 +147,6 @@ namespace SigDigger {
         Suscan::Channel,
         bool precise = true,
         Suscan::Handle = -1);
-
-    void deserializeComponents(Suscan::Object const &conf);
-    void serializeComponents(Suscan::Object &conf);
 
     void setState(enum State, Suscan::Analyzer *analyzer = nullptr);
 
@@ -187,8 +185,6 @@ namespace SigDigger {
     // Convenience getters
     Suscan::Source::Config *getProfile() const;
     Suscan::AnalyzerParams *getAnalyzerParams() const;
-    bool applyComponentConfig(UIComponent *);
-    void saveComponentConfig(UIComponent *);
 
     // panSpectrum functions
     bool         getPanSpectrumDevice(Suscan::Source::Device &) const;

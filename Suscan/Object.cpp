@@ -66,6 +66,25 @@ Object::~Object()
 }
 
 void
+Object::copyFrom(const Object &obj)
+{
+  if (!this->borrowed) {
+    if (this->instance != nullptr) {
+      suscan_object_destroy(this->instance);
+      this->instance = nullptr;
+    }
+  }
+
+  if (obj.isHollow()) {
+    this->borrowed = true;
+    this->instance = nullptr;
+  } else {
+    this->borrowed = false;
+    SU_ATTEMPT(this->instance = suscan_object_copy(obj.instance));
+  }
+}
+
+void
 Object::clear(void)
 {
   switch (this->getType()) {
