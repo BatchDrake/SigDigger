@@ -27,13 +27,11 @@
 /* Local includes */
 #include "AppConfig.h"
 #include "UIMediator.h"
-#include "AudioPlayback.h"
-#include "FileDataSaver.h"
-#include "AudioFileSaver.h"
-#include "Scanner.h"
-#include <WFHelpers.h>
 
 namespace SigDigger {
+  class Scanner;
+  class FileDataSaver;
+
   class DeviceDetectWorker : public QObject {
       Q_OBJECT
 
@@ -57,7 +55,6 @@ namespace SigDigger {
 
     // Suscan core object
     std::unique_ptr<Suscan::Analyzer> analyzer = nullptr;
-    std::unique_ptr<FileDataSaver> dataSaver = nullptr;
 
     bool profileSelected = false;
     unsigned int currSampleRate;

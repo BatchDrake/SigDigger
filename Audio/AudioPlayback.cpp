@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <util/compat-mman.h>
 #include <QCoreApplication>
+#include <GenericAudioPlayer.h>
 
 #ifdef SIGDIGGER_HAVE_ALSA
 #  include "AlsaPlayer.h"

@@ -33,6 +33,9 @@ isEmpty(SUWIDGETS_PREFIX) {
 
 isEmpty(PREFIX) {
   PREFIX=/usr/local
+  SIGDIGGER_INSTALL_HEADERS=$$[QT_INSTALL_HEADERS]/SigDigger
+} else {
+  SIGDIGGER_INSTALL_HEADERS=$$PREFIX/include/SigDigger
 }
 
 target.path=$$PREFIX/bin
@@ -98,6 +101,7 @@ SOURCES += \
     Default/GenericInspector/InspectorCtl/AskControl.cpp \
     Default/GenericInspector/InspectorCtl/ClockRecovery.cpp \
     Default/GenericInspector/InspectorCtl/EqualizerControl.cpp \
+    Default/GenericInspector/InspectorCtl/EstimatorControl.cpp \
     Default/GenericInspector/InspectorCtl/GainControl.cpp \
     Default/GenericInspector/InspectorCtl/InspectorCtl.cpp \
     Default/GenericInspector/InspectorCtl/MfControl.cpp \
@@ -169,7 +173,6 @@ SOURCES += \
     UIMediator/TimeSliderMediator.cpp \
     UIMediator/UIMediator.cpp \
     main.cpp \
-    Components/EstimatorControl.cpp \
     Misc/GenericDataSaver.cpp \
     Misc/FileDataSaver.cpp \
     UDP/SocketForwarder.cpp \
@@ -191,8 +194,77 @@ SOURCES += \
     Components/BookmarkManagerDialog.cpp \
     Misc/TableDelegates.cpp
 
+INSTALL_HEADERS += \
+    include/AppConfig.h \
+    include/Application.h \
+    include/AppUI.h \
+    include/AudioFileSaver.h \
+    include/AudioPlayback.h \
+    include/Averager.h \
+    include/ColorConfig.h \
+    include/ConfigTab.h \
+    include/FeatureFactory.h \
+    include/GuiConfig.h \
+    include/InspectionWidgetFactory.h \
+    include/Plugin.h \
+    include/SigDiggerHelpers.h \
+    include/MainSpectrum.h \
+    include/MainWindow.h \
+    include/Palette.h \
+    include/PersistentWidget.h \
+    include/TabWidgetFactory.h \
+    include/TLESourceConfig.h \
+    include/ToolWidgetFactory.h \
+    include/UIComponentFactory.h \
+    include/UIListenerFactory.h \
+    include/UIMediator.h \
+    include/GenericDataSaver.h \
+    include/Version.h
+
+install_headers.path   = $$SIGDIGGER_INSTALL_HEADERS
+install_headers.files += $$INSTALL_HEADERS
+INSTALLS              += install_headers
+
+SUSCAN_HEADERS += \
+    include/Suscan/AnalyzerRequestTracker.h \
+    include/Suscan/CancellableTask.h \
+    include/Suscan/Analyzer.h \
+    include/Suscan/AnalyzerParams.h \
+    include/Suscan/Channel.h \
+    include/Suscan/Compat.h \
+    include/Suscan/Config.h \
+    include/Suscan/Estimator.h \
+    include/Suscan/Library.h \
+    include/Suscan/Logger.h \
+    include/Suscan/Message.h \
+    include/Suscan/MQ.h \
+    include/Suscan/MultitaskController.h \
+    include/Suscan/Object.h \
+    include/Suscan/Serializable.h \
+    include/Suscan/Source.h \
+    include/Suscan/SpectrumSource.h
+
+suscan_headers.path   = $$SIGDIGGER_INSTALL_HEADERS/Suscan
+suscan_headers.files += $$SUSCAN_HEADERS
+INSTALLS             += suscan_headers
+
+SUSCAN_MSG_HEADERS += \
+    include/Suscan/Messages/ChannelMessage.h \
+    include/Suscan/Messages/GenericMessage.h \
+    include/Suscan/Messages/InspectorMessage.h \
+    include/Suscan/Messages/PSDMessage.h \
+    include/Suscan/Messages/SamplesMessage.h \
+    include/Suscan/Messages/SourceInfoMessage.h \
+    include/Suscan/Messages/StatusMessage.h
+
+suscan_msg_headers.path   = $$SIGDIGGER_INSTALL_HEADERS/Suscan/Messages
+suscan_msg_headers.files += $$SUSCAN_MSG_HEADERS
+INSTALLS                 += suscan_msg_headers
 
 HEADERS += \
+    $$INSTALL_HEADERS \
+    $$SUSCAN_HEADERS \
+    $$SUSCAN_MSG_HEADERS \
     Default/Audio/AudioProcessor.h \
     Default/Audio/AudioWidget.h \
     Default/Audio/AudioWidgetFactory.h \
@@ -225,28 +297,23 @@ HEADERS += \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
-    include/AudioFileSaver.h \
     include/CarrierDetector.h \
     include/CarrierXlator.h \
     include/ColorConfigTab.h \
-    include/ConfigTab.h \
     include/CostasRecoveryTask.h \
     include/DelayedConjTask.h \
     include/DeviceTweaks.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
-    include/FeatureFactory.h \
     include/FrequencyCorrectionDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
     include/GuiConfigTab.h \
     include/HistogramDialog.h \
     include/HistogramFeeder.h \
-    include/InspectionWidgetFactory.h \
     include/LPFTask.h \
     include/LocationConfigTab.h \
     include/PLLSyncTask.h \
-    include/Plugin.h \
     include/PortAudioPlayer.h \
     include/ProfileConfigTab.h \
     include/QTimeSlider.h \
@@ -254,64 +321,21 @@ HEADERS += \
     include/QuickConnectDialog.h \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
-    include/SigDiggerHelpers.h \
-    include/Suscan/AnalyzerRequestTracker.h \
-    include/Suscan/CancellableTask.h \
-    include/Suscan/Messages/ChannelMessage.h \
-    include/Suscan/Messages/GenericMessage.h \
-    include/Suscan/Messages/InspectorMessage.h \
-    include/Suscan/Messages/PSDMessage.h \
-    include/Suscan/Messages/SamplesMessage.h \
-    include/Suscan/Analyzer.h \
-    include/Suscan/AnalyzerParams.h \
-    include/Suscan/Channel.h \
-    include/Suscan/Compat.h \
-    include/Suscan/Config.h \
-    include/Suscan/Estimator.h \
-    include/Suscan/Library.h \
-    include/Suscan/Logger.h \
-    include/Suscan/Message.h \
-    include/Suscan/MQ.h \
-    include/Suscan/Messages/SourceInfoMessage.h \
-    include/Suscan/Messages/StatusMessage.h \
-    include/Suscan/MultitaskController.h \
-    include/Suscan/Object.h \
-    include/Suscan/Serializable.h \
-    include/Suscan/Source.h \
-    include/Suscan/SpectrumSource.h \
     include/AboutDialog.h \
-    include/AppConfig.h \
-    include/Application.h \
-    include/AppUI.h \
-    include/AudioPlayback.h \
     include/AutoGain.h \
-    include/Averager.h \
-    include/ColorConfig.h \
     include/ConfigDialog.h \
     include/DataSaverUI.h \
     include/DefaultGradient.h \
     include/DeviceGain.h \
     include/GainSlider.h \
     include/Loader.h \
-    include/MainSpectrum.h \
-    include/MainWindow.h \
-    include/Palette.h \
-    include/PersistentWidget.h \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
-    include/TLESourceConfig.h \
     include/TLESourceTab.h \
-    include/TabWidgetFactory.h \
     include/TimeWindow.h \
-    include/ToolWidgetFactory.h \
-    include/UIComponentFactory.h \
-    include/UIListenerFactory.h \
-    include/UIMediator.h \
-    include/GenericDataSaver.h \
     include/FileDataSaver.h \
     include/SocketForwarder.h \
     include/NetForwarderUI.h \
-    include/Version.h \
     include/WaitingSpinnerWidget.h \
     include/DeviceDialog.h \
     include/PanoramicDialog.h \

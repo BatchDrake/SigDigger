@@ -21,6 +21,7 @@
 #include <Suscan/Library.h>
 
 #include "Application.h"
+#include "Scanner.h"
 
 #include <QMessageBox>
 #include <SuWidgetsHelpers.h>
@@ -108,11 +109,6 @@ Application::run(Suscan::Object const &config)
   //this->mediator->notifyStartupErrors();
 }
 
-FileDataSaver *
-Application::getSaver(void) const
-{
-  return this->dataSaver.get();
-}
 
 void
 Application::connectUI(void)

@@ -21,7 +21,6 @@
 
 #include <QMainWindow>
 #include <QToolBar>
-#include <QTimeSlider.h>
 
 namespace Ui {
   class MainWindow;

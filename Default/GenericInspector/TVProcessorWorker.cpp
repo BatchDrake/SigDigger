@@ -17,7 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include <TVProcessorWorker.h>
+#include "TVProcessorWorker.h"
 #include <algorithm>
 
 using namespace SigDigger;

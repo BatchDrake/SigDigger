@@ -17,7 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include <TVProcessorTab.h>
+#include "TVProcessorTab.h"
 #include "ui_TVProcessorTab.h"
 #include <QMessageBox>
 #include <SuWidgetsHelpers.h>
