@@ -100,7 +100,6 @@ Suscan::qHash(const Suscan::Source::Device &dev)
 
 Singleton::Singleton()
 {
-  this->codecs_initd = false;
   this->sources_initd = false;
   this->estimators_initd = false;
   this->spectrum_sources_initd = false;
@@ -161,13 +160,6 @@ Singleton::suscanVersion(void)
 }
 
 // Initialization methods
-void
-Singleton::init_codecs(void)
-{
-  if (!this->codecs_initd)
-    SU_ATTEMPT(suscan_codec_class_register_builtin());
-}
-
 static SUBOOL
 walk_all_sources(suscan_source_config_t *config, void *privdata)
 {

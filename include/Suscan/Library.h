@@ -28,7 +28,6 @@
 #include <Suscan/Config.h>
 #include <Suscan/Serializable.h>
 
-#include <codec/codec.h>
 #include <analyzer/source.h>
 #include <analyzer/estimator.h>
 #include <analyzer/spectsrc.h>
@@ -240,7 +239,6 @@ namespace Suscan {
 
     std::list<std::string> recentProfiles;
 
-    bool codecs_initd;
     bool sources_initd;
     bool estimators_initd;
     bool spectrum_sources_initd;
@@ -264,7 +262,6 @@ namespace Suscan {
     static QString normalizeTLEName(QString const &);
 
   public:
-    void init_codecs(void);
     void init_sources(void);
     void init_estimators(void);
     void init_spectrum_sources(void);

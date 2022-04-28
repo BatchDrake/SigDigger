@@ -49,8 +49,6 @@ InitThread::run()
     sing->init_estimators();
     emit change("Loading inspectors");
     sing->init_inspectors();
-    emit change("Loading codecs");
-    sing->init_codecs();
     emit change("Loading palettes");
     sing->init_palettes();
     emit change("Loading frequency tables");
