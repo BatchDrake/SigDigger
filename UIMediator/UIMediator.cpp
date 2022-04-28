@@ -227,6 +227,8 @@ UIMediator::addUIListener(UIListener *listener)
   listener->setProfile(this->appConfig->profile);
   listener->setState(m_state, m_analyzer);
 
+  listener->setParent(this);
+
   return true;
 }
 
