@@ -300,9 +300,10 @@ GenericInspector::applyConfig(void)
 QString
 GenericInspector::getInspectorTabTitle() const
 {
+
   QString result = " in "
       + SuWidgetsHelpers::formatQuantity(
-        this->request().channel.fc + this->request().channel.ft,
+        this->request().channel.fc + this->mediator()->getCurrentCenterFreq(),
         "Hz");
 
   if (this->request().inspClass == "psk")

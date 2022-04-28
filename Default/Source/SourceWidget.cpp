@@ -21,7 +21,7 @@
 #include "SourceWidget.h"
 #include "SuWidgetsHelpers.h"
 #include "SigDiggerHelpers.h"
-#include "ui_SourcePanel.h"
+#include "ui_SourceWidget.h"
 #include <QMessageBox>
 #include <FileDataSaver.h>
 #include <fcntl.h>

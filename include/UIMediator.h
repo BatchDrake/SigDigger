@@ -143,6 +143,9 @@ namespace SigDigger {
     bool          floatTabWidget(TabWidget *);
     void          detachInspectionWidget(InspectionWidget *);
 
+    // Shortcut methods
+    SUFREQ        getCurrentCenterFreq() const;
+
     // Request the opening an inspector tab
     bool          openInspectorTab(
         const char *factoryName,
@@ -183,7 +186,6 @@ namespace SigDigger {
         unsigned int);
 
     void notifyStartupErrors();
-
 
     // Convenience getters
     Suscan::Source::Config *getProfile() const;

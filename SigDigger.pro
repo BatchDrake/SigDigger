@@ -206,7 +206,6 @@ INSTALL_HEADERS += \
     include/FeatureFactory.h \
     include/GuiConfig.h \
     include/InspectionWidgetFactory.h \
-    include/Plugin.h \
     include/SigDiggerHelpers.h \
     include/MainSpectrum.h \
     include/MainWindow.h \
@@ -240,6 +239,7 @@ SUSCAN_HEADERS += \
     include/Suscan/MQ.h \
     include/Suscan/MultitaskController.h \
     include/Suscan/Object.h \
+    include/Suscan/Plugin.h \
     include/Suscan/Serializable.h \
     include/Suscan/Source.h \
     include/Suscan/SpectrumSource.h

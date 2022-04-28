@@ -18,7 +18,7 @@
 //
 
 #include "InspectorUI.h"
-#include "ui_Inspector.h"
+#include "ui_GenericInspector.h"
 
 #include "InspectorCtl/AskControl.h"
 #include "InspectorCtl/GainControl.h"

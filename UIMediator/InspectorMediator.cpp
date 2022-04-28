@@ -119,6 +119,12 @@ UIMediator::detachInspectionWidget(InspectionWidget *widget)
     m_inspectors.removeAt(m_inspectors.indexOf(widget));
 }
 
+SUFREQ
+UIMediator::getCurrentCenterFreq() const
+{
+  return this->ui->spectrum->getCenterFreq();
+}
+
 void
 UIMediator::onInspectorMessage(Suscan::InspectorMessage const &msg)
 {

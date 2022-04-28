@@ -17,12 +17,14 @@
 //    <http://www.gnu.org/licenses/>
 //
 
+#define SU_LOG_DOMAIN "sigdigger-library"
+
 #include <Suscan/Library.h>
 #include <Suscan/MultitaskController.h>
 #include <suscan.h>
 #include <analyzer/version.h>
 #include <QtGui>
-#include <Plugin.h>
+#include <Suscan/Plugin.h>
 #include <FeatureFactory.h>
 #include <ToolWidgetFactory.h>
 #include <TabWidgetFactory.h>
@@ -478,6 +480,7 @@ void
 Singleton::init_plugins(void)
 {
   Plugin *defPlug = Plugin::getDefaultPlugin();
+  QStringList plugins;
 
   if (!defPlug->load())
     throw Exception(
@@ -487,7 +490,28 @@ Singleton::init_plugins(void)
         "https://github.com/BatchDrake/SigDigger/issues"
         "</a>");
 
-  // TODO: Traverse plugin directories
+  plugins << suscan_confdb_get_local_path() + QString("/../plugins")
+          << suscan_confdb_get_system_path() + QString("/../plugins");
+
+  for (auto path : plugins) {
+    QDir dir(path);
+    QStringList files = dir.entryList(QStringList() << "*", QDir::Files);
+    auto asStd = path.toStdString();
+
+    for (auto file : files) {
+      auto fullPath = (path + "/" + file).toStdString();
+      auto plugin = Suscan::Plugin::make(fullPath.c_str());
+
+      if (plugin != nullptr) {
+        if (!plugin->load()) {
+          SU_WARNING("Plugin %s failed to load\n", fullPath.c_str());
+          delete plugin;
+        }
+
+        // TODO: register plugin here!!
+      }
+    }
+  }
 }
 
 void
