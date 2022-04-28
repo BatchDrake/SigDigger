@@ -36,6 +36,9 @@ namespace SigDigger {
     QAction *m_renameTab = nullptr;
     QAction *m_floatTab = nullptr;
 
+    bool     m_labelChanged = false;
+    QString  m_cachedLabel;
+
   protected:
     TabWidget(TabWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
 
@@ -48,6 +51,9 @@ namespace SigDigger {
     void popupMenu();
 
     ~TabWidget() override;
+
+  signals:
+    void nameChanged(QString);
 
   public slots:
     void onPopupMenuClose();

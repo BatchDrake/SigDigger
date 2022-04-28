@@ -284,6 +284,7 @@ namespace SigDigger {
     void onCloseTabWindow();
     void onTabCloseRequested(int i);
     void onTabMenuRequested(const QPoint &);
+    void onTabRename(QString);
 
     // Inspector handling
     void onInspectorMessage(Suscan::InspectorMessage const &);

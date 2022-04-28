@@ -20,6 +20,7 @@
 #include <Suscan/Library.h>
 #include <UIMediator.h>
 
+#include <QInputDialog>
 #include <QMenu>
 #include <QAction>
 
@@ -98,7 +99,25 @@ TabWidget::onPopupMenuClose()
 void
 TabWidget::onRename()
 {
-  // TODO
+  bool ok;
+
+  if (!m_labelChanged) {
+    m_cachedLabel  = QString::fromStdString(this->getLabel());
+    m_labelChanged = true;
+  }
+
+  QString text = QInputDialog::getText(
+        this,
+        "Change tab name",
+        "New label: ",
+        QLineEdit::Normal,
+        m_cachedLabel,
+        &ok);
+
+  if (ok && !text.isEmpty()) {
+    m_cachedLabel = text;
+    emit nameChanged(m_cachedLabel);
+  }
 }
 
 void

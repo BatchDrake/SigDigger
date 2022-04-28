@@ -201,6 +201,12 @@ UIMediator::addTabWidget(TabWidget *tabWidget)
         tabWidget,
         QString::fromStdString(tabWidget->getLabel()));
 
+  connect(
+        tabWidget,
+        SIGNAL(nameChanged(QString)),
+        this,
+        SLOT(onTabRename(QString)));
+
   this->configureUIComponent(tabWidget);
 
   if (s->haveQth())
@@ -1429,6 +1435,18 @@ UIMediator::onTabCloseRequested(int i)
     if (index != -1)
       asTabWidget->closeRequested();
   }
+}
+
+void
+UIMediator::onTabRename(QString newName)
+{
+  QWidget *sender = qobject_cast<QWidget *>(QObject::sender());
+  int index;
+
+  index = this->ui->main->mainTab->indexOf(sender);
+
+  if (index != -1)
+    this->ui->main->mainTab->setTabText(index, newName);
 }
 
 void
