@@ -793,11 +793,12 @@ SourceWidget::allocConfig()
 void
 SourceWidget::applyConfig()
 {
+  this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
   this->ui->throttleCheck->setChecked(this->panelConfig->throttle);
+
   this->ui->dcRemoveCheck->setChecked(this->panelConfig->dcRemove);
   this->ui->swapIQCheck->setChecked(this->panelConfig->iqRev);
   this->ui->agcEnabledCheck->setChecked(this->panelConfig->agcEnabled);
-  this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
   this->ui->gainPresetCheck->setChecked(this->panelConfig->gainPresetEnabled);
 
   this->setProperty("collapsed", this->panelConfig->collapsed);

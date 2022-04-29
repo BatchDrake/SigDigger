@@ -509,6 +509,8 @@ Singleton::init_plugins(void)
         }
 
         // TODO: register plugin here!!
+      } else {
+        printf("Failed to make plugin.\n");
       }
     }
   }

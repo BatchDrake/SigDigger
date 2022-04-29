@@ -38,6 +38,7 @@ InspToolWidgetConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(collapsed);
   LOAD(inspectorClass);
+  LOAD(inspFactory);
   LOAD(precise);
   LOAD(palette);
   LOAD(paletteOffset);
@@ -54,6 +55,7 @@ InspToolWidgetConfig::serialize(void)
 
   STORE(collapsed);
   STORE(inspectorClass);
+  STORE(inspFactory);
   STORE(precise);
   STORE(palette);
   STORE(paletteOffset);
@@ -331,9 +333,11 @@ InspToolWidget::setInspectorClass(std::string const &cls)
   if (cls == "psk")
     this->ui->pskRadio->setChecked(true);
   else if (cls == "fsk")
-    this->ui->pskRadio->setChecked(true);
+    this->ui->fskRadio->setChecked(true);
   else if (cls == "ask")
-    this->ui->pskRadio->setChecked(true);
+    this->ui->askRadio->setChecked(true);
+  else if (cls == "audio")
+    this->ui->audioRadio->setChecked(true);
 }
 
 std::string
@@ -345,7 +349,8 @@ InspToolWidget::getInspectorClass(void) const
     return "fsk";
   else if (this->ui->askRadio->isChecked())
     return "ask";
-
+  else if (this->ui->audioRadio->isChecked())
+    return "audio";
   return "";
 }
 

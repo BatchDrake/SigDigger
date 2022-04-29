@@ -29,6 +29,7 @@
 #include <Default/Registration.h>
 #include <QCoreApplication>
 
+#define SIGDIGGER_PLUGIN_MANGLED_ENTRY "_Z11plugin_loadPN6Suscan6PluginE"
 using namespace Suscan;
 
 Plugin *Plugin::m_default = nullptr;
@@ -48,11 +49,19 @@ Plugin::make(const char *path)
   }
 
   // Not an error, just not a plugin
-  if ((name = SCAST(const char *, dlsym(handle, "plugin_name"))) == nullptr)
+  if ((name = SCAST(
+         const char *,
+         dlsym(handle, SUSCAN_SYM_NAME(plugin_name)))) == nullptr) {
+    SU_WARNING("%s: not a plugin (no plugin name)\n", path);
     goto done;
+  }
 
-  if ((desc = SCAST(const char *, dlsym(handle, "plugin_desc"))) == nullptr)
+  if ((desc = SCAST(
+         const char *,
+         dlsym(handle, SUSCAN_SYM_NAME(plugin_desc)))) == nullptr) {
+    SU_WARNING("%s: not a plugin (no plugin desc)\n", path);
     goto done;
+  }
 
   plugin = new Plugin(name, path, desc, handle);
 
@@ -105,6 +114,9 @@ Plugin::resolveSym(std::string const &sym)
   std::string full_name =
       STRINGIFY(SUSCAN_SYM_PFX) + sym;
 
+  if (sym == SIGDIGGER_PLUGIN_MANGLED_ENTRY)
+    full_name = sym;
+
   addr = dlsym(this->m_handle, full_name.c_str());
 
   if (addr == nullptr) {
@@ -143,7 +155,7 @@ Plugin::load(void)
     pluginEntry = SigDigger::DefaultPluginEntry;
   } else {
     pluginEntry =
-        reinterpret_cast<PluginEntryFunc>(this->resolveSym("plugin_load"));
+        reinterpret_cast<PluginEntryFunc>(this->resolveSym(SIGDIGGER_PLUGIN_MANGLED_ENTRY));
     const uint32_t *pPluginVer =
         SCAST(const uint32_t *, this->resolveSym("plugin_ver"));
     const uint32_t *pAPIVer    =

@@ -28,7 +28,6 @@ using namespace SigDigger;
 #define STORE(field) obj.set(STRINGFY(field), this->field)
 #define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
 
-
 void
 GenericInspectorConfig::deserialize(Suscan::Object const &conf)
 {

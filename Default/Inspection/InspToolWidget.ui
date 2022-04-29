@@ -103,37 +103,6 @@ font-weight: bold;</string>
       <property name="verticalSpacing">
        <number>6</number>
       </property>
-      <item row="3" column="0" colspan="2">
-       <widget class="QRadioButton" name="askRadio">
-        <property name="text">
-         <string>ASK demodulator</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="QRadioButton" name="pskRadio">
-        <property name="text">
-         <string>PS&amp;K demodulator</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QRadioButton" name="fskRadio">
-        <property name="text">
-         <string>FSK demodulator</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Inspector type</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="inspectorCombo">
         <property name="enabled">
@@ -145,6 +114,56 @@ font-weight: bold;</string>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QRadioButton" name="pskRadio">
+        <property name="text">
+         <string>Digital &amp;Phase demodulator (PSK)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup</string>
+        </attribute>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QRadioButton" name="askRadio">
+        <property name="text">
+         <string>Digital &amp;AM demodulator (ASK)</string>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup</string>
+        </attribute>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Inspector type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QRadioButton" name="fskRadio">
+        <property name="text">
+         <string>Digital &amp;FM demodulator (FSK)</string>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup</string>
+        </attribute>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QRadioButton" name="audioRadio">
+        <property name="text">
+         <string>&amp;Audio demodulator</string>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup</string>
+        </attribute>
        </widget>
       </item>
      </layout>
@@ -451,4 +470,7 @@ font-weight: bold;</string>
  </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

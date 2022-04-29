@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT           += core gui network
+QMAKE_LFLAGS += -rdynamic
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 

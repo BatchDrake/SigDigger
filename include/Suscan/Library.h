@@ -132,7 +132,7 @@ namespace Suscan {
       }
     }
 
-    constexpr Suscan::Orbit&
+    Suscan::Orbit&
     operator=(const Suscan::Orbit &lvalue)
     {
       if (!this->loan)

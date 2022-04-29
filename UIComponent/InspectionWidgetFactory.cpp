@@ -118,6 +118,8 @@ InspectionWidget::setState(int state, Suscan::Analyzer *analyzer)
       m_analyzer = analyzer;
       m_onceAttached = true;
       this->attachAnalyzer(analyzer);
+    } else {
+      m_analyzer = nullptr;
     }
   }
 }
