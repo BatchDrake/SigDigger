@@ -793,8 +793,15 @@ SourceWidget::allocConfig()
 void
 SourceWidget::applyConfig()
 {
+  bool blocked = this->ui->throttleSpin->blockSignals(true);
   this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
+  this->ui->throttleSpin->blockSignals(blocked);
+
+  blocked = this->ui->throttleCheck->blockSignals(true);
   this->ui->throttleCheck->setChecked(this->panelConfig->throttle);
+  this->ui->throttleCheck->blockSignals(blocked);
+
+  this->onThrottleChanged();
 
   this->ui->dcRemoveCheck->setChecked(this->panelConfig->dcRemove);
   this->ui->swapIQCheck->setChecked(this->panelConfig->iqRev);

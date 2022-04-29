@@ -76,7 +76,7 @@ namespace SigDigger {
     bool m_audioAllowed = true;
 
     // UI members
-    int m_state;
+    int m_state = 0;
     MainSpectrum *m_spectrum;
     Ui::AudioPanel *ui = nullptr;
     ColorConfig colorConfig;

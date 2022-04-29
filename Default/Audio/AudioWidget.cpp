@@ -662,7 +662,7 @@ AudioWidget::setState(int state, Suscan::Analyzer *analyzer)
   m_analyzer = analyzer;
 
   if (state != this->m_state)
-    this->m_state = state;
+    m_state = state;
 
   m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
   m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
