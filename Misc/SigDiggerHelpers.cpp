@@ -70,6 +70,41 @@ SigDiggerHelpers::timerdup(struct timeval *tv)
   }
 }
 
+AudioDemod
+SigDiggerHelpers::strToDemod(std::string const &str)
+{
+  if (str == "AM")
+    return AudioDemod::AM;
+  else if (str == "FM")
+    return AudioDemod::FM;
+  else if (str == "USB")
+    return AudioDemod::USB;
+  else if (str == "LSB")
+    return AudioDemod::LSB;
+
+  return AudioDemod::AM;
+}
+
+std::string
+SigDiggerHelpers::demodToStr(AudioDemod demod)
+{
+  switch (demod) {
+    case AM:
+      return "AM";
+
+    case FM:
+      return "FM";
+
+    case USB:
+      return "USB";
+
+    case LSB:
+      return "LSB";
+  }
+
+  return "AM"; // Default
+}
+
 void
 SigDiggerHelpers::openSaveSamplesDialog(
     QWidget *root,
@@ -207,6 +242,27 @@ SigDiggerHelpers::populatePaletteCombo(QComboBox *cb)
           QVariant::fromValue(ndx));
     ++ndx;
   }
+}
+
+void
+SigDiggerHelpers::populateAntennaCombo(
+    Suscan::Source::Config &profile,
+    QComboBox *combo)
+{
+  int index = 0;
+  combo->clear();
+
+  for (auto i = profile.getDevice().getFirstAntenna();
+       i != profile.getDevice().getLastAntenna();
+       ++i) {
+    combo->addItem(QString::fromStdString(*i));
+
+    if (profile.getAntenna() == *i)
+      index = static_cast<int>(
+            i - profile.getDevice().getFirstAntenna());
+  }
+
+  combo->setCurrentIndex(index);
 }
 
 const Palette *

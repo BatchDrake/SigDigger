@@ -23,11 +23,14 @@
 #include <FrequencyCorrectionDialog.h>
 #include <QDynamicPropertyChangeEvent>
 #include <util/compat-statvfs.h>
-#include "ui_AudioPanel.h"
+#include "ui_AudioWidget.h"
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <UIMediator.h>
 #include "AudioProcessor.h"
+#include <SuWidgetsHelpers.h>
+#include <MainSpectrum.h>
 
 using namespace SigDigger;
 
@@ -42,6 +45,19 @@ static const unsigned int supportedRates[] = {
 #define STRINGFY(x) #x
 #define STORE(field) obj.set(STRINGFY(field), this->field)
 #define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
+
+static QString
+formatCaptureSize(quint64 size)
+{
+  if (size < (1ull << 10))
+    return QString::number(size) + " bytes";
+  else if (size < (1ull << 20))
+    return QString::number(size >> 10) + " KiB";
+  else if (size < (1ull << 30))
+    return QString::number(size >> 20) + " MiB";
+
+  return QString::number(size >> 30) + " GiB";
+}
 
 void
 AudioWidgetConfig::deserialize(Suscan::Object const &conf)
@@ -98,7 +114,8 @@ AudioWidget::AudioWidget(
 {
   ui->setupUi(this);
 
-  this->m_processor = new AudioProcessor(mediator, this);
+  m_processor = new AudioProcessor(mediator, this);
+  m_spectrum  = mediator->getMainSpectrum();
 
   this->setRecordSavePath(QDir::currentPath().toStdString());
 
@@ -210,13 +227,56 @@ AudioWidget::connectAll(void)
         SIGNAL(accepted()),
         this,
         SLOT(onAcceptCorrectionSetting(void)));
+
+  connect(
+        m_spectrum,
+        SIGNAL(bandwidthChanged()),
+        this,
+        SLOT(onSpectrumBandwidthChanged()));
+
+  connect(
+        m_spectrum,
+        SIGNAL(loChanged(qint64)),
+        this,
+        SLOT(onSpectrumLoChanged(qint64)));
+
+  connect(
+        m_spectrum,
+        SIGNAL(frequencyChanged(qint64)),
+        this,
+        SLOT(onSpectrumFrequencyChanged(qint64)));
+
+  this->connect(
+        m_processor,
+        SIGNAL(recStopped()),
+        this,
+        SLOT(onAudioSaveError()));
+
+  this->connect(
+        m_processor,
+        SIGNAL(recSwamped()),
+        this,
+        SLOT(onAudioSaveSwamped()));
+
+  this->connect(
+        m_processor,
+        SIGNAL(recSaveRate(qreal)),
+        this,
+        SLOT(onAudioSaveRate(qreal)));
+
+  this->connect(
+        m_processor,
+        SIGNAL(recCommit()),
+        this,
+        SLOT(onAudioCommit()));
 }
 
 bool
 AudioWidget::shouldOpenAudio(void) const
 {
+  bool audioAvailable = m_processor->isAudioAvailable();
   bool validRate = this->bandwidth >= supportedRates[0];
-  return this->audioAllowed && this->getEnabled() && validRate;
+  return m_audioAllowed && audioAvailable && this->getEnabled() && validRate;
 }
 
 void
@@ -224,8 +284,12 @@ AudioWidget::refreshUi(void)
 {
   bool shouldOpenAudio = this->shouldOpenAudio();
   bool validRate = this->bandwidth >= supportedRates[0];
+  MainSpectrum::Skewness skewness = MainSpectrum::SYMMETRIC;
+  bool recording = m_processor->isRecording();
+  bool audioAvailable = m_processor->isAudioAvailable();
 
-  this->ui->audioPreviewCheck->setEnabled(validRate && this->audioAllowed);
+  this->ui->audioPreviewCheck->setEnabled(
+        audioAvailable && validRate && m_audioAllowed);
   this->ui->demodCombo->setEnabled(shouldOpenAudio);
   this->ui->sampleRateCombo->setEnabled(shouldOpenAudio);
   this->ui->cutoffSlider->setEnabled(shouldOpenAudio);
@@ -256,6 +320,17 @@ AudioWidget::refreshUi(void)
       break;
 
     case AudioDemod::USB:
+      this->ui->sqlLevelSpin->setSuffix(" dB");
+      this->ui->sqlLevelSpin->setMinimum(-120);
+      this->ui->sqlLevelSpin->setMaximum(10);
+      this->ui->sqlLevelSpin->setValue(
+            static_cast<qreal>(
+              SU_POWER_DB(this->panelConfig->ssbSquelch)));
+
+      if (shouldOpenAudio)
+        skewness = MainSpectrum::UPPER;
+      break;
+
     case AudioDemod::LSB:
       this->ui->sqlLevelSpin->setSuffix(" dB");
       this->ui->sqlLevelSpin->setMinimum(-120);
@@ -263,8 +338,15 @@ AudioWidget::refreshUi(void)
       this->ui->sqlLevelSpin->setValue(
             static_cast<qreal>(
               SU_POWER_DB(this->panelConfig->ssbSquelch)));
+
+      if (shouldOpenAudio)
+        skewness = MainSpectrum::LOWER;
       break;
   }
+
+  m_spectrum->setFilterSkewness(skewness);
+
+  this->ui->recordStartStopButton->setText(recording ? "Stop" : "Record");
 }
 
 void
@@ -403,6 +485,8 @@ AudioWidget::setSampleRate(unsigned int rate)
 
     // Stay below maximum frequency (fs / 2)
     this->ui->cutoffSlider->setMaximum(rate / 2);
+
+    m_processor->setSampleRate(rate);
   }
 }
 
@@ -413,6 +497,7 @@ AudioWidget::setCutOff(SUFLOAT cutoff)
   this->ui->cutoffSlider->setValue(static_cast<int>(cutoff));
   this->ui->cutoffLabel->setText(
         QString::number(this->ui->cutoffSlider->value()) + " Hz");
+  m_processor->setCutOff(cutoff);
 }
 
 void
@@ -422,12 +507,15 @@ AudioWidget::setVolume(SUFLOAT volume)
   this->ui->volumeSlider->setValue(static_cast<int>(volume));
   this->ui->volumeLabel->setText(
         QString::number(this->ui->volumeSlider->value()) + " dB");
+
+  m_processor->setVolume(this->getMuteableVolume());
 }
 
 void
 AudioWidget::setMuted(bool muted)
 {
   this->ui->muteButton->setChecked(muted);
+  m_processor->setVolume(this->getMuteableVolume());
 }
 
 void
@@ -435,6 +523,7 @@ AudioWidget::setSquelchEnabled(bool enabled)
 {
   this->panelConfig->squelch = enabled;
   this->ui->sqlButton->setChecked(enabled);
+  m_processor->setSquelchEnabled(enabled);
   this->refreshUi();
 }
 
@@ -455,6 +544,8 @@ AudioWidget::setSquelchLevel(SUFLOAT val)
       break;
   }
 
+  m_processor->setSquelchLevel(val);
+
   this->refreshUi();
 }
 
@@ -463,14 +554,20 @@ AudioWidget::setEnabled(bool enabled)
 {
   this->panelConfig->enabled = enabled;
   this->ui->audioPreviewCheck->setChecked(enabled);
+
+  m_processor->setEnabled(enabled && this->shouldOpenAudio());
+
   this->refreshUi();
 }
 
 void
 AudioWidget::setDemod(enum AudioDemod demod)
 {
-  this->panelConfig->demod = AudioWidget::demodToStr(demod);
+  this->panelConfig->demod = SigDiggerHelpers::demodToStr(demod);
   this->ui->demodCombo->setCurrentIndex(static_cast<int>(demod));
+
+  m_processor->setDemod(demod);
+
   this->refreshUi();
 }
 
@@ -509,7 +606,7 @@ AudioWidget::applyConfig(void)
   this->setSampleRate(this->panelConfig->rate);
   this->setCutOff(this->panelConfig->cutOff);
   this->setVolume(this->panelConfig->volume);
-  this->setDemod(strToDemod(this->panelConfig->demod));
+  this->setDemod(SigDiggerHelpers::strToDemod(this->panelConfig->demod));
   this->setEnabled(this->panelConfig->enabled);
   this->setSquelchEnabled(this->panelConfig->squelch);
   this->setProperty("collapsed", this->panelConfig->collapsed);
@@ -525,6 +622,11 @@ AudioWidget::applyConfig(void)
   // Recorder
   if (this->panelConfig->savePath.size() > 0)
     this->setRecordSavePath(this->panelConfig->savePath);
+
+  // Update processor parameters
+  m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
+  m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
+  m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
 }
 
 bool
@@ -539,6 +641,33 @@ AudioWidget::event(QEvent *event)
   }
 
   return QWidget::event(event);
+}
+
+void
+AudioWidget::setState(int state, Suscan::Analyzer *analyzer)
+{
+  if (m_analyzer == nullptr && analyzer != nullptr) {
+    m_haveSourceInfo = false;
+    m_audioAllowed = true;
+
+    connect(
+          analyzer,
+          SIGNAL(source_info_message(const Suscan::SourceInfoMessage &)),
+          this,
+          SLOT(onSourceInfoMessage(const Suscan::SourceInfoMessage &)));
+
+    this->refreshUi();
+  }
+
+  m_analyzer = analyzer;
+
+  if (state != this->m_state)
+    this->m_state = state;
+
+  m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
+  m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
+  m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
+  m_processor->setAnalyzer(analyzer);
 }
 
 void
@@ -604,76 +733,51 @@ AudioWidget::setProfile(Suscan::Source::Config &profile)
   this->isRealTime = isRealTime;
   this->fcDialog->setRealTime(this->isRealTime);
   this->fcDialog->setTimeLimits(start, end);
-}
 
-//////////////////////////// Static members ///////////////////////////////////
-AudioDemod
-AudioWidget::strToDemod(std::string const &str)
-{
-  if (str == "AM")
-    return AudioDemod::AM;
-  else if (str == "FM")
-    return AudioDemod::FM;
-  else if (str == "USB")
-    return AudioDemod::USB;
-  else if (str == "LSB")
-    return AudioDemod::LSB;
-
-  return AudioDemod::AM;
-}
-
-std::string
-AudioWidget::demodToStr(AudioDemod demod)
-{
-  switch (demod) {
-    case AM:
-      return "AM";
-
-    case FM:
-      return "FM";
-
-    case USB:
-      return "USB";
-
-    case LSB:
-      return "LSB";
-  }
-
-  return "AM"; // Default
+  m_processor->setTunerFreq(profile.getFreq());
 }
 
 //////////////////////////////// Slots ////////////////////////////////////////
 void
+AudioWidget::onSpectrumBandwidthChanged()
+{
+  m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
+}
+
+void
+AudioWidget::onSpectrumLoChanged(qint64 lo)
+{
+  m_processor->setLoFreq(SCAST(SUFREQ, lo));
+}
+
+void
+AudioWidget::onSpectrumFrequencyChanged(qint64 freq)
+{
+  m_processor->setTunerFreq(SCAST(SUFREQ, freq));
+}
+
+void
 AudioWidget::onDemodChanged(void)
 {
   this->setDemod(this->getDemod());
-
-  // TODO: Change demod in spectrum
-  // TODO: Change demod in opened inspector (if any)
 }
 
 void
 AudioWidget::onSampleRateChanged(void)
 {
   this->setSampleRate(this->getSampleRate());
-
-  // TODO: Change sample rate in inspector (if any)
 }
 
 void
 AudioWidget::onFilterChanged(void)
 {
   this->setCutOff(this->getCutOff());
-
-  // TODO: Change filter cutoff in inspector (if any)
 }
 
 void
 AudioWidget::onVolumeChanged(void)
 {
   this->setVolume(this->getVolume());
-
-  // TODO: Change volume in inspector (if any)
 }
 
 void
@@ -688,15 +792,22 @@ AudioWidget::onMuteToggled(bool)
           ? ":/icons/audio-volume-muted-panel.png"
           : ":/icons/audio-volume-medium-panel.png"));
 
-  // TODO: Change volume in inspector (if any)
+  this->setVolume(this->getVolume());
 }
 
 void
 AudioWidget::onEnabledChanged(void)
 {
-  this->setEnabled(this->getEnabled());
-
-  // TODO: Open or close inspector (if any)
+  if (!m_processor->isAudioAvailable()) {
+    QMessageBox::warning(
+          this,
+          "Audio preview error",
+          "Audio playback was disabled due to errors. Reason: "
+          + m_processor->getAudioError());
+    this->setEnabled(false);
+  } else {
+    this->setEnabled(this->getEnabled());
+  }
 }
 
 void
@@ -714,35 +825,44 @@ AudioWidget::onChangeSavePath(void)
     this->panelConfig->savePath = path.toStdString();
     this->refreshDiskUsage();
 
-    // TODO: Start and / or stop save
+    if (this->ui->recordStartStopButton->isChecked()) {
+      bool recording;
+      m_processor->stopRecording();
+      recording = m_processor->startRecording(path);
+
+      this->ui->recordStartStopButton->setChecked(recording);
+    }
   }
 }
 
 void
 AudioWidget::onRecordStartStop(void)
 {
-  this->ui->recordStartStopButton->setText(
-        this->ui->recordStartStopButton->isChecked()
-        ? "Stop"
-        : "Record");
+  bool recording = this->ui->recordStartStopButton->isChecked();
+  bool nowRec = false;
 
-  // TODO: Start and / or stop save
+  if (recording)
+    nowRec = m_processor->startRecording(
+          QString::fromStdString(this->panelConfig->savePath));
+  else
+    m_processor->stopRecording();
+
+  if (nowRec != recording)
+    this->ui->recordStartStopButton->setChecked(nowRec);
+
+  this->refreshUi();
 }
 
 void
 AudioWidget::onToggleSquelch(void)
 {
   this->setSquelchEnabled(this->getSquelchEnabled());
-
-  // TODO: Enable squelch in opened inspector (if any)
 }
 
 void
 AudioWidget::onSquelchLevelChanged(void)
 {
   this->setSquelchLevel(this->getSquelchLevel());
-
-  // TODO: Set sequelch level in opened inspectoir (if any)
 }
 
 void
@@ -771,9 +891,82 @@ AudioWidget::onAcceptCorrectionSetting(void)
   this->panelConfig->tleData       = this->fcDialog->getCurrentTLE().toStdString();
 
   if (this->fcDialog->isCorrectionEnabled()) {
-    // TODO: Set correction to the audio inspector
+   m_processor->setAudioCorrection(this->fcDialog->getOrbit());
+   m_processor->setCorrectionEnabled(true);
   } else {
-    // TODO: Disable correction to the audio inspector
+    m_processor->setCorrectionEnabled(false);
   }
 }
 
+//////////////////////////// Notification slots ////////////////////////////////
+void
+AudioWidget::onSetTLE(Suscan::InspectorMessage const &msg)
+{
+  if (!msg.isTLEEnabled())
+    this->ui->correctionLabel->setText("None");
+}
+
+void
+AudioWidget::onOrbitReport(Suscan::InspectorMessage const &msg)
+{
+  this->ui->correctionLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(msg.getOrbitReport().getFrequencyCorrection()),
+          4,
+          "Hz",
+          true));
+}
+
+////////////////////////// AudioFileSaver slots ////////////////////////////////
+void
+AudioWidget::onAudioSaveError(void)
+{
+  this->refreshUi();
+
+  QMessageBox::warning(
+              this,
+              "SigDigger error",
+              "Audio saver stopped unexpectedly. Check disk usage and directory permissions and try again.",
+              QMessageBox::Ok);
+
+
+
+}
+
+void
+AudioWidget::onAudioSaveSwamped(void)
+{
+  this->refreshUi();
+
+  QMessageBox::warning(
+          this,
+          "SigDigger error",
+          "Audiofile thread swamped. Maybe your storage device is too slow",
+          QMessageBox::Ok);
+}
+
+void
+AudioWidget::onAudioSaveRate(qreal)
+{
+  this->refreshDiskUsage();
+}
+
+void
+AudioWidget::onAudioCommit(void)
+{
+  auto len = m_processor->getSaveSize() * sizeof(uint16_t) / sizeof(SUCOMPLEX);
+  this->ui->captureSizeLabel->setText(formatCaptureSize(len));
+}
+
+void
+AudioWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
+{
+  if (!m_haveSourceInfo) {
+    m_audioAllowed =
+        msg.info()->testPermission(SUSCAN_ANALYZER_PERM_OPEN_AUDIO);
+    m_haveSourceInfo = true;
+    this->refreshUi();
+  }
+}
+
+////////////////// TODO: implement onJumpToBookmark ////////////////////////////

@@ -22,6 +22,7 @@
 #include <QMetaType>
 #include <Suscan/Library.h>
 #include <Suscan/Analyzer.h>
+#include <SuWidgetsHelpers.h>
 
 Q_DECLARE_METATYPE(Suscan::Message);
 Q_DECLARE_METATYPE(Suscan::ChannelMessage);
@@ -329,6 +330,18 @@ Analyzer::assertTypeRegistration(void)
   }
 }
 
+uint32_t
+Analyzer::allocateRequestId()
+{
+  return ++this->requestId;
+}
+
+uint32_t
+Analyzer::allocateInspectorId()
+{
+  return ++this->inspectorId;
+}
+
 void
 Analyzer::open(
     std::string const &inspClass,
@@ -338,11 +351,11 @@ Analyzer::open(
   struct sigutils_channel c_ch =
       sigutils_channel_INITIALIZER;
 
-  c_ch.fc   = static_cast<float>(ch.fc);
-  c_ch.ft   = static_cast<float>(ch.ft);
-  c_ch.f_lo = static_cast<float>(ch.fLow);
-  c_ch.f_hi = static_cast<float>(ch.fHigh);
-  c_ch.bw   = static_cast<float>(ch.fHigh - ch.fLow);
+  c_ch.fc   = SCAST(SUFREQ, ch.fc);
+  c_ch.ft   = SCAST(SUFREQ, ch.ft);
+  c_ch.f_lo = SCAST(SUFREQ, ch.fLow);
+  c_ch.f_hi = SCAST(SUFREQ, ch.fHigh);
+  c_ch.bw   = SCAST(SUFLOAT, ch.fHigh - ch.fLow);
 
   SU_ATTEMPT(
         suscan_analyzer_open_async(
@@ -361,11 +374,11 @@ Analyzer::openPrecise(
   struct sigutils_channel c_ch =
       sigutils_channel_INITIALIZER;
 
-  c_ch.fc   = static_cast<float>(ch.fc);
-  c_ch.ft   = static_cast<float>(ch.ft);
-  c_ch.f_lo = static_cast<float>(ch.fLow);
-  c_ch.f_hi = static_cast<float>(ch.fHigh);
-  c_ch.bw   = static_cast<float>(ch.fHigh - ch.fLow);
+  c_ch.fc   = SCAST(SUFREQ, ch.fc);
+  c_ch.ft   = SCAST(SUFREQ, ch.ft);
+  c_ch.f_lo = SCAST(SUFREQ, ch.fLow);
+  c_ch.f_hi = SCAST(SUFREQ, ch.fHigh);
+  c_ch.bw   = SCAST(SUFLOAT, ch.fHigh - ch.fLow);
 
   SU_ATTEMPT(
         suscan_analyzer_open_ex_async(
@@ -388,11 +401,11 @@ Analyzer::openEx(
   struct sigutils_channel c_ch =
       sigutils_channel_INITIALIZER;
 
-  c_ch.fc   = static_cast<float>(ch.fc);
-  c_ch.ft   = static_cast<float>(ch.ft);
-  c_ch.f_lo = static_cast<float>(ch.fLow);
-  c_ch.f_hi = static_cast<float>(ch.fHigh);
-  c_ch.bw   = static_cast<float>(ch.fHigh - ch.fLow);
+  c_ch.fc   = SCAST(SUFREQ, ch.fc);
+  c_ch.ft   = SCAST(SUFREQ, ch.ft);
+  c_ch.f_lo = SCAST(SUFREQ, ch.fLow);
+  c_ch.f_hi = SCAST(SUFREQ, ch.fHigh);
+  c_ch.bw   = SCAST(SUFLOAT, ch.fHigh - ch.fLow);
 
   SU_ATTEMPT(
         suscan_analyzer_open_ex_async(
@@ -521,6 +534,9 @@ Analyzer::closeInspector(Handle handle, RequestId id)
 // Object construction and destruction
 Analyzer::Analyzer(AnalyzerParams &params, Source::Config const &config)
 {
+  this->requestId   = SCAST(uint32_t, rand() ^ (rand() << 16));
+  this->inspectorId = SCAST(uint32_t, rand() ^ (rand() << 16));
+
   assertTypeRegistration();
 
   SU_ATTEMPT(this->instance = suscan_analyzer_new(

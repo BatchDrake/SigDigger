@@ -28,7 +28,6 @@
 #include <Suscan/Config.h>
 #include <Suscan/Serializable.h>
 
-#include <codec/codec.h>
 #include <analyzer/source.h>
 #include <analyzer/estimator.h>
 #include <analyzer/spectsrc.h>
@@ -45,6 +44,9 @@
 
 namespace SigDigger {
   class ToolWidgetFactory;
+  class TabWidgetFactory;
+  class InspectionWidgetFactory;
+  class UIListenerFactory;
 };
 
 namespace Suscan {
@@ -130,7 +132,7 @@ namespace Suscan {
       }
     }
 
-    constexpr Suscan::Orbit&
+    Suscan::Orbit&
     operator=(const Suscan::Orbit &lvalue)
     {
       if (!this->loan)
@@ -216,17 +218,27 @@ namespace Suscan {
     std::vector<Object> uiConfig;
     std::vector<Object> FATs;
 
-    Location qth;
-    QMap<QString, Orbit> satellites;
-    QMap<QString, Location> locations;
-    QMap<std::string, TLESource> tleSources;
-    QMap<qint64, Bookmark> bookmarks;
+    // Singleton config
+    Location                        qth;
+    QMap<QString, Orbit>            satellites;
+    QMap<QString, Location>         locations;
+    QMap<std::string, TLESource>    tleSources;
+    QMap<qint64, Bookmark>          bookmarks;
     QMap<std::string, SpectrumUnit> spectrumUnits;
-    QHash<QString, Source::Config> networkProfiles;
-    QList<SigDigger::ToolWidgetFactory *> toolWidgetFactories;
+    QHash<QString, Source::Config>  networkProfiles;
+
+    // Feature object factories
+    QList<SigDigger::ToolWidgetFactory *>       toolWidgetFactories;
+    QList<SigDigger::TabWidgetFactory *>        tabWidgetFactories;
+    QList<SigDigger::InspectionWidgetFactory *> inspectionWidgetFactories;
+    QList<SigDigger::UIListenerFactory *>       uiListenerFactories;
+
+    // Used for search only
+    QHash<QString, SigDigger::TabWidgetFactory *>        tabWidgetFactoryTable;
+    QHash<QString, SigDigger::InspectionWidgetFactory *> inspectionWidgetFactoryTable;
+
     std::list<std::string> recentProfiles;
 
-    bool codecs_initd;
     bool sources_initd;
     bool estimators_initd;
     bool spectrum_sources_initd;
@@ -250,7 +262,6 @@ namespace Suscan {
     static QString normalizeTLEName(QString const &);
 
   public:
-    void init_codecs(void);
     void init_sources(void);
     void init_estimators(void);
     void init_spectrum_sources(void);
@@ -352,6 +363,23 @@ namespace Suscan {
     bool unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *);
     QList<SigDigger::ToolWidgetFactory *>::const_iterator getFirstToolWidgetFactory() const;
     QList<SigDigger::ToolWidgetFactory *>::const_iterator getLastToolWidgetFactory() const;
+
+    bool registerTabWidgetFactory(SigDigger::TabWidgetFactory *);
+    bool unregisterTabWidgetFactory(SigDigger::TabWidgetFactory *);
+    QList<SigDigger::TabWidgetFactory *>::const_iterator getFirstTabWidgetFactory() const;
+    QList<SigDigger::TabWidgetFactory *>::const_iterator getLastTabWidgetFactory() const;
+    SigDigger::TabWidgetFactory *findTabWidgetFactory(QString const &) const;
+
+    bool registerInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *);
+    bool unregisterInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *);
+    QList<SigDigger::InspectionWidgetFactory *>::const_iterator getFirstInspectionWidgetFactory() const;
+    QList<SigDigger::InspectionWidgetFactory *>::const_iterator getLastInspectionWidgetFactory() const;
+    SigDigger::InspectionWidgetFactory *findInspectionWidgetFactory(QString const &) const;
+
+    bool registerUIListenerFactory(SigDigger::UIListenerFactory *);
+    bool unregisterUIListenerFactory(SigDigger::UIListenerFactory *);
+    QList<SigDigger::UIListenerFactory *>::const_iterator getFirstUIListenerFactory() const;
+    QList<SigDigger::UIListenerFactory *>::const_iterator getLastUIListenerFactory() const;
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);

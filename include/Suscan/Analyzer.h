@@ -195,6 +195,12 @@ namespace Suscan {
       return this->c_info->agc != SU_FALSE;
     }
 
+    inline float
+    getPPM(void) const
+    {
+      return this->c_info->ppm;
+    }
+
     inline bool
     isSeekable(void) const
     {
@@ -254,6 +260,9 @@ namespace Suscan {
   private:
     suscan_analyzer_t *instance = nullptr;
     AsyncThread *asyncThread = nullptr;
+    uint32_t requestId = 0;
+    uint32_t inspectorId = 0;
+
     MQ mq;
 
     static bool registered;
@@ -274,6 +283,9 @@ namespace Suscan {
     void captureMessage(quint32 type, void *data);
 
   public:
+    uint32_t allocateRequestId(void);
+    uint32_t allocateInspectorId(void);
+
     SUSCOUNT getSampleRate(void) const;
     SUSCOUNT getMeasuredSampleRate(void) const;
     struct timeval getSourceTimeStamp(void) const;
@@ -298,25 +310,25 @@ namespace Suscan {
     void halt(void);
 
     // Analyzer asynchronous requests
-    void open(std::string const &inspClass, Channel const &ch, RequestId id);
-    void openPrecise(std::string const &inspClass, Channel const &ch, RequestId id);
+    void open(std::string const &inspClass, Channel const &ch, RequestId id = 0);
+    void openPrecise(std::string const &inspClass, Channel const &ch, RequestId id = 0);
     void openEx(
         std::string const &inspClass,
         Channel const &ch,
         bool precise,
         Handle parent,
-        RequestId id);
+        RequestId id = 0);
 
-    void setInspectorConfig(Handle handle, Config const &cfg, RequestId id);
-    void setInspectorId(Handle handle, InspectorId id, RequestId req_id);
-    void setInspectorFreq(Handle handle, SUFREQ fc, RequestId req_id);
-    void setInspectorBandwidth(Handle handle, SUFREQ bw, RequestId req_id);
-    void setInspectorWatermark(Handle handle, SUSCOUNT watermark, RequestId id);
-    void setSpectrumSource(Handle handle, unsigned int source, RequestId id);
-    void setInspectorEnabled(Handle handle, EstimatorId eid, bool, RequestId id);
-    void setInspectorDopplerCorrection(Handle handle, Orbit const &, RequestId id);
-    void disableDopplerCorrection(Handle handle, RequestId id);
-    void closeInspector(Handle handle, RequestId id);
+    void setInspectorConfig(Handle handle, Config const &cfg, RequestId id = 0);
+    void setInspectorId(Handle handle, InspectorId id, RequestId req_id = 0);
+    void setInspectorFreq(Handle handle, SUFREQ fc, RequestId req_id = 0);
+    void setInspectorBandwidth(Handle handle, SUFREQ bw, RequestId req_id = 0);
+    void setInspectorWatermark(Handle handle, SUSCOUNT watermark, RequestId id = 0);
+    void setSpectrumSource(Handle handle, unsigned int source, RequestId id = 0);
+    void setInspectorEnabled(Handle handle, EstimatorId eid, bool, RequestId id = 0);
+    void setInspectorDopplerCorrection(Handle handle, Orbit const &, RequestId id = 0);
+    void disableDopplerCorrection(Handle handle, RequestId id = 0);
+    void closeInspector(Handle handle, RequestId id = 0);
 
     // Constructors
     Analyzer(AnalyzerParams &params, Source::Config const& config);

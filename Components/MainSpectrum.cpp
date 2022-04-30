@@ -24,6 +24,7 @@
 
 #include "Waterfall.h"
 #include "GLWaterfall.h"
+#include <WFHelpers.h>
 
 using namespace SigDigger;
 

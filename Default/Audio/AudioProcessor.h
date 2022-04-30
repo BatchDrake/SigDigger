@@ -26,11 +26,14 @@
 
 namespace Suscan {
   class Analyzer;
+  class AnalyzerRequestTracker;
+  struct AnalyzerRequest;
 };
 
 namespace SigDigger {
   class UIMediator;
   class AudioPlayback;
+  class MainSpectrum;
 
   class AudioProcessor : public QObject
   {
@@ -41,42 +44,97 @@ namespace SigDigger {
     bool            m_enabled = false;
     float           m_volume = 0;
     float           m_cutOff = 0;
-    SUFREQ          m_freq = 0;
+    SUFREQ          m_lo = 0;
+    SUFREQ          m_tuner = 0;
     unsigned int    m_sampleRate = 44100;
     AudioDemod      m_demod = AudioDemod::FM;
     bool            m_correctionEnabled = false;
+    bool            m_squelch = false;
+    SUFLOAT         m_squelchLevel;
+    SUFREQ          m_bw = 2e5; // Hz
 
     // Composed objects
     AudioFileSaver *m_audioFileSaver = nullptr;
+    QString         m_savedPath;
     AudioPlayback  *m_playBack = nullptr;
+    Suscan::AnalyzerRequestTracker *m_tracker = nullptr;
+    QString         m_audioError;
 
-    // Analyzer state objects
+    // Audio inspector state
+    bool              m_opened = false;
+    bool              m_opening = false;
+    bool              m_settingRate = false;
     Suscan::Analyzer *m_analyzer = nullptr;
-    Suscan::Handle    m_audioInspHandle = 0;
+    Suscan::Handle    m_audioInspHandle = -1;
+    uint32_t          m_audioInspId = 0xffffffff;
     suscan_config_t  *m_audioCfgTemplate = nullptr;
     bool              m_audioInspectorOpened = false;
-    float             m_maxAudioBw = 2e5;
-    SUFREQ            m_lastLo = 0;
+    SUFREQ            m_maxAudioBw = 2e5; // Hz
+
+    // Other references
+    MainSpectrum     *m_spectrum = nullptr;
 
     // Private methods
+    void connectAll();
+    void connectAudioFileSaver();
     void connectAnalyzer();
+    void disconnectAnalyzer();
+    bool openAudio();
+    bool closeAudio();
+    void setParams();
+    void setTrueLoFreq();
+    void setTrueBandwidth();
+    SUFREQ calcTrueLoFreq();
+    SUFREQ calcTrueBandwidth();
 
   public:
     explicit AudioProcessor(UIMediator *, QObject *parent = nullptr);
+    virtual ~AudioProcessor() override;
 
     void setAnalyzer(Suscan::Analyzer *);
+    void setEnabled(bool);
     void setVolume(float);
+    void setSquelchEnabled(bool);
+    void setSquelchLevel(float);
     void setAudioCorrection(Suscan::Orbit const &);
     void setCorrectionEnabled(bool);
     void setDemod(AudioDemod);
     void setSampleRate(unsigned);
     void setCutOff(float);
-    void setDemodFreq(SUFREQ);
-    void startRecording(QString);
-    void stopRecording(void);
+    void setTunerFreq(SUFREQ);
+    void setLoFreq(SUFREQ);
+
+    void setBandwidth(SUFREQ);
+
+    bool isAudioAvailable() const;
+    QString getAudioError() const;
+    bool isRecording() const;
+    bool isOpened() const;
+    size_t getSaveSize() const;
+
+  signals:
+    void audioClosed();
+    void audioOpened();
+    void audioError(QString);
+
+    void recStopped();
+    void recSwamped();
+    void recSaveRate(qreal);
+    void recCommit();
+
+    void orbitReport(Suscan::InspectorMessage const &);
+    void setTLE(Suscan::InspectorMessage const &);
 
   public slots:
-    // Here: process Analyzer messages
+    // These two are slots to trigger the recording stop on signal
+    bool startRecording(QString);
+    void stopRecording(void);
+
+    void onInspectorMessage(Suscan::InspectorMessage const &);
+    void onInspectorSamples(Suscan::SamplesMessage const &);
+    void onOpened(Suscan::AnalyzerRequest const &);
+    void onCancelled(Suscan::AnalyzerRequest const &);
+    void onError(Suscan::AnalyzerRequest const &, std::string const &);
   };
 }
 

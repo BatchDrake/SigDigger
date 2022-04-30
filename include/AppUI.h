@@ -31,10 +31,6 @@ namespace SigDigger {
   class DeviceDialog;
   class PanoramicDialog;
   class MainSpectrum;
-  class SourcePanel;
-  class InspectorPanel;
-  class FftPanel;
-  class AudioPanel;
   class AboutDialog;
   class DataSaverUI;
   class LogDialog;
@@ -51,10 +47,6 @@ namespace SigDigger {
     DeviceDialog *deviceDialog = nullptr;
     PanoramicDialog *panoramicDialog = nullptr;
     MainSpectrum *spectrum = nullptr;
-    SourcePanel *sourcePanel = nullptr;
-    InspectorPanel *inspectorPanel = nullptr;
-    FftPanel *fftPanel = nullptr;
-    AudioPanel *audioPanel = nullptr;
     AboutDialog *aboutDialog = nullptr;
     DataSaverUI *dataSaverUI = nullptr;
     LogDialog *logDialog = nullptr;
@@ -64,10 +56,6 @@ namespace SigDigger {
     BookmarkManagerDialog *bookmarkManagerDialog = nullptr;
     QToolBar *timeToolbar;
     QTimeSlider *timeSlider = nullptr;
-    std::map<Suscan::InspectorId, Inspector *> inspectorTable;
-    std::map<Inspector *, QDialog *> floatInspectorTable;
-
-    Suscan::InspectorId lastId = 0;
 
     AppUI(QMainWindow *);
     void postLoadInit(QMainWindow *owner);

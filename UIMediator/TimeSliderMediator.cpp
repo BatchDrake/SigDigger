@@ -37,6 +37,7 @@ UIMediator::setSourceTimeEnd(struct timeval const &tv)
 void
 UIMediator::setTimeStamp(struct timeval const &tv)
 {
+  m_lastTimeStamp = tv;
   this->ui->timeSlider->setTimeStamp(tv);
 }
 

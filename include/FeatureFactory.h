@@ -19,7 +19,7 @@
 #ifndef SUSCAN_FEATUREFACTORY_H
 #define SUSCAN_FEATUREFACTORY_H
 
-#include <QSet>
+#include <QList>
 
 namespace Suscan {
   class FeatureFactory;
@@ -33,6 +33,9 @@ namespace Suscan {
     FeatureObject(FeatureFactory *factory);
 
   public:
+    const char *factoryName() const;
+    FeatureFactory *factory() const;
+
     ~FeatureObject();
   };
 
@@ -40,7 +43,7 @@ namespace Suscan {
   // and globally (whatever that means)
 
   class FeatureFactory {
-    QSet<FeatureObject *> m_refSet;
+    QList<FeatureObject *> m_refSet;
     Plugin *m_plugin = nullptr;
 
   protected:
@@ -50,12 +53,12 @@ namespace Suscan {
     friend class FeatureObject;
 
   public:
-    virtual const char *name(void) const = 0;
+    virtual const char *name() const = 0;
 
-    bool canBeRemoved(void) const;
+    bool canBeRemoved() const;
 
-    virtual bool registerGlobally(void) = 0;
-    virtual bool unregisterGlobally(void) = 0;
+    virtual bool registerGlobally() = 0;
+    virtual bool unregisterGlobally() = 0;
 
     FeatureFactory(Plugin *);
     virtual ~FeatureFactory();

@@ -19,17 +19,12 @@
 
 
 #include "AboutDialog.h"
-#include "SourcePanel.h"
-#include "InspectorPanel.h"
-#include "FftPanel.h"
-#include "AudioPanel.h"
 #include "MainSpectrum.h"
 #include "ConfigDialog.h"
 #include "Palette.h"
 #include "AutoGain.h"
 #include "Averager.h"
 #include "DeviceGain.h"
-#include "Inspector.h"
 #include "ui_MainWindow.h"
 #include "ConfigDialog.h"
 #include "DeviceDialog.h"
@@ -74,10 +69,6 @@ AppUI::AppUI(QMainWindow *owner)
 #endif // __APPLE__
   
   this->spectrum = new MainSpectrum(owner);
-  this->sourcePanel = new SourcePanel(nullptr);
-  this->inspectorPanel = new InspectorPanel(nullptr);
-  this->fftPanel = new FftPanel(nullptr);
-  this->audioPanel = new AudioPanel(nullptr);
   this->quickConnectDialog = new QuickConnectDialog(owner);
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);
@@ -95,10 +86,7 @@ AppUI::postLoadInit(QMainWindow *owner)
   SigDiggerHelpers::instance()->deserializePalettes();
 
   this->configDialog = new ConfigDialog(owner);
-  this->fftPanel->refreshPalettes();
-  this->sourcePanel->deserializeAutoGains();
   this->spectrum->deserializeFATs();
-  this->inspectorPanel->postLoadInit();
 
   this->spectrum->adjustSizes();
 }

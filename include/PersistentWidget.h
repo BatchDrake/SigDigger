@@ -25,6 +25,7 @@
 
 namespace SigDigger {
   class PersistentObject {
+    Suscan::Object hollowObject;
     Suscan::Serializable *config = nullptr;
 
   public:

@@ -19,11 +19,8 @@
 
 #include "UIMediator.h"
 #include "MainWindow.h"
-#include "FftPanel.h"
 #include "MainSpectrum.h"
-#include "InspectorPanel.h"
-#include "AudioPanel.h"
-#include "Inspector.h"
+#include <InspectionWidgetFactory.h>
 #include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
@@ -114,7 +111,6 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
   this->setSampleRate(msg.getSampleRate());
 
   if (!expired) {
-    this->setProcessRate(msg.getMeasuredSampleRate());
     this->averager.feed(msg);
     this->ui->spectrum->feed(
           this->averager.get(),
@@ -153,18 +149,6 @@ UIMediator::connectSpectrum(void)
 
   connect(
         this->ui->spectrum,
-        SIGNAL(rangeChanged(float, float)),
-        this,
-        SLOT(onRangeChanged(float, float)));
-
-  connect(
-        this->ui->spectrum,
-        SIGNAL(zoomChanged(float)),
-        this,
-        SLOT(onZoomChanged(float)));
-
-  connect(
-        this->ui->spectrum,
         SIGNAL(newBandPlan(QString)),
         this,
         SLOT(onNewBandPlan(QString)));
@@ -179,10 +163,8 @@ UIMediator::connectSpectrum(void)
 void
 UIMediator::onSpectrumBandwidthChanged(void)
 {
-  this->ui->inspectorPanel->setBandwidth(this->ui->spectrum->getBandwidth());
   this->appConfig->bandwidth =
       static_cast<unsigned int>(this->ui->spectrum->getBandwidth());
-  emit channelBandwidthChanged(this->ui->spectrum->getBandwidth());
 }
 
 void
@@ -190,59 +172,17 @@ UIMediator::onFrequencyChanged(qint64)
 {
   qint64 freq = this->ui->spectrum->getCenterFreq();
 
-  this->ui->inspectorPanel->setDemodFrequency(freq);
-  this->ui->audioPanel->setDemodFreq(freq);
   this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
-
-  for (auto i : this->ui->inspectorTable)
-    i.second->setTunerFrequency(
-          this->ui->spectrum->getCenterFreq());
 
   emit frequencyChanged(
         this->ui->spectrum->getCenterFreq(),
         this->ui->spectrum->getLnbFreq());
-
-  emit loChanged(this->ui->spectrum->getLoFreq());
-
 }
 
 void
 UIMediator::onLoChanged(qint64)
 {
-  qint64 freq = this->ui->spectrum->getCenterFreq()
-      + this->ui->spectrum->getLoFreq();
-  this->ui->inspectorPanel->setDemodFrequency(freq);
-  this->ui->audioPanel->setDemodFreq(freq);
   this->appConfig->loFreq = static_cast<int>(this->ui->spectrum->getLoFreq());
-  emit loChanged(this->ui->spectrum->getLoFreq());
-}
-
-void
-UIMediator::onRangeChanged(float min, float max)
-{
-  if (!this->settingRanges) {
-    this->settingRanges = true;
-    this->ui->spectrum->setPandapterRange(min, max);
-    this->ui->fftPanel->setPandRangeMin(std::floor(min));
-    this->ui->fftPanel->setPandRangeMax(std::floor(max));
-
-    if (this->ui->fftPanel->getRangeLock()) {
-      this->ui->spectrum->setWfRange(min, max);
-      this->ui->fftPanel->setWfRangeMin(std::floor(min));
-      this->ui->fftPanel->setWfRangeMax(std::floor(max));
-    }
-    this->settingRanges = false;
-  }
-}
-
-void
-UIMediator::onZoomChanged(float level)
-{
-  bool oldState = this->ui->fftPanel->signalsBlocked();
-
-  this->ui->fftPanel->blockSignals(true);
-  this->ui->fftPanel->setFreqZoom(static_cast<int>(level));
-  this->ui->fftPanel->blockSignals(oldState);
 }
 
 void
@@ -257,11 +197,3 @@ UIMediator::onBookmarkChanged(void)
   this->ui->spectrum->updateOverlay();
 }
 
-void
-UIMediator::onModulationChanged(QString newModulation)
-{
-  this->ui->audioPanel->setDemod(
-        AudioPanel::strToDemod(
-          newModulation.toStdString()));
-  this->refreshSpectrumFilterShape();
-}

@@ -38,15 +38,10 @@
 #include "ui_MainWindow.h"
 #include "MainWindow.h"
 #include "MainSpectrum.h"
-#include "AudioPanel.h"
-#include "FftPanel.h"
-#include "InspectorPanel.h"
-#include "SourcePanel.h"
 #include "BookmarkManagerDialog.h"
 #include "BackgroundTasksDialog.h"
 #include "AddBookmarkDialog.h"
 #include "PanoramicDialog.h"
-#include "Inspector.h"
 #include "LogDialog.h"
 #include "ConfigDialog.h"
 #include "DeviceDialog.h"
@@ -55,6 +50,8 @@
 
 // Tool widget controls
 #include <ToolWidgetFactory.h>
+#include <TabWidgetFactory.h>
+#include <UIListenerFactory.h>
 
 #if defined(_WIN32) && defined(interface)
 #  undef interface
@@ -74,11 +71,11 @@ UIMediator::addBandPlan(std::string const &name)
   this->ui->main->menuBand_plans->addAction(action);
   this->bandPlanMap[name] = action;
 
-  connect(action, SIGNAL(triggered(bool)), this, SLOT(onTriggerBandPlan(void)));
+  connect(action, SIGNAL(triggered(bool)), this, SLOT(onTriggerBandPlan()));
 }
 
 void
-UIMediator::clearRecent(void)
+UIMediator::clearRecent()
 {
   this->ui->main->menuStart->clear();
   this->recentCount = 0;
@@ -98,7 +95,7 @@ UIMediator::addRecent(std::string const &name)
 }
 
 void
-UIMediator::finishRecent(void)
+UIMediator::finishRecent()
 {
   QAction *action = new QAction("Clear", this->ui->main->menuStart);
 
@@ -129,8 +126,211 @@ UIMediator::getMainWindow() const
   return this->owner;
 }
 
+MainSpectrum *
+UIMediator::getMainSpectrum() const
+{
+  return this->ui->spectrum;
+}
+
+Averager *
+UIMediator::getSpectrumAverager()
+{
+  return &this->averager;
+}
+
+AppConfig *
+UIMediator::getAppConfig() const
+{
+  return this->appConfig;
+}
+
 void
-UIMediator::refreshUI(void)
+UIMediator::configureUIComponent(UIComponent *comp)
+{
+  try {
+    Suscan::Object config;
+    config = this->appConfig->getComponentConfig(comp->factoryName());
+    comp->loadSerializedConfig(config);
+  } catch (Suscan::Exception &) {
+    comp->assertConfig();
+    comp->applyConfig();
+  }
+}
+
+void
+UIMediator::registerUIComponent(UIComponent *comp)
+{
+  assert(m_components.indexOf(comp) == -1);
+
+  m_components.push_back(comp);
+}
+
+void
+UIMediator::unregisterUIComponent(UIComponent *comp)
+{
+  int index = m_components.indexOf(comp);
+
+  if (index != -1) {
+    this->appConfig->setComponentConfig(
+          comp->factoryName(),
+          comp->getSerializedConfig());
+    m_components.removeAt(index);
+  }
+}
+
+
+bool
+UIMediator::addTabWidget(TabWidget *tabWidget)
+{
+  // Adding a tab widget involves:
+  // 1. Checking whether it exists.
+  // 2. Adding it to the tab list
+  // 3. Register a slot to remove it from the tab list when destroyed
+  // 4. Sync state
+  // 5. Open a tab with the corresponding title
+  // 6. Switch focus
+  int index;
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  assert(m_tabWidgets.indexOf(tabWidget) == -1);
+
+  m_tabWidgets.push_back(tabWidget);
+
+  index = this->ui->main->mainTab->insertTab(
+        this->ui->main->mainTab->count(),
+        tabWidget,
+        QString::fromStdString(tabWidget->getLabel()));
+
+  connect(
+        tabWidget,
+        SIGNAL(nameChanged(QString)),
+        this,
+        SLOT(onTabRename(QString)));
+
+  this->configureUIComponent(tabWidget);
+
+  if (s->haveQth())
+    tabWidget->setQth(s->getQth());
+
+  tabWidget->setTimeStamp(m_lastTimeStamp);
+  tabWidget->setProfile(this->appConfig->profile);
+  tabWidget->setState(m_state, m_analyzer);
+
+  this->ui->main->mainTab->setCurrentIndex(index);
+
+  return true;
+}
+
+bool
+UIMediator::addUIListener(UIListener *listener)
+{
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  if (s->haveQth())
+    listener->setQth(s->getQth());
+
+  listener->setTimeStamp(m_lastTimeStamp);
+  listener->setProfile(this->appConfig->profile);
+  listener->setState(m_state, m_analyzer);
+
+  listener->setParent(this);
+
+  return true;
+}
+
+//
+// NOTE: Adding a tab widget just exposes it. In any case deletes it.
+// This is something that has to be handled later.
+//
+
+bool
+UIMediator::closeTabWidget(TabWidget *tabWidget)
+{
+  // 1. Find whether the tab exists
+  // 2. Remove from the tabWidget list
+  // 3. Check whether it is a tab or a floating tab, close it accordingly
+
+  int index;
+
+  index = m_tabWidgets.indexOf(tabWidget);
+  if (index == -1)
+    return false;
+
+  m_tabWidgets.removeAt(index);
+
+  index = this->ui->main->mainTab->indexOf(tabWidget);
+  if (index != -1) {
+    this->ui->main->mainTab->removeTab(index);
+    tabWidget->setParent(nullptr);
+  } else {
+    auto p = m_floatingTabs.find(tabWidget);
+    if (p != m_floatingTabs.end()) {
+      QDialog *d = p.value();
+
+      m_floatingTabs.erase(p);
+
+      tabWidget->setParent(nullptr);
+
+      d->setProperty("tab-ptr", QVariant::fromValue<TabWidget *>(nullptr));
+
+      d->close();
+      d->deleteLater();
+    }
+  }
+
+  return true;
+}
+
+bool
+UIMediator::floatTabWidget(TabWidget *tabWidget)
+{
+  int index = this->ui->main->mainTab->indexOf(tabWidget);
+  auto p = m_floatingTabs.find(tabWidget);
+
+  // Not a TabWidget of ours
+  if (index == -1)
+    return false;
+
+  // Already floated
+  if (p != m_floatingTabs.end())
+    return true;
+
+  QDialog *dialog = new QDialog(this->owner);
+  QVBoxLayout *layout = new QVBoxLayout;
+
+  tabWidget->floatStart();
+  this->closeTabWidget(tabWidget);
+
+  dialog->setProperty(
+        "tab-ptr",
+        QVariant::fromValue<TabWidget *>(tabWidget));
+  dialog->setLayout(layout);
+  dialog->setWindowFlags(Qt::Window);
+
+  connect(
+        dialog,
+        SIGNAL(finished(int)),
+        this,
+        SLOT(onCloseTabWindow()));
+
+  layout->addWidget(tabWidget);
+
+  tabWidget->floatEnd();
+  tabWidget->show();
+
+  dialog->move(this->owner->pos());
+  dialog->setWindowTitle(
+        "SigDigger - " + QString::fromStdString(tabWidget->getLabel()));
+
+  m_floatingTabs[tabWidget] = dialog;
+
+  dialog->show();
+
+  return true;
+}
+
+void
+UIMediator::refreshUI()
 {
   QString stateString;
   QString sourceDesc;
@@ -139,11 +339,10 @@ UIMediator::refreshUI(void)
   Suscan::Source::Config *config = this->getProfile();
   const Suscan::Source::Device &dev = config->getDevice();
 
-  switch (this->m_state) {
+  switch (m_state) {
     case HALTED:
       stateString = QString("Idle");
       this->ui->spectrum->setCaptureMode(MainSpectrum::UNAVAILABLE);
-      this->setProcessRate(0);
       this->ui->main->actionRun->setEnabled(true);
       this->ui->main->actionRun->setChecked(false);
       this->ui->main->actionStart_capture->setEnabled(true);
@@ -191,16 +390,6 @@ UIMediator::refreshUI(void)
       break;
   }
 
-  this->ui->inspectorPanel->setState(
-        this->m_state == RUNNING
-        ? InspectorPanel::State::ATTACHED
-        : InspectorPanel::State::DETACHED);
-
-  this->ui->sourcePanel->setState(
-        this->m_state == RUNNING
-        ? SourcePanel::State::ATTACHED
-        : SourcePanel::State::DETACHED);
-
   if (config->isRemote()) {
     QString user = QString::fromStdString(config->getParam("user"));
     QString host = QString::fromStdString(config->getParam("host"));
@@ -229,7 +418,7 @@ UIMediator::refreshUI(void)
 }
 
 void
-UIMediator::connectMainWindow(void)
+UIMediator::connectMainWindow()
 {
   connect(
         this->ui->main->actionSetup,
@@ -265,13 +454,13 @@ UIMediator::connectMainWindow(void)
         this->ui->main->actionQuick_connect,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onQuickConnect(void)));
+        SLOT(onQuickConnect()));
 
   connect(
         this->ui->quickConnectDialog,
-        SIGNAL(accepted(void)),
+        SIGNAL(accepted()),
         this,
-        SLOT(onQuickConnectAccepted(void)));
+        SLOT(onQuickConnectAccepted()));
 
   connect(
         this->ui->main->actionStart_capture,
@@ -315,7 +504,7 @@ UIMediator::connectMainWindow(void)
         this->ui->main->mainTab,
         SIGNAL(tabCloseRequested(int)),
         this,
-        SLOT(onCloseInspectorTab(int)));
+        SLOT(onTabCloseRequested(int)));
 
   connect(
         this->ui->main->actionPanoramicSpectrum,
@@ -327,31 +516,31 @@ UIMediator::connectMainWindow(void)
         this->ui->main->actionLogMessages,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onTriggerLogMessages(void)));
+        SLOT(onTriggerLogMessages()));
 
   connect(
         this->ui->main->action_Background_tasks,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onTriggerBackgroundTasks(void)));
+        SLOT(onTriggerBackgroundTasks()));
 
   connect(
         this->ui->main->actionAddBookmark,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onAddBookmark(void)));
+        SLOT(onAddBookmark()));
 
   connect(
         this->ui->addBookmarkDialog,
-        SIGNAL(accepted(void)),
+        SIGNAL(accepted()),
         this,
-        SLOT(onBookmarkAccepted(void)));
+        SLOT(onBookmarkAccepted()));
 
   connect(
         this->ui->main->actionManageBookmarks,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onOpenBookmarkManager(void)));
+        SLOT(onOpenBookmarkManager()));
 
   connect(
         this->ui->bookmarkManagerDialog,
@@ -361,15 +550,9 @@ UIMediator::connectMainWindow(void)
 
   connect(
         this->ui->bookmarkManagerDialog,
-        SIGNAL(bookmarkChanged(void)),
+        SIGNAL(bookmarkChanged()),
         this,
-        SLOT(onBookmarkChanged(void)));
-
-  connect(
-        this->ui->spectrum,
-        SIGNAL(modulationChanged(QString)),
-        this,
-        SLOT(onModulationChanged(QString)));
+        SLOT(onBookmarkChanged()));
 
   this->ui->main->mainTab->tabBar()->setContextMenuPolicy(
         Qt::CustomContextMenu);
@@ -378,18 +561,11 @@ UIMediator::connectMainWindow(void)
         this->ui->main->mainTab->tabBar(),
         SIGNAL(customContextMenuRequested(const QPoint &)),
         this,
-        SLOT(onInspectorMenuRequested(const QPoint &)));
-
+        SLOT(onTabMenuRequested(const QPoint &)));
 }
 
 void
-UIMediator::registerUIComponent(UIComponent *comp)
-{
-  this->m_components.push_back(comp);
-}
-
-void
-UIMediator::addToolWidgets(void)
+UIMediator::initSidePanel()
 {
   auto s = Suscan::Singleton::get_instance();
 
@@ -398,12 +574,23 @@ UIMediator::addToolWidgets(void)
        ++p) {
     ToolWidgetFactory *f = *p;
     ToolWidget *widget = f->make(this);
-
-    this->registerUIComponent(widget);
-
     this->ui->spectrum->addToolWidget(
           widget,
           f->getTitle().c_str());
+  }
+}
+
+void
+UIMediator::initUIListeners()
+{
+  auto s = Suscan::Singleton::get_instance();
+
+  for (auto p = s->getFirstUIListenerFactory();
+       p != s->getLastUIListenerFactory();
+       ++p) {
+    UIListenerFactory *f = *p;
+    UIListener *listener = f->make(this);
+    this->addUIListener(listener);
   }
 }
 
@@ -414,6 +601,8 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   this->lastPsd.tv_sec = this->lastPsd.tv_usec = 0;
 
+  m_requestTracker = new Suscan::AnalyzerRequestTracker(this);
+
   this->remoteDevice = Suscan::Source::Device(
             "Remote device",
             "localhost",
@@ -421,30 +610,23 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
             "anonymous",
             "");
 
-  this->addToolWidgets();
+  this->assertConfig();
 
-  this->ui->spectrum->addToolWidget(this->ui->audioPanel, "Audio preview");
-  this->ui->spectrum->addToolWidget(this->ui->sourcePanel, "Signal source");
-  this->ui->spectrum->addToolWidget(this->ui->inspectorPanel, "Inspection");
-  this->ui->spectrum->addToolWidget(this->ui->fftPanel, "FFT");
+  // Now we can create UI components
+  this->initSidePanel();
 
   // Add baseband analyzer tab
   this->ui->main->mainTab->addTab(this->ui->spectrum, "Radio spectrum");
-
-  // Configure main spectrum
-  this->ui->spectrum->setPaletteGradient(
-        this->ui->fftPanel->getPaletteGradient());
 
   // Create background task controller dialog
   this->ui->backgroundTasksDialog->setController(
         Suscan::Singleton::get_instance()->getBackgroundTaskController());
 
+
+  this->connectRequestTracker();
   this->connectMainWindow();
   this->connectSpectrum();
-  this->connectSourcePanel();
-  this->connectFftPanel();
-  this->connectAudioPanel();
-  this->connectInspectorPanel();
+
   this->connectDeviceDialog();
   this->connectPanoramicDialog();
   this->connectTimeSlider();
@@ -454,13 +636,6 @@ void
 UIMediator::setBandwidth(unsigned int bw)
 {
   this->ui->spectrum->setFilterBandwidth(bw);
-  this->ui->inspectorPanel->setBandwidth(bw);
-}
-
-void
-UIMediator::setProcessRate(unsigned int rate)
-{
-  this->ui->sourcePanel->setProcessRate(rate);
 }
 
 void
@@ -469,19 +644,8 @@ UIMediator::setSampleRate(unsigned int rate)
   if (this->rate != rate) {
     unsigned int bw = rate / 30;
 
-    SUFREQ audioBw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
-
-    if (audioBw > rate / 2)
-      audioBw = rate / 2;
-
-    this->ui->fftPanel->setSampleRate(rate);
-    this->ui->inspectorPanel->setBandwidthLimits(0, rate);
     this->ui->spectrum->setSampleRate(rate);
-    this->ui->sourcePanel->setSampleRate(rate);
     this->setBandwidth(bw);
-
-    this->ui->audioPanel->setBandwidth(static_cast<float>(audioBw));
-    this->refreshSpectrumFilterShape();
 
     this->rate = rate;
   }
@@ -490,7 +654,7 @@ UIMediator::setSampleRate(unsigned int rate)
 void
 UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 {
-  if (this->m_state != state) {
+  if (m_state != state) {
     // Sanity check
     switch (state) {
       case HALTED:
@@ -503,11 +667,16 @@ UIMediator::setState(State state, Suscan::Analyzer *analyzer)
         assert(analyzer != nullptr);
     }
 
-    this->m_state = state;
-    this->m_analyzer = analyzer;
+    m_state = state;
+    m_analyzer = analyzer;
+
+    if (m_analyzer != nullptr)
+      this->connectAnalyzer();
+
+    m_requestTracker->setAnalyzer(m_analyzer);
 
     // Propagate state
-    for (auto p : this->m_components)
+    for (auto p : m_components)
       p->setState(state, analyzer);
 
     this->refreshUI();
@@ -515,9 +684,9 @@ UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 }
 
 UIMediator::State
-UIMediator::getState(void) const
+UIMediator::getState() const
 {
-  return this->m_state;
+  return m_state;
 }
 
 void
@@ -543,54 +712,19 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
           info.testPermission(
             SUSCAN_ANALYZER_PERM_SEEK));
   }
-
-  this->ui->audioPanel->applySourceInfo(info);
-  this->ui->inspectorPanel->applySourceInfo(info);
-  this->ui->sourcePanel->applySourceInfo(info);
-  this->ui->fftPanel->applySourceInfo(info);
 }
 
 void
 UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 {
-  this->ui->audioPanel->setTimeStamp(timestamp);
   this->setTimeStamp(timestamp);
 
-  for (auto i : this->ui->inspectorTable)
-    i.second->setTimeStamp(timestamp);
-
-  for (auto p : this->m_components)
+  for (auto p : m_components)
     p->setTimeStamp(timestamp);
 }
 
 void
-UIMediator::notifyOrbitReport(
-    Suscan::InspectorId id,
-    Suscan::OrbitReport const &report)
-{
-  if (id == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
-    this->ui->audioPanel->notifyOrbitReport(report);
-  } else {
-    Inspector *insp;
-    if ((insp = this->lookupInspector(id)) != nullptr)
-      insp->notifyOrbitReport(report);
-  }
-}
-
-void
-UIMediator::notifyDisableCorrection(Suscan::InspectorId id)
-{
-  if (id == SIGDIGGER_AUDIO_INSPECTOR_MAGIC_ID) {
-    this->ui->audioPanel->notifyDisableCorrection();
-  } else {
-    Inspector *insp;
-    if ((insp = this->lookupInspector(id)) != nullptr)
-      insp->disableCorrection();
-  }
-}
-
-void
-UIMediator::refreshDevicesDone(void)
+UIMediator::refreshDevicesDone()
 {
   this->ui->deviceDialog->refreshDone();
   this->ui->configDialog->notifySingletonChanges();
@@ -639,7 +773,7 @@ UIMediator::shouldReduceRate(
 }
 
 void
-UIMediator::notifyStartupErrors(void)
+UIMediator::notifyStartupErrors()
 {
   if (this->ui->logDialog->haveErrorMessages()) {
       QMessageBox msgbox(this->owner);
@@ -657,26 +791,11 @@ UIMediator::notifyStartupErrors(void)
 }
 
 void
-UIMediator::setCaptureSize(quint64 size)
-{
-  this->ui->sourcePanel->setCaptureSize(size);
-}
-
-void
 UIMediator::setAnalyzerParams(Suscan::AnalyzerParams const &params)
 {
-  bool prev;
+  this->appConfig->analyzerParams = params;
   this->ui->spectrum->setExpectedRate(
         static_cast<int>(1.f / params.psdUpdateInterval));
-
-  this->appConfig->analyzerParams = params;
-
-  prev = this->ui->fftPanel->blockSignals(true);
-  this->ui->fftPanel->setWindowFunction(params.windowFunction);
-  this->ui->fftPanel->setFftSize(params.windowSize);
-  this->ui->fftPanel->setRefreshRate(
-        static_cast<unsigned int>(1.f / params.psdUpdateInterval));
-  this->ui->fftPanel->blockSignals(prev);
 }
 
 void
@@ -686,24 +805,11 @@ UIMediator::setStatusMessage(QString const &message)
 }
 
 void
-UIMediator::setRecordState(bool state)
-{
-  this->ui->sourcePanel->setRecordState(state);
-}
-
-void
-UIMediator::setIORate(qreal rate)
-{
-  this->ui->sourcePanel->setIORate(rate);
-}
-
-void
 UIMediator::refreshProfile(bool updateFreqs)
 {
   qint64 min = 0, max = 0;
   bool isRealTime = false;
   struct timeval tv, start, end;
-  this->ui->sourcePanel->setProfile(&this->appConfig->profile);
 
   std::string user, pass, interface;
 
@@ -723,18 +829,11 @@ UIMediator::refreshProfile(bool updateFreqs)
     } else {
       min = SIGDIGGER_MIN_RADIO_FREQ;
       max = SIGDIGGER_MAX_RADIO_FREQ;
-
-      this->ui->audioPanel->resetTimeStamp(
-            this->appConfig->profile.getStartTime());
     }
   } else {
-    struct timeval tv;
     // Remote sources receive time from the server
     min = SIGDIGGER_MIN_RADIO_FREQ;
     max = SIGDIGGER_MAX_RADIO_FREQ;
-
-    gettimeofday(&tv, nullptr);
-    this->ui->audioPanel->resetTimeStamp(tv);
   }
 
   // Dummy device should not accept modifications if we don't accept
@@ -770,17 +869,12 @@ UIMediator::refreshProfile(bool updateFreqs)
   // Set cached members
   this->profileStart = start;
   this->profileEnd   = end;
-  this->isRealTime   = isRealTime;
 
   // Configure timeslider
   this->ui->timeSlider->setStartTime(start);
   this->ui->timeSlider->setEndTime(end);
   this->ui->timeSlider->setTimeStamp(tv);
   this->ui->timeToolbar->setVisible(!isRealTime);
-
-  // Configure audio panel
-  this->ui->audioPanel->setRealTime(isRealTime);
-  this->ui->audioPanel->setTimeLimits(start, end);
 
   // Configure spectrum
   this->ui->spectrum->setFrequencyLimits(min, max);
@@ -793,36 +887,30 @@ UIMediator::refreshProfile(bool updateFreqs)
   }
 
   // Apply profile to all UI components
-  for (auto p : this->m_components)
+  for (auto p : m_components)
     p->setProfile(this->appConfig->profile);
 }
 
 Suscan::Source::Config *
-UIMediator::getProfile(void) const
+UIMediator::getProfile() const
 {
   return &this->appConfig->profile;
 }
 
 Suscan::AnalyzerParams *
-UIMediator::getAnalyzerParams(void) const
+UIMediator::getAnalyzerParams() const
 {
   return &this->appConfig->analyzerParams;
 }
 
-unsigned int
-UIMediator::getFftSize(void) const
-{
-  return this->appConfig->analyzerParams.windowSize;
-}
-
 Suscan::Serializable *
-UIMediator::allocConfig(void)
+UIMediator::allocConfig()
 {
   return this->appConfig = new AppConfig(this->ui);
 }
 
 void
-UIMediator::saveUIConfig(void)
+UIMediator::saveUIConfig()
 {
   this->appConfig->x = this->owner->geometry().x();
   this->appConfig->y = this->owner->geometry().y();
@@ -835,10 +923,15 @@ UIMediator::saveUIConfig(void)
   for (auto p : this->bandPlanMap)
     if (p.second->isChecked())
       this->appConfig->enabledBandPlans.push_back(p.first);
+
+  for (auto p : m_components)
+    this->appConfig->setComponentConfig(
+          p->factoryName(),
+          p->getSerializedConfig());
 }
 
 void
-UIMediator::applyConfig(void)
+UIMediator::applyConfig()
 {
   // Apply window config
   QRect rec = QGuiApplication::primaryScreen()->geometry();
@@ -871,24 +964,19 @@ UIMediator::applyConfig(void)
   this->ui->configDialog->setTleSourceConfig(this->appConfig->tleSourceConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
-  this->ui->audioPanel->setColorConfig(this->appConfig->colors);
-  this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
 
   // Apply color config to all UI components
-  for (auto p : this->m_components)
+  for (auto p : m_components)
     p->setColorConfig(this->appConfig->colors);
 
   // Apply QTH to all UI components
   if (sus->haveQth())
-    for (auto p : this->m_components)
+    for (auto p : m_components)
       p->setQth(sus->getQth());
 
   this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
 
   this->setAnalyzerParams(this->appConfig->analyzerParams);
-
-  this->ui->fftPanel->setDefaultFftSize(SIGDIGGER_FFT_WINDOW_SIZE);
-  this->ui->fftPanel->setDefaultRefreshRate(SIGDIGGER_FFT_REFRESH_RATE);
 
   // Apply enabled bandplans
   for (auto p : this->appConfig->enabledBandPlans)
@@ -901,15 +989,14 @@ UIMediator::applyConfig(void)
         this->ui->spectrum->pushFAT(table);
       }
     }
+
   // The rest of them are automatically deserialized
-  this->ui->sourcePanel->applyConfig();
-  this->ui->fftPanel->applyConfig();
-  this->ui->inspectorPanel->applyConfig();
-  this->ui->audioPanel->applyConfig();
   this->ui->panoramicDialog->applyConfig();
 
-  for (auto p : this->m_components)
-    p->applyConfig();
+  // Component config in each component is kept in serialized format,
+  // so we have to instruct each component to parse it every time
+  for (auto p : m_components)
+    this->configureUIComponent(p);
 
   this->refreshProfile();
   this->refreshUI();
@@ -918,27 +1005,13 @@ UIMediator::applyConfig(void)
   this->ui->spectrum->setLoFreq(savedLoFreq);
   if (savedBw > 0)
     this->setBandwidth(savedBw);
-
-  // Configure spectrum
-  this->ui->spectrum->setUnits(
-        this->ui->fftPanel->getUnitName(),
-        this->ui->fftPanel->getdBPerUnit(),
-        this->ui->fftPanel->getCompleteZeroPoint());
-  this->ui->spectrum->setGain(this->ui->fftPanel->getGain());
-
-  // Artificially trigger slots to synchronize UI
-  this->onPaletteChanged();
-  this->onRangesChanged();
-  this->onAveragerChanged();
-  this->onThrottleConfigChanged();
-  this->onTimeSpanChanged();
-  this->onTimeStampsChanged();
-  this->onBookmarksButtonChanged();
 }
 
 UIMediator::~UIMediator()
 {
-
+  // Delete UI components in an ordered way
+  for (auto p : m_components)
+    delete p;
 }
 
 /////////////////////////////// Slots //////////////////////////////////////////
@@ -957,7 +1030,6 @@ UIMediator::onTriggerSetup(bool)
 
   if (this->ui->configDialog->run()) {
     this->appConfig->analyzerParams = this->ui->configDialog->getAnalyzerParams();
-    this->ui->fftPanel->setFftSize(this->getFftSize());
 
     if (this->ui->configDialog->profileChanged())
       this->setProfile(
@@ -967,11 +1039,9 @@ UIMediator::onTriggerSetup(bool)
     if (this->ui->configDialog->colorsChanged()) {
       this->appConfig->colors = this->ui->configDialog->getColors();
       this->ui->spectrum->setColorConfig(this->appConfig->colors);
-      this->ui->inspectorPanel->setColorConfig(this->appConfig->colors);
-      this->ui->audioPanel->setColorConfig(this->appConfig->colors);
 
       // Apply color config to all UI components
-      for (auto p : this->m_components)
+      for (auto p : m_components)
         p->setColorConfig(this->appConfig->colors);
     }
 
@@ -987,10 +1057,9 @@ UIMediator::onTriggerSetup(bool)
     if (this->ui->configDialog->locationChanged()) {
       Suscan::Location loc = this->ui->configDialog->getLocation();
       sus->setQth(loc);
-      this->ui->audioPanel->setQth(loc.getQth());
 
       // Set QTH of all UI components
-      for (auto p : this->m_components)
+      for (auto p : m_components)
         p->setQth(loc);
     }
   }
@@ -1021,14 +1090,14 @@ UIMediator::onToggleAbout(bool)
 }
 
 void
-UIMediator::onQuickConnect(void)
+UIMediator::onQuickConnect()
 {
   this->ui->quickConnectDialog->setProfile(this->appConfig->profile);
   this->ui->quickConnectDialog->exec();
 }
 
 void
-UIMediator::onQuickConnectAccepted(void)
+UIMediator::onQuickConnectAccepted()
 {
   this->appConfig->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
   this->appConfig->profile.setDevice(this->remoteDevice);
@@ -1052,7 +1121,7 @@ UIMediator::onQuickConnectAccepted(void)
   this->refreshUI();
   emit profileChanged(true);
 
-  if (this->m_state == HALTED)
+  if (m_state == HALTED)
     emit captureStart();
 }
 
@@ -1247,7 +1316,7 @@ UIMediator::onTriggerPanoramicSpectrum(bool)
 }
 
 void
-UIMediator::onTriggerBandPlan(void)
+UIMediator::onTriggerBandPlan()
 {
   QObject* obj = sender();
   QAction *asAction = qobject_cast<QAction *>(obj);
@@ -1262,54 +1331,69 @@ UIMediator::onTriggerBandPlan(void)
 }
 
 void
-UIMediator::onTriggerLogMessages(void)
+UIMediator::onTriggerLogMessages()
 {
   this->ui->logDialog->show();
 }
 
 void
-UIMediator::onTriggerBackgroundTasks(void)
+UIMediator::onTriggerBackgroundTasks()
 {
   this->ui->backgroundTasksDialog->show();
 }
 
 void
-UIMediator::onAddBookmark(void)
+UIMediator::onAddBookmark()
 {
   this->ui->addBookmarkDialog->setFrequencyHint(
         this->ui->spectrum->getLoFreq() + this->ui->spectrum->getCenterFreq());
 
   this->ui->addBookmarkDialog->setNameHint(
         QString::asprintf(
-          "%s signal @ %s",
-          AudioPanel::demodToStr(this->ui->audioPanel->getDemod()).c_str(),
+          "Signal @ %s",
           SuWidgetsHelpers::formatQuantity(
             this->ui->spectrum->getLoFreq() + this->ui->spectrum->getCenterFreq(),
             4,
             "Hz").toStdString().c_str()));
 
   this->ui->addBookmarkDialog->setBandwidthHint(this->ui->spectrum->getBandwidth());
-  this->ui->addBookmarkDialog->setModulationHint(QString::fromStdString(AudioPanel::demodToStr(this->ui->audioPanel->getDemod())));
 
   this->ui->addBookmarkDialog->show();
 }
 
 void
-UIMediator::onBookmarkAccepted(void)
+UIMediator::onBookmarkAccepted()
 {
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   BookmarkInfo info;
+
   info.name = this->ui->addBookmarkDialog->name();
   info.frequency = this->ui->addBookmarkDialog->frequency();
   info.color = this->ui->addBookmarkDialog->color();
-  info.lowFreqCut = this->ui->spectrum->computeLowCutFreq(this->ui->addBookmarkDialog->bandwidth());
-  info.highFreqCut = this->ui->spectrum->computeHighCutFreq(this->ui->addBookmarkDialog->bandwidth());
+  info.lowFreqCut = this->ui->spectrum->computeLowCutFreq(
+        this->ui->addBookmarkDialog->bandwidth());
+  info.highFreqCut = this->ui->spectrum->computeHighCutFreq(
+        this->ui->addBookmarkDialog->bandwidth());
   info.modulation = this->ui->addBookmarkDialog->modulation();
 
-  emit bookmarkAdded(info);
+  if (!sus->registerBookmark(info)) {
+    QMessageBox *mb = new QMessageBox(
+          QMessageBox::Warning,
+          "Cannot create bookmark",
+          "A bookmark already exists for frequency "
+          + SuWidgetsHelpers::formatQuantity(info.frequency, "Hz. If you wish to "
+          "edit this bookmark use the bookmark manager instead."),
+          QMessageBox::Ok,
+          this->owner);
+    mb->setAttribute(Qt::WA_DeleteOnClose);
+    mb->show();
+  }
+
+  this->ui->spectrum->updateOverlay();
 }
 
 void
-UIMediator::onOpenBookmarkManager(void)
+UIMediator::onOpenBookmarkManager()
 {
   this->ui->bookmarkManagerDialog->show();
 }
@@ -1320,14 +1404,69 @@ UIMediator::onJumpToBookmark(BookmarkInfo info)
   this->ui->spectrum->setCenterFreq(info.frequency);
   this->ui->spectrum->setLoFreq(0);
 
-  if (!info.modulation.isEmpty()) {
-    this->ui->audioPanel->setDemod(
-          AudioPanel::strToDemod(info.modulation.toStdString()));
-    this->refreshSpectrumFilterShape();
-  }
-
   if (info.bandwidth() != 0)
     this->setBandwidth(info.bandwidth());
 
   this->onFrequencyChanged(info.frequency);
+}
+
+void
+UIMediator::onCloseTabWindow()
+{
+  QDialog *sender = qobject_cast<QDialog *>(QObject::sender());
+  TabWidget *tabWidget;
+
+  tabWidget = sender->property("tab-ptr").value<TabWidget *>();
+
+  // We simply tell the tab widget that someone requested its closure
+  tabWidget->closeRequested();
+}
+
+void
+UIMediator::onTabCloseRequested(int i)
+{
+  QWidget *widget = this->ui->main->mainTab->widget(i);
+
+  if (widget != nullptr) {
+    TabWidget *asTabWidget = SCAST(TabWidget *, widget);
+    int index = m_tabWidgets.indexOf(asTabWidget);
+
+    // If it is an opened tab, just notify the closure request
+    if (index != -1)
+      asTabWidget->closeRequested();
+  }
+}
+
+void
+UIMediator::onTabRename(QString newName)
+{
+  QWidget *sender = qobject_cast<QWidget *>(QObject::sender());
+  int index;
+
+  index = this->ui->main->mainTab->indexOf(sender);
+
+  if (index != -1)
+    this->ui->main->mainTab->setTabText(index, newName);
+}
+
+void
+UIMediator::onTabMenuRequested(const QPoint &point)
+{
+  int index;
+
+  if (point.isNull())
+    return;
+
+  index = this->ui->main->mainTab->tabBar()->tabAt(point);
+
+  QWidget *widget = this->ui->main->mainTab->widget(index);
+
+  if (widget != nullptr) {
+    TabWidget *asTabWidget = SCAST(TabWidget *, widget);
+    int index = m_tabWidgets.indexOf(asTabWidget);
+
+    // If it is an opened tab, just notify the closure request
+    if (index != -1)
+      asTabWidget->popupMenu();
+  }
 }

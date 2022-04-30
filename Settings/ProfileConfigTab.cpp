@@ -207,7 +207,9 @@ ProfileConfigTab::refreshUiState(void)
 void
 ProfileConfigTab::refreshAntennas(void)
 {
-  populateAntennaCombo(this->profile, this->ui->antennaCombo);
+  SigDiggerHelpers::populateAntennaCombo(
+        this->profile,
+        this->ui->antennaCombo);
 }
 
 void

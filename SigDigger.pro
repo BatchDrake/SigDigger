@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT           += core gui network
+QMAKE_LFLAGS += -rdynamic
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
@@ -33,6 +34,9 @@ isEmpty(SUWIDGETS_PREFIX) {
 
 isEmpty(PREFIX) {
   PREFIX=/usr/local
+  SIGDIGGER_INSTALL_HEADERS=$$[QT_INSTALL_HEADERS]/SigDigger
+} else {
+  SIGDIGGER_INSTALL_HEADERS=$$PREFIX/include/SigDigger
 }
 
 target.path=$$PREFIX/bin
@@ -68,17 +72,14 @@ SOURCES += \
     Audio/GenericAudioPlayer.cpp \
     Components/AboutDialog.cpp \
     Components/AddTLESourceDialog.cpp \
-    Components/AudioPanel.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
     Components/DeviceTweaks.cpp \
     Components/DopplerDialog.cpp \
-    Components/FftPanel.cpp \
     Components/FrequencyCorrectionDialog.cpp \
     Components/GainSlider.cpp \
     Components/GenericDataSaverUI.cpp \
     Components/HistogramDialog.cpp \
-    Components/InspectorPanel.cpp \
     Components/MainSpectrum.cpp \
     Components/MainWindow.cpp \
     Components/PersistentWidget.cpp \
@@ -86,24 +87,36 @@ SOURCES += \
     Components/QuickConnectDialog.cpp \
     Components/SamplerDialog.cpp \
     Components/SaveProfileDialog.cpp \
-    Components/SourcePanel.cpp \
     Components/TimeWindow.cpp \
     Default/Audio/AudioProcessor.cpp \
     Default/Audio/AudioWidget.cpp \
     Default/Audio/AudioWidgetFactory.cpp \
+    Default/DefaultTab/DefaultTabWidget.cpp \
+    Default/DefaultTab/DefaultTabWidgetFactory.cpp \
+    Default/FFT/FFTWidget.cpp \
+    Default/FFT/FFTWidgetFactory.cpp \
+    Default/GenericInspector/FACTab.cpp \
+    Default/GenericInspector/GenericInspector.cpp \
+    Default/GenericInspector/GenericInspectorFactory.cpp \
+    Default/GenericInspector/InspectorCtl/AfcControl.cpp \
+    Default/GenericInspector/InspectorCtl/AskControl.cpp \
+    Default/GenericInspector/InspectorCtl/ClockRecovery.cpp \
+    Default/GenericInspector/InspectorCtl/EqualizerControl.cpp \
+    Default/GenericInspector/InspectorCtl/EstimatorControl.cpp \
+    Default/GenericInspector/InspectorCtl/GainControl.cpp \
+    Default/GenericInspector/InspectorCtl/InspectorCtl.cpp \
+    Default/GenericInspector/InspectorCtl/MfControl.cpp \
+    Default/GenericInspector/InspectorCtl/ToneControl.cpp \
+    Default/GenericInspector/InspectorUI.cpp \
+    Default/GenericInspector/SymViewTab.cpp \
+    Default/GenericInspector/TVProcessorTab.cpp \
+    Default/GenericInspector/TVProcessorWorker.cpp \
+    Default/GenericInspector/WaveformTab.cpp \
+    Default/Inspection/InspToolWidget.cpp \
+    Default/Inspection/InspToolWidgetFactory.cpp \
     Default/Registration.cpp \
-    Inspector/FACTab.cpp \
-    Inspector/Inspector.cpp \
-    Inspector/InspectorUI.cpp \
-    Inspector/TVProcessorWorker.cpp \
-    InspectorCtl/AfcControl.cpp \
-    InspectorCtl/AskControl.cpp \
-    InspectorCtl/ClockRecovery.cpp \
-    InspectorCtl/EqualizerControl.cpp \
-    InspectorCtl/GainControl.cpp \
-    InspectorCtl/InspectorCtl.cpp \
-    InspectorCtl/MfControl.cpp \
-    InspectorCtl/ToneControl.cpp \
+    Default/Source/SourceWidget.cpp \
+    Default/Source/SourceWidgetFactory.cpp \
     Misc/AutoGain.cpp \
     Misc/Averager.cpp \
     Misc/Palette.cpp \
@@ -116,6 +129,7 @@ SOURCES += \
     Settings/LocationConfigTab.cpp \
     Settings/ProfileConfigTab.cpp \
     Settings/TLESourceTab.cpp \
+    Suscan/AnalyzerRequestTracker.cpp \
     Suscan/CancellableTask.cpp \
     Suscan/FeatureFactory.cpp \
     Suscan/Messages/ChannelMessage.cpp \
@@ -149,18 +163,17 @@ SOURCES += \
     Tasks/PLLSyncTask.cpp \
     Tasks/QuadDemodTask.cpp \
     Tasks/WaveSampler.cpp \
+    UIComponent/InspectionWidgetFactory.cpp \
+    UIComponent/TabWidgetFactory.cpp \
     UIComponent/ToolWidgetFactory.cpp \
     UIComponent/UIComponentFactory.cpp \
-    UIMediator/AudioMediator.cpp \
-    UIMediator/FftMediator.cpp \
+    UIComponent/UIListenerFactory.cpp \
     UIMediator/InspectorMediator.cpp \
     UIMediator/PanoramicDialogMediator.cpp \
-    UIMediator/SourceMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
     UIMediator/TimeSliderMediator.cpp \
     UIMediator/UIMediator.cpp \
     main.cpp \
-    Components/EstimatorControl.cpp \
     Misc/GenericDataSaver.cpp \
     Misc/FileDataSaver.cpp \
     UDP/SocketForwarder.cpp \
@@ -174,9 +187,6 @@ SOURCES += \
     Components/RMSViewTab.cpp \
     Components/RMSViewerSettingsDialog.cpp \
     Components/LogDialog.cpp \
-    Inspector/TVProcessorTab.cpp \
-    Inspector/SymViewTab.cpp \
-    Inspector/WaveformTab.cpp \
     Misc/MultitaskControllerModel.cpp \
     Components/BackgroundTasksDialog.cpp \
     Tasks/ExportSamplesTask.cpp \
@@ -185,51 +195,39 @@ SOURCES += \
     Components/BookmarkManagerDialog.cpp \
     Misc/TableDelegates.cpp
 
-
-HEADERS += \
-    Default/Audio/AudioProcessor.h \
-    Default/Audio/AudioWidget.h \
-    Default/Audio/AudioWidgetFactory.h \
-    Default/Registration.h \
-    include/AGCTask.h \
-    include/AddTLESourceDialog.h \
-    include/AlsaPlayer.h \
+INSTALL_HEADERS += \
+    include/AppConfig.h \
+    include/Application.h \
+    include/AppUI.h \
     include/AudioFileSaver.h \
-    include/CarrierDetector.h \
-    include/CarrierXlator.h \
-    include/ColorConfigTab.h \
+    include/AudioPlayback.h \
+    include/Averager.h \
+    include/ColorConfig.h \
     include/ConfigTab.h \
-    include/CostasRecoveryTask.h \
-    include/DelayedConjTask.h \
-    include/DeviceTweaks.h \
-    include/DopplerCalculator.h \
-    include/DopplerDialog.h \
-    include/FACTab.h \
     include/FeatureFactory.h \
-    include/FrequencyCorrectionDialog.h \
-    include/GenericAudioPlayer.h \
-    include/GenericDataSaverUI.h \
-    include/GuiConfigTab.h \
-    include/HistogramDialog.h \
-    include/HistogramFeeder.h \
-    include/LPFTask.h \
-    include/LocationConfigTab.h \
-    include/PLLSyncTask.h \
-    include/Plugin.h \
-    include/PortAudioPlayer.h \
-    include/ProfileConfigTab.h \
-    include/QTimeSlider.h \
-    include/QuadDemodTask.h \
-    include/QuickConnectDialog.h \
-    include/SamplerDialog.h \
-    include/SamplingProperties.h \
+    include/GuiConfig.h \
+    include/InspectionWidgetFactory.h \
     include/SigDiggerHelpers.h \
+    include/MainSpectrum.h \
+    include/MainWindow.h \
+    include/Palette.h \
+    include/PersistentWidget.h \
+    include/TabWidgetFactory.h \
+    include/TLESourceConfig.h \
+    include/ToolWidgetFactory.h \
+    include/UIComponentFactory.h \
+    include/UIListenerFactory.h \
+    include/UIMediator.h \
+    include/GenericDataSaver.h \
+    include/Version.h
+
+install_headers.path   = $$SIGDIGGER_INSTALL_HEADERS
+install_headers.files += $$INSTALL_HEADERS
+INSTALLS              += install_headers
+
+SUSCAN_HEADERS += \
+    include/Suscan/AnalyzerRequestTracker.h \
     include/Suscan/CancellableTask.h \
-    include/Suscan/Messages/ChannelMessage.h \
-    include/Suscan/Messages/GenericMessage.h \
-    include/Suscan/Messages/InspectorMessage.h \
-    include/Suscan/Messages/PSDMessage.h \
-    include/Suscan/Messages/SamplesMessage.h \
     include/Suscan/Analyzer.h \
     include/Suscan/AnalyzerParams.h \
     include/Suscan/Channel.h \
@@ -240,60 +238,105 @@ HEADERS += \
     include/Suscan/Logger.h \
     include/Suscan/Message.h \
     include/Suscan/MQ.h \
-    include/Suscan/Messages/SourceInfoMessage.h \
-    include/Suscan/Messages/StatusMessage.h \
     include/Suscan/MultitaskController.h \
     include/Suscan/Object.h \
+    include/Suscan/Plugin.h \
     include/Suscan/Serializable.h \
     include/Suscan/Source.h \
-    include/Suscan/SpectrumSource.h \
+    include/Suscan/SpectrumSource.h
+
+suscan_headers.path   = $$SIGDIGGER_INSTALL_HEADERS/Suscan
+suscan_headers.files += $$SUSCAN_HEADERS
+INSTALLS             += suscan_headers
+
+SUSCAN_MSG_HEADERS += \
+    include/Suscan/Messages/ChannelMessage.h \
+    include/Suscan/Messages/GenericMessage.h \
+    include/Suscan/Messages/InspectorMessage.h \
+    include/Suscan/Messages/PSDMessage.h \
+    include/Suscan/Messages/SamplesMessage.h \
+    include/Suscan/Messages/SourceInfoMessage.h \
+    include/Suscan/Messages/StatusMessage.h
+
+suscan_msg_headers.path   = $$SIGDIGGER_INSTALL_HEADERS/Suscan/Messages
+suscan_msg_headers.files += $$SUSCAN_MSG_HEADERS
+INSTALLS                 += suscan_msg_headers
+
+HEADERS += \
+    $$INSTALL_HEADERS \
+    $$SUSCAN_HEADERS \
+    $$SUSCAN_MSG_HEADERS \
+    Default/Audio/AudioProcessor.h \
+    Default/Audio/AudioWidget.h \
+    Default/Audio/AudioWidgetFactory.h \
+    Default/DefaultTab/DefaultTabWidget.h \
+    Default/DefaultTab/DefaultTabWidgetFactory.h \
+    Default/FFT/FFTWidget.h \
+    Default/FFT/FFTWidgetFactory.h \
+    Default/GenericInspector/FACTab.h \
+    Default/GenericInspector/GenericInspector.h \
+    Default/GenericInspector/GenericInspectorFactory.h \
+    Default/GenericInspector/InspectorCtl/AfcControl.h \
+    Default/GenericInspector/InspectorCtl/AskControl.h \
+    Default/GenericInspector/InspectorCtl/ClockRecovery.h \
+    Default/GenericInspector/InspectorCtl/EqualizerControl.h \
+    Default/GenericInspector/InspectorCtl/EstimatorControl.h \
+    Default/GenericInspector/InspectorCtl/GainControl.h \
+    Default/GenericInspector/InspectorCtl/InspectorCtl.h \
+    Default/GenericInspector/InspectorCtl/MfControl.h \
+    Default/GenericInspector/InspectorCtl/ToneControl.h \
+    Default/GenericInspector/InspectorUI.h \
+    Default/GenericInspector/SymViewTab.h \
+    Default/GenericInspector/TVProcessorTab.h \
+    Default/GenericInspector/TVProcessorWorker.h \
+    Default/GenericInspector/WaveformTab.h \
+    Default/Inspection/InspToolWidget.h \
+    Default/Inspection/InspToolWidgetFactory.h \
+    Default/Registration.h \
+    Default/Source/SourceWidget.h \
+    Default/Source/SourceWidgetFactory.h \
+    include/AGCTask.h \
+    include/AddTLESourceDialog.h \
+    include/AlsaPlayer.h \
+    include/CarrierDetector.h \
+    include/CarrierXlator.h \
+    include/ColorConfigTab.h \
+    include/CostasRecoveryTask.h \
+    include/DelayedConjTask.h \
+    include/DeviceTweaks.h \
+    include/DopplerCalculator.h \
+    include/DopplerDialog.h \
+    include/FrequencyCorrectionDialog.h \
+    include/GenericAudioPlayer.h \
+    include/GenericDataSaverUI.h \
+    include/GuiConfigTab.h \
+    include/HistogramDialog.h \
+    include/HistogramFeeder.h \
+    include/LPFTask.h \
+    include/LocationConfigTab.h \
+    include/PLLSyncTask.h \
+    include/PortAudioPlayer.h \
+    include/ProfileConfigTab.h \
+    include/QTimeSlider.h \
+    include/QuadDemodTask.h \
+    include/QuickConnectDialog.h \
+    include/SamplerDialog.h \
+    include/SamplingProperties.h \
     include/AboutDialog.h \
-    include/AfcControl.h \
-    include/AppConfig.h \
-    include/Application.h \
-    include/AppUI.h \
-    include/AskControl.h \
-    include/AudioPanel.h \
-    include/AudioPlayback.h \
     include/AutoGain.h \
-    include/Averager.h \
-    include/ClockRecovery.h \
-    include/ColorConfig.h \
     include/ConfigDialog.h \
     include/DataSaverUI.h \
     include/DefaultGradient.h \
     include/DeviceGain.h \
-    include/EqualizerControl.h \
-    include/FftPanel.h \
-    include/GainControl.h \
     include/GainSlider.h \
-    include/Inspector.h \
-    include/InspectorCtl.h \
-    include/InspectorPanel.h \
-    include/InspectorUI.h \
     include/Loader.h \
-    include/MainSpectrum.h \
-    include/MainWindow.h \
-    include/MfControl.h \
-    include/Palette.h \
-    include/PersistentWidget.h \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
-    include/SourcePanel.h \
-    include/TLESourceConfig.h \
     include/TLESourceTab.h \
-    include/TVProcessorWorker.h \
     include/TimeWindow.h \
-    include/ToneControl.h \
-    include/ToolWidgetFactory.h \
-    include/UIComponentFactory.h \
-    include/UIMediator.h \
-    include/EstimatorControl.h \
-    include/GenericDataSaver.h \
     include/FileDataSaver.h \
     include/SocketForwarder.h \
     include/NetForwarderUI.h \
-    include/Version.h \
     include/WaitingSpinnerWidget.h \
     include/DeviceDialog.h \
     include/PanoramicDialog.h \
@@ -303,9 +346,6 @@ HEADERS += \
     include/RMSViewTab.h \
     include/RMSViewerSettingsDialog.h \
     include/LogDialog.h \
-    include/TVProcessorTab.h \
-    include/SymViewTab.h \
-    include/WaveformTab.h \
     include/MultitaskControllerModel.h \
     include/BackgroundTasksDialog.h \
     include/ExportSamplesTask.h \
@@ -316,11 +356,20 @@ HEADERS += \
 
 
 FORMS += \
+    Default/Audio/AudioWidget.ui \
+    Default/DefaultTab/DefaultTabWidget.ui \
+    Default/FFT/FFTWidget.ui \
+    Default/GenericInspector/FACTab.ui \
+    Default/GenericInspector/GenericInspector.ui \
+    Default/GenericInspector/SymViewTab.ui \
+    Default/GenericInspector/TVProcessorTab.ui \
+    Default/GenericInspector/WaveformTab.ui \
+    Default/Inspection/InspToolWidget.ui \
+    Default/Source/SourceWidget.ui \
     ui/AboutDialog.ui \
     ui/AddTLESourceDialog.ui \
     ui/AfcControl.ui \
     ui/AskControl.ui \
-    ui/AudioPanel.ui \
     ui/ClockRecovery.ui \
     ui/ColorConfigTab.ui \
     ui/Config.ui \
@@ -329,15 +378,11 @@ FORMS += \
     ui/DeviceTweaks.ui \
     ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
-    ui/FACTab.ui \
-    ui/FftPanel.ui \
     ui/FrequencyCorrectionDialog.ui \
     ui/GainControl.ui \
     ui/GainSlider.ui \
     ui/GuiConfigTab.ui \
     ui/HistogramDialog.ui \
-    ui/Inspector.ui \
-    ui/InspectorPanel.ui \
     ui/LocationConfigTab.ui \
     ui/MainSpectrum.ui \
     ui/MainWindow.ui \
@@ -345,7 +390,6 @@ FORMS += \
     ui/ProfileConfigTab.ui \
     ui/QuickConnectDialog.ui \
     ui/SamplerDialog.ui \
-    ui/SourcePanel.ui \
     ui/TLESourceTab.ui \
     ui/TimeWindow.ui \
     ui/ToneControl.ui \
@@ -358,9 +402,6 @@ FORMS += \
     ui/RMSViewTab.ui \
     ui/RMSViewerSettingsDialog.ui \
     ui/LogDialog.ui \
-    ui/TVProcessorTab.ui \
-    ui/SymViewTab.ui \
-    ui/WaveformTab.ui \
     ui/BackgroundTasksDialog.ui \
     ui/AddBookmarkDialog.ui \
     ui/BookmarkManagerDialog.ui

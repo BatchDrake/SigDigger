@@ -19,13 +19,36 @@
 
 #include "Registration.h"
 #include "Audio/AudioWidgetFactory.h"
+#include "Source/SourceWidgetFactory.h"
+#include "Inspection/InspToolWidgetFactory.h"
+#include "FFT/FFTWidgetFactory.h"
+#include "DefaultTab/DefaultTabWidgetFactory.h"
+#include "GenericInspector/GenericInspectorFactory.h"
 
 #include <Suscan/Library.h>
+
+using namespace SigDigger;
 
 bool
 SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
 {
-  new AudioWidgetFactory(plugin);
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
+  // Please note: it is not strictly necessary to call registerToolWidgetFactory
+  // to register these tool factories. registerGlobally will traverse all
+  // the created factories and register them accordingly. Calling register here
+  // ensures that these factories are registered in order prior to any bulk
+  // registration triggered by Suscan::Plugin. This is the order in which
+  // they will show up in the GUI
+
+  sus->registerToolWidgetFactory(new AudioWidgetFactory(plugin));
+  sus->registerToolWidgetFactory(new SourceWidgetFactory(plugin));
+  sus->registerToolWidgetFactory(new InspToolWidgetFactory(plugin));
+  sus->registerToolWidgetFactory(new FFTWidgetFactory(plugin));
+
+  sus->registerTabWidgetFactory(new DefaultTabWidgetFactory(plugin));
+
+  sus->registerInspectionWidgetFactory(new GenericInspectorFactory(plugin));
 
   return true;
 }
