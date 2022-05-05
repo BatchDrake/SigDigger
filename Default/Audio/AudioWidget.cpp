@@ -269,6 +269,12 @@ AudioWidget::connectAll(void)
         SIGNAL(recCommit()),
         this,
         SLOT(onAudioCommit()));
+
+  this->connect(
+        m_processor,
+        SIGNAL(audioError(QString)),
+        this,
+        SLOT(onAudioError(QString)));
 }
 
 bool
@@ -917,6 +923,21 @@ AudioWidget::onOrbitReport(Suscan::InspectorMessage const &msg)
           true));
 }
 
+void
+AudioWidget::onAudioError(QString error)
+{
+  this->refreshUi();
+
+  QMessageBox::warning(
+              this,
+              "SigDigger error",
+              error,
+              QMessageBox::Ok);
+
+  this->setEnabled(false);
+}
+
+
 ////////////////////////// AudioFileSaver slots ////////////////////////////////
 void
 AudioWidget::onAudioSaveError(void)
@@ -928,9 +949,6 @@ AudioWidget::onAudioSaveError(void)
               "SigDigger error",
               "Audio saver stopped unexpectedly. Check disk usage and directory permissions and try again.",
               QMessageBox::Ok);
-
-
-
 }
 
 void
