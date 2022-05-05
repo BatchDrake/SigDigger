@@ -670,10 +670,8 @@ AudioWidget::setState(int state, Suscan::Analyzer *analyzer)
   if (state != this->m_state)
     this->m_state = state;
 
-  m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
-  m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
-  m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
-  m_processor->setAnalyzer(analyzer);
+  if (analyzer == nullptr)
+    m_processor->setAnalyzer(analyzer);
 }
 
 void
@@ -982,6 +980,15 @@ AudioWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
   if (!m_haveSourceInfo) {
     m_audioAllowed =
         msg.info()->testPermission(SUSCAN_ANALYZER_PERM_OPEN_AUDIO);
+
+    if (m_audioAllowed) {
+      // We do not update processor parameters until source info is available
+      m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
+      m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
+      m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
+      m_processor->setAnalyzer(m_analyzer);
+    }
+
     m_haveSourceInfo = true;
     this->refreshUi();
   }
