@@ -91,7 +91,7 @@ AudioProcessor::openAudio()
   if (!m_opened) {
     if (m_playBack != nullptr) {
       Suscan::Channel ch;
-      unsigned int reqRate = m_sampleRate;
+      unsigned int reqRate = m_requestedRate;
 
       m_maxAudioBw =
           SU_MIN(
@@ -157,6 +157,7 @@ AudioProcessor::closeAudio()
 
   m_opening = false;
   m_opened  = false;
+  m_settingRate = false;
   m_audioInspectorOpened = false;
 
   return true;
@@ -406,7 +407,8 @@ AudioProcessor::setDemod(AudioDemod demod)
 void
 AudioProcessor::setSampleRate(unsigned rate)
 {
-  if (m_sampleRate != rate) {
+  if (m_requestedRate != rate) {
+    m_requestedRate = rate;
     m_sampleRate = rate;
 
     // We temptatively set the corresponding parameter and wait for its
@@ -668,6 +670,7 @@ void
 AudioProcessor::onCancelled(Suscan::AnalyzerRequest const &)
 {
   m_opening = false;
+  m_settingRate = false;
   m_playBack->stop();
 }
 
@@ -675,6 +678,7 @@ void
 AudioProcessor::onError(Suscan::AnalyzerRequest const &, std::string const &err)
 {
   m_opening = false;
+  m_settingRate = false;
   m_playBack->stop();
 
   emit audioError(

@@ -269,6 +269,12 @@ AudioWidget::connectAll(void)
         SIGNAL(recCommit()),
         this,
         SLOT(onAudioCommit()));
+
+  this->connect(
+        m_processor,
+        SIGNAL(audioError(QString)),
+        this,
+        SLOT(onAudioError(QString)));
 }
 
 bool
@@ -664,10 +670,8 @@ AudioWidget::setState(int state, Suscan::Analyzer *analyzer)
   if (state != m_state)
     m_state = state;
 
-  m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
-  m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
-  m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
-  m_processor->setAnalyzer(analyzer);
+  if (analyzer == nullptr)
+    m_processor->setAnalyzer(analyzer);
 }
 
 void
@@ -917,6 +921,21 @@ AudioWidget::onOrbitReport(Suscan::InspectorMessage const &msg)
           true));
 }
 
+void
+AudioWidget::onAudioError(QString error)
+{
+  this->refreshUi();
+
+  QMessageBox::warning(
+              this,
+              "SigDigger error",
+              error,
+              QMessageBox::Ok);
+
+  this->setEnabled(false);
+}
+
+
 ////////////////////////// AudioFileSaver slots ////////////////////////////////
 void
 AudioWidget::onAudioSaveError(void)
@@ -928,9 +947,6 @@ AudioWidget::onAudioSaveError(void)
               "SigDigger error",
               "Audio saver stopped unexpectedly. Check disk usage and directory permissions and try again.",
               QMessageBox::Ok);
-
-
-
 }
 
 void
@@ -964,6 +980,15 @@ AudioWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
   if (!m_haveSourceInfo) {
     m_audioAllowed =
         msg.info()->testPermission(SUSCAN_ANALYZER_PERM_OPEN_AUDIO);
+
+    if (m_audioAllowed) {
+      // We do not update processor parameters until source info is available
+      m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
+      m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
+      m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
+      m_processor->setAnalyzer(m_analyzer);
+    }
+
     m_haveSourceInfo = true;
     this->refreshUi();
   }

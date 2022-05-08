@@ -164,6 +164,9 @@ namespace SigDigger {
     void onSetTLE(Suscan::InspectorMessage const &);
     void onOrbitReport(Suscan::InspectorMessage const &);
 
+    // Processor slots
+    void onAudioError(QString);
+
     // Saver UI
     void onAudioSaveError(void);
     void onAudioSaveSwamped(void);

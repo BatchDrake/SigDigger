@@ -47,6 +47,7 @@ namespace SigDigger {
     SUFREQ          m_lo = 0;
     SUFREQ          m_tuner = 0;
     unsigned int    m_sampleRate = 44100;
+    unsigned int    m_requestedRate = 44100;
     AudioDemod      m_demod = AudioDemod::FM;
     bool            m_correctionEnabled = false;
     bool            m_squelch = false;
