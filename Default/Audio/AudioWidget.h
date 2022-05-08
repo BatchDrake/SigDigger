@@ -77,7 +77,7 @@ namespace SigDigger {
 
     // UI members
     int m_state = 0;
-    MainSpectrum *m_spectrum;
+    MainSpectrum *m_spectrum = nullptr;
     Ui::AudioPanel *ui = nullptr;
     ColorConfig colorConfig;
     FrequencyCorrectionDialog *fcDialog = nullptr;

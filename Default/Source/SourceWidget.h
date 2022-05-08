@@ -64,6 +64,7 @@ namespace SigDigger {
       // Overriden methods
       void deserialize(Suscan::Object const &conf) override;
       Suscan::Object &&serialize() override;
+      ~SourceWidgetConfig() override;
   };
 
   class SourceWidget : public ToolWidget

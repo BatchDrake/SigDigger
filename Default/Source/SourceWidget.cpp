@@ -28,7 +28,6 @@
 
 using namespace SigDigger;
 
-
 #define STRINGFY(x) #x
 #define STORE(field) obj.set(STRINGFY(field), this->field)
 #define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
@@ -127,6 +126,13 @@ SourceWidgetConfig::serialize(void)
   obj.setField("savedPresets", list);
 
   return this->persist(obj);
+}
+
+
+SourceWidgetConfig::~SourceWidgetConfig()
+{
+  if (this->dataSaverConfig != nullptr)
+    delete this->dataSaverConfig;
 }
 
 SourceWidget::SourceWidget(

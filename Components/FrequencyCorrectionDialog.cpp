@@ -917,6 +917,7 @@ FrequencyCorrectionDialog::parseCurrentTLE(void)
 
 FrequencyCorrectionDialog::~FrequencyCorrectionDialog()
 {
+  orbit_finalize(&this->currentOrbit);
   delete ui;
 }
 
