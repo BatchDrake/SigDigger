@@ -339,34 +339,50 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
   std::vector<Suscan::Source::GainDescription> gains;
   DeviceGain *gain = nullptr;
-  bool presetEnabled = this->ui->gainPresetCheck->isChecked();
   bool oldBlocking;
-  bool throttleEnabled;
 
   oldBlocking = this->setBlockingSignals(true);
 
-  if (!this->haveSourceInfo) {
-    this->sourceInfo = Suscan::AnalyzerSourceInfo(info);
-    this->haveSourceInfo = true;
-  }
+  // There are 5 source settings that are overriden by the UI configuration
+  //
+  // 1. Gain presets
+  // 2. Throttle
+  // 3. DC Removal
+  // 4. IQ Reversal
+  // 5. AGC
+  //
+  // These settings are set once the first source info is received, and
+  // refresh the UI in subsequent receptions.
 
   this->setSampleRate(SCAST(unsigned, info.getSampleRate()));
 
   if (info.getMeasuredSampleRate() > 0)
     this->setProcessRate(SCAST(unsigned, info.getMeasuredSampleRate()));
 
-  this->setDCRemove(info.getDCRemove());
-  this->setIQReverse(info.getIQReverse());
-  this->setAGCEnabled(info.getAGC());
+  if (!this->haveSourceInfo) {
+    m_sourceInfo = Suscan::AnalyzerSourceInfo(info);
+    this->haveSourceInfo = true;
+
+    // First source info! Set delayed analyzer options (this ones are
+    // not bound to an analyzer)
+
+    this->setDelayedAnalyzerOptions();
+  } else {
+    bool throttleEnabled = !sufeq(
+          info.getEffectiveSampleRate(),
+          info.getSampleRate(),
+          0); // Integer quantities
+
+    this->ui->throttleCheck->setChecked(throttleEnabled);
+
+    this->setDCRemove(info.getDCRemove());
+    this->setIQReverse(info.getIQReverse());
+    this->setAGCEnabled(info.getAGC());
+  }
+
+
   this->setBandwidth(info.getBandwidth());
   this->setPPM(info.getPPM());
-
-  throttleEnabled = !sufeq(
-        info.getEffectiveSampleRate(),
-        info.getSampleRate(),
-        0); // Integer quantities
-
-  this->ui->throttleCheck->setChecked(throttleEnabled);
 
   // Populate antennas
   this->populateAntennaCombo(info);
@@ -404,11 +420,6 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
     else
       this->ui->gainsFrame->show();
   }
-
-  // AGC Enabled, we override gain settings with the current AGC
-  // settings
-  if (presetEnabled)
-    this->applyCurrentAutogain();
 
   // Everything is set, time to decide what is enabled and what is not
   this->refreshUi();
@@ -507,33 +518,33 @@ SourceWidget::refreshUi()
 
   // These depend on the source info only
   this->ui->dcRemoveCheck->setEnabled(
-        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE));
+        m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE));
   this->ui->swapIQCheck->setEnabled(
-        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE));
+        m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE));
   this->ui->agcEnabledCheck->setEnabled(
-        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_AGC));
+        m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_AGC));
 
   // These depend both the profile and source info
   this->ui->bwSpin->setEnabled(
         this->ui->bwSpin->isEnabled()
-        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_BW));
+        && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_BW));
   this->ui->ppmSpinBox->setEnabled(
         this->ui->ppmSpinBox->isEnabled()
-        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_PPM));
+        && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_PPM));
   this->ui->throttleCheck->setEnabled(
         this->ui->throttleCheck->isEnabled()
-        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE));
+        && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE));
   this->ui->throttleSpin->setEnabled(
         this->ui->throttleCheck->isChecked()
         && this->ui->throttleCheck->isEnabled());
   this->ui->antennaCombo->setEnabled(
         this->ui->antennaCombo->isEnabled()
-        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA));
+        && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA));
   this->ui->gainsFrame->setEnabled(
         (!gainPresetEnabled || !haveAGC)
-        && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
+        && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
   this->ui->autoGainFrame->setEnabled(
-        this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
+        m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
 
   this->ui->autoGainCombo->setEnabled(gainPresetEnabled);
   this->ui->autoGainSlider->setEnabled(gainPresetEnabled);
@@ -610,7 +621,7 @@ SourceWidget::populateAntennaCombo(Suscan::AnalyzerSourceInfo const &info)
 void
 SourceWidget::setThrottleable(bool val)
 {
-  val = val && this->sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE);
+  val = val && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE);
 
   this->throttleable = val;
   this->ui->throttleCheck->setEnabled(val);
@@ -862,6 +873,26 @@ SourceWidget::setBlockingSignals(bool blocking)
   return oldState;
 }
 
+void
+SourceWidget::setDelayedAnalyzerOptions()
+{
+  if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN))
+    if (this->panelConfig->gainPresetEnabled)
+      this->applyCurrentAutogain();
+
+  if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE))
+    this->onThrottleChanged();
+
+  if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE))
+    this->onToggleDCRemove();
+
+  if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE))
+    this->onToggleIQReverse();
+
+  if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_AGC))
+    this->onToggleAGCEnabled();
+}
+
 // Overriden methods
 void
 SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
@@ -873,16 +904,17 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
 
     m_analyzer = analyzer;
 
+    this->haveSourceInfo = false;
+
     if (m_analyzer == nullptr) {
-      this->haveSourceInfo = false;
-      this->sourceInfo = Suscan::AnalyzerSourceInfo();
+      m_sourceInfo = Suscan::AnalyzerSourceInfo();
       this->setProcessRate(0);
       this->refreshUi();
     } else {
       // Switched to running! Then, do the following:
       // 1. Connect source_info_message
-      // 2. Request a gain adjustmenet to fit the saved preset, if applicable
-      // 3. If recording is enabled, go ahead.
+      // 2. If recording is enabled, go ahead.
+      // 3. Upon the reception of the first source info message: apply delayed
 
       connect(
             analyzer,
@@ -894,14 +926,6 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
             SIGNAL(psd_message(const Suscan::PSDMessage &)),
             this,
             SLOT(onPSDMessage(const Suscan::PSDMessage &)));
-
-      if (this->panelConfig->gainPresetEnabled)
-        this->applyCurrentAutogain();
-
-      this->onThrottleChanged();
-      this->onToggleDCRemove();
-      this->onToggleIQReverse();
-      this->onToggleAGCEnabled();
 
       this->onRecordStartStop();
     }
@@ -920,7 +944,7 @@ SourceWidget::setProfile(Suscan::Source::Config &profile)
   oldBlocking = this->setBlockingSignals(true);
 
   // Setting the profile resets the SourceInfo
-  this->sourceInfo = Suscan::AnalyzerSourceInfo();
+  m_sourceInfo = Suscan::AnalyzerSourceInfo();
 
   this->profile = &profile;
   this->refreshGains(profile);

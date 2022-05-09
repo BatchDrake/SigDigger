@@ -76,7 +76,7 @@ namespace SigDigger {
 
     // Managed objects
     Suscan::Source::Config *profile = nullptr;
-    Suscan::AnalyzerSourceInfo sourceInfo =
+    Suscan::AnalyzerSourceInfo m_sourceInfo =
         Suscan::AnalyzerSourceInfo();
 
     // UI objects
@@ -134,6 +134,8 @@ namespace SigDigger {
     void setAGCEnabled(bool enabled);
 
     bool setBlockingSignals(bool);
+
+    void setDelayedAnalyzerOptions();
 
     // Data saver
     int openCaptureFile();
