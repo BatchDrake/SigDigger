@@ -44,7 +44,7 @@ namespace SigDigger {
     SUFREQ centerFreq = 0;
     sgdp4_prediction_t prediction;
     QString currentTle;
-    orbit_t currentOrbit;
+    orbit_t currentOrbit = orbit_INITIALIZER;
     QTimer timer;
     ColorConfig colors;
 

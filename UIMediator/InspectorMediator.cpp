@@ -19,307 +19,173 @@
 
 #include "UIMediator.h"
 #include <SuWidgetsHelpers.h>
-#include "Inspector.h"
+#include <InspectionWidgetFactory.h>
 #include "ui_MainWindow.h"
 #include "MainSpectrum.h"
-#include "InspectorPanel.h"
 
 #include <QDialog>
 #include <QTabBar>
 
 using namespace SigDigger;
 
-
-Inspector *
-UIMediator::lookupInspector(Suscan::InspectorId handle) const
+void
+UIMediator::connectRequestTracker()
 {
-  Inspector *entry = nullptr;
-
-  try {
-    entry = this->ui->inspectorTable.at(handle);
-  } catch (std::out_of_range &) { }
-
-  return entry;
-}
-
-Inspector *
-UIMediator::addInspector(
-    Suscan::InspectorMessage const &msg,
-    Suscan::InspectorId &oId)
-{
-
-  int index;
-  Inspector *insp = new Inspector(
-        this->ui->main->mainTab,
-        msg,
-        *this->appConfig);
-
-  oId = this->ui->lastId++;
-
-  insp->setId(oId);
-  insp->setRealTime(this->isRealTime);
-  insp->setTimeLimits(this->profileStart, this->profileEnd);
-
-  insp->setTunerFrequency(this->ui->spectrum->getCenterFreq());
-
-  index = this->ui->main->mainTab->addTab(
-        insp,
-        insp->getName());
+  connect(
+        this->m_requestTracker,
+        SIGNAL(opened(Suscan::AnalyzerRequest const &)),
+        this,
+        SLOT(onOpened(Suscan::AnalyzerRequest const &)));
 
   connect(
-        insp,
-        SIGNAL(nameChanged()),
+        this->m_requestTracker,
+        SIGNAL(cancelled(Suscan::AnalyzerRequest const &)),
         this,
-        SLOT(onInspectorNameChanged()));
+        SLOT(onCancelled(Suscan::AnalyzerRequest const &)));
 
   connect(
-        insp,
-        SIGNAL(closeRequested()),
+        this->m_requestTracker,
+        SIGNAL(error(Suscan::AnalyzerRequest const &, const std::string &)),
         this,
-        SLOT(onInspectorCloseRequested()));
-
-  connect(
-        insp,
-        SIGNAL(detachRequested()),
-        this,
-        SLOT(onInspectorDetachRequested()));
-
-  this->ui->inspectorTable[oId] = insp;
-  this->ui->main->mainTab->setCurrentIndex(index);
-
-  return insp;
+        SLOT(onError(Suscan::AnalyzerRequest const &, const std::string &)));
 }
 
 void
-UIMediator::unbindInspectorWidget(Inspector *insp)
+UIMediator::connectAnalyzer()
 {
-  int index = this->ui->main->mainTab->indexOf(insp);
+  connect(
+        m_analyzer,
+        SIGNAL(inspector_message(const Suscan::InspectorMessage &)),
+        this,
+        SLOT(onInspectorMessage(const Suscan::InspectorMessage &)));
 
-  // Inspector widgets may be either in the main window's tab or on
-  // a QDialog on its own.
-
-  if (index != -1) {
-    this->ui->main->mainTab->removeTab(index);
-    insp->setParent(nullptr);
-  } else {
-    auto p = this->ui->floatInspectorTable.find(insp);
-
-    if (p != this->ui->floatInspectorTable.end()) {
-      QDialog *d = p->second;
-      this->ui->floatInspectorTable.erase(insp);
-
-      // This sets the parent to null
-      insp->setParent(nullptr);
-
-      d->setProperty(
-            "inspector-ptr",
-            QVariant::fromValue<Inspector *>(nullptr));
-
-      d->close();
-      d->deleteLater();
-    }
-  }
-}
-
-void
-UIMediator::closeInspector(Inspector *insp)
-{
-  if (insp != nullptr) {
-    Suscan::Analyzer *analyzer = insp->getAnalyzer();
-    if (analyzer != nullptr) {
-      analyzer->closeInspector(insp->getHandle(), 0);
-    } else {
-      this->unbindInspectorWidget(insp);
-      this->ui->inspectorTable.erase(insp->getId());
-      delete insp;
-    }
-  }
-}
-
-void
-UIMediator::floatInspector(Inspector *insp)
-{
-  int index = this->ui->main->mainTab->indexOf(insp);
-
-  if (index != -1) {
-    QDialog *dialog = new QDialog(this->owner);
-    QVBoxLayout *layout = new QVBoxLayout;
-
-    insp->beginReparenting();
-    this->unbindInspectorWidget(insp);
-
-    dialog->setProperty(
-          "inspector-ptr",
-          QVariant::fromValue<Inspector *>(insp));
-    dialog->setLayout(layout);
-    dialog->setWindowFlags(Qt::Window);
-
-    connect(
-          dialog,
-          SIGNAL(finished(int)),
-          this,
-          SLOT(onCloseInspectorWindow()));
-
-    layout->addWidget(insp);
-
-    insp->doneReparenting();
-    insp->show();
-
-    dialog->move(this->owner->pos());
-    dialog->setWindowTitle("SigDigger - " + insp->getName());
-
-    this->ui->floatInspectorTable[insp] = dialog;
-    dialog->show();
-  }
+  connect(
+        m_analyzer,
+        SIGNAL(samples_message(const Suscan::SamplesMessage &)),
+        this,
+        SLOT(onInspectorSamples(const Suscan::SamplesMessage &)));
 }
 
 void
 UIMediator::detachAllInspectors()
 {
-  for (auto p = this->ui->inspectorTable.begin();
-       p != this->ui->inspectorTable.end();
-       ++p) {
-    if (p->second) {
-      p->second->setAnalyzer(nullptr);
-      p->second = nullptr;
-    }
-  }
+  // Detaching all inspectors mean that we do not care about them any longer,
+  // they are just dangling tab widgets with no relation with the current
+  // analyzer whatsoever
 
-  this->ui->inspectorTable.clear();
+  for (auto p : m_inspectors)
+    p->setState(UIMediator::HALTED, nullptr);
+
+  m_inspectors.clear();
+  m_inspTable.clear();
+}
+
+bool
+UIMediator::openInspectorTab(
+    const char *factoryName,
+    const char *inspClass,
+    Suscan::Channel channel,
+    bool precise,
+    Suscan::Handle handle)
+{
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  // The factory must exists
+  if (s->findInspectionWidgetFactory(factoryName) == nullptr)
+    return false;
+
+  // The analyzer must be initialized
+  if (m_analyzer == nullptr)
+    return false;
+
+  // And the opening procedure must succeed
+  return m_requestTracker->requestOpen(
+        inspClass,
+        channel,
+        QVariant::fromValue<QString>(factoryName),
+        precise,
+        handle);
 }
 
 void
-UIMediator::resetRawInspector(qreal fs)
+UIMediator::detachInspectionWidget(InspectionWidget *widget)
 {
-  this->ui->inspectorPanel->resetRawInspector(fs);
+  Suscan::InspectorId id = widget->request().inspectorId;
+
+  if (m_inspTable.contains(id) && m_inspTable[id] == widget)
+    m_inspTable.remove(id);
+
+  if (m_inspectors.contains(widget))
+    m_inspectors.removeAt(m_inspectors.indexOf(widget));
+}
+
+SUFREQ
+UIMediator::getCurrentCenterFreq() const
+{
+  return this->ui->spectrum->getCenterFreq();
 }
 
 void
-UIMediator::feedRawInspector(const SUCOMPLEX *data, size_t size)
+UIMediator::onInspectorMessage(Suscan::InspectorMessage const &msg)
 {
-  this->ui->inspectorPanel->feedRawInspector(data, size);
-}
+  if (m_inspTable.contains(msg.getInspectorId())) {
+    InspectionWidget *widget = m_inspTable[msg.getInspectorId()];
 
-void
-UIMediator::connectInspectorPanel(void)
-{
-  connect(
-        this->ui->inspectorPanel,
-        SIGNAL(bandwidthChanged(int)),
-        this,
-        SLOT(onInspBandwidthChanged()));
-
-  connect(
-        this->ui->inspectorPanel,
-        SIGNAL(requestOpenInspector(QString)),
-        this,
-        SLOT(onOpenInspector()));
-
-  connect(
-        this->ui->inspectorPanel,
-        SIGNAL(startRawCapture()),
-        this,
-        SLOT(onOpenRawInspector()));
-
-  connect(
-        this->ui->inspectorPanel,
-        SIGNAL(stopRawCapture()),
-        this,
-        SLOT(onCloseRawInspector()));
-}
-
-void
-UIMediator::onInspBandwidthChanged(void)
-{
-  this->ui->spectrum->setFilterBandwidth(
-        this->ui->inspectorPanel->getBandwidth());
-  this->appConfig->bandwidth =
-      static_cast<unsigned int>(this->ui->spectrum->getBandwidth());
-  emit channelBandwidthChanged(this->ui->inspectorPanel->getBandwidth());
-}
-
-void
-UIMediator::onOpenInspector(void)
-{
-  emit requestOpenInspector();
-}
-
-void
-UIMediator::onOpenRawInspector(void)
-{
-  emit requestOpenRawInspector();
-}
-
-void
-UIMediator::onCloseRawInspector(void)
-{
-  emit requestCloseRawInspector();
-}
-
-void
-UIMediator::onCloseInspectorTab(int ndx)
-{
-  QWidget *widget = this->ui->main->mainTab->widget(ndx);
-
-  if (widget != nullptr && widget != this->ui->spectrum) {
-    Inspector *insp = static_cast<Inspector *>(widget);
-    this->closeInspector(insp);
-  }
-}
-
-
-void
-UIMediator::onInspectorMenuRequested(const QPoint &point)
-{
-  int index;
-
-  if (point.isNull())
-    return;
-
-  index = this->ui->main->mainTab->tabBar()->tabAt(point);
-
-  QWidget *widget = this->ui->main->mainTab->widget(index);
-
-  if (widget != nullptr && widget != this->ui->spectrum) {
-    Inspector *insp = static_cast<Inspector *>(widget);
-    insp->popupContextMenu();
+    // Deletion triggers detachAllInspectors()
+    if (msg.getKind() == SUSCAN_ANALYZER_INSPECTOR_MSGKIND_CLOSE)
+      widget->deleteLater();
+    else
+      widget->inspectorMessage(msg);
   }
 }
 
 void
-UIMediator::onInspectorNameChanged(void)
+UIMediator::onInspectorSamples(Suscan::SamplesMessage const &msg)
 {
-  Inspector *insp = static_cast<Inspector *>(QObject::sender());
-  int index = this->ui->main->mainTab->indexOf(insp);
-
-  if (index >= 0)
-    this->ui->main->mainTab->setTabText(
-        index,
-        insp->getName());
+  if (m_inspTable.contains(msg.getInspectorId())) {
+    InspectionWidget *widget = m_inspTable[msg.getInspectorId()];
+    widget->samplesMessage(msg);
+  }
 }
 
 void
-UIMediator::onInspectorCloseRequested(void)
+UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
 {
-  Inspector *insp = static_cast<Inspector *>(QObject::sender());
-  this->closeInspector(insp);
+  QString factoryName = request.data.value<QString>();
+  InspectionWidgetFactory *factory;
+  Suscan::Singleton *s = Suscan::Singleton::get_instance();
+
+  if ((factory = s->findInspectionWidgetFactory(factoryName)) == nullptr) {
+    QMessageBox::critical(
+          this,
+          "Cannot open inspector",
+          "Analyzer acknowledged the opening of the inspector, but "
+          "the " + factoryName + " widget factory does not exist.");
+    if (m_analyzer != nullptr)
+      m_analyzer->closeInspector(request.handle);
+  } else {
+    InspectionWidget *widget = factory->make(request, this);
+
+    m_inspectors.push_back(widget);
+    m_inspTable[request.inspectorId] = widget;
+
+    this->addTabWidget(widget);
+  }
 }
 
 void
-UIMediator::onInspectorDetachRequested(void)
+UIMediator::onCancelled(Suscan::AnalyzerRequest const &)
 {
-  Inspector *insp = static_cast<Inspector *>(QObject::sender());
-  this->floatInspector(insp);
+
 }
 
 void
-UIMediator::onCloseInspectorWindow(void)
+UIMediator::onError(Suscan::AnalyzerRequest const &r, std::string const &error)
 {
-  QDialog *sender = qobject_cast<QDialog *>(QObject::sender());
-  Inspector *insp;
-
-  insp = sender->property("inspector-ptr").value<Inspector *>();
-
-  if (insp != nullptr)
-    this->closeInspector(insp);
+  QMessageBox::critical(
+        this,
+        "Cannot open inspector",
+        "Failed to open inspector (class "
+        + QString::fromStdString(r.inspClass)
+        + "). " + QString::fromStdString(error));
 }

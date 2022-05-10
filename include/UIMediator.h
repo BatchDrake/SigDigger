@@ -21,6 +21,7 @@
 
 #include <QMainWindow>
 #include <Suscan/Messages/PSDMessage.h>
+#include <Suscan/AnalyzerRequestTracker.h>
 #include <Suscan/Library.h>
 #include <map>
 #include <AppConfig.h>
@@ -38,11 +39,11 @@
 #define SIGDIGGER_UI_MEDIATOR_LOCAL_GRACE_PERIOD_MS  -1
 #define SIGDIGGER_UI_MEDIATOR_REMOTE_GRACE_PERIOD_MS 1000
 
-namespace Suscan {
-  struct AnalyzerSourceInfo;
-};
-
 namespace SigDigger {
+  class UIComponent;
+  class TabWidget;
+  class InspectionWidget;
+  class UIListener;
 
   class UIMediator : public PersistentWidget {
     Q_OBJECT
@@ -56,7 +57,7 @@ namespace SigDigger {
     };
 
   private:
-    // Convenience pointers
+    // Static part of the configuration
     AppConfig *appConfig = nullptr;
 
     // Static part of UI
@@ -67,7 +68,6 @@ namespace SigDigger {
     std::map<std::string, QAction *> bandPlanMap;
 
     // Cached members
-    bool isRealTime;
     struct timeval profileStart;
     struct timeval profileEnd;
     Suscan::Source::Device remoteDevice;
@@ -78,7 +78,6 @@ namespace SigDigger {
     unsigned int recentCount = 0;
 
     // UI State
-    State state = HALTED;
     bool settingRanges = false;
     struct timeval rtMaxDelta = {0, 10000};
     struct timeval lastPsd;
@@ -89,43 +88,89 @@ namespace SigDigger {
     qreal rtDeltaReal = 0;
 
     // Private methods
-    void connectMainWindow(void);
-    void connectTimeSlider(void);
-    void connectSpectrum(void);
-    void connectSourcePanel(void);
-    void connectFftPanel(void);
-    void connectAudioPanel(void);
-    void connectInspectorPanel(void);
-    void connectDeviceDialog(void);
-    void connectPanoramicDialog(void);
+    void connectMainWindow();
+    void connectTimeSlider();
+    void connectSpectrum();
+    void connectDeviceDialog();
+    void connectPanoramicDialog();
+    void connectAnalyzer();
+    void connectRequestTracker();
 
     // Behavioral methods
     void setSampleRate(unsigned int rate);
     void setBandwidth(unsigned int bandwidth);
     void refreshProfile(bool updateFreqs = true);
-    void refreshSpectrumFilterShape(void);
-    void setCurrentAutoGain(void);
+    void setCurrentAutoGain();
+
+    // Other setters
+    void setSourceTimeStart(struct timeval const &);
+    void setSourceTimeEnd(struct timeval const &);
+
+    // Refactored UI State
+    State                              m_state = HALTED;
+    Suscan::Analyzer                  *m_analyzer = nullptr;
+    QList<UIComponent *>               m_components;
+    QList<TabWidget *>                 m_tabWidgets;
+    QMap<TabWidget *, QDialog *>       m_floatingTabs;
+    struct timeval                     m_lastTimeStamp;
+    Suscan::Object                     m_hollowConfig;
+
+    Suscan::AnalyzerRequestTracker    *m_requestTracker = nullptr;
+    QList<InspectionWidget *>          m_inspectors;
+    QMap<uint32_t, InspectionWidget *> m_inspTable;
+
+    // Refactored methods
+    void initSidePanel();
+    void initUIListeners();
+    void registerUIComponent(UIComponent *);
+    void unregisterUIComponent(UIComponent *);
+    void configureUIComponent(UIComponent *);
+
+    // Other private methods
+    void detachAllInspectors();
+
+    friend class UIComponent;
 
   public:
+    // Refactored methods
+    QMainWindow  *getMainWindow() const;
+    MainSpectrum *getMainSpectrum() const;
+    Averager     *getSpectrumAverager();
+    AppConfig    *getAppConfig() const;
+    bool          addTabWidget(TabWidget *);
+    bool          addUIListener(UIListener *);
+    bool          closeTabWidget(TabWidget *);
+    bool          floatTabWidget(TabWidget *);
+    void          detachInspectionWidget(InspectionWidget *);
+
+    // Shortcut methods
+    SUFREQ        getCurrentCenterFreq() const;
+
+    // Request the opening an inspector tab
+    bool          openInspectorTab(
+        const char *factoryName,
+        const char *inspClass,
+        Suscan::Channel,
+        bool precise = true,
+        Suscan::Handle = -1);
+
+    void setState(enum State, Suscan::Analyzer *analyzer = nullptr);
+
     // UI State
-    void refreshUI(void);
-    void setState(enum State);
-    State getState(void) const;
+    void refreshUI();
+    State getState() const;
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
     void notifyTimeStamp(struct timeval const &timestamp);
-    void notifyOrbitReport(Suscan::InspectorId, Suscan::OrbitReport const &report);
-    void notifyDisableCorrection(Suscan::InspectorId);
 
     // Recent list handling
-    void clearRecent(void);
+    void clearRecent();
     void addRecent(std::string const &);
-    void finishRecent(void);
+    void finishRecent();
 
     // Bandplan menu
     void addBandPlan(std::string const &);
 
     // Data methods
-    void setProcessRate(unsigned int rate);
     void feedPSD(const Suscan::PSDMessage &msg);
     void setMinPanSpectrumBw(quint64 bw);
     void feedPanSpectrum(
@@ -133,117 +178,63 @@ namespace SigDigger {
         quint64 freqEnd,
         float *data,
         size_t size);
-    void setCaptureSize(quint64 size);
-    void refreshDevicesDone(void);
+    void refreshDevicesDone();
 
     QMessageBox::StandardButton shouldReduceRate(
         QString const &label,
         unsigned int,
         unsigned int);
 
-    void notifyStartupErrors(void);
-
-    // Inspector handling
-    Inspector *lookupInspector(Suscan::InspectorId id) const;
-    Inspector *addInspector(
-        Suscan::InspectorMessage const &msg,
-        Suscan::InspectorId &oId);
-    void unbindInspectorWidget(Inspector *insp);
-    void closeInspector(Inspector *insp);
-    void floatInspector(Inspector *insp);
-    void detachAllInspectors(void);
+    void notifyStartupErrors();
 
     // Convenience getters
-    Suscan::Source::Config *getProfile(void) const;
-    Suscan::AnalyzerParams *getAnalyzerParams(void) const;
-    bool getAudioRecordState(void) const;
-    std::string getAudioRecordSavePath(void) const;
-    bool isAudioDopplerCorrectionEnabled(void) const;
-    Suscan::Orbit getAudioOrbit(void) const;
+    Suscan::Source::Config *getProfile() const;
+    Suscan::AnalyzerParams *getAnalyzerParams() const;
 
-    bool getPanSpectrumDevice(Suscan::Source::Device &) const;
-    bool getPanSpectrumRange(qint64 &min, qint64 &max) const;
-    unsigned int getPanSpectrumRttMs(void) const;
-    float getPanSpectrumRelBw(void) const;
-    float getPanSpectrumGain(QString const &) const;
-    SUFREQ getPanSpectrumLnbOffset(void) const;
-    float getPanSpectrumPreferredSampleRate(void) const;
-    QString getPanSpectrumStrategy(void) const;
-    QString getPanSpectrumPartition(void) const;
-    unsigned int getFftSize(void) const;
+    // panSpectrum functions
+    bool         getPanSpectrumDevice(Suscan::Source::Device &) const;
+    bool         getPanSpectrumRange(qint64 &min, qint64 &max) const;
+    unsigned int getPanSpectrumRttMs() const;
+    float        getPanSpectrumRelBw() const;
+    float        getPanSpectrumGain(QString const &) const;
+    SUFREQ       getPanSpectrumLnbOffset() const;
+    float        getPanSpectrumPreferredSampleRate() const;
+    QString      getPanSpectrumStrategy() const;
+    QString      getPanSpectrumPartition() const;
+    void         setPanSpectrumRunning(bool state);
 
     // Mediated setters
     void setAnalyzerParams(Suscan::AnalyzerParams const &params);
     void setStatusMessage(QString const &);
-    void setRecordState(bool state);
-    void setAudioRecordState(bool);
-    void setAudioRecordSize(quint64 size);
-    void setAudioRecordIORate(qreal rate);
-    void setIORate(qreal rate);
-    void saveUIConfig(void);
+    void saveUIConfig();
     void setProfile(Suscan::Source::Config const &config, bool restart = false);
-    void setPanSpectrumRunning(bool state);
-    void resetRawInspector(qreal fs);
-    void feedRawInspector(const SUCOMPLEX *, size_t size);
-
-    void setSourceTimeStart(struct timeval const &);
-    void setSourceTimeEnd(struct timeval const &);
     void setTimeStamp(struct timeval const &);
 
     // Overriden methods
     Suscan::Serializable *allocConfig() override;
-    void applyConfig(void) override;
+    void applyConfig() override;
 
     UIMediator(QMainWindow *owner, AppUI *ui);
     ~UIMediator() override;
 
   signals:
-    void captureStart(void);
-    void captureEnd(void);
-    void profileChanged(bool);
-    void colorsChanged(ColorConfig config);
-    void bookmarkAdded(BookmarkInfo);
-
-    void frequencyChanged(qint64, qint64);
-    void loChanged(qint64);
-    void channelBandwidthChanged(qreal bw);
+    void captureStart();
+    void captureEnd();
     void seek(struct timeval tv);
-
-    void toggleRecord(void);
-    void throttleConfigChanged(void);
-    void gainChanged(QString name, float val);
-    void toggleIQReverse(void);
-    void toggleDCRemove(void);
-    void toggleAGCEnabled(void);
-    void antennaChanged(QString);
-    void bandwidthChanged(void);
-    void ppmChanged(void);
-
-    void saveStateChanged(void);
-    void requestOpenInspector(void);
-    void requestOpenRawInspector(void);
-    void inspectorClosed(Suscan::Handle handle);
-    void requestCloseRawInspector(void);
-
-    void analyzerParamsChanged(void);
-    void refreshDevices(void);
-    void uiQuit(void);
-
+    void refreshDevices();
+    void uiQuit();
     void recentSelected(QString);
-    void recentCleared(void);
+    void recentCleared();
+    void profileChanged(bool);
+    void frequencyChanged(qint64, qint64);
 
-    void audioChanged(void);
-    void audioVolumeChanged(float);
-    void audioRecordStateChanged(void);
-    void audioSetCorrection(Suscan::Orbit);
-    void audioDisableCorrection(void);
-
-    void panSpectrumStart(void);
-    void panSpectrumStop(void);
+    // Panspectrum signals
+    void panSpectrumStart();
+    void panSpectrumStop();
     void panSpectrumRangeChanged(qint64 min, qint64 max, bool);
-    void panSpectrumSkipChanged(void);
-    void panSpectrumRelBwChanged(void);
-    void panSpectrumReset(void);
+    void panSpectrumSkipChanged();
+    void panSpectrumRelBwChanged();
+    void panSpectrumReset();
     void panSpectrumStrategyChanged(QString);
     void panSpectrumPartitioningChanged(QString);
     void panSpectrumGainChanged(QString, float);
@@ -254,9 +245,8 @@ namespace SigDigger {
     void onToggleCapture(bool);
     void onToggleFullScreen(bool);
     void onToggleAbout(bool);
-    void onCloseInspectorTab(int index);
-    void onQuickConnect(void);
-    void onQuickConnectAccepted(void);
+    void onQuickConnect();
+    void onQuickConnectAccepted();
     void onTriggerStart(bool);
     void onTriggerStop(bool);
     void onTriggerImport(bool);
@@ -266,73 +256,44 @@ namespace SigDigger {
     void onTriggerClear(bool);
     void onTriggerRecent(bool);
     void onTriggerPanoramicSpectrum(bool);
-    void onTriggerBandPlan(void);
-    void onTriggerLogMessages(void);
-    void onTriggerBackgroundTasks(void);
-    void onAddBookmark(void);
-    void onBookmarkAccepted(void);
-    void onOpenBookmarkManager(void);
+    void onTriggerBandPlan();
+    void onTriggerLogMessages();
+    void onTriggerBackgroundTasks();
+    void onAddBookmark();
+    void onBookmarkAccepted();
+    void onOpenBookmarkManager();
     void onJumpToBookmark(BookmarkInfo);
-    void onBookmarkChanged(void);
-    void onInspectorMenuRequested(const QPoint &);
-    void onInspectorNameChanged(void);
-    void onInspectorCloseRequested(void);
-    void onInspectorDetachRequested(void);
+    void onBookmarkChanged();
 
     // Time Slider slots
-    void onTimeStampChanged(void);
+    void onTimeStampChanged();
 
     // Spectrum slots
-    void onSpectrumBandwidthChanged(void);
+    void onSpectrumBandwidthChanged();
     void onFrequencyChanged(qint64);
     void onLoChanged(qint64);
-    void onRangeChanged(float, float);
-    void onZoomChanged(float);
     void onNewBandPlan(QString);
-    void onModulationChanged(QString);
-
-    // Source panel
-    void onToggleRecord(void);
-    void onThrottleConfigChanged(void);
-    void onGainChanged(QString name, float val);
-    void onToggleDCRemove(void);
-    void onToggleIQReverse(void);
-    void onToggleAGCEnabled(void);
-    void onAntennaChanged(QString name);
-    void onBandwidthChanged(void);
-    void onPPMChanged(void);
-
-    // Fft Panel
-    void onPaletteChanged(void);
-    void onRangesChanged(void);
-    void onAveragerChanged(void);
-    void onFftSizeChanged(void);
-    void onWindowFunctionChanged(void);
-    void onRefreshRateChanged(void);
-    void onTimeSpanChanged(void);
-    void onTimeStampsChanged(void);
-    void onBookmarksButtonChanged(void);
-    void onGainChanged(float);
-    void onZeroPointChanged(float);
-    void onUnitChanged(QString, float, float);
-
-    // Audio panel
-    void onAudioChanged(void);
-
-    // Inspector
-    void onInspBandwidthChanged(void);
-    void onOpenInspector(void);
-    void onOpenRawInspector(void);
-    void onCloseRawInspector(void);
-    void onCloseInspectorWindow(void);
 
     // Device dialog
-    void onRefreshDevices(void);
+    void onRefreshDevices();
 
     // Panoramic spectrum dialog
-    void onPanoramicSpectrumStart(void);
-    void onPanoramicSpectrumStop(void);
+    void onPanoramicSpectrumStart();
+    void onPanoramicSpectrumStop();
     void onPanoramicSpectrumDetailChanged(qint64 min, qint64 max, bool);
+
+    // UI Components
+    void onCloseTabWindow();
+    void onTabCloseRequested(int i);
+    void onTabMenuRequested(const QPoint &);
+    void onTabRename(QString);
+
+    // Inspector handling
+    void onInspectorMessage(Suscan::InspectorMessage const &);
+    void onInspectorSamples(Suscan::SamplesMessage const &);
+    void onOpened(Suscan::AnalyzerRequest const &);
+    void onCancelled(Suscan::AnalyzerRequest const &);
+    void onError(Suscan::AnalyzerRequest const &, std::string const &);
   };
 };
 

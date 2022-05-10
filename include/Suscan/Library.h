@@ -42,6 +42,13 @@
 
 #include <QHash>
 
+namespace SigDigger {
+  class ToolWidgetFactory;
+  class TabWidgetFactory;
+  class InspectionWidgetFactory;
+  class UIListenerFactory;
+};
+
 namespace Suscan {
   uint qHash(const Suscan::Source::Device &dev);
 
@@ -125,7 +132,7 @@ namespace Suscan {
       }
     }
 
-    constexpr Suscan::Orbit&
+    Suscan::Orbit&
     operator=(const Suscan::Orbit &lvalue)
     {
       if (!this->loan)
@@ -211,13 +218,25 @@ namespace Suscan {
     std::vector<Object> uiConfig;
     std::vector<Object> FATs;
 
-    Location qth;
-    QMap<QString, Orbit> satellites;
-    QMap<QString, Location> locations;
-    QMap<std::string, TLESource> tleSources;
-    QMap<qint64, Bookmark> bookmarks;
+    // Singleton config
+    Location                        qth;
+    QMap<QString, Orbit>            satellites;
+    QMap<QString, Location>         locations;
+    QMap<std::string, TLESource>    tleSources;
+    QMap<qint64, Bookmark>          bookmarks;
     QMap<std::string, SpectrumUnit> spectrumUnits;
-    QHash<QString, Source::Config> networkProfiles;
+    QHash<QString, Source::Config>  networkProfiles;
+
+    // Feature object factories
+    QList<SigDigger::ToolWidgetFactory *>       toolWidgetFactories;
+    QList<SigDigger::TabWidgetFactory *>        tabWidgetFactories;
+    QList<SigDigger::InspectionWidgetFactory *> inspectionWidgetFactories;
+    QList<SigDigger::UIListenerFactory *>       uiListenerFactories;
+
+    // Used for search only
+    QHash<QString, SigDigger::TabWidgetFactory *>        tabWidgetFactoryTable;
+    QHash<QString, SigDigger::InspectionWidgetFactory *> inspectionWidgetFactoryTable;
+
     std::list<std::string> recentProfiles;
 
     bool sources_initd;
@@ -256,6 +275,7 @@ namespace Suscan {
     void init_bookmarks(void);
     void init_tle_sources(void);
     void init_tle(void);
+    void init_plugins(void);
     void detect_devices(void);
 
     void sync(void);
@@ -338,6 +358,28 @@ namespace Suscan {
     QHash<QString, Source::Config>::const_iterator getFirstNetworkProfile(void) const;
     QHash<QString, Source::Config>::const_iterator getLastNetworkProfile(void) const;
     QHash<QString, Source::Config>::const_iterator getNetworkProfileFrom(QString const &) const;
+
+    bool registerToolWidgetFactory(SigDigger::ToolWidgetFactory *);
+    bool unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *);
+    QList<SigDigger::ToolWidgetFactory *>::const_iterator getFirstToolWidgetFactory() const;
+    QList<SigDigger::ToolWidgetFactory *>::const_iterator getLastToolWidgetFactory() const;
+
+    bool registerTabWidgetFactory(SigDigger::TabWidgetFactory *);
+    bool unregisterTabWidgetFactory(SigDigger::TabWidgetFactory *);
+    QList<SigDigger::TabWidgetFactory *>::const_iterator getFirstTabWidgetFactory() const;
+    QList<SigDigger::TabWidgetFactory *>::const_iterator getLastTabWidgetFactory() const;
+    SigDigger::TabWidgetFactory *findTabWidgetFactory(QString const &) const;
+
+    bool registerInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *);
+    bool unregisterInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *);
+    QList<SigDigger::InspectionWidgetFactory *>::const_iterator getFirstInspectionWidgetFactory() const;
+    QList<SigDigger::InspectionWidgetFactory *>::const_iterator getLastInspectionWidgetFactory() const;
+    SigDigger::InspectionWidgetFactory *findInspectionWidgetFactory(QString const &) const;
+
+    bool registerUIListenerFactory(SigDigger::UIListenerFactory *);
+    bool unregisterUIListenerFactory(SigDigger::UIListenerFactory *);
+    QList<SigDigger::UIListenerFactory *>::const_iterator getFirstUIListenerFactory() const;
+    QList<SigDigger::UIListenerFactory *>::const_iterator getLastUIListenerFactory() const;
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);

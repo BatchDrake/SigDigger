@@ -21,17 +21,10 @@
 
 #include <GenericDataSaver.h>
 #include <string>
+#include <SigDiggerHelpers.h>
 
 namespace SigDigger {
   class AudioFileWriter;
-
-  enum AudioDemod {
-    AM,
-    FM,
-    USB,
-    LSB
-  };
-
   class AudioFileSaver : public GenericDataSaver {
     Q_OBJECT
 

@@ -17,11 +17,19 @@
 //    <http://www.gnu.org/licenses/>
 //
 
+#define SU_LOG_DOMAIN "sigdigger-library"
+
 #include <Suscan/Library.h>
 #include <Suscan/MultitaskController.h>
 #include <suscan.h>
 #include <analyzer/version.h>
 #include <QtGui>
+#include <Suscan/Plugin.h>
+#include <FeatureFactory.h>
+#include <ToolWidgetFactory.h>
+#include <TabWidgetFactory.h>
+#include <UIListenerFactory.h>
+#include <InspectionWidgetFactory.h>
 
 using namespace Suscan;
 
@@ -463,6 +471,46 @@ Singleton::init_tle(void)
         Orbit orbit;
         if (orbit.loadFromFile(f.fileName().toStdString().c_str()))
           this->satellites[orbit.nameToQString()] = orbit;
+      }
+    }
+  }
+}
+
+void
+Singleton::init_plugins(void)
+{
+  Plugin *defPlug = Plugin::getDefaultPlugin();
+  QStringList plugins;
+
+  if (!defPlug->load())
+    throw Exception(
+        "Failed to load the default plugin. "
+        "Please report this error to "
+        "<a href=\"https://github.com/BatchDrake/SigDigger/issues\">"
+        "https://github.com/BatchDrake/SigDigger/issues"
+        "</a>");
+
+  plugins << suscan_confdb_get_local_path() + QString("/../plugins")
+          << suscan_confdb_get_system_path() + QString("/../plugins");
+
+  for (auto path : plugins) {
+    QDir dir(path);
+    QStringList files = dir.entryList(QStringList() << "*", QDir::Files);
+    auto asStd = path.toStdString();
+
+    for (auto file : files) {
+      auto fullPath = (path + "/" + file).toStdString();
+      auto plugin = Suscan::Plugin::make(fullPath.c_str());
+
+      if (plugin != nullptr) {
+        if (!plugin->load()) {
+          SU_WARNING("Plugin %s failed to load\n", fullPath.c_str());
+          delete plugin;
+        }
+
+        // TODO: register plugin here!!
+      } else {
+        printf("Failed to make plugin.\n");
       }
     }
   }
@@ -1134,6 +1182,176 @@ QHash<QString, Source::Config>::const_iterator
 Singleton::getNetworkProfileFrom(QString const &name) const
 {
   return this->networkProfiles.constFind(name);
+}
+
+bool
+Singleton::registerToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->toolWidgetFactories.contains(factory))
+    return true;
+
+  this->toolWidgetFactories.push_back(factory);
+
+  return true;
+}
+
+bool
+Singleton::unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
+{
+  int index = this->toolWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->toolWidgetFactories.removeAt(index);
+
+  return true;
+}
+
+QList<SigDigger::ToolWidgetFactory *>::const_iterator
+Singleton::getFirstToolWidgetFactory() const
+{
+  return this->toolWidgetFactories.begin();
+}
+
+QList<SigDigger::ToolWidgetFactory *>::const_iterator
+Singleton::getLastToolWidgetFactory() const
+{
+  return this->toolWidgetFactories.end();
+}
+
+bool
+Singleton::registerTabWidgetFactory(SigDigger::TabWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->tabWidgetFactories.contains(factory))
+    return true;
+
+  this->tabWidgetFactories.push_back(factory);
+  this->tabWidgetFactoryTable[factory->name()] = factory;
+
+  return true;
+}
+
+bool
+Singleton::unregisterTabWidgetFactory(SigDigger::TabWidgetFactory *factory)
+{
+  int index = this->tabWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->tabWidgetFactories.removeAt(index);
+  this->tabWidgetFactoryTable.remove(factory->name());
+
+  return true;
+}
+
+SigDigger::TabWidgetFactory *
+Singleton::findTabWidgetFactory(QString const &name) const
+{
+  if (!this->tabWidgetFactoryTable.contains(name))
+    return nullptr;
+
+  return this->tabWidgetFactoryTable[name];
+}
+
+QList<SigDigger::TabWidgetFactory *>::const_iterator
+Singleton::getFirstTabWidgetFactory() const
+{
+  return this->tabWidgetFactories.begin();
+}
+
+QList<SigDigger::TabWidgetFactory *>::const_iterator
+Singleton::getLastTabWidgetFactory() const
+{
+  return this->tabWidgetFactories.end();
+}
+
+bool
+Singleton::registerInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->inspectionWidgetFactories.contains(factory))
+    return true;
+
+  this->inspectionWidgetFactories.push_back(factory);
+  this->inspectionWidgetFactoryTable[factory->name()] = factory;
+
+  return true;
+}
+
+bool
+Singleton::unregisterInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *factory)
+{
+  int index = this->inspectionWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->inspectionWidgetFactories.removeAt(index);
+  this->inspectionWidgetFactoryTable.remove(factory->name());
+
+  return true;
+}
+
+SigDigger::InspectionWidgetFactory *
+Singleton::findInspectionWidgetFactory(QString const &name) const
+{
+  if (!this->inspectionWidgetFactoryTable.contains(name))
+    return nullptr;
+
+  return this->inspectionWidgetFactoryTable[name];
+}
+
+QList<SigDigger::InspectionWidgetFactory *>::const_iterator
+Singleton::getFirstInspectionWidgetFactory() const
+{
+  return this->inspectionWidgetFactories.begin();
+}
+
+QList<SigDigger::InspectionWidgetFactory *>::const_iterator
+Singleton::getLastInspectionWidgetFactory() const
+{
+  return this->inspectionWidgetFactories.end();
+}
+
+bool
+Singleton::registerUIListenerFactory(SigDigger::UIListenerFactory *factory)
+{
+  // Not a bug. The plugin got ahead of ourselves.
+  if (this->uiListenerFactories.contains(factory))
+    return true;
+
+  this->uiListenerFactories.push_back(factory);
+
+  return true;
+}
+
+bool
+Singleton::unregisterUIListenerFactory(SigDigger::UIListenerFactory *factory)
+{
+  int index = this->uiListenerFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->uiListenerFactories.removeAt(index);
+
+  return true;
+}
+
+QList<SigDigger::UIListenerFactory *>::const_iterator
+Singleton::getFirstUIListenerFactory() const
+{
+  return this->uiListenerFactories.begin();
+}
+
+QList<SigDigger::UIListenerFactory *>::const_iterator
+Singleton::getLastUIListenerFactory() const
+{
+  return this->uiListenerFactories.end();
 }
 
 bool

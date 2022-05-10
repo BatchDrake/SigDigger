@@ -27,8 +27,6 @@
 #include <Suscan/Library.h>
 #include <util/compat-unistd.h>
 
-#include <GenericAudioPlayer.h>
-
 #define SIGDIGGER_AUDIO_BUFFER_ALLOC static_cast<size_t>(1 << 14)
 #define SIGDIGGER_AUDIO_BUFFER_SIZE (SIGDIGGER_AUDIO_BUFFER_ALLOC / sizeof (float))
 #define SIGDIGGER_AUDIO_SAMPLE_RATE         44100
@@ -41,6 +39,7 @@
 
 namespace SigDigger {
   class AudioBufferList;
+  class GenericAudioPlayer;
 
   class PlaybackWorker : public QObject {
       Q_OBJECT
