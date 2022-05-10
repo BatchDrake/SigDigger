@@ -66,7 +66,7 @@ dlopen(const char *path, int)
 {
   HINSTANCE hInst;
 
-  hInst = LoadLibrary(path);
+  hInst = LoadLibraryA(path);
   if (hInst == nullptr)
     dl_set_last_error("LoadLibrary: %s", GetLastError());
   return hInst;
@@ -77,7 +77,7 @@ dlclose(void *handle)
 {
   int ret = 0;
 
-  if (!FreeLibrary(SCAST(HINSTANCE *, handle))) {
+  if (!FreeLibrary(SCAST(HINSTANCE, handle))) {
     dl_set_last_error("FreeLibrary: %s", GetLastError());
     ret = -1;
   }
@@ -91,7 +91,7 @@ dlsym(void *handle, const char *name)
   FARPROC proc;
   void *asPtr;
 
-  proc  = GetProcAddress(SCAST(HINSTANCE *, handle), name);
+  proc  = GetProcAddress(SCAST(HINSTANCE, handle), name);
   asPtr = SCAST(void *, proc);
 
   if (asPtr == nullptr)
