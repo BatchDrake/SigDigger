@@ -21,7 +21,6 @@
 
 #include <Suscan/Plugin.h>
 #include <cstdio>
-#include <dlfcn.h>
 #include <Suscan/Logger.h>
 #include <SuWidgetsHelpers.h>
 #include <Version.h>
@@ -30,6 +29,91 @@
 #include <QCoreApplication>
 
 #define SIGDIGGER_PLUGIN_MANGLED_ENTRY "_Z11plugin_loadPN6Suscan6PluginE"
+
+#if defined(_WIN32)
+#  include <stdarg.h>
+#  include <inttypes.h>
+#  include <windows.h>
+
+#  define DLFCN_ERR_BUFF_MAX 256
+#  define RTLD_GLOBAL 0x100
+#  define RTLD_LOCAL  0x000
+#  define RTLD_LAZY   0x000
+#  define RTLD_NOW    0x001
+
+struct dlfcn_error_state {
+  const char *last_error = nullptr;
+  char errbuf[DLFCN_ERR_BUFF_MAX];
+};
+
+static dlfcn_error_state g_dlfcn_state;
+
+static void
+dl_set_last_error(const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+
+  vsnprintf(g_dlfcn_state.errbuf, DLFCN_ERR_BUFF_MAX, fmt, ap);
+  g_dlfcn_state.last_error = g_dlfcn_state.errbuf;
+
+  va_end(ap);
+}
+
+static void *
+dlopen(const char *path, int)
+{
+  HINSTANCE hInst;
+
+  hInst = LoadLibrary(path);
+  if (hInst == nullptr)
+    dl_set_last_error("LoadLibrary: %s", GetLastError());
+  return hInst;
+}
+
+static int
+dlclose(void *handle)
+{
+  int ret = 0;
+
+  if (!FreeLibrary(SCAST(HINSTANCE *, handle))) {
+    dl_set_last_error("FreeLibrary: %s", GetLastError());
+    ret = -1;
+  }
+
+  return ret;
+}
+
+static void *
+dlsym(void *handle, const char *name)
+{
+  FARPROC proc;
+  void *asPtr;
+
+  proc  = GetProcAddress(SCAST(HINSTANCE *, handle), name);
+  asPtr = SCAST(void *, proc);
+
+  if (asPtr == nullptr)
+    dl_set_last_error("GetProcAddress: %s", GetLastError());
+
+  return asPtr;
+}
+
+const char *
+dlerror()
+{
+  const char *error = g_dlfcn_state.last_error;
+
+  g_dlfcn_state.last_error = nullptr;
+
+  return error;
+}
+
+#else
+#  include <dlfcn.h>
+#endif // defined(_WIN32)
+
 using namespace Suscan;
 
 Plugin *Plugin::m_default = nullptr;
