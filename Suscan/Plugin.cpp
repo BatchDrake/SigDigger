@@ -92,7 +92,7 @@ dlsym(void *handle, const char *name)
   void *asPtr;
 
   proc  = GetProcAddress(SCAST(HINSTANCE, handle), name);
-  asPtr = SCAST(void *, proc);
+  asPtr = reinterpret_cast<void *>(proc);
 
   if (asPtr == nullptr)
     dl_set_last_error("GetProcAddress: %s", GetLastError());
