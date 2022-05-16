@@ -30,9 +30,14 @@ GenericInspectorFactory::GenericInspectorFactory(Suscan::Plugin *plugin) :
 const char *
 GenericInspectorFactory::name() const
 {
-  return "Generic channel inspector";
+  return "GenericInspectorFactory";
 }
 
+const char *
+GenericInspectorFactory::description() const
+{
+  return "Generic channel inspector";
+}
 
 InspectionWidget *
 GenericInspectorFactory::make(

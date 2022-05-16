@@ -28,6 +28,7 @@ namespace SigDigger{
     GenericInspectorFactory(Suscan::Plugin *);
 
     const char *name() const override;
+    const char *description() const override;
 
     InspectionWidget *make(
         Suscan::AnalyzerRequest const &,

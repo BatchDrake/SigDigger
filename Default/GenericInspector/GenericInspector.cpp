@@ -499,7 +499,6 @@ GenericInspector::onOpenInspector(
   ch.fHigh = + .5 * ch.bw;
 
   // TODO: request open subcarrier inspector on this handle
-
   this->mediator()->openInspectorTab(
         "GenericInspectorFactory",
         inspClass.toStdString().c_str(),

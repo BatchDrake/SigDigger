@@ -91,12 +91,18 @@ UIMediator::openInspectorTab(
   Suscan::Singleton *s = Suscan::Singleton::get_instance();
 
   // The factory must exists
-  if (s->findInspectionWidgetFactory(factoryName) == nullptr)
+  if (s->findInspectionWidgetFactory(factoryName) == nullptr) {
+    SU_WARNING("Invalid inspection tab factory: %s\n", factoryName);
     return false;
+  }
 
   // The analyzer must be initialized
-  if (m_analyzer == nullptr)
+  if (m_analyzer == nullptr) {
+    SU_WARNING(
+          "Cannot make inspector from %s: analyzer not present\n",
+          factoryName);
     return false;
+  }
 
   // And the opening procedure must succeed
   return m_requestTracker->requestOpen(
