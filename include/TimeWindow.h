@@ -112,7 +112,7 @@ namespace SigDigger {
 
   public:
     explicit TimeWindow(QWidget *parent = nullptr);
-    ~TimeWindow();
+    ~TimeWindow() override;
 
     void setCenterFreq(SUFREQ center);
     void setData(
@@ -124,11 +124,13 @@ namespace SigDigger {
     void setPaletteContrast(int);
     void setColorConfig(ColorConfig const &);
 
+    void postLoadInit();
+
     std::string getPalette(void) const;
     unsigned int getPaletteOffset(void) const;
     int getPaletteContrast(void) const;
 
-    void showEvent(QShowEvent *event);
+    void showEvent(QShowEvent *event) override;
 
   signals:
     void configChanged();

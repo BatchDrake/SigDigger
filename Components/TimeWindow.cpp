@@ -1070,6 +1070,12 @@ TimeWindow::TimeWindow(QWidget *parent) :
   this->connectAll();
 }
 
+void
+TimeWindow::postLoadInit()
+{
+  SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
+}
+
 TimeWindow::~TimeWindow()
 {
   delete ui;

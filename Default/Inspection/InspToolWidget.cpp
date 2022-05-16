@@ -111,6 +111,7 @@ InspToolWidget::applyConfig(void)
   this->refreshInspectorCombo();
   this->setInspectorClass(this->panelConfig->inspectorClass);
   this->setPrecise(this->panelConfig->precise);
+  this->timeWindow->postLoadInit();
   this->timeWindow->setPalette(this->panelConfig->palette);
   this->timeWindow->setPaletteOffset(this->panelConfig->paletteOffset);
   this->timeWindow->setPaletteContrast(this->panelConfig->paletteContrast);
