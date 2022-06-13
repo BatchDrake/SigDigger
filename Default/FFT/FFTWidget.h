@@ -61,7 +61,7 @@ namespace SigDigger {
 
     std::string unitName;
     float zeroPoint;
-    float gain;
+    float gain = 50;
 
     int zoom = 1;
 
