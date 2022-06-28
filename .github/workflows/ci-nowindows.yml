@@ -1,4 +1,4 @@
-name: "CI (No Windows)"
+name: CINoWindows
 
 on:
   push:
