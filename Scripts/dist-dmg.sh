@@ -128,6 +128,7 @@ function deploy_deps()
 {
   embed_soapysdr
   bundle_libs "SoapySDR libraries" /usr/local/lib/libSoapySDR*dylib
+  bundle_libs "GCC support libraries"   /usr/local/opt/gcc/lib/gcc/11/libgcc_s.1.1.dylib
 }
 
 function remove_full_paths()
