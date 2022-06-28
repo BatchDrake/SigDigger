@@ -1,4 +1,4 @@
-name: "develop-release (No Windows)"
+name: DevelopReleaseNoWindows
 
 on:
   workflow_dispatch:
