@@ -38,8 +38,6 @@ if [ "x$BRANCH" == "x" ]; then
   BRANCH=develop
 fi
 
-echo BRANCH: $BRANCH
-
 if [ "x$BUILDTYPE" == "x" ]; then
   BUILDTYPE="Release"
 fi
