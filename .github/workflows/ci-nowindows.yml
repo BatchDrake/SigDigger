@@ -1,4 +1,4 @@
-name: CI
+name: CINoWindows
 
 on:
   push:
@@ -172,82 +172,3 @@ jobs:
         name: macos-latest-dmg
         path: Scripts/*.dmg
 
-  # Windows
-  build-windows:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: git mingw-w64-x86_64-cc mingw-w64-x86_64-make mingw-w64-x86_64-cmake mingw-w64-x86_64-libsndfile mingw-w64-x86_64-fftw mingw-w64-x86_64-volk mingw-w64-x86_64-libxml2 mingw-w64-x86_64-libusb mingw-w64-x86_64-qt5 mingw-w64-x86_64-portaudio zip
-          
-      # SoapySDR
-      - name: Checkout (SoapySDR)
-        uses: actions/checkout@v2
-        with:
-          repository: pothosware/SoapySDR
-          ref: refs/heads/master
-          path: SoapySDR
-        
-      - name: Configure (SoapySDR)
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B SoapySDR/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  SoapySDR/
-        
-      - name: Build (SoapySDR)
-        run: /mingw64/bin/cmake --build  SoapySDR/build --config ${{env.BUILD_TYPE}}
-        
-      - name: Install (SoapySDR)
-        run: /mingw64/bin/cmake --build  SoapySDR/build --config ${{env.BUILD_TYPE}} --target install
-        
-      # BatchDrake's fixed rtl-sdr-blog
-      - name: Checkout (rtl-sdr-blog from BatchDrake)
-        uses: actions/checkout@v2
-        with:
-          repository: BatchDrake/rtl-sdr-blog
-          ref: refs/heads/feature/xfer-completion
-          path: rtl-sdr-blog
-        
-      - name: Configure (rtl-sdr-blog)
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  rtl-sdr-blog/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} rtl-sdr-blog
-        
-      - name: Build (rtl-sdr-blog)
-        run: /mingw64/bin/cmake --build  rtl-sdr-blog/build --config ${{env.BUILD_TYPE}}
-        
-      - name: Install (rtl-sdr-blog)
-        run: /mingw64/bin/cmake --build  rtl-sdr-blog/build --config ${{env.BUILD_TYPE}} --target install
-        
-      # SoapyRTLSDR
-      - name: Checkout (SoapyRTLSDR)
-        uses: actions/checkout@v2
-        with:
-          repository: pothosware/SoapyRTLSDR
-          ref: refs/heads/master
-          path: SoapyRTLSDR
-        
-      - name: Configure (SoapyRTLSDR)
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  SoapyRTLSDR/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  SoapyRTLSDR
-        
-      - name: Build (SoapyRTLSDR)
-        run: /mingw64/bin/cmake --build  SoapyRTLSDR/build --config ${{env.BUILD_TYPE}}
-        
-      - name: Install (SoapyRTLSDR)
-        run: /mingw64/bin/cmake --build  SoapyRTLSDR/build --config ${{env.BUILD_TYPE}} --target install
-        
-
-      # SigDigger
-      - name: Build & Distribute (SigDigger)
-        run: |
-          cd Scripts
-          chmod a+x dist-mingw32.sh
-          ./dist-mingw32.sh
-          cd ..
-
-      - name: Archive .ZIP files
-        uses: actions/upload-artifact@v2
-        with:
-          name: windows-latest-zip
-          path: Scripts/SigDigger-*.zip

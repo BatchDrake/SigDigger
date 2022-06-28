@@ -1,16 +1,7 @@
-name: CI
+name: DevelopReleaseNoWindows
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
-    inputs:
-      debug_enabled:
-        description: 'Build and run interactive shell'
-        required: false
-        default: false
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -100,7 +91,7 @@ jobs:
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-    
+      
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
@@ -172,82 +163,26 @@ jobs:
         name: macos-latest-dmg
         path: Scripts/*.dmg
 
-  # Windows
-  build-windows:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
+ 
+  do_release:
+    needs: [ build-linux-appimage, build-macos ]
+    runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v2
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: git mingw-w64-x86_64-cc mingw-w64-x86_64-make mingw-w64-x86_64-cmake mingw-w64-x86_64-libsndfile mingw-w64-x86_64-fftw mingw-w64-x86_64-volk mingw-w64-x86_64-libxml2 mingw-w64-x86_64-libusb mingw-w64-x86_64-qt5 mingw-w64-x86_64-portaudio zip
-          
-      # SoapySDR
-      - name: Checkout (SoapySDR)
-        uses: actions/checkout@v2
-        with:
-          repository: pothosware/SoapySDR
-          ref: refs/heads/master
-          path: SoapySDR
-        
-      - name: Configure (SoapySDR)
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B SoapySDR/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  SoapySDR/
-        
-      - name: Build (SoapySDR)
-        run: /mingw64/bin/cmake --build  SoapySDR/build --config ${{env.BUILD_TYPE}}
-        
-      - name: Install (SoapySDR)
-        run: /mingw64/bin/cmake --build  SoapySDR/build --config ${{env.BUILD_TYPE}} --target install
-        
-      # BatchDrake's fixed rtl-sdr-blog
-      - name: Checkout (rtl-sdr-blog from BatchDrake)
-        uses: actions/checkout@v2
-        with:
-          repository: BatchDrake/rtl-sdr-blog
-          ref: refs/heads/feature/xfer-completion
-          path: rtl-sdr-blog
-        
-      - name: Configure (rtl-sdr-blog)
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  rtl-sdr-blog/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} rtl-sdr-blog
-        
-      - name: Build (rtl-sdr-blog)
-        run: /mingw64/bin/cmake --build  rtl-sdr-blog/build --config ${{env.BUILD_TYPE}}
-        
-      - name: Install (rtl-sdr-blog)
-        run: /mingw64/bin/cmake --build  rtl-sdr-blog/build --config ${{env.BUILD_TYPE}} --target install
-        
-      # SoapyRTLSDR
-      - name: Checkout (SoapyRTLSDR)
-        uses: actions/checkout@v2
-        with:
-          repository: pothosware/SoapyRTLSDR
-          ref: refs/heads/master
-          path: SoapyRTLSDR
-        
-      - name: Configure (SoapyRTLSDR)
-        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  SoapyRTLSDR/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  SoapyRTLSDR
-        
-      - name: Build (SoapyRTLSDR)
-        run: /mingw64/bin/cmake --build  SoapyRTLSDR/build --config ${{env.BUILD_TYPE}}
-        
-      - name: Install (SoapyRTLSDR)
-        run: /mingw64/bin/cmake --build  SoapyRTLSDR/build --config ${{env.BUILD_TYPE}} --target install
-        
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
 
-      # SigDigger
-      - name: Build & Distribute (SigDigger)
-        run: |
-          cd Scripts
-          chmod a+x dist-mingw32.sh
-          ./dist-mingw32.sh
-          cd ..
+      - name: Download binaries
+        uses: actions/download-artifact@v2
 
-      - name: Archive .ZIP files
-        uses: actions/upload-artifact@v2
+      - name: Deploy 'latest' release
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          name: windows-latest-zip
-          path: Scripts/SigDigger-*.zip
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "SigDigger Development Build (${{steps.date.outputs.date}})"
+          files: |
+            linux-latest-appimage/*.AppImage
+            macos-latest-dmg/*.dmg
