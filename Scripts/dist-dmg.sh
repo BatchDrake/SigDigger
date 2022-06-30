@@ -192,7 +192,13 @@ function fix_plist()
 function deploy()
 {
   locate_macdeploy
-  try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH"
+
+  if [ "$BUILDTYPE" == "Debug" ]; then
+      try "Deploying via macdeployqt..." macdeployqt -use-debug-libs "$BUNDLEPATH"
+  else
+      try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH"
+  fi
+  
   try "Copying Suscan data directory to bundle..." cp -Rfv "$DEPLOYROOT/usr/share/suscan" "$RSRCPATH"
   try "Copying Suscan CLI tool (suscli) to bundle..." cp -fv "$DEPLOYROOT/usr/bin/suscli" "$BINPATH"
   try "Copying SoapySDRUtil to bundle..." cp -fv `which SoapySDRUtil` "$BINPATH"
