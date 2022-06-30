@@ -88,7 +88,7 @@ function excluded()
 
 function find_lib()
 {
-  SANE_DIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64"
+  SANE_DIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64 $LIBPATH"
     
   for i in $SANE_DIRS; do
 	  if [ -f "$i/$1" ]; then
@@ -111,7 +111,7 @@ function embed_soapysdr()
     try "Creating SoapySDR module dir..."       mkdir -p "$LIBPATH/SoapySDR/"
     try "Copying SoapySDR modules ($MODDIR)..." cp -RLfv "$MODDIR" "$LIBPATH/SoapySDR"
 
-    RADIODEPS=`otool -L "$MODDIR"/lib* "$DEPLOYROOT/usr/bin/"* | grep -v :$ | sed 's/ (.*)//g'`
+    RADIODEPS=`otool -L "$MODDIR"/lib* "$BINPATH/"* | grep -v :$ | sed 's/ (.*)//g'`
     MY_RPATH=/usr/local/lib # FIXME
     
     for i in $RADIODEPS; do
@@ -129,9 +129,12 @@ function embed_soapysdr()
       fi
 
       if [ ! -f "$LIBPATH"/"$name" ] && ! excluded "$name"; then
+	  rm -f "$LIBPATH"/"$name"
           try "Bringing $name..." cp -L "$i" "$LIBPATH"
+      elif excluded "$name"; then
+	  rm -f "$LIBPATH"/"$name"
+	  skip "Excluding $name..."
       else
-          rm -f "$LIBPATH"/"$name"
           skip "Skipping $name..."
       fi
     done
