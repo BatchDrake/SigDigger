@@ -32,7 +32,7 @@ function deploy()
     try "Copying SigDigger to staging dir..." cp "$DEPLOYROOT/usr/bin/SigDigger.exe" "$STAGINGDIR"
     try "Copying Suscan CLI tool (suscli) to staging dir..." cp "$DEPLOYROOT/usr/bin/suscli.exe" "$STAGINGDIR"
     try "Copying data directory..." cp -R "$DEPLOYROOT/usr/share/suscan/config" "$STAGINGDIR"
-    try "Copying SoapySDR modules..." cp -R /mingw64/lib/SoapySDR/modules0.8/ "$STAGINGDIR"
+    try "Copying SoapySDR modules..." cp -R /mingw64/lib/SoapySDR/modules0.8*/ "$STAGINGDIR"
 
     gather_dlls
 }
