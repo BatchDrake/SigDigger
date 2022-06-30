@@ -194,7 +194,7 @@ function deploy()
   locate_macdeploy
 
   if [ "$BUILDTYPE" == "Debug" ]; then
-      try "Deploying via macdeployqt..." macdeployqt -use-debug-libs "$BUNDLEPATH"
+      try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH" -use-debug-libs
   else
       try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH"
   fi
