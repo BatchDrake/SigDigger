@@ -111,7 +111,7 @@ function embed_soapysdr()
     try "Creating SoapySDR module dir..."       mkdir -p "$LIBPATH/SoapySDR/"
     try "Copying SoapySDR modules ($MODDIR)..." cp -RLfv "$MODDIR" "$LIBPATH/SoapySDR"
 
-    RADIODEPS=`otool -L "$MODDIR"/lib* | grep -v :$ | sed 's/ (.*)//g'`
+    RADIODEPS=`otool -L "$MODDIR"/lib* "$DEPLOYROOT/usr/bin/"* | grep -v :$ | sed 's/ (.*)//g'`
     MY_RPATH=/usr/local/lib # FIXME
     
     for i in $RADIODEPS; do
