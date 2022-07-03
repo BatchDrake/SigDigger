@@ -111,7 +111,7 @@ function embed_soapysdr()
     try "Creating SoapySDR module dir..."       mkdir -p "$LIBPATH/SoapySDR/"
     try "Copying SoapySDR modules ($MODDIR)..." cp -RLfv "$MODDIR" "$LIBPATH/SoapySDR"
 
-    RADIODEPS=`otool -L "$MODDIR"/lib* "$BINPATH/"* | grep -v :$ | sed 's/ (.*)//g'`
+    RADIODEPS=`otool -L "$MODDIR"/lib* | grep -v :$ | sed 's/ (.*)//g'`
     MY_RPATH=/usr/local/lib # FIXME
     
     for i in $RADIODEPS; do
@@ -196,11 +196,7 @@ function deploy()
 {
   locate_macdeploy
 
-  if [ "$BUILDTYPE" == "Debug" ]; then
-      try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH" -use-debug-libs
-  else
-      try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH"
-  fi
+  try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH"
   
   try "Copying Suscan data directory to bundle..." cp -Rfv "$DEPLOYROOT/usr/share/suscan" "$RSRCPATH"
   try "Copying Suscan CLI tool (suscli) to bundle..." cp -fv "$DEPLOYROOT/usr/bin/suscli" "$BINPATH"
