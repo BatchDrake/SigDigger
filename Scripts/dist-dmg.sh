@@ -22,6 +22,8 @@
 
 . dist-common.sh
 
+export BUILDTYPE=Release
+
 BUNDLEID="org.actinid.SigDigger"
 
 BUNDLEPATH="$DEPLOYROOT/usr/bin/SigDigger.app"
