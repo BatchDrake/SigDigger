@@ -88,7 +88,7 @@ function excluded()
 
 function find_lib()
 {
-  SANE_DIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64"
+  SANE_DIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64 $LIBPATH"
     
   for i in $SANE_DIRS; do
 	  if [ -f "$i/$1" ]; then
@@ -129,9 +129,12 @@ function embed_soapysdr()
       fi
 
       if [ ! -f "$LIBPATH"/"$name" ] && ! excluded "$name"; then
+	  rm -f "$LIBPATH"/"$name"
           try "Bringing $name..." cp -L "$i" "$LIBPATH"
+      elif excluded "$name"; then
+	  rm -f "$LIBPATH"/"$name"
+	  skip "Excluding $name..."
       else
-          rm -f "$LIBPATH"/"$name"
           skip "Skipping $name..."
       fi
     done
@@ -192,7 +195,9 @@ function fix_plist()
 function deploy()
 {
   locate_macdeploy
+
   try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH"
+  
   try "Copying Suscan data directory to bundle..." cp -Rfv "$DEPLOYROOT/usr/share/suscan" "$RSRCPATH"
   try "Copying Suscan CLI tool (suscli) to bundle..." cp -fv "$DEPLOYROOT/usr/bin/suscli" "$BINPATH"
   try "Copying SoapySDRUtil to bundle..." cp -fv `which SoapySDRUtil` "$BINPATH"

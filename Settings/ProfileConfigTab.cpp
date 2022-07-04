@@ -355,12 +355,16 @@ ProfileConfigTab::refreshProfileUi(void)
       this->ui->formatCombo->setCurrentIndex(2);
       break;
 
-    case SUSCAN_SOURCE_FORMAT_RAW_SIGNED16:
+    case SUSCAN_SOURCE_FORMAT_RAW_SIGNED8:
       this->ui->formatCombo->setCurrentIndex(3);
       break;
 
-    case SUSCAN_SOURCE_FORMAT_WAV:
+    case SUSCAN_SOURCE_FORMAT_RAW_SIGNED16:
       this->ui->formatCombo->setCurrentIndex(4);
+      break;
+
+    case SUSCAN_SOURCE_FORMAT_WAV:
+      this->ui->formatCombo->setCurrentIndex(5);
       break;
   }
 
@@ -934,10 +938,14 @@ ProfileConfigTab::onFormatChanged(int index)
         break;
 
       case 3:
-        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_SIGNED16);
+        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_SIGNED8);
         break;
 
       case 4:
+        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_SIGNED16);
+        break;
+
+      case 5:
         this->profile.setFormat(SUSCAN_SOURCE_FORMAT_WAV);
         break;
     }
@@ -1279,6 +1287,7 @@ ProfileConfigTab::onBrowseCaptureFile(void)
       formats
           << "Raw complex 32-bit float (*.raw *.cf32)"
           << "Raw complex 8-bit unsigned (*.u8 *.cu8)"
+          << "Raw complex 8-bit signed (*.s8 *.cs8)"
           << "Raw complex 16-bit signed (*.s16 *.cs16)"
           << "WAV files (*.wav)"
           << "All files (*)";
@@ -1295,6 +1304,13 @@ ProfileConfigTab::onBrowseCaptureFile(void)
       title = "Open I/Q file";
       formats
           << "Raw complex 8-bit unsigned (*.u8 *.cu8)"
+          << "All files (*)";
+      break;
+
+    case SUSCAN_SOURCE_FORMAT_RAW_SIGNED8:
+      title = "Open I/Q file";
+      formats
+          << "Raw complex 8-bit signed (*.s8 *.cs8)"
           << "All files (*)";
       break;
 

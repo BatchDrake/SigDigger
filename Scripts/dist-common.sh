@@ -35,11 +35,11 @@ CMAKE_SUSCAN_EXTRA_ARGS=""
 QMAKE_SIGDIGGER_EXTRA_ARGS=""
 
 if [ "x$BRANCH" == "x" ]; then
-  BRANCH=develop
+    BRANCH=develop
 fi
 
 if [ "x$BUILDTYPE" == "x" ]; then
-  BUILDTYPE="Release"
+    BUILDTYPE="Release"
 fi
 
 function is_mingw()
@@ -130,10 +130,25 @@ function try()
     if [ $? != 0 ]; then
 	echo -e "\r[ \033[1;31mFAILED\033[0m ]"
 	echo 
-  echo '--------------8<----------------------------------------'
-  cat "$STDERR"
-  echo '--------------8<----------------------------------------'
-  echo
+	echo '--------------8<----------------------------------------'
+	cat "$STDERR"
+	echo '--------------8<----------------------------------------'
+
+	if [ "$BUILDTYPE" == "Debug" ]; then
+	    echo
+	    echo 'Debug mode - attatching standard output:'
+	    echo '--------------8<----------------------------------------'
+	    cat "$STDOUT"
+	    echo '--------------8<----------------------------------------'
+	    echo ''
+	    echo 'Deploy root filelist: '
+	    echo '--------------8<----------------------------------------'
+	    find "$DEPLOYROOT"
+	    echo '--------------8<----------------------------------------'
+	    echo ''
+	fi
+	
+	echo
 	echo "Standard output and error were saved respectively in:"
 	echo " - $STDOUT"
 	echo " - $STDERR"
@@ -207,12 +222,12 @@ function locate_sdk()
 function build()
 {
     if [ "$BUILDTYPE" == "Debug" ]; then
-      notice 'Build with debug symbols is ON!'
-      CMAKE_BUILDTYPE=Debug
-      QMAKE_BUILDTYPE=debug
+	notice 'Build with debug symbols is ON!'
+	CMAKE_BUILDTYPE=Debug
+	QMAKE_BUILDTYPE=debug
     else
-      CMAKE_BUILDTYPE=Release
-      QMAKE_BUILDTYPE=release
+	CMAKE_BUILDTYPE=Release
+	QMAKE_BUILDTYPE=release
     fi
 
     if [ "$SIGDIGGER_SKIPBUILD" == "" ]; then

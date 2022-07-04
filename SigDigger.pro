@@ -9,7 +9,7 @@ unix: QMAKE_LFLAGS += -rdynamic
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
-TARGET = SigDigger
+TARGET   = SigDigger
 TEMPLATE = app
 
 DEFINES += QT_DEPRECATED_WARNINGS
@@ -23,6 +23,10 @@ equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
 CONFIG(release, debug|release): QMAKE_CXXFLAGS+=-D__FILENAME__=\\\"SigDigger\\\"
 CONFIG(debug, debug|release):   QMAKE_CXXFLAGS+=-D__FILENAME__=__FILE__
 CONFIG(release, debug|release): QMAKE_LFLAGS+=-s
+
+darwin {
+  CONFIG(debug, debug|release): SUWIDGETS_BUILDTYPE_SUFFIX=_debug
+}
 
 isEmpty(SUWIDGETS_PREFIX) {
   SUWIDGETS_INSTALL_LIBS=$$[QT_INSTALL_LIBS]
@@ -38,6 +42,7 @@ isEmpty(PREFIX) {
 } else {
   SIGDIGGER_INSTALL_HEADERS=$$PREFIX/include/SigDigger
 }
+
 
 target.path=$$PREFIX/bin
 
@@ -451,10 +456,11 @@ isEmpty(DISABLE_PORTAUDIO): packagesExist(portaudio-2.0): PORTAUDIO_FOUND = Yes
 
 LIBS += -L$$SUWIDGETS_INSTALL_LIBS
 
+
 win32 {
   LIBS += -lwsock32 -lsuwidgets0
 } else {
-  LIBS += -lsuwidgets -ldl
+  LIBS += -lsuwidgets$$SUWIDGETS_BUILDTYPE_SUFFIX -ldl
 }
 
 DISTFILES += \
