@@ -2,11 +2,6 @@ name: BuildStableRelease
 
 on:
   workflow_dispatch:
-    inputs:
-      debug_enabled:
-        description: 'Build and run interactive shell'
-        required: false
-        default: false
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -20,9 +15,6 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
-    - name: Setup interactive shell session
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
@@ -93,10 +85,7 @@ jobs:
         python-version: '3.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
     
     - uses: actions/checkout@v2
-    - name: Setup interactive shell session
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-    
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
