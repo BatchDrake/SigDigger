@@ -97,10 +97,6 @@ runSigDigger(QApplication &app)
 {
   int ret = 1;
 
-#ifdef Q_OS_MACOS
-  qputenv("QT_MAC_WANTS_LAYER", "1");
-#endif // Q_OS_MACOS
-  
   try {
     Application main_app;
     Loader loader(&main_app);
@@ -174,6 +170,16 @@ static struct option long_options[] = {
 int
 main(int argc, char *argv[])
 {
+  // This is a workaround for the poor backwards compatibility of macOS
+  // with software that used to work in previous releases. macOS is far
+  // from being a serious piece of engineering, and developing stuff
+  // in macOS implies handling all the stuff that Apple engineers forgot
+  // to do right.
+  
+#ifdef Q_OS_MACOS
+  qputenv("QT_MAC_WANTS_LAYER", "1");
+#endif // Q_OS_MACOS
+  
   QApplication app(argc, argv);
   QString appName = "SigDigger";
   int ret = EXIT_FAILURE;
