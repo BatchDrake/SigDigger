@@ -29,10 +29,13 @@ OSTYPE=`uname -s`
 ARCH=`uname -m`
 RELEASE="0.3.0"
 DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
-PKGVERSION=""
 MAKE="make"
 CMAKE_SUSCAN_EXTRA_ARGS=""
 QMAKE_SIGDIGGER_EXTRA_ARGS=""
+
+if [ "x$PKGVERSION" == "x" ]; then
+    PKGVERSION=""
+fi
 
 if [ "x$BRANCH" == "x" ]; then
     BRANCH=develop
@@ -259,13 +262,13 @@ function build()
         try "Deploying suscan..."          $MAKE -j $THREADS -C suscan/build install
 
         cd SuWidgets
-        try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += $QMAKE_BUILDTYPE" PREFIX="$DEPLOYROOT/usr"
+        try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += $QMAKE_BUILDTYPE" PREFIX="$DEPLOYROOT/usr" PKGVERSION="$PKGVERSION"
         try "Building SuWidgets..."        $MAKE -j $THREADS
         try "Deploying SuWidgets..."       $MAKE install
         cd ..
 
         cd SigDigger
-        try "Running QMake (SigDigger)..." qmake SigDigger.pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr"
+        try "Running QMake (SigDigger)..." qmake SigDigger.pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr" PKGVERSION="$PKGVERSION"
         try "Building SigDigger..."        $MAKE -j $THREADS
         try "Deploying SigDigger..."       $MAKE install
         cd ..

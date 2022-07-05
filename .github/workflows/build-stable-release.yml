@@ -1,0 +1,249 @@
+name: BuildStableRelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Build and run interactive shell'
+        required: false
+        default: false
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  # Installation of dependencies is too OS-dependent now, we don't
+  # miss that much by particularizing this in a per-OS basis.
+  
+  build-linux-appimage:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup interactive shell session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+
+    - name: Install sndfile
+      run: sudo apt-get install libsndfile1-dev
+
+    # libvolk2-dev is not available in Ubuntu 18.04
+    - name: Install Volk
+      run: sudo apt-get install libvolk1-dev
+
+    - name: Install cURL
+      run: sudo apt-get install libcurl4-openssl-dev
+      
+    - name: Install FFTW3
+      run: sudo apt-get install libfftw3-dev
+
+    - name: Install SoapySDR modules
+      run: sudo apt-get install soapysdr-module-all
+
+    - name: Install SoapySDR development files
+      run: sudo apt-get install libsoapysdr-dev
+
+    - name: Install libxml2
+      run: sudo apt-get install libxml2-dev
+
+    - name: Install portaudio
+      run: sudo apt-get install portaudio19-dev
+
+    - name: Install ALSA libraries
+      run: sudo apt-get install libasound2-dev
+    
+    - name: Download linuxdeployqt AppImage
+      run: wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+    
+    - name: Install linuxdeployqt system-wide
+      run: |
+        sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
+        sudo chmod a+x /usr/bin/linuxdeployqt
+
+    - name: Download appimagetool
+      run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+    
+    - name: Install appimagetool system-wide
+      run: |
+        sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
+        sudo chmod a+x /usr/bin/appimagetool
+    
+    - name: Build & Distribute (SigDigger)
+      run: |
+        cd Scripts
+        chmod a+x dist-appimage.sh
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Release BRANCH=master PKGVERSION="Official stable release (05 jul 2022)" ./dist-appimage.sh 
+        cd ..
+
+    - name: Archive AppImage files
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-latest-appimage
+        path: Scripts/*.AppImage
+
+  build-macos:
+    runs-on: macos-10.15
+    steps:
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+    
+    - uses: actions/checkout@v2
+    - name: Setup interactive shell session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: 5.14.2
+        setup-python: false
+        py7zrversion: '==0.18.1'
+
+    - name: Install sndfile
+      run: brew install libsndfile
+
+    - name: Install Volk
+      run: brew install volk
+
+    - name: Install cURL
+      run: brew install curl
+
+    - name: Install FFTW3
+      run: brew install fftw
+
+    - name: Adding SoapySDR taps (Pothos)
+      run: brew tap pothosware/homebrew-pothos && brew update
+
+    - name: Install SoapySDR (Pothos)
+      run: brew install pothossoapy
+
+    - name: Fix brew/SoapySDR linking disaster
+      run: |
+        rm -f /usr/local/lib/libSoapySDR.0.8.dylib
+        ln -s /usr/local/lib/libSoapySDR.0.8.1.dylib /usr/local/lib/libSoapySDR.0.8.dylib
+    
+    - name: Creating modules0.8
+      run: sudo mkdir -p /usr/local/lib/SoapySDR/modules0.8
+
+    # - name: Install SDRPlay API
+    #  run: wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg && sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /
+
+    # - name: Build and install SoapySDR module for SDRPlay
+    #   run: git clone https://github.com/pothosware/SoapySDRPlay3 && cd SoapySDRPlay3 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j3 && sudo make install && cd ../../
+
+    # soapyosmo   removed because of random compilation errors
+    # soapyuhd    removed for the same reason
+    # soapyaudio  removed as it keeps breaking
+    # soapyremote removed because it crashes for whatever reason
+    # SDRPlay support removed becuase it hangs SoapySDR on startup
+    - name: Install SoapySDR modules (Pothos)
+      run: |
+        sudo chmod -R a+rw /usr/local/lib/SoapySDR/modules0.8
+        brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyairspyhf soapyredpitaya soapyiris limesuite soapyplutosdr
+
+    - name: Remove SoapySDR remote module to prevent crashes
+      run: sudo rm /usr/local/lib/SoapySDR/modules0.8/libremote*
+
+    - name: Install libxml2
+      run: brew install libxml2
+
+    - name: Install portaudio
+      run: brew install portaudio
+
+    - name: Build & Distribute (SigDigger)
+      run: |
+        cd Scripts
+        chmod a+x dist-dmg.sh
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Release BRANCH=master PKGVERSION="Official stable release (05 jul 2022)" ./dist-dmg.sh
+        cd ..
+
+    - name: Archive .DMG files
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos-latest-dmg
+        path: Scripts/*.dmg
+
+  # Windows
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git mingw-w64-x86_64-cc mingw-w64-x86_64-make mingw-w64-x86_64-cmake mingw-w64-x86_64-libsndfile mingw-w64-x86_64-fftw mingw-w64-x86_64-volk mingw-w64-x86_64-libxml2 mingw-w64-x86_64-libusb mingw-w64-x86_64-qt5 mingw-w64-x86_64-portaudio zip
+          
+      # SoapySDR
+      - name: Checkout (SoapySDR)
+        uses: actions/checkout@v2
+        with:
+          repository: pothosware/SoapySDR
+          ref: refs/heads/master
+          path: SoapySDR
+        
+      - name: Configure (SoapySDR)
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B SoapySDR/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  SoapySDR/
+        
+      - name: Build (SoapySDR)
+        run: /mingw64/bin/cmake --build  SoapySDR/build --config ${{env.BUILD_TYPE}}
+        
+      - name: Install (SoapySDR)
+        run: /mingw64/bin/cmake --build  SoapySDR/build --config ${{env.BUILD_TYPE}} --target install
+        
+      # BatchDrake's fixed rtl-sdr-blog
+      - name: Checkout (rtl-sdr-blog from BatchDrake)
+        uses: actions/checkout@v2
+        with:
+          repository: BatchDrake/rtl-sdr-blog
+          ref: refs/heads/feature/xfer-completion
+          path: rtl-sdr-blog
+        
+      - name: Configure (rtl-sdr-blog)
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  rtl-sdr-blog/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} rtl-sdr-blog
+        
+      - name: Build (rtl-sdr-blog)
+        run: /mingw64/bin/cmake --build  rtl-sdr-blog/build --config ${{env.BUILD_TYPE}}
+        
+      - name: Install (rtl-sdr-blog)
+        run: /mingw64/bin/cmake --build  rtl-sdr-blog/build --config ${{env.BUILD_TYPE}} --target install
+        
+      # SoapyRTLSDR
+      - name: Checkout (SoapyRTLSDR)
+        uses: actions/checkout@v2
+        with:
+          repository: pothosware/SoapyRTLSDR
+          ref: refs/heads/master
+          path: SoapyRTLSDR
+        
+      - name: Configure (SoapyRTLSDR)
+        run: /mingw64/bin/cmake -G"MinGW Makefiles" -B  SoapyRTLSDR/build -DCMAKE_INSTALL_PREFIX:PATH=/mingw64/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}  SoapyRTLSDR
+        
+      - name: Build (SoapyRTLSDR)
+        run: /mingw64/bin/cmake --build  SoapyRTLSDR/build --config ${{env.BUILD_TYPE}}
+        
+      - name: Install (SoapyRTLSDR)
+        run: /mingw64/bin/cmake --build  SoapyRTLSDR/build --config ${{env.BUILD_TYPE}} --target install
+        
+
+      # SigDigger
+      - name: Build & Distribute (SigDigger)
+        run: |
+          cd Scripts
+          chmod a+x dist-mingw32.sh
+          BUILDTYPE=Release BRANCH=master PKGVERSION="Official stable release (05 jul 2022)" ./dist-mingw32.sh
+          cd ..
+
+      - name: Archive .ZIP files
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-latest-zip
+          path: Scripts/SigDigger-*.zip
