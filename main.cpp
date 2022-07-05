@@ -21,13 +21,17 @@
 #include <RMSViewer.h>
 #include <iostream>
 #include <QFont>
+#include <QSurface>
 #include "Loader.h"
+#include <QtGlobal>
 
 #include <sigutils/version.h>
 #include <analyzer/version.h>
 
 #include <cstring>
 #include <getopt.h>
+
+#define MAX_LOG_MESSAGES 20
 
 using namespace SigDigger;
 
@@ -43,22 +47,82 @@ runRMSViewer(QApplication &app)
   return ret;
 }
 
+static QString
+getLogText(void)
+{
+  QString text = "";
+  std::lock_guard<Suscan::Logger> guard(*Suscan::Logger::getInstance());
+
+  auto begin = Suscan::Logger::getInstance()->begin();
+  auto end   = Suscan::Logger::getInstance()->end();
+
+  if (end - begin > MAX_LOG_MESSAGES) {
+    auto removed = end - begin - MAX_LOG_MESSAGES;
+    begin = end - MAX_LOG_MESSAGES;
+
+    text += "(" + QString::number(removed) + " previous messages omitted)\n";
+  }
+
+  for (auto p = begin; p != end; ++p) {
+    switch (p->severity) {
+      case SU_LOG_SEVERITY_CRITICAL:
+        text += "critical: ";
+        break;
+
+      case SU_LOG_SEVERITY_DEBUG:
+        text += "debug: ";
+        break;
+
+      case SU_LOG_SEVERITY_ERROR:
+        text += "error: ";
+        break;
+
+      case SU_LOG_SEVERITY_INFO:
+        text += "info: ";
+        break;
+
+      case SU_LOG_SEVERITY_WARNING:
+        text += "warning: ";
+        break;
+    }
+
+    text += p->message.c_str();
+  }
+
+  return text;
+}
+
 static int
 runSigDigger(QApplication &app)
 {
-  int ret;
-  Application main_app;
-  Loader loader(&main_app);
+  int ret = 1;
 
-  loader.load();
+  try {
+    Application main_app;
+    Loader loader(&main_app);
 
-  ret = app.exec();
+    QSurfaceFormat fmt;
+    fmt.setSamples(16);
+    QSurfaceFormat::setDefaultFormat(fmt);
 
-  Suscan::Singleton::get_instance()->killBackgroundTaskController();
+    loader.load();
 
-  std::cout << "Saving config..." << std::endl;
+    ret = app.exec();
 
-  loader.saveConfig();
+    Suscan::Singleton::get_instance()->killBackgroundTaskController();
+
+    std::cout << "Saving config..." << std::endl;
+
+    loader.saveConfig();
+  } catch (Suscan::Exception const &e) {
+    (void) QMessageBox::critical(
+          nullptr,
+          "SigDigger internal error",
+          QString(e.what())
+          + "<pre>" + getLogText() + "</pre>",
+          QMessageBox::Close);
+    app.quit();
+  }
 
   return ret;
 }
@@ -106,6 +170,16 @@ static struct option long_options[] = {
 int
 main(int argc, char *argv[])
 {
+  // This is a workaround for the poor backwards compatibility of macOS
+  // with software that used to work in previous releases. macOS is far
+  // from being a serious piece of engineering, and developing stuff
+  // in macOS implies handling all the stuff that Apple engineers forgot
+  // to do right.
+  
+#ifdef Q_OS_MACOS
+  qputenv("QT_MAC_WANTS_LAYER", "1");
+#endif // Q_OS_MACOS
+  
   QApplication app(argc, argv);
   QString appName = "SigDigger";
   int ret = EXIT_FAILURE;

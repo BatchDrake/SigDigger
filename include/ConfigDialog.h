@@ -25,119 +25,76 @@
 #include <Suscan/Source.h>
 #include <ColorConfig.h>
 #include <GuiConfig.h>
+#include <TLESourceConfig.h>
 #include <SaveProfileDialog.h>
-
-#define SIGDIGGER_MIN_RADIO_FREQ  -3e11
-#define SIGDIGGER_MAX_RADIO_FREQ   3e11
+#include <Suscan/Library.h>
+#include <ConfigTab.h>
 
 namespace SigDigger {
+  class ProfileConfigTab;
+  class ColorConfigTab;
+  class GuiConfigTab;
+  class LocationConfigTab;
+  class TLESourceTab;
+
   class ConfigDialog : public QDialog
   {
     Q_OBJECT
 
   private:
-    Suscan::Source::Config profile;
-    Suscan::Source::Device remoteDevice;
+    // We keep these for the time being
     Suscan::AnalyzerParams analyzerParams;
 
-    ColorConfig colors;
-    GuiConfig guiConfig;
-
-    bool accepted;
-    bool refreshing = false;
-
-    int savedLocalDeviceIndex = 0;
-
     // UI elements
+    ProfileConfigTab  *profileTab  = nullptr;
+    ColorConfigTab    *colorTab    = nullptr;
+    GuiConfigTab      *guiTab      = nullptr;
+    LocationConfigTab *locationTab = nullptr;
+    TLESourceTab      *tleSourceTab   = nullptr;
+    bool accepted = false;
+
     Ui_Config *ui = nullptr;
-    SaveProfileDialog saveProfileDialog;
 
+    void appendConfigTab(ConfigTab *);
     void connectAll(void);
-    void populateCombos(void);
-    void refreshAntennas(void);
-    void refreshSampRates(void);
-    void refreshColorUi(void);
-    void refreshGuiConfigUi();
-    void refreshAnalyzerParamsUi(void);
-    void refreshProfileUi(void);
-    void refreshFrequencyLimits(void);
-    void refreshUi(void);
-    void refreshAnalyzerTypeUi(void);
-    void saveProfile(void);
-    void refreshUiState(void);
-    void refreshTrueSampleRate(void);
-    void loadProfile(Suscan::Source::Config &config);
-    void saveAnalyzerParams(void);
-    void saveColors(void);
-    void saveGuiConfigUi(void);
-    void guessParamsFromFileName(void);
-    void updateRemoteParams(void);
-    int  findRemoteProfileIndex(void);
-    unsigned int getSelectedSampleRate(void) const;
-    void setSelectedSampleRate(unsigned int);
-
-    static QString getSampRateString(qreal rate);
-    static QString getBaseName(const QString &string);
 
   public:
+    // The public API remains.
     void setProfile(const Suscan::Source::Config &profile);
     void setAnalyzerParams(const Suscan::AnalyzerParams &params);
     void setColors(const ColorConfig &config);
+    void setTleSourceConfig(const TLESourceConfig &config);
     void setGuiConfig(const GuiConfig &config);
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
     void notifySingletonChanges(void);
 
+    bool profileChanged(void) const;
+    bool locationChanged(void) const;
+    bool colorsChanged(void) const;
+    bool tleSourceConfigChanged(void) const;
+    bool guiChanged(void) const;
+
+    Suscan::Location getLocation(void) const;
+    void setLocation(Suscan::Location const &);
+    bool sourceNeedsRestart(void) const;
     bool remoteSelected(void) const;
 
-    float getGain(std::string const &name);
-    Suscan::Source::Config getProfile(void);
-    ColorConfig getColors(void);
-    GuiConfig getGuiConfig();
-    Suscan::AnalyzerParams getAnalyzerParams(void);
+    float getGain(std::string const &name) const;
+    Suscan::Source::Config getProfile(void) const;
+    ColorConfig getColors(void) const;
+    GuiConfig getGuiConfig(void) const;
+    TLESourceConfig getTleSourceConfig(void) const;
+    Suscan::AnalyzerParams getAnalyzerParams(void) const;
 
     bool run(void);
+
     explicit ConfigDialog(QWidget *parent = nullptr);
     ~ConfigDialog();
 
-    static void
-    populateAntennaCombo(
-        Suscan::Source::Config &profile,
-        QComboBox *combo)
-    {
-      int index = 0;
-      combo->clear();
-
-      for (auto i = profile.getDevice().getFirstAntenna();
-           i != profile.getDevice().getLastAntenna();
-           ++i) {
-        combo->addItem(QString::fromStdString(*i));
-
-        if (profile.getAntenna() == *i)
-          index = static_cast<int>(
-                i - profile.getDevice().getFirstAntenna());
-      }
-
-      combo->setCurrentIndex(index);
-    }
-
   public slots:
-    void onLoadProfileClicked(void);
-    void onToggleSourceType(bool);
-    void onDeviceChanged(int);
-    void onFormatChanged(int);
-    void onAntennaChanged(int);
-    void onAnalyzerTypeChanged(int);
-    void onCheckButtonsToggled(bool);
-    void onSpinsChanged(void);
-    void onBandwidthChanged(double);
-    void onBrowseCaptureFile(void);
     void onAccepted(void);
-    void onSaveProfile(void);
-    void onChangeConnectionType(void);
-    void onRemoteParamsChanged(void);
-    void onRefreshRemoteDevices(void);
-    void onRemoteProfileSelected(void);
+    void onTabConfigChanged(void);
   };
 };
 

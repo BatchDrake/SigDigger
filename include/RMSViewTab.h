@@ -44,7 +44,7 @@ namespace SigDigger {
       qreal last;
 
       int     accum_ctr = 0;
-      SUFLOAT energy_accum;
+      SUFLOAT energy_accum = 0;
 
       void refreshSampleRate();
       void connectAll();
@@ -53,6 +53,7 @@ namespace SigDigger {
       void processSocketData(void);
       bool saveToMatlab(QString const &);
       void disconnectSocket(void);
+      void fitVertical(void);
 
     public:
       explicit RMSViewTab(QWidget *parent, QTcpSocket *socket);

@@ -23,12 +23,21 @@
 #include <Suscan/Messages/PSDMessage.h>
 #include <ColorConfig.h>
 #include <GuiConfig.h>
-#include <Waterfall.h>
+#include <WFHelpers.h>
 #include <Palette.h>
+#include <QElapsedTimer>
+#include <QToolBar>
+
+#define SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS 1000
+
+class QTimeSlider;
 
 namespace Ui {
   class MainSpectrum;
 }
+
+class Waterfall;
+class GLWaterfall;
 
 // Does it make sense to turn this into a PersistentWidget, anyways?
 namespace SigDigger {
@@ -55,13 +64,22 @@ namespace SigDigger {
     Ui::MainSpectrum *ui = nullptr;
     std::vector<FrequencyAllocationTable *> FATs;
     SuscanBookmarkSource *bookmarkSource = nullptr;
+    Waterfall   *wf   = nullptr;
+    GLWaterfall *glWf = nullptr;
+    ColorConfig  lastColorConfig;
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
     Skewness filterSkewness = SYMMETRIC;
     bool throttling = false;
+    bool resAdjusted = false;
+    bool noLimits = false;
     qint64 minFreq = 0;
     qint64 maxFreq = 6000000000;
+    QElapsedTimer lastFreqUpdate;
+    qint64 freqGracePeriod =
+        SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS;
+    int maxToolWidth = 0;
 
     // Cached members (for UI update, etc)
     unsigned int cachedRate = 0;
@@ -70,6 +88,8 @@ namespace SigDigger {
 
     // Private methods
     void connectAll(void);
+    void connectWf(void);
+    void connectGLWf(void);
     void refreshUi(void);
     void updateLimits(void);
 
@@ -81,7 +101,12 @@ namespace SigDigger {
     ~MainSpectrum();
 
     // Actions
-    void feed(float *data, int size);
+    void feed(
+        float *data,
+        int size,
+        struct timeval const &tv,
+        bool looped = false);
+
     void deserializeFATs(void);
 
     // Setters
@@ -103,11 +128,13 @@ namespace SigDigger {
     void setPeakHold(bool);
     void setPeakDetect(bool);
     void setExpectedRate(int);
+    void setFilled(bool);
     void setTimeStamps(bool);
     void setBookmarks(bool);
     void setZoom(unsigned int zoom);
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
+    void setGracePeriod(qint64 ms);
 
     void setShowFATs(bool);
     void pushFAT(FrequencyAllocationTable *);
@@ -120,6 +147,11 @@ namespace SigDigger {
     void setZeroPoint(float);
     void setUnits(QString const &, float, float);
 
+    void addToolWidget(QWidget *widget, QString const &);
+    void setSidePanelWidth(int);
+    void setSidePanelRatio(qreal);
+    void setLocked(bool);
+
     // Getters
     bool getThrottling(void) const;
     CaptureMode getCaptureMode(void) const;
@@ -129,6 +161,9 @@ namespace SigDigger {
     unsigned int getBandwidth(void) const;
     unsigned int getZoom(void) const;
     FrequencyAllocationTable *getFAT(QString const &) const;
+    void adjustSizes(void);
+    int sidePanelWidth(void) const;
+    qreal sidePanelRatio(void) const;
 
     static int getFrequencyUnits(qint64 frew);
 
@@ -144,6 +179,7 @@ namespace SigDigger {
     void zoomChanged(float);
     void newBandPlan(QString);
     void modulationChanged(QString);
+    void seek(struct timeval);
 
   public slots:
     void onRangeChanged(float, float);
@@ -155,6 +191,7 @@ namespace SigDigger {
     void onNewZoomLevel(float);
     void onNewModulation(QString);
     void onLnbFrequencyChanged(void);
+    void onLockStateChanged(void);
   };
 }
 

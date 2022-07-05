@@ -41,12 +41,14 @@
 #include <analyzer/analyzer.h>
 
 namespace Suscan {
+  struct Orbit;
+
   struct AnalyzerSourceInfo {
     bool loan = false;
     struct suscan_analyzer_source_info local_info;
     struct suscan_analyzer_source_info *c_info = nullptr;
 
-    AnalyzerSourceInfo()
+    AnalyzerSourceInfo() : AnalyzerSourceInfo(&this->local_info)
     {
       suscan_analyzer_source_info_init(&this->local_info);
     }
@@ -69,6 +71,54 @@ namespace Suscan {
               suscan_analyzer_source_info_init_copy(&this->local_info, ptr));
         this->c_info = &this->local_info;
       }
+    }
+
+    AnalyzerSourceInfo(AnalyzerSourceInfo const &info)
+      : AnalyzerSourceInfo(info.c_info)
+    {
+    }
+
+    // Move assignation
+    AnalyzerSourceInfo &
+    operator=(AnalyzerSourceInfo &&rv)
+    {
+      std::swap(this->loan, rv.loan);
+      std::swap(this->c_info, rv.c_info);
+      std::swap(this->local_info, rv.local_info);
+
+      if (!this->loan)
+        this->c_info = &this->local_info;
+
+      return *this;
+    }
+
+    // Copy assignation
+    AnalyzerSourceInfo &
+    operator=(const AnalyzerSourceInfo &rv)
+    {
+      if (!this->loan)
+        suscan_analyzer_source_info_finalize(&this->local_info);
+
+      SU_ATTEMPT(
+            suscan_analyzer_source_info_init_copy(
+              &this->local_info,
+              rv.c_info));
+      this->loan   = false;
+      this->c_info = &this->local_info;
+
+      return *this;
+    }
+
+    inline uint64_t
+    getPermissions(void) const
+    {
+      return this->c_info->permissions;
+    }
+
+    inline bool
+    testPermission(uint64_t mask) const
+    {
+      return (getPermissions() & mask) == mask;
     }
 
     inline SUSCOUNT
@@ -145,6 +195,31 @@ namespace Suscan {
       return this->c_info->agc != SU_FALSE;
     }
 
+    inline float
+    getPPM(void) const
+    {
+      return this->c_info->ppm;
+    }
+
+    inline bool
+    isSeekable(void) const
+    {
+      return this->c_info->seekable != SU_FALSE;
+    }
+
+    inline struct timeval
+    getSourceStartTime(void) const
+    {
+      return this->c_info->source_start;
+    }
+
+    inline struct timeval
+    getSourceEndTime(void) const
+    {
+      return this->c_info->source_end;
+    }
+
+
     inline void
     getGainInfo(std::vector<Source::GainDescription> &vec) const
     {
@@ -185,6 +260,9 @@ namespace Suscan {
   private:
     suscan_analyzer_t *instance = nullptr;
     AsyncThread *asyncThread = nullptr;
+    uint32_t requestId = 0;
+    uint32_t inspectorId = 0;
+
     MQ mq;
 
     static bool registered;
@@ -196,6 +274,7 @@ namespace Suscan {
     void samples_message(const Suscan::SamplesMessage &message);
     void status_message(const Suscan::StatusMessage &message);
     void source_info_message(const Suscan::SourceInfoMessage &message);
+    void analyzer_params(const Suscan::AnalyzerParams &params);
     void read_error(void);
     void eos(void);
     void halted(void);
@@ -204,13 +283,18 @@ namespace Suscan {
     void captureMessage(quint32 type, void *data);
 
   public:
+    uint32_t allocateRequestId(void);
+    uint32_t allocateInspectorId(void);
+
     SUSCOUNT getSampleRate(void) const;
     SUSCOUNT getMeasuredSampleRate(void) const;
+    struct timeval getSourceTimeStamp(void) const;
 
     void *read(uint32_t &type);
     void registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t, void *);
     void setFrequency(SUFREQ freq, SUFREQ lnbFreq = 0);
     void setGain(std::string const &name, SUFLOAT val);
+    void seek(struct timeval const &tv);
     void setSweepStrategy(SweepStrategy);
     void setSpectrumPartitioning(SpectrumPartitioning);
     void setAntenna(std::string const &name);
@@ -226,17 +310,25 @@ namespace Suscan {
     void halt(void);
 
     // Analyzer asynchronous requests
-    void open(std::string const &inspClass, Channel const &ch, RequestId id);
-    void openPrecise(std::string const &inspClass, Channel const &ch, RequestId id);
+    void open(std::string const &inspClass, Channel const &ch, RequestId id = 0);
+    void openPrecise(std::string const &inspClass, Channel const &ch, RequestId id = 0);
+    void openEx(
+        std::string const &inspClass,
+        Channel const &ch,
+        bool precise,
+        Handle parent,
+        RequestId id = 0);
 
-    void setInspectorConfig(Handle handle, Config const &cfg, RequestId id);
-    void setInspectorId(Handle handle, InspectorId id, RequestId req_id);
-    void setInspectorFreq(Handle handle, SUFREQ fc, RequestId req_id);
-    void setInspectorBandwidth(Handle handle, SUFREQ bw, RequestId req_id);
-    void setInspectorWatermark(Handle handle, SUSCOUNT watermark, RequestId id);
-    void setSpectrumSource(Handle handle, unsigned int source, RequestId id);
-    void setInspectorEnabled(Handle handle, EstimatorId eid, bool, RequestId id);
-    void closeInspector(Handle handle, RequestId id);
+    void setInspectorConfig(Handle handle, Config const &cfg, RequestId id = 0);
+    void setInspectorId(Handle handle, InspectorId id, RequestId req_id = 0);
+    void setInspectorFreq(Handle handle, SUFREQ fc, RequestId req_id = 0);
+    void setInspectorBandwidth(Handle handle, SUFREQ bw, RequestId req_id = 0);
+    void setInspectorWatermark(Handle handle, SUSCOUNT watermark, RequestId id = 0);
+    void setSpectrumSource(Handle handle, unsigned int source, RequestId id = 0);
+    void setInspectorEnabled(Handle handle, EstimatorId eid, bool, RequestId id = 0);
+    void setInspectorDopplerCorrection(Handle handle, Orbit const &, RequestId id = 0);
+    void disableDopplerCorrection(Handle handle, RequestId id = 0);
+    void closeInspector(Handle handle, RequestId id = 0);
 
     // Constructors
     Analyzer(AnalyzerParams &params, Source::Config const& config);

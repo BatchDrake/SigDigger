@@ -23,6 +23,7 @@
 #include <Suscan/Serializable.h>
 
 #include <analyzer/analyzer.h>
+#include <QObject>
 
 namespace Suscan {
   class AnalyzerParams : public Serializable

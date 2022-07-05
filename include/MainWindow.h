@@ -20,6 +20,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QToolBar>
 
 namespace Ui {
   class MainWindow;

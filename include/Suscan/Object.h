@@ -387,6 +387,7 @@ namespace Suscan {
         obj.borrowed = true;
       }
 
+      void copyFrom(const Object &obj);
       void clear(void);
   };
 }

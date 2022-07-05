@@ -2,11 +2,6 @@
 #
 #  dist-dmg.sh: Deploy SigDigger in MacOS disk image format
 #
-#  The following environment variables adjust the behavior of this script:
-#
-#    SIGDIGGER_EMBED_SOAPYSDR: Embeds SoapySDR to the resulting AppImage,
-#      along with all the modules installed in the deployment system.
-#
 #  Copyright (C) 2021 Gonzalo José Carracedo Carballal
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -26,6 +21,8 @@
 #
 
 . dist-common.sh
+
+export BUILDTYPE=Release
 
 BUNDLEID="org.actinid.SigDigger"
 
@@ -91,6 +88,20 @@ function excluded()
     return 1
 }
 
+function find_lib()
+{
+  SANE_DIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64 $LIBPATH"
+    
+  for i in $SANE_DIRS; do
+	  if [ -f "$i/$1" ]; then
+      echo "$i/$1"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 function embed_soapysdr()
 {
     export SOAPYSDRVER=`pkg-config SoapySDR --modversion | sed 's/\([0-9]*\.[0-9]*\)\..*/\1/g'`
@@ -106,19 +117,28 @@ function embed_soapysdr()
     MY_RPATH=/usr/local/lib # FIXME
     
     for i in $RADIODEPS; do
-	name=`basename "$i"`
-	dirname=`dirname "$i"`
-	
-	if [ "$dirname" == "@rpath" ]; then
-            i="$MY_RPATH/$name"
+      name=`basename "$i"`
+      dirname=`dirname "$i"`
+      
+      if [ "$dirname" == "@rpath" ]; then
+        i="$MY_RPATH/$name"
+      elif [ "$dirname" == "." ]; then
+        i=`find_lib "$name"`
+        if [ "$i" == "" ]; then
+          echo -e "[ \033[1;31mFAILED\033[0m ] Could not locate $name"
+          return 1
         fi
+      fi
 
-	if [ ! -f "$LIBPATH"/"$name" ] && ! excluded "$name"; then
-	    try "Bringing $name..." cp -L "$i" "$LIBPATH"
-	else
-	    rm -f "$LIBPATH"/"$name"
-	    skip "Skipping $name..."
-	fi
+      if [ ! -f "$LIBPATH"/"$name" ] && ! excluded "$name"; then
+	  rm -f "$LIBPATH"/"$name"
+          try "Bringing $name..." cp -L "$i" "$LIBPATH"
+      elif excluded "$name"; then
+	  rm -f "$LIBPATH"/"$name"
+	  skip "Excluding $name..."
+      else
+          skip "Skipping $name..."
+      fi
     done
     
     return 0
@@ -147,7 +167,7 @@ function remove_full_path_stdin () {
 
 function ensure_rpath()
 {
-  for i in "$LIBPATH"/*.dylib "$LIBPATH/SoapySDR/modules"*/*.so "$BUNDLEPATH"/Contents/MacOS/SigDigger; do
+  for i in "$LIBPATH"/*.dylib "$LIBPATH/SoapySDR/modules"*/*.so "$BUNDLEPATH"/Contents/MacOS/*; do
       if ! [ -L "$i" ]; then
 	  chmod u+rw "$i"
 	  try "Fixing "`basename $i`"..." true
@@ -162,7 +182,7 @@ function create_dmg()
   try "Cleaning up old files..." rm -Rfv "$STAGINGDIR"
   try "Creating staging directory..." mkdir -p "$STAGINGDIR"
   try "Copying bundle to staging dir..."   cp -Rfv "$BUNDLEPATH" "$STAGINGDIR"
-  try "Creating .dmg file and finishing..." hdiutil create -volname SigDigger -srcfolder "$STAGINGDIR" -ov -format UDZO "$DISTROOT/$DMG_NAME"
+  try "Creating .dmg file and finishing..." hdiutil create -verbose -volname SigDigger -srcfolder "$STAGINGDIR" -ov -format UDZO "$DISTROOT/$DMG_NAME"
 }
 
 function fix_plist()
@@ -177,10 +197,13 @@ function fix_plist()
 function deploy()
 {
   locate_macdeploy
+
   try "Deploying via macdeployqt..." macdeployqt "$BUNDLEPATH"
+  
   try "Copying Suscan data directory to bundle..." cp -Rfv "$DEPLOYROOT/usr/share/suscan" "$RSRCPATH"
-  try "Copying Suscan CLI tool to bundle..." cp -Rfv "$DEPLOYROOT/usr/bin/suscli" "$BINPATH"
-  try "Bundling built libraries..." cp -Rfv "$DEPLOYROOT/usr/lib/"*.dylib "$LIBPATH"
+  try "Copying Suscan CLI tool (suscli) to bundle..." cp -fv "$DEPLOYROOT/usr/bin/suscli" "$BINPATH"
+  try "Copying SoapySDRUtil to bundle..." cp -fv `which SoapySDRUtil` "$BINPATH"
+  try "Bundling built libraries..." cp -fv "$DEPLOYROOT/usr/lib/"*.dylib "$LIBPATH"
 
   deploy_deps
   ensure_rpath

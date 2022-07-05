@@ -350,6 +350,38 @@ Source::Config::getIQBalance(void) const
   return suscan_source_config_get_iq_balance(this->instance) != SU_FALSE;
 }
 
+struct timeval
+Source::Config::getStartTime(void) const
+{
+  struct timeval tv = {0, 0};
+
+  if (this->instance != nullptr)
+    suscan_source_config_get_start_time(this->instance, &tv);
+
+  return tv;
+}
+
+struct timeval
+Source::Config::getEndTime(void) const
+{
+  struct timeval tv = {0, 0};
+
+  if (this->instance != nullptr)
+    if (!suscan_source_config_get_end_time(this->instance, &tv))
+      suscan_source_config_get_start_time(this->instance, &tv);
+
+  return tv;
+}
+
+bool
+Source::Config::fileIsValid(void) const
+{
+  if (this->instance != nullptr)
+    return suscan_source_config_file_is_valid(this->instance) != SU_FALSE;
+
+  return false;
+}
+
 std::string
 Source::Config::getInterface(void) const
 {
@@ -416,6 +448,54 @@ Source::Config::getParam(const std::string &key) const
     return "";
 
   return param;
+}
+
+bool
+Source::Config::hasParam(const std::string &key) const
+{
+  const char *param;
+
+  if (this->instance == nullptr)
+    return "";
+
+  param = suscan_source_config_get_param(this->instance, key.c_str());
+
+  return param != nullptr;
+}
+
+SUBOOL
+Source::Config::walkParams(
+    const suscan_source_config_t *,
+    const char *key,
+    const char *value,
+    void *userdata)
+{
+  QList<QPair<std::string, std::string>> *dest =
+      reinterpret_cast<QList<QPair<std::string, std::string>> *>(userdata);
+
+  dest->append(QPair<std::string, std::string>(key, value));
+
+  return SU_TRUE;
+}
+
+QList<QPair<std::string, std::string>>
+Source::Config::getParamList(void) const
+{
+  QList<QPair<std::string, std::string>> list;
+
+  SU_ATTEMPT(
+        suscan_source_config_walk_params(
+          this->instance,
+          Source::Config::walkParams,
+          &list));
+
+  return list;
+}
+
+bool
+Source::Config::isRemote(void) const
+{
+  return this->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE;
 }
 
 SUFLOAT
@@ -507,6 +587,15 @@ Source::Config::setParam(std::string const &key, std::string const &val)
 }
 
 void
+Source::Config::clearParams(void)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_clear_params(this->instance);
+}
+
+void
 Source::Config::setPPM(SUFLOAT ppm)
 {
   if (this->instance == nullptr)
@@ -545,6 +634,16 @@ Source::Config::setDCRemove(bool value)
         this->instance,
         value ? SU_TRUE : SU_FALSE);
 }
+
+void
+Source::Config::setStartTime(struct timeval const &tv)
+{
+  if (this->instance == nullptr)
+    return;
+
+  suscan_source_config_set_start_time(this->instance,tv);
+}
+
 
 void
 Source::Config::setIQBalance(bool value)

@@ -18,6 +18,9 @@
 //
 
 #include "AppConfig.h"
+#include "PanoramicDialog.h"
+
+#include <Suscan/Library.h>
 
 using namespace SigDigger;
 
@@ -26,12 +29,9 @@ AppConfig::AppConfig(AppUI *ui)
   analyzerParams{},
   colors{},
   guiConfig{},
+  cachedComponentConfig(SUSCAN_OBJECT_TYPE_OBJECT),
   enabledBandPlans{}
 {
-  this->sourceConfig      = ui->sourcePanel->getConfig();
-  this->fftConfig         = ui->fftPanel->getConfig();
-  this->inspectorConfig   = ui->inspectorPanel->getConfig();
-  this->audioConfig       = ui->audioPanel->getConfig();
   this->panSpectrumConfig = ui->panoramicDialog->getConfig();
 }
 
@@ -50,6 +50,7 @@ AppConfig::serialize(void)
   obj.set("x", this->x);
   obj.set("y", this->y);
   obj.set("fullScreen", this->fullScreen);
+  obj.set("sidePanelRatio", this->sidePanelRatio);
   obj.set("disableHighRateWarning", this->disableHighRateWarning);
   obj.set("loFreq", this->loFreq);
   obj.set("bandwidth", this->bandwidth);
@@ -58,13 +59,12 @@ AppConfig::serialize(void)
   obj.setField("analyzerParams", this->analyzerParams.serialize());
   obj.setField("colors", this->colors.serialize());
   obj.setField("guiConfig", this->guiConfig.serialize());
-  obj.setField("sourcePanel", this->sourceConfig->serialize());
-  obj.setField("fftPanel", this->fftConfig->serialize());
-  obj.setField("audioPanel", this->audioConfig->serialize());
-  obj.setField("inspectorPanel", this->inspectorConfig->serialize());
+  obj.setField("tleSourceConfig", this->tleSourceConfig.serialize());
   obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
 
   obj.setField("bandPlans", bandPlans);
+
+  obj.setField("Components", this->cachedComponentConfig);
 
   for (auto p : this->enabledBandPlans) {
     Suscan::Object entry(SUSCAN_OBJECT_TYPE_FIELD);
@@ -95,8 +95,24 @@ AppConfig::loadDefaults(void)
 
 }
 
+Suscan::Object
+AppConfig::getComponentConfig(const char *obj)
+{
+  return this->cachedComponentConfig.getField(obj);
+}
+
+void
+AppConfig::setComponentConfig(const char *field, Suscan::Object const &obj)
+{
+  if (!obj.isHollow()) {
+    Suscan::Object dup;
+    dup.copyFrom(obj);
+    this->cachedComponentConfig.setField(field, dup);
+  }
+}
+
 #define TRYSILENT(x) \
-  try { x; } catch (Suscan::Exception const &e) { printf ("Error: %s\n", e.what()); }
+  try { x; } catch (Suscan::Exception const &) {}
 void
 AppConfig::deserialize(Suscan::Object const &conf)
 {
@@ -106,10 +122,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->analyzerParams.deserialize(conf.getField("analyzerParams")));
     TRYSILENT(this->colors.deserialize(conf.getField("colors")));
     TRYSILENT(this->guiConfig.deserialize(conf.getField("guiConfig")));
-    TRYSILENT(this->sourceConfig->deserialize(conf.getField("sourcePanel")));
-    TRYSILENT(this->fftConfig->deserialize(conf.getField("fftPanel")));
-    TRYSILENT(this->audioConfig->deserialize(conf.getField("audioPanel")));
-    TRYSILENT(this->inspectorConfig->deserialize(conf.getField("inspectorPanel")));
+    TRYSILENT(this->tleSourceConfig.deserialize(conf.getField("tleSourceConfig")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
 
     TRYSILENT(this->version    = conf.get("version", SIGDIGGER_UICONFIG_DEFAULT_VERSION));
@@ -118,6 +131,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->x          = conf.get("x", this->x));
     TRYSILENT(this->y          = conf.get("y", this->y));
     TRYSILENT(this->fullScreen = conf.get("fullScreen", this->fullScreen));
+    TRYSILENT(this->sidePanelRatio = conf.get("sidePanelRatio", this->sidePanelRatio));
     TRYSILENT(this->disableHighRateWarning = conf.get("disableHighRateWarning", this->disableHighRateWarning));
     TRYSILENT(this->loFreq     = conf.get("loFreq", this->loFreq));
     TRYSILENT(this->bandwidth  = conf.get("bandwidth", this->bandwidth));
@@ -129,6 +143,14 @@ AppConfig::deserialize(Suscan::Object const &conf)
     } catch (Suscan::Exception &) {
 
     }
+
+    try {
+      this->cachedComponentConfig.copyFrom(conf.getField("Components"));
+      if (this->cachedComponentConfig.getType() != SUSCAN_OBJECT_TYPE_OBJECT)
+        this->cachedComponentConfig = Suscan::Object(SUSCAN_OBJECT_TYPE_OBJECT);    
+    } catch (Suscan::Exception const &) {
+      this->cachedComponentConfig = Suscan::Object(SUSCAN_OBJECT_TYPE_OBJECT);
+    }   
   }
 }
 

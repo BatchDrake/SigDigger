@@ -24,16 +24,81 @@
 #
 #
 
-
 DISTROOT="$PWD"
-BRANCH=master
 OSTYPE=`uname -s`
 ARCH=`uname -m`
-RELEASE="0.2.0"
+RELEASE="0.3.0"
 DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
+PKGVERSION=""
+MAKE="make"
+CMAKE_SUSCAN_EXTRA_ARGS=""
+QMAKE_SIGDIGGER_EXTRA_ARGS=""
+
+if [ "x$BRANCH" == "x" ]; then
+    BRANCH=develop
+fi
+
+if [ "x$BUILDTYPE" == "x" ]; then
+    BUILDTYPE="Release"
+fi
+
+function is_mingw()
+{
+    echo "$OSTYPE" | grep MINGW > /dev/null
+    return $?
+}
+
+function help()
+{
+  echo "$1: SigDigger's build script"
+  echo "Usage:"
+  echo "  $1 [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  --disable-alsa:      Explicitly disable ALSA support"
+  echo "  --disable-portaudio: Explicitly disable PortAudio support"
+  echo
+  echo "  --help               This help"
+  echo
+}
+
+opt=$1
+SCRIPTNAME="$0"
+
+while [ "$opt" != "" ]; do
+    case "$opt" in
+      --disable-alsa)
+        CMAKE_SUSCAN_EXTRA_ARGS="$CMAKE_SUSCAN_EXTRA_ARGS -DENABLE_ALSA=OFF"
+        QMAKE_SIGDIGGER_EXTRA_ARGS="$QMAKE_SIGDIGGER_EXTRA_ARGS DISABLE_ALSA=1"
+      ;;
+    
+      --disable-portaudio)
+        CMAKE_SUSCAN_EXTRA_ARGS="$CMAKE_SUSCAN_EXTRA_ARGS -DENABLE_PORTAUDIO=OFF"
+        QMAKE_SIGDIGGER_EXTRA_ARGS="$QMAKE_SIGDIGGER_EXTRA_ARGS DISABLE_PORTAUDIO=1"
+      ;;
+    
+      --help)
+        help "$SCRIPTNAME"
+        exit 0
+      ;;
+
+      *)
+        echo "$SCRIPTNAME: unrecognized option $"
+        help "$SCRIPTNAME"
+        exit 1
+      ;;
+    esac
+
+    shift
+    opt="$1"
+done
+
 
 if [ "$OSTYPE" == "Linux" ]; then
     SCRIPTPATH=`realpath "$0"`
+elif is_mingw; then
+    SCRIPTPATH=`realpath "$0"`
+    MAKE="mingw32-make"
 else
     SCRIPTPATH="$0"
 fi
@@ -42,7 +107,7 @@ SCRIPTDIR=`dirname "$SCRIPTPATH"`
 DEPLOYROOT="$DISTROOT/deploy-root"
 BUILDROOT="$DISTROOT/build-root"
 
-if [ "$OSTYPE" == "Linux" ]; then
+if [ "$OSTYPE" == "Linux" ] || is_mingw; then
   THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
 elif [ "$OSTYPE" == "Darwin" ]; then
   THREADS=`sysctl -n hw.ncpu`
@@ -57,10 +122,32 @@ function try()
     
     STDOUT="$DISTROOT/$1-$$-stdout.log"
     STDERR="$DISTROOT/$1-$$-stderr.log"
-    "$@" > "$STDOUT" 2> "$STDERR"
+    echo "Try: $@"    >> "$STDERR"
+    echo "CWD: $PWD"  >> "$STDERR"
+    
+    "$@" > "$STDOUT" 2>> "$STDERR"
     
     if [ $? != 0 ]; then
 	echo -e "\r[ \033[1;31mFAILED\033[0m ]"
+	echo 
+	echo '--------------8<----------------------------------------'
+	cat "$STDERR"
+	echo '--------------8<----------------------------------------'
+
+	if [ "$BUILDTYPE" == "Debug" ]; then
+	    echo
+	    echo 'Debug mode - attatching standard output:'
+	    echo '--------------8<----------------------------------------'
+	    cat "$STDOUT"
+	    echo '--------------8<----------------------------------------'
+	    echo ''
+	    echo 'Deploy root filelist: '
+	    echo '--------------8<----------------------------------------'
+	    find "$DEPLOYROOT"
+	    echo '--------------8<----------------------------------------'
+	    echo ''
+	fi
+	
 	echo
 	echo "Standard output and error were saved respectively in:"
 	echo " - $STDOUT"
@@ -99,7 +186,16 @@ function locate_qt()
 function locate_sdk()
 {
   try "Locate Git..." which git
-  try "Locate Make..." which make
+  if is_mingw; then
+      try "Probing MinGW64..." test -d /mingw64/bin
+      export PATH="/mingw64/bin:$PATH:/mingw64/bin"
+      export LD_LIBRARY_PATH="/mingw64/lib:/mingw64/bin:$LD_LIBRARY_PATH:/mingw64/lib:/mingw64/bin"
+      export CMAKE_EXTRA_OPTS='-GMinGW Makefiles'
+  else
+    export CMAKE_EXTRA_OPTS='-GUnix Makefiles'
+  fi
+
+  try "Locate Make..." which $MAKE
   try "Ensuring pkgconfig availability... " which pkg-config
   try "Locating sndfile... " pkg-config sndfile
   try "Locating libxml2..." pkg-config libxml-2.0
@@ -125,6 +221,15 @@ function locate_sdk()
 
 function build()
 {
+    if [ "$BUILDTYPE" == "Debug" ]; then
+	notice 'Build with debug symbols is ON!'
+	CMAKE_BUILDTYPE=Debug
+	QMAKE_BUILDTYPE=debug
+    else
+	CMAKE_BUILDTYPE=Release
+	QMAKE_BUILDTYPE=release
+    fi
+
     if [ "$SIGDIGGER_SKIPBUILD" == "" ]; then
         locate_sdk
     
@@ -133,7 +238,7 @@ function build()
         try "Recreating directories..."    mkdir -p "$DEPLOYROOT" "$BUILDROOT"
 
         cd "$BUILDROOT"
-        export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$PKG_CONFIG"
+        export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
         export LD_LIBRARY_PATH="$DEPLOYROOT/usr/lib:$LD_LIBRARY_PATH"
 
         try "Cloning sigutils..."          git clone -b "$BRANCH" https://github.com/BatchDrake/sigutils
@@ -142,27 +247,27 @@ function build()
         try "Cloning SigDigger..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SigDigger
         try "Creating builddirs..."        mkdir -p sigutils/build suscan/build
         cd sigutils/build
-        try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr"  -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
+        try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
         cd ../../
-        try "Building sigutils..."         make -j $THREADS -C sigutils/build
-        try "Deploying sigutils..."        make -j $THREADS -C sigutils/build install
+        try "Building sigutils..."         $MAKE -j $THREADS -C sigutils/build
+        try "Deploying sigutils..."        $MAKE -j $THREADS -C sigutils/build install
 
         cd suscan/build
-        try "Running CMake (suscan)..."    cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr"  -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
+        try "Running CMake (suscan)..."    cmake .. $CMAKE_SUSCAN_EXTRA_ARGS -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
         cd ../../
-        try "Building suscan..."           make -j $THREADS -C suscan/build
-        try "Deploying suscan..."          make -j $THREADS -C suscan/build install
+        try "Building suscan..."           $MAKE -j $THREADS -C suscan/build
+        try "Deploying suscan..."          $MAKE -j $THREADS -C suscan/build install
 
         cd SuWidgets
-        try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += release" PREFIX="$DEPLOYROOT/usr"
-        try "Building SuWidgets..."        make -j $THREADS
-        try "Deploying SuWidgets..."       make install
+        try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += $QMAKE_BUILDTYPE" PREFIX="$DEPLOYROOT/usr"
+        try "Building SuWidgets..."        $MAKE -j $THREADS
+        try "Deploying SuWidgets..."       $MAKE install
         cd ..
 
         cd SigDigger
-        try "Running QMake (SigDigger)..." qmake SigDigger.pro "CONFIG += release" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr"
-        try "Building SigDigger..."        make -j $THREADS
-        try "Deploying SigDigger..."       make install
+        try "Running QMake (SigDigger)..." qmake SigDigger.pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr"
+        try "Building SigDigger..."        $MAKE -j $THREADS
+        try "Deploying SigDigger..."       $MAKE install
         cd ..
     else
         skip "Skipping build..."
@@ -186,7 +291,7 @@ $ESCAPE[0;1m...multi platform deployment script.$ESCAPE[0m
 EOF
 
 echo
-echo "Attempting deployment on $OSTYPE ($ARCH)"
+echo "Attempting deployment on $OSTYPE ($ARCH) with $THREADS threads"
 echo "Date: "`date`
 echo "SigDigger release to be built: $RELEASE"
 echo

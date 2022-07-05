@@ -45,6 +45,21 @@ PersistentObject::loadSerializedConfig(Suscan::Object const &object)
 Suscan::Object &&
 PersistentObject::getSerializedConfig(void)
 {
+  if (this->config == nullptr) {
+    fprintf(
+          stderr,
+          "Warning! Persistent object has not declared any configuration object.\n");
+    fprintf(
+          stderr,
+          "This is most certainly a bug. Make sure that assertConfig() has been\n");
+    fprintf(
+          stderr,
+          "called at least once and that allocConfig() is properly implemented.\n");
+
+    hollowObject = Suscan::Object(SUSCAN_OBJECT_TYPE_OBJECT);
+    return std::move(hollowObject);
+  }
+
   return this->config->serialize();
 }
 

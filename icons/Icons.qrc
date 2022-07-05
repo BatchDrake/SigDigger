@@ -48,6 +48,9 @@
         <file>stock_bookmark.png</file>
         <file>network-device.png</file>
         <file>network-device-unavail.png</file>
+        <file>system-search.png</file>
+        <file>earthmap.png</file>
+        <file>connect.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

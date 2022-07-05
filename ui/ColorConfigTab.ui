@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ColorConfigTab</class>
+ <widget class="QWidget" name="ColorConfigTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>479</width>
+    <height>360</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>6</number>
+   </property>
+   <property name="topMargin">
+    <number>6</number>
+   </property>
+   <property name="rightMargin">
+    <number>6</number>
+   </property>
+   <property name="bottomMargin">
+    <number>6</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="ColorChooserButton" name="lcdFgColor">
+     <property name="color">
+      <color>
+       <red>255</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLabel" name="label_27">
+     <property name="text">
+      <string>LCD foreground</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="ColorChooserButton" name="lcdBgColor"/>
+   </item>
+   <item row="0" column="3">
+    <widget class="QLabel" name="label_28">
+     <property name="text">
+      <string>LCD background</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="4">
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="ColorChooserButton" name="spectrumFgColor"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="label_29">
+     <property name="text">
+      <string>Spectrum foreground</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="ColorChooserButton" name="spectrumBgColor"/>
+   </item>
+   <item row="2" column="3">
+    <widget class="QLabel" name="label_30">
+     <property name="text">
+      <string>Spectrum background</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="ColorChooserButton" name="spectrumAxesColor"/>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLabel" name="label_41">
+     <property name="text">
+      <string>Spectrum axes</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="ColorChooserButton" name="spectrumTextColor"/>
+   </item>
+   <item row="3" column="3">
+    <widget class="QLabel" name="label_42">
+     <property name="text">
+      <string>Spectrum text</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="ColorChooserButton" name="filterBoxColor"/>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Filter box color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2">
+    <widget class="ColorChooserButton" name="selectionColor"/>
+   </item>
+   <item row="4" column="3">
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>Selection color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="4">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="ColorChooserButton" name="constellationFgColor"/>
+   </item>
+   <item row="7" column="1">
+    <widget class="QLabel" name="label_31">
+     <property name="text">
+      <string>Constellation color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
+    <widget class="ColorChooserButton" name="transitionFgColor"/>
+   </item>
+   <item row="7" column="3">
+    <widget class="QLabel" name="label_34">
+     <property name="text">
+      <string>Transition color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="ColorChooserButton" name="constellationBgColor"/>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLabel" name="label_32">
+     <property name="text">
+      <string>Constellation background</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="2">
+    <widget class="ColorChooserButton" name="transitionBgColor"/>
+   </item>
+   <item row="8" column="3">
+    <widget class="QLabel" name="label_35">
+     <property name="text">
+      <string>Transition background</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="ColorChooserButton" name="constellationAxesColor"/>
+   </item>
+   <item row="9" column="1">
+    <widget class="QLabel" name="label_33">
+     <property name="text">
+      <string>Constellation axes</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="2">
+    <widget class="ColorChooserButton" name="transitionAxesColor"/>
+   </item>
+   <item row="9" column="3">
+    <widget class="QLabel" name="label_36">
+     <property name="text">
+      <string>Transition axes</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0" colspan="4">
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0">
+    <widget class="ColorChooserButton" name="histogramFgColor"/>
+   </item>
+   <item row="11" column="1">
+    <widget class="QLabel" name="label_37">
+     <property name="text">
+      <string>Histogram color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="2">
+    <widget class="ColorChooserButton" name="histogramBgColor"/>
+   </item>
+   <item row="11" column="3">
+    <widget class="QLabel" name="label_39">
+     <property name="text">
+      <string>Histogram background</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0">
+    <widget class="ColorChooserButton" name="histogramModelColor"/>
+   </item>
+   <item row="12" column="1">
+    <widget class="QLabel" name="label_38">
+     <property name="text">
+      <string>Histogram model</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="2">
+    <widget class="ColorChooserButton" name="histogramAxesColor"/>
+   </item>
+   <item row="12" column="3">
+    <widget class="QLabel" name="label_40">
+     <property name="text">
+      <string>Histogram axes</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="0" colspan="4">
+    <widget class="Line" name="line_6">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="0">
+    <widget class="ColorChooserButton" name="symViewLoColor"/>
+   </item>
+   <item row="14" column="1">
+    <widget class="QLabel" name="label_48">
+     <property name="text">
+      <string>Low symbol color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="2">
+    <widget class="ColorChooserButton" name="symViewBgColor"/>
+   </item>
+   <item row="14" column="3">
+    <widget class="QLabel" name="xsxs">
+     <property name="text">
+      <string>Symbol view background</string>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="0">
+    <widget class="ColorChooserButton" name="symViewHiColor"/>
+   </item>
+   <item row="15" column="1">
+    <widget class="QLabel" name="fdsfs">
+     <property name="text">
+      <string>High symbol color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="5" column="0">
+    <widget class="ColorChooserButton" name="timeStampColor"/>
+   </item>
+   <item row="5" column="1">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Timestamp color</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ColorChooserButton</class>
+   <extends>QWidget</extends>
+   <header>ColorChooserButton.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

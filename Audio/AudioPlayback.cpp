@@ -20,7 +20,9 @@
 #include <iostream>
 #include "AudioPlayback.h"
 #include <stdexcept>
-#include <sys/mman.h>
+#include <util/compat-mman.h>
+#include <QCoreApplication>
+#include <GenericAudioPlayer.h>
 
 #ifdef SIGDIGGER_HAVE_ALSA
 #  include "AlsaPlayer.h"
@@ -35,13 +37,37 @@ using namespace SigDigger;
     throw std::runtime_error("Failed to " + std::string(what) + ": " + \
       std::string(snd_strerror(err)))
 
+
 ///////////////////////////// Playback worker /////////////////////////////////
+unsigned int
+PlaybackWorker::calcBufferSizeForRate(unsigned int rate)
+{
+  return
+      qBound(
+        static_cast<unsigned int>(SIGDIGGER_AUDIO_BUFFER_SIZE_MIN),
+        static_cast<unsigned int>(
+          SIGDIGGER_AUDIO_BUFFER_DELAY_MS
+          * 1e-3f
+          * static_cast<float>(rate)),
+        static_cast<unsigned int>(SIGDIGGER_AUDIO_BUFFER_SIZE));
+
+}
+
 PlaybackWorker::PlaybackWorker(
     AudioBufferList *instance,
-    GenericAudioPlayer *player)
+    std::string const &dev,
+    unsigned int sampRate)
 {
-  this->player   = player;
-  this->instance = instance;
+  this->device     = dev;
+  this->sampRate   = sampRate;
+  this->instance   = instance;
+  this->bufferSize = calcBufferSizeForRate(sampRate);
+}
+
+unsigned int
+PlaybackWorker::getBufferSize(void) const
+{
+  return this->bufferSize;
 }
 
 void
@@ -56,31 +82,88 @@ PlaybackWorker::play(void)
   float *buffer;
   unsigned int i;
 
-  while (!this->halting && (buffer = this->instance->next()) != nullptr) {
+  while (this->player != nullptr && (buffer = this->instance->next()) != nullptr) {
     bool ok;
 
-    for (i = 0; i < SIGDIGGER_AUDIO_BUFFER_SIZE; ++i)
+    for (i = 0; i < this->bufferSize; ++i)
       buffer[i] *= this->gain;
 
-    ok = this->player->write(buffer, SIGDIGGER_AUDIO_BUFFER_SIZE);
+    ok = this->player->write(buffer, this->bufferSize);
 
     // Done with this buffer, mark as free.
     this->instance->release();
 
-    if (!ok)
-      emit error();
+    if (!ok) {
+      this->stopPlayback();
+      emit error("Playback error");
+    }
+
+    // Process pending events
+    QCoreApplication::processEvents();
   }
 
-  if (this->halting)
-    emit finished();
-  else
+  if (this->player != nullptr)
     emit starving();
+}
+
+void
+PlaybackWorker::startPlayback()
+{
+  if (this->player == nullptr) {
+    // Reset buffer list
+    this->instance->clear();
+
+    try {
+  #ifdef SIGDIGGER_HAVE_ALSA
+    this->player = new AlsaPlayer(
+          this->device,
+          this->sampRate,
+          this->bufferSize);
+  #elif defined(SIGDIGGER_HAVE_PORTAUDIO)
+    this->player = new PortAudioPlayer(
+          this->device,
+          this->sampRate,
+          this->bufferSize);
+  #else
+    throw std::runtime_error(
+        "Cannot create audio playback object: audio support disabled at compile time");
+  #endif // SIGDIGGER_HAVE_ALSA
+
+      emit ready();
+    }  catch (std::runtime_error &e) {
+      this->player = nullptr;
+      emit error(QString::fromStdString(e.what()));
+    }
+  }
+}
+
+void
+PlaybackWorker::stopPlayback()
+{
+  if (this->player != nullptr) {
+    delete this->player;
+    this->player = nullptr;
+  }
+}
+
+void
+PlaybackWorker::setSampleRate(unsigned int rate)
+{
+  if (this->sampRate != rate) {
+    this->sampRate = rate;
+    this->bufferSize = calcBufferSizeForRate(rate);
+    if (this->player != nullptr) {
+      this->stopPlayback();
+      this->startPlayback();
+    }
+  }
 }
 
 void
 PlaybackWorker::halt(void)
 {
-  this->halting = true;
+  this->stopPlayback();
+  emit finished();
 }
 
 ////////////////////////////////// Audio buffer ///////////////////////////////
@@ -112,7 +195,7 @@ AudioBuffer::~AudioBuffer()
 }
 
 ////////////////////////////// AudioBufferList /////////////////////////////////
-AudioBufferList::AudioBufferList(unsigned int num)
+AudioBufferList::AudioBufferList(unsigned int num) : listMutex(QMutex::Recursive)
 {
   unsigned int i;
 
@@ -249,43 +332,71 @@ AudioBufferList::release(void)
   }
 }
 
+void
+AudioBufferList::clear(void)
+{
+  QMutexLocker(&this->listMutex);
+
+  // You cannot commit if the current buffer is null
+  if (this->current != nullptr) {
+    AudioBuffer *buffer = this->current;
+    this->current = nullptr;
+
+    buffer->prev = nullptr;
+    buffer->next = this->playListHead;
+    if (this->playListHead != nullptr)
+      this->playListHead->prev = buffer;
+
+    this->playListHead = buffer;
+
+    if (this->playListTail == nullptr)
+      this->playListTail = buffer;
+    ++this->playListLen;
+  }
+
+  while (next())
+    release();
+}
+
 //////////////////////////////// AudioBuffer ///////////////////////////////////
 AudioPlayback::AudioPlayback(std::string const &dev, unsigned int rate)
   : bufferList(SIGDIGGER_AUDIO_BUFFER_NUM)
 {
-#ifdef SIGDIGGER_HAVE_ALSA
-  this->player = new AlsaPlayer(dev, rate, SIGDIGGER_AUDIO_BUFFER_SIZE);
-#elif defined(SIGDIGGER_HAVE_PORTAUDIO)
-  this->player = new PortAudioPlayer(dev, rate, SIGDIGGER_AUDIO_BUFFER_SIZE);
-#else
-  throw std::runtime_error(
-      "Cannot create audio playback object: audio support disabled at compile time");
-#endif // SIGDIGGER_HAVE_ALSA
-
+  this->device = dev;
   this->sampRate = rate;
-
+  this->bufferSize = PlaybackWorker::calcBufferSizeForRate(rate);
   this->startWorker();
 }
 
 void
 AudioPlayback::startWorker()
 {
-  this->worker = new PlaybackWorker(&this->bufferList, this->player);
+  this->worker = new PlaybackWorker(
+        &this->bufferList,
+        this->device,
+        this->sampRate);
+
   this->workerThread = new QThread();
 
   this->worker->moveToThread(this->workerThread);
 
   connect(
         this->worker,
-        SIGNAL(error()),
+        SIGNAL(error(QString)),
         this,
-        SLOT(onError()));
+        SLOT(onError(QString)));
 
   connect(
         this->worker,
         SIGNAL(starving()),
         this,
         SLOT(onStarving()));
+
+  connect(
+        this->worker,
+        SIGNAL(ready()),
+        this,
+        SLOT(onReady()));
 
   // On restart, play
   connect(
@@ -294,40 +405,38 @@ AudioPlayback::startWorker()
         this->worker,
         SLOT(play()));
 
-  // On halt, stop
   connect(
         this,
-        SIGNAL(halt()),
+        SIGNAL(startPlayback()),
         this->worker,
-        SLOT(halt()));
-
-  // Worker finished, call thread quit
-  connect(
-        this->worker,
-        SIGNAL(finished()),
-        this->workerThread,
-        SLOT(quit()));
-
-  // When both threads and worker finish, delete them later
-  connect(
-        this->worker,
-        SIGNAL(finished()),
-        this->worker,
-        SLOT(deleteLater()));
+        SLOT(startPlayback()));
 
   connect(
-        this->workerThread,
-        SIGNAL(finished()),
-        this->workerThread,
-        SLOT(deleteLater()));
+        this,
+        SIGNAL(stopPlayback()),
+        this->worker,
+        SLOT(stopPlayback()));
+
+  connect(
+        this,
+        SIGNAL(sampleRate(unsigned int)),
+        this->worker,
+        SLOT(setSampleRate(unsigned int)));
+
+  connect(
+        this,
+        SIGNAL(gain(float)),
+        this->worker,
+        SLOT(setGain(float)));
 
   this->workerThread->start();
 }
 
 void
-AudioPlayback::onError(void)
+AudioPlayback::onError(QString desc)
 {
-  this->failed = true;
+  this->running = false;
+  emit error(desc);
 }
 
 void
@@ -350,19 +459,36 @@ AudioPlayback::~AudioPlayback()
     this->workerThread->quit();
     this->workerThread->wait();
     delete this->workerThread;
+
+    if (this->worker != nullptr)
+      delete this->worker;
   }
-
-  if (this->worker != nullptr)
-    delete this->worker;
-
-  if (this->player != nullptr)
-    delete this->player;
 }
 
 unsigned int
 AudioPlayback::getSampleRate(void) const
 {
   return this->sampRate;
+}
+
+void
+AudioPlayback::cancelPlayBack(void)
+{
+  this->bufferSize = PlaybackWorker::calcBufferSizeForRate(this->sampRate);
+  this->ptr = 0;
+  this->ready = false;
+  this->current_buffer = nullptr;
+  this->completed = 0;
+}
+
+void
+AudioPlayback::setSampleRate(unsigned int rate)
+{
+  if (this->sampRate != rate) {
+    this->sampRate = rate;
+    this->cancelPlayBack();
+    emit sampleRate(rate);
+  }
 }
 
 float
@@ -374,21 +500,43 @@ AudioPlayback::getVolume(void) const
 void
 AudioPlayback::setVolume(float vol)
 {
-  SUFLOAT gain;
+  SUFLOAT gainVal;
 
   if (vol < -60)
-    gain = 0;
+    gainVal = 0;
   else
-    gain = SU_MAG_RAW(vol);
+    gainVal = SU_MAG_RAW(vol);
 
   this->volume = vol;
-  this->worker->setGain(gain);
+  emit gain(gainVal);
+}
+
+void
+AudioPlayback::start(void)
+{
+  if (!this->running) {
+    emit startPlayback();
+    this->buffering = true;
+    this->running = true;
+  }
+}
+
+void
+AudioPlayback::stop(void)
+{
+  if (this->running) {
+    this->cancelPlayBack();
+    emit stopPlayback();
+    this->running = false;
+  }
 }
 
 void
 AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
 {
-  while (size > 0 && !failed) {
+  unsigned int bufferSize = this->bufferSize;
+
+  while (size > 0 && this->running && this->ready) {
     SUSCOUNT chunk = size;
     SUSCOUNT remaining;
     float *start;
@@ -404,8 +552,8 @@ AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
 
     start = this->current_buffer + this->ptr;
 
-    if (chunk > SIGDIGGER_AUDIO_BUFFER_SIZE - this->ptr)
-      chunk = SIGDIGGER_AUDIO_BUFFER_SIZE - this->ptr;
+    if (chunk > bufferSize - this->ptr)
+      chunk = bufferSize - this->ptr;
     remaining = chunk;
 
     while (remaining-- > 0)
@@ -415,7 +563,7 @@ AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
     size -= chunk;
 
     // Buffer full, send to playback thread.
-    if (this->ptr == SIGDIGGER_AUDIO_BUFFER_SIZE) {
+    if (this->ptr == bufferSize) {
       this->current_buffer = nullptr;
       this->bufferList.commit();
 
@@ -429,4 +577,10 @@ AudioPlayback::write(const SUCOMPLEX *samples, SUSCOUNT size)
       }
     }
   }
+}
+
+void
+AudioPlayback::onReady(void)
+{
+  this->ready = true;
 }

@@ -26,21 +26,35 @@
 #include <QMutex>
 #include <vector>
 #include <sigutils/types.h>
-#include <sys/time.h>
+#include <util/compat-time.h>
+#include <stdint.h>
 
 namespace SigDigger {
   class GenericDataSaver;
 
+  // Remember: C++ templates are just a convoluted way to define C macros,
+  // and unsurprisingly they are full of shortcomings. In particular, C++
+  // forbids virtual template functions because it does not know how to
+  // handle them.
+
+#define TEMPLATE_FOR_WRITE_NO_MATTER_WHAT(typename_T)       \
+  virtual ssize_t write(const typename_T *data, size_t len)
 
   class GenericDataWriter {
   public:
     virtual bool prepare(void) = 0;
     virtual bool canWrite(void) const = 0;
-    virtual ssize_t write(const SUCOMPLEX *data, size_t len) = 0;
+    virtual ssize_t write(const void *data, size_t len) = 0;
+
+    TEMPLATE_FOR_WRITE_NO_MATTER_WHAT(uint8_t);
+    TEMPLATE_FOR_WRITE_NO_MATTER_WHAT(SUFLOAT);
+    TEMPLATE_FOR_WRITE_NO_MATTER_WHAT(SUCOMPLEX);
+
     virtual bool close(void) = 0;
     virtual std::string getError(void) const = 0;
     virtual ~GenericDataWriter();
   };
+#undef TEMPLATE_FOR_WRITE_NO_MATTER_WHAT
 
   class GenericDataWorker : public QObject {
       Q_OBJECT
@@ -66,7 +80,7 @@ namespace SigDigger {
   {
       Q_OBJECT
 
-      std::vector<SUCOMPLEX>buffers[2];
+      std::vector<uint8_t>buffers[2];
       QString lastError;
 
       unsigned int rateHint;
@@ -100,7 +114,7 @@ namespace SigDigger {
       // Public methods
       void setBufferSize(unsigned int size);
       void setSampleRate(unsigned int i);
-      void write(const SUCOMPLEX *data, size_t size);
+      template<typename T> void write(const T *, size_t size);
       QString getLastError(void) const;
       quint64 getSize(void) const;
 
@@ -121,6 +135,10 @@ namespace SigDigger {
       void onError(QString);
       void onWriteFinished(quint64 usec);
   };
+
+  extern template void GenericDataSaver::write<SUCOMPLEX>(const SUCOMPLEX *, size_t);
+  extern template void GenericDataSaver::write<SUFLOAT>(const SUFLOAT *, size_t);
+  extern template void GenericDataSaver::write<uint8_t>(const uint8_t *, size_t);
 }
 
 

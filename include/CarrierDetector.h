@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    CarrierDetector.h: Find dominant frequency and center
+//    Copyright (C) 2020 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as

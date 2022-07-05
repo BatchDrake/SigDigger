@@ -30,12 +30,60 @@
 #include <analyzer/analyzer.h>
 
 namespace Suscan {
+  struct OrbitReport {
+    bool loan = false;
+    struct suscan_orbit_report local_info;
+    struct suscan_orbit_report *c_info = nullptr;
+
+    OrbitReport()
+    {
+      this->c_info = &this->local_info;
+    }
+
+    OrbitReport(struct suscan_orbit_report *ptr, bool loan = false)
+    {
+      this->loan = loan;
+
+      if (loan) {
+        this->c_info = ptr;
+      } else {
+        this->local_info = *ptr;
+        this->c_info = &this->local_info;
+      }
+    }
+
+    struct timeval const &
+    getRxTime(void) const
+    {
+      return this->c_info->rx_time;
+    }
+
+    xyz_t const &
+    getAzel(void) const
+    {
+      return this->c_info->satpos;
+    }
+
+    SUFLOAT
+    getFrequencyCorrection(void) const
+    {
+      return this->c_info->freq_corr;
+    }
+
+    SUDOUBLE
+    getVlosVelocity(void) const
+    {
+      return this->c_info->vlos_vel;
+    }
+  };
+
+
   class InspectorMessage: public Message {
   private:
     struct suscan_analyzer_inspector_msg *message = nullptr; // Convenience reference
     std::vector<SpectrumSource> sources;
     std::vector<Estimator> estimators;
-
+    OrbitReport report;
     Config config;
 
   public:
@@ -43,6 +91,7 @@ namespace Suscan {
     suscan_config_t const *getCConfig(void) const;
     RequestId getRequestId(void) const;
     InspectorId getInspectorId(void) const;
+    uint32_t getSpectrumSourceId(void) const;
     Handle getHandle(void) const;
     SUFLOAT *getSpectrumData(void) const;
     SUSCOUNT getSpectrumLength(void) const;
@@ -57,6 +106,8 @@ namespace Suscan {
     std::vector<SpectrumSource> const &getSpectrumSources(void) const;
     std::vector<Estimator> const &getEstimators(void) const;
     Channel getChannel(void) const;
+    OrbitReport const &getOrbitReport(void) const;
+    bool isTLEEnabled(void) const;
 
     InspectorMessage();
     InspectorMessage(struct suscan_analyzer_inspector_msg *msg);

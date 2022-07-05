@@ -35,6 +35,12 @@ namespace SigDigger {
     Decider decider;
     SamplingProperties properties;
 
+    SUFLOAT minVal = +INFINITY;
+    SUFLOAT maxVal = -INFINITY;
+
+    SUFLOAT minAmp = 0;
+    SUFLOAT maxAmp = 1;
+
     void connectAll(void);
     void refreshUi(void);
     bool scrolling = false;
@@ -50,10 +56,12 @@ namespace SigDigger {
     ~SamplerDialog();
 
     void setProperties(SamplingProperties const &prop);
+    void setAmplitudeLimits(SUFLOAT min, SUFLOAT max);
     void reset(void);
     void feedSet(WaveSampleSet const &set);
     void setColorConfig(ColorConfig const &cfg);
     void closeEvent(QCloseEvent *);
+    void fitToSamples(void);
 
     WaveSampler *makeSampler(void);
 

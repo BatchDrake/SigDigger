@@ -22,8 +22,6 @@
 
 #include <Suscan/Serializable.h>
 
-#include <QObject>
-
 namespace SigDigger {
   class GuiConfig : public Suscan::Serializable
   {
@@ -33,6 +31,12 @@ namespace SigDigger {
          * drag / change center frequency on FFT spectrum area
          */
         bool useLMBdrag;
+        bool noLimits;
+        bool useGLWaterfall;
+        bool useMaxBlending;
+        bool useGlInWindows;
+        bool enableMsgTTL;
+        unsigned int msgTTL;
 
       GuiConfig();
       GuiConfig(Suscan::Object const &conf);
@@ -41,10 +45,6 @@ namespace SigDigger {
       void loadDefaults(void);
       void deserialize(Suscan::Object const &conf) override;
       Suscan::Object &&serialize(void) override;
-
-    signals:
-
-    public slots:
   };
 }
 

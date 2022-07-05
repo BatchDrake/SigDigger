@@ -18,6 +18,7 @@
 //
 
 #include "UIMediator.h"
+#include "DeviceDialog.h"
 
 using namespace SigDigger;
 

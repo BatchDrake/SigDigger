@@ -17,16 +17,79 @@
 //    <http://www.gnu.org/licenses/>
 //
 
+#define SU_LOG_DOMAIN "sigdigger-library"
+
 #include <Suscan/Library.h>
 #include <Suscan/MultitaskController.h>
+#include <suscan.h>
 #include <analyzer/version.h>
 #include <QtGui>
+#include <Suscan/Plugin.h>
+#include <FeatureFactory.h>
+#include <ToolWidgetFactory.h>
+#include <TabWidgetFactory.h>
+#include <UIListenerFactory.h>
+#include <InspectionWidgetFactory.h>
 
 using namespace Suscan;
 
 // Singleton initialization
 Singleton *Singleton::instance = nullptr;
 Logger    *Singleton::logger   = nullptr;
+
+#define STRINGFY(x) #x
+#define STORE(field) obj.set(STRINGFY(field), this->field)
+#define STORE_NAME(name, field) obj.set(name, this->field)
+#define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
+#define LOAD_NAME(name, field) this->field = conf.get(name, this->field)
+
+void
+Location::deserialize(Suscan::Object const &conf)
+{
+  LOAD(name);
+  LOAD(country);
+  LOAD_NAME("lat", site.lat);
+  LOAD_NAME("lon", site.lon);
+  LOAD_NAME("alt", site.height);
+
+  site.height *= 1e-3;
+}
+
+Suscan::Object &&
+Location::serialize(void)
+{
+  Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+
+  obj.setClass("Location");
+
+  STORE(name);
+  STORE(country);
+  STORE_NAME("lat", site.lat);
+  STORE_NAME("lon", site.lon);
+  STORE_NAME("alt", site.height * 1e3);
+
+  return this->persist(obj);
+}
+
+void
+TLESource::deserialize(Suscan::Object const &conf)
+{
+  LOAD(name);
+  LOAD(url);
+}
+
+Suscan::Object &&
+TLESource::serialize(void)
+{
+  Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
+
+  obj.setClass("tle_source");
+
+  STORE(name);
+  STORE(url);
+
+  return this->persist(obj);
+}
 
 uint
 Suscan::qHash(const Suscan::Source::Device &dev)
@@ -39,7 +102,6 @@ Suscan::qHash(const Suscan::Source::Device &dev)
 
 Singleton::Singleton()
 {
-  this->codecs_initd = false;
   this->sources_initd = false;
   this->estimators_initd = false;
   this->spectrum_sources_initd = false;
@@ -100,13 +162,6 @@ Singleton::suscanVersion(void)
 }
 
 // Initialization methods
-void
-Singleton::init_codecs(void)
-{
-  if (!this->codecs_initd)
-    SU_ATTEMPT(suscan_codec_class_register_builtin());
-}
-
 static SUBOOL
 walk_all_sources(suscan_source_config_t *config, void *privdata)
 {
@@ -328,6 +383,140 @@ Singleton::init_bookmarks(void)
 }
 
 void
+Singleton::initLocationsFromContext(ConfigContext &ctx, bool user)
+{
+  Object list = ctx.listObject();
+  unsigned int i, count;
+  Location loc;
+
+  count = list.length();
+
+  loc.userLocation = user;
+  loc.site.height  = 0;
+
+  for (i = 0; i < count; ++i) {
+    loc.deserialize(list[i]);
+    this->locations[loc.getLocationName()] = loc;
+  }
+}
+
+void
+Singleton::init_locations(void)
+{
+  ConfigContext globalCtx("locations");
+  ConfigContext userCtx("user_locations");
+  ConfigContext qthCtx("qth");
+  Object list = qthCtx.listObject();
+
+  globalCtx.setSave(false);
+  userCtx.setSave(true);
+  qthCtx.setSave(true);
+
+  initLocationsFromContext(globalCtx, false);
+  initLocationsFromContext(userCtx, true);
+
+  if (list.length() > 0) {
+    if (list[0].getType() == SUSCAN_OBJECT_TYPE_OBJECT
+        && list[0].getClass() == "Location") {
+      this->qth.deserialize(list[0]);
+      this->have_qth = true;
+    }
+  }
+}
+
+void
+Singleton::initTLESourcesFromContext(ConfigContext &ctx, bool user)
+{
+  Object list = ctx.listObject();
+  unsigned int i, count;
+  TLESource src;
+
+  count = list.length();
+
+  src.user = user;
+
+  for (i = 0; i < count; ++i) {
+    src.deserialize(list[i]);
+    this->tleSources[src.name] = src;
+  }
+}
+
+void
+Singleton::init_tle_sources(void)
+{
+  ConfigContext globalCtx("tle");
+  ConfigContext userCtx("user_tle");
+
+  globalCtx.setSave(false);
+  userCtx.setSave(true);
+
+  initTLESourcesFromContext(globalCtx, false);
+  initTLESourcesFromContext(userCtx, true);
+}
+
+
+void
+Singleton::init_tle(void)
+{
+  const char *userTLEDir;
+
+  if ((userTLEDir = suscan_confdb_get_local_tle_path()) != nullptr) {
+    QDirIterator it(userTLEDir, QDirIterator::NoIteratorFlags);
+
+    while (it.hasNext()) {
+      QFile f(it.next());
+      QFileInfo fi(f);
+
+      if (fi.completeSuffix().toLower() == "tle") {
+        Orbit orbit;
+        if (orbit.loadFromFile(f.fileName().toStdString().c_str()))
+          this->satellites[orbit.nameToQString()] = orbit;
+      }
+    }
+  }
+}
+
+void
+Singleton::init_plugins(void)
+{
+  Plugin *defPlug = Plugin::getDefaultPlugin();
+  QStringList plugins;
+
+  if (!defPlug->load())
+    throw Exception(
+        "Failed to load the default plugin. "
+        "Please report this error to "
+        "<a href=\"https://github.com/BatchDrake/SigDigger/issues\">"
+        "https://github.com/BatchDrake/SigDigger/issues"
+        "</a>");
+
+  plugins << suscan_confdb_get_local_path() + QString("/../plugins")
+          << suscan_confdb_get_system_path() + QString("/../plugins");
+
+  for (auto path : plugins) {
+    QDir dir(path);
+    QStringList files = dir.entryList(QStringList() << "*", QDir::Files);
+    auto asStd = path.toStdString();
+
+    for (auto file : files) {
+      auto fullPath = (path + "/" + file).toStdString();
+      auto plugin = Suscan::Plugin::make(fullPath.c_str());
+
+      if (plugin != nullptr) {
+        if (!plugin->load()) {
+          SU_WARNING("Plugin %s failed to load\n", fullPath.c_str());
+          delete plugin;
+        }
+
+        // TODO: register plugin here!!
+      } else {
+        printf("Failed to make plugin.\n");
+      }
+    }
+  }
+}
+
+void
 Singleton::refreshDevices(void)
 {
   this->devices.clear();
@@ -341,6 +530,26 @@ Singleton::refreshNetworkProfiles(void)
   suscan_discovered_remote_device_walk(
         walk_all_remote_devices,
         static_cast<void *>(this));
+}
+
+bool
+Singleton::haveQth() const
+{
+  return this->have_qth;
+}
+
+Location
+Singleton::getQth(void) const
+{
+  return this->qth;
+}
+
+void
+Singleton::setQth(Location const &loc)
+{
+  this->qth = loc;
+  this->have_qth = true;
+  suscan_set_qth(&loc.site);
 }
 
 void
@@ -397,6 +606,52 @@ Singleton::syncRecent(void)
   for (auto p : this->recentProfiles) {
     try {
       list.append(Object::makeField(p));
+    } catch (Suscan::Exception const &) {
+      // Don't even bother to warn
+    }
+  }
+}
+
+void
+Singleton::syncLocations(void)
+{
+  ConfigContext ctx("user_locations");
+  Object list = ctx.listObject();
+
+  // Save all user locations
+  list.clear();
+
+  for (auto p : this->locations) {
+    try {
+      if (p.userLocation)
+        list.append(p.serialize());
+    } catch (Suscan::Exception const &) {
+      // Don't even bother to warn
+    }
+  }
+
+  // Save QTH, if defined
+  if (this->have_qth) {
+    ConfigContext ctx("qth");
+    Object list = ctx.listObject();
+    list.clear();
+    list.append(this->qth.serialize());
+  }
+}
+
+void
+Singleton::syncTLESources(void)
+{
+  ConfigContext ctx("user_tle");
+  Object list = ctx.listObject();
+
+  // Save all user TLE sources
+  list.clear();
+
+  for (auto p : this->tleSources) {
+    try {
+      if (p.user)
+        list.append(p.serialize());
     } catch (Suscan::Exception const &) {
       // Don't even bother to warn
     }
@@ -465,6 +720,8 @@ Singleton::sync(void)
   this->syncRecent();
   this->syncUI();
   this->syncBookmarks();
+  this->syncLocations();
+  this->syncTLESources();
 }
 
 // Singleton methods
@@ -561,6 +818,99 @@ Singleton::registerBookmark(BookmarkInfo const& info)
 
   bm.info = info;
   this->bookmarks[info.frequency] = bm;
+
+  return true;
+}
+
+bool
+Singleton::registerLocation(Location const& loc)
+{
+  if (this->locations.find(loc.getLocationName()) != this->locations.end())
+    return false;
+
+  Location newLoc;
+
+  newLoc = loc;
+  newLoc.userLocation = true;
+
+  this->locations[newLoc.getLocationName()] = newLoc;
+
+  return true;
+}
+
+QString
+Singleton::normalizeTLEName(QString const &name)
+{
+  QString normalized = name;
+
+  return name.trimmed().replace(QRegExp("[^-a-zA-Z0-9()]"), "_");
+}
+
+bool
+Singleton::registerTLE(std::string const &tleData)
+{
+  Orbit newOrbit;
+  const char *userTLEDir;
+  QString fullTLEPath;
+
+  if (newOrbit.loadFromTLE(tleData)) {
+    // Valid TLE file, overwrite current TLE
+    if ((userTLEDir = suscan_confdb_get_local_tle_path()) == nullptr)
+      return false;
+
+    fullTLEPath =
+        userTLEDir + QString("/")
+        + normalizeTLEName(newOrbit.nameToQString()) + ".tle";
+
+    // Attempt to save it. If we could
+    QFile qFile(fullTLEPath);
+    if (qFile.open(QIODevice::WriteOnly)) {
+      bool ok;
+      QTextStream out(&qFile);
+      out << QString::fromStdString(tleData);
+      out.flush();
+
+      ok = !qFile.error();
+
+      qFile.close();
+
+      if (ok) {
+        this->satellites[newOrbit.nameToQString()] = newOrbit;
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool
+Singleton::registerTLESource(TLESource const& tleSrc)
+{
+  if (this->tleSources.find(tleSrc.name) != this->tleSources.end())
+    return false;
+
+  TLESource newSrc;
+
+  newSrc = tleSrc;
+  newSrc.user = true;
+
+  this->tleSources[newSrc.name] = newSrc;
+
+  return true;
+}
+
+bool
+Singleton::removeTLESource(std::string const &name)
+{
+  if (this->tleSources.find(name) == this->tleSources.end())
+    return false;
+
+  // Non-user TLEs cannot be removed
+  if (!this->tleSources[name].user)
+    return false;
+
+  this->tleSources.remove(name);
 
   return true;
 }
@@ -730,6 +1080,61 @@ Singleton::getBookmarkFrom(qint64 freq) const
   return this->bookmarks.lowerBound(freq);
 }
 
+QMap<QString, Location> const &
+Singleton::getLocationMap(void) const
+{
+  return this->locations;
+}
+
+QMap<QString, Location>::const_iterator
+Singleton::getFirstLocation(void) const
+{
+  return this->locations.cbegin();
+}
+
+QMap<QString, Location>::const_iterator
+Singleton::getLastLocation(void) const
+{
+  return this->locations.cend();
+}
+
+QMap<QString, Orbit> const &
+Singleton::getSatelliteMap(void) const
+{
+  return this->satellites;
+}
+
+
+QMap<QString, Orbit>::const_iterator
+Singleton::getFirstSatellite(void) const
+{
+  return this->satellites.cbegin();
+}
+
+QMap<QString, Orbit>::const_iterator
+Singleton::getLastSatellite(void) const
+{
+return this->satellites.cend();
+}
+
+QMap<std::string, TLESource> const &
+Singleton::getTLESourceMap(void) const
+{
+  return this->tleSources;
+}
+
+QMap<std::string, TLESource>::const_iterator
+Singleton::getFirstTLESource(void) const
+{
+  return this->tleSources.cbegin();
+}
+
+QMap<std::string, TLESource>::const_iterator
+Singleton::getLastTLESource(void) const
+{
+  return this->tleSources.cend();
+}
+
 QMap<std::string, SpectrumUnit> const &
 Singleton::getSpectrumUnitMap(void) const
 {
@@ -777,6 +1182,176 @@ QHash<QString, Source::Config>::const_iterator
 Singleton::getNetworkProfileFrom(QString const &name) const
 {
   return this->networkProfiles.constFind(name);
+}
+
+bool
+Singleton::registerToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->toolWidgetFactories.contains(factory))
+    return true;
+
+  this->toolWidgetFactories.push_back(factory);
+
+  return true;
+}
+
+bool
+Singleton::unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *factory)
+{
+  int index = this->toolWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->toolWidgetFactories.removeAt(index);
+
+  return true;
+}
+
+QList<SigDigger::ToolWidgetFactory *>::const_iterator
+Singleton::getFirstToolWidgetFactory() const
+{
+  return this->toolWidgetFactories.begin();
+}
+
+QList<SigDigger::ToolWidgetFactory *>::const_iterator
+Singleton::getLastToolWidgetFactory() const
+{
+  return this->toolWidgetFactories.end();
+}
+
+bool
+Singleton::registerTabWidgetFactory(SigDigger::TabWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->tabWidgetFactories.contains(factory))
+    return true;
+
+  this->tabWidgetFactories.push_back(factory);
+  this->tabWidgetFactoryTable[factory->name()] = factory;
+
+  return true;
+}
+
+bool
+Singleton::unregisterTabWidgetFactory(SigDigger::TabWidgetFactory *factory)
+{
+  int index = this->tabWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->tabWidgetFactories.removeAt(index);
+  this->tabWidgetFactoryTable.remove(factory->name());
+
+  return true;
+}
+
+SigDigger::TabWidgetFactory *
+Singleton::findTabWidgetFactory(QString const &name) const
+{
+  if (!this->tabWidgetFactoryTable.contains(name))
+    return nullptr;
+
+  return this->tabWidgetFactoryTable[name];
+}
+
+QList<SigDigger::TabWidgetFactory *>::const_iterator
+Singleton::getFirstTabWidgetFactory() const
+{
+  return this->tabWidgetFactories.begin();
+}
+
+QList<SigDigger::TabWidgetFactory *>::const_iterator
+Singleton::getLastTabWidgetFactory() const
+{
+  return this->tabWidgetFactories.end();
+}
+
+bool
+Singleton::registerInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->inspectionWidgetFactories.contains(factory))
+    return true;
+
+  this->inspectionWidgetFactories.push_back(factory);
+  this->inspectionWidgetFactoryTable[factory->name()] = factory;
+
+  return true;
+}
+
+bool
+Singleton::unregisterInspectionWidgetFactory(SigDigger::InspectionWidgetFactory *factory)
+{
+  int index = this->inspectionWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->inspectionWidgetFactories.removeAt(index);
+  this->inspectionWidgetFactoryTable.remove(factory->name());
+
+  return true;
+}
+
+SigDigger::InspectionWidgetFactory *
+Singleton::findInspectionWidgetFactory(QString const &name) const
+{
+  if (!this->inspectionWidgetFactoryTable.contains(name))
+    return nullptr;
+
+  return this->inspectionWidgetFactoryTable[name];
+}
+
+QList<SigDigger::InspectionWidgetFactory *>::const_iterator
+Singleton::getFirstInspectionWidgetFactory() const
+{
+  return this->inspectionWidgetFactories.begin();
+}
+
+QList<SigDigger::InspectionWidgetFactory *>::const_iterator
+Singleton::getLastInspectionWidgetFactory() const
+{
+  return this->inspectionWidgetFactories.end();
+}
+
+bool
+Singleton::registerUIListenerFactory(SigDigger::UIListenerFactory *factory)
+{
+  // Not a bug. The plugin got ahead of ourselves.
+  if (this->uiListenerFactories.contains(factory))
+    return true;
+
+  this->uiListenerFactories.push_back(factory);
+
+  return true;
+}
+
+bool
+Singleton::unregisterUIListenerFactory(SigDigger::UIListenerFactory *factory)
+{
+  int index = this->uiListenerFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->uiListenerFactories.removeAt(index);
+
+  return true;
+}
+
+QList<SigDigger::UIListenerFactory *>::const_iterator
+Singleton::getFirstUIListenerFactory() const
+{
+  return this->uiListenerFactories.begin();
+}
+
+QList<SigDigger::UIListenerFactory *>::const_iterator
+Singleton::getLastUIListenerFactory() const
+{
+  return this->uiListenerFactories.end();
 }
 
 bool

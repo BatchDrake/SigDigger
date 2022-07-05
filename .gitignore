@@ -1,0 +1,7 @@
+Makefile*
+debug/
+release/
+*.rc
+*.desktop
+object_script*
+.qmake.stash

@@ -37,7 +37,7 @@ namespace SigDigger {
     bool prepare(void);
     bool canWrite(void) const;
     std::string getError(void) const;
-    ssize_t write(const SUCOMPLEX *data, size_t len);
+    ssize_t write(const void *data, size_t len);
     bool close(void);
   };
 }
@@ -122,23 +122,28 @@ AudioFileWriter::canWrite(void) const
 }
 
 ssize_t
-AudioFileWriter::write(const SUCOMPLEX *data, size_t len)
+AudioFileWriter::write(const void *data, size_t len)
 {
   ssize_t result;
   std::vector<SUFLOAT> realData;
+  const SUCOMPLEX *asComplex = reinterpret_cast<const SUCOMPLEX *>(data);
   unsigned int i;
 
   if (this->sfp == nullptr)
     return 0;
 
+  // Convert length to a length in samples
+  len /= sizeof(SUCOMPLEX);
+
   realData.resize(len);
 
   for (i = 0; i < len; ++i)
-    realData[i] = SU_C_REAL(data[i]);
+    realData[i] = SU_C_REAL(asComplex[i]);
 
   result = sf_write_float(this->sfp, realData.data(), len);
 
-  return result;
+  // Return this in bytes
+  return result * static_cast<ssize_t>(sizeof(SUCOMPLEX));
 }
 
 bool

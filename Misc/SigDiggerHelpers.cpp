@@ -27,6 +27,7 @@
 #include <SuWidgetsHelpers.h>
 #include <Suscan/MultitaskController.h>
 #include <ExportSamplesTask.h>
+#include <util/compat-stdlib.h>
 
 #ifndef SIGDIGGER_PKGVERSION
 #  define SIGDIGGER_PKGVERSION \
@@ -58,7 +59,51 @@ SigDiggerHelpers::pkgversion(void)
   return QString(SIGDIGGER_PKGVERSION);
 }
 
+void
+SigDiggerHelpers::timerdup(struct timeval *tv)
+{
+  tv->tv_sec  <<= 1;
+  tv->tv_usec <<= 1;
+  if (tv->tv_usec >= 1000000) {
+    tv->tv_sec  += 1;
+    tv->tv_usec -= 1000000;
+  }
+}
 
+AudioDemod
+SigDiggerHelpers::strToDemod(std::string const &str)
+{
+  if (str == "AM")
+    return AudioDemod::AM;
+  else if (str == "FM")
+    return AudioDemod::FM;
+  else if (str == "USB")
+    return AudioDemod::USB;
+  else if (str == "LSB")
+    return AudioDemod::LSB;
+
+  return AudioDemod::AM;
+}
+
+std::string
+SigDiggerHelpers::demodToStr(AudioDemod demod)
+{
+  switch (demod) {
+    case AM:
+      return "AM";
+
+    case FM:
+      return "FM";
+
+    case USB:
+      return "USB";
+
+    case LSB:
+      return "LSB";
+  }
+
+  return "AM"; // Default
+}
 
 void
 SigDiggerHelpers::openSaveSamplesDialog(
@@ -81,9 +126,10 @@ SigDiggerHelpers::openSaveSamplesDialog(
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setWindowTitle(QString("Save capture"));
 
-    filters << "MATLAB/Octave script (*.m)"
-            << "MATLAB 5.0 MAT-file (*.mat)"
-            << "Audio file (*.wav)";
+    filters << "Audio file (*.wav)"
+            << "Raw I/Q data (*.raw)"
+            << "MATLAB/Octave script (*.m)"
+            << "MATLAB 5.0 MAT-file (*.mat)";
 
     dialog.setNameFilters(filters);
 
@@ -96,6 +142,8 @@ SigDiggerHelpers::openSaveSamplesDialog(
         format = "mat";
       else if (strstr(filter.toStdString().c_str(), ".m") != nullptr)
         format = "m";
+      else if (strstr(filter.toStdString().c_str(), ".raw") != nullptr)
+        format = "raw";
       else
         format = "wav";
 
@@ -196,6 +244,27 @@ SigDiggerHelpers::populatePaletteCombo(QComboBox *cb)
   }
 }
 
+void
+SigDiggerHelpers::populateAntennaCombo(
+    Suscan::Source::Config &profile,
+    QComboBox *combo)
+{
+  int index = 0;
+  combo->clear();
+
+  for (auto i = profile.getDevice().getFirstAntenna();
+       i != profile.getDevice().getLastAntenna();
+       ++i) {
+    combo->addItem(QString::fromStdString(*i));
+
+    if (profile.getAntenna() == *i)
+      index = static_cast<int>(
+            i - profile.getDevice().getFirstAntenna());
+  }
+
+  combo->setCurrentIndex(index);
+}
+
 const Palette *
 SigDiggerHelpers::getPalette(int index) const
 {
@@ -230,67 +299,76 @@ SigDiggerHelpers::getPalette(std::string const &name) const
 
 SigDiggerHelpers::SigDiggerHelpers()
 {
+  const char *localTZ = getenv("TZ");
+
+  this->haveTZvar = localTZ != nullptr;
+  if (localTZ != nullptr)
+    this->tzVar = localTZ;
+
   this->deserializePalettes();
 }
 
+
 void
-SigDiggerHelpers::kahanMeanAndRms(
-    SUCOMPLEX *mean,
-    SUFLOAT *rms,
-    const SUCOMPLEX *data,
-    int length)
+SigDiggerHelpers::pushTZ(const char *tz)
 {
-  SUCOMPLEX meanSum = 0;
-  SUCOMPLEX meanC   = 0;
-  SUCOMPLEX meanY, meanT;
+  const std::string *front = nullptr;
+  const char *prev = getenv("TZ");
 
-  SUFLOAT   rmsSum = 0;
-  SUFLOAT   rmsC   = 0;
-  SUFLOAT   rmsY, rmsT;
-
-  for (int i = 0; i < length; ++i) {
-    meanY = data[i] - meanC;
-    rmsY  = SU_C_REAL(data[i] * SU_C_CONJ(data[i])) - rmsC;
-
-    meanT = meanSum + meanY;
-    rmsT  = rmsSum  + rmsY;
-
-    meanC = (meanT - meanSum) - meanY;
-    rmsC  = (rmsT  - rmsSum)  - rmsY;
-
-    meanSum = meanT;
-    rmsSum  = rmsT;
+  // Non-null TZ, push in saving stack
+  if (prev != nullptr) {
+    this->tzs.push_front(prev);
+    front = &this->tzs.front();
   }
 
-  *mean = meanSum / SU_ASFLOAT(length);
-  *rms  = SU_SQRT(rmsSum / length);
+  // Push this one nonetheless
+  this->tzStack.push_front(front);
+
+  if (tz != nullptr)
+    setenv("TZ", tz, 1);
+  else
+    unsetenv("TZ");
+
+  tzset();
+}
+
+bool
+SigDiggerHelpers::popTZ(void)
+{
+  const std::string *front;
+
+  if (this->tzStack.empty())
+    return false;
+
+  front = this->tzStack.front();
+
+  if (front != nullptr) {
+    setenv("TZ", front->c_str(), 1);
+    // Non-null TZ, pop from the saving stack
+    this->tzs.pop_front();
+  } else {
+    unsetenv("TZ");
+  }
+
+  tzset();
+
+  // Pop it
+  this->tzStack.pop_front();
+
+  return true;
 }
 
 void
-SigDiggerHelpers::calcLimits(
-    SUCOMPLEX *oMin,
-    SUCOMPLEX *oMax,
-    const SUCOMPLEX *data,
-    int length)
+SigDiggerHelpers::pushLocalTZ(void)
 {
-  SUFLOAT minReal = +std::numeric_limits<SUFLOAT>::infinity();
-  SUFLOAT maxReal = -std::numeric_limits<SUFLOAT>::infinity();
-  SUFLOAT minImag = minReal;
-  SUFLOAT maxImag = maxReal;
-
-  for (int i = 0; i < length; ++i) {
-    if (SU_C_REAL(data[i]) < minReal)
-      minReal = SU_C_REAL(data[i]);
-    if (SU_C_IMAG(data[i]) < minImag)
-      minImag = SU_C_IMAG(data[i]);
-
-    if (SU_C_REAL(data[i]) > maxReal)
-      maxReal = SU_C_REAL(data[i]);
-    if (SU_C_IMAG(data[i]) > maxImag)
-      maxImag = SU_C_IMAG(data[i]);
-  }
-
-  *oMin = minReal + I * minImag;
-  *oMax = maxReal + I * maxImag;
+  if (this->haveTZvar)
+    this->pushTZ(this->tzVar.c_str());
+  else
+    this->pushTZ(nullptr);
 }
 
+void
+SigDiggerHelpers::pushUTCTZ(void)
+{
+  this->pushTZ("");
+}

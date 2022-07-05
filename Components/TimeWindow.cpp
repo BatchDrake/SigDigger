@@ -27,10 +27,17 @@
 #include <SuWidgetsHelpers.h>
 #include <SigDiggerHelpers.h>
 #include <climits>
+#include <HistogramFeeder.h>
+
+#include <DopplerCalculator.h>
 #include <CarrierDetector.h>
 #include <CarrierXlator.h>
-#include <HistogramFeeder.h>
-#include <DopplerCalculator.h>
+#include <CostasRecoveryTask.h>
+#include <PLLSyncTask.h>
+#include <QuadDemodTask.h>
+#include <AGCTask.h>
+#include <DelayedConjTask.h>
+#include <LPFTask.h>
 
 #include "ui_TimeWindow.h"
 
@@ -89,8 +96,74 @@ TimeWindow::connectFineTuneSelWidgets(void)
 }
 
 void
+TimeWindow::connectTransformWidgets(void)
+{
+  connect(
+        this->ui->lpfApplyButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onLPF()));
+
+  connect(
+        this->ui->costasSyncButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onCostasRecovery()));
+
+  connect(
+        this->ui->pllSyncButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onPLLRecovery()));
+
+  connect(
+        this->ui->cycloButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onCycloAnalysis()));
+
+  connect(
+        this->ui->agcButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onAGC()));
+
+  connect(
+        this->ui->dcmButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onDelayedConjugate()));
+
+  connect(
+        this->ui->quadDemodButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onQuadDemod()));
+
+  connect(
+        this->ui->agcRateSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onAGCRateChanged()));
+
+  connect(
+        this->ui->dcmRateSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onDelayedConjChanged()));
+
+  connect(
+        this->ui->resetTransformButton,
+        SIGNAL(clicked(void)),
+        this,
+        SLOT(onResetCarrier()));
+}
+
+void
 TimeWindow::connectAll(void)
 {
+  this->connectTransformWidgets();
+
   connect(
         this->ui->realWaveform,
         SIGNAL(horizontalRangeChanged(qint64, qint64)),
@@ -340,6 +413,30 @@ TimeWindow::connectAll(void)
         this,
         SLOT(onCalculateDoppler(void)));
 
+  connect(
+        this->ui->realWaveform,
+        SIGNAL(waveViewChanged(void)),
+        this,
+        SLOT(onWaveViewChanged(void)));
+
+  connect(
+        this->ui->zeroPointSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onZeroPointChanged(void)));
+
+  connect(
+        this->ui->clkComponentCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onZeroCrossingComponentChanged(void)));
+
+  connect(
+        this->ui->spaceButtonGrp,
+        SIGNAL(buttonClicked(int)),
+        this,
+        SLOT(onZeroPointChanged(void)));
+
   connectFineTuneSelWidgets();
 }
 
@@ -480,6 +577,40 @@ TimeWindow::samplingSetEnabled(bool enabled)
   this->ui->samplingPage->setEnabled(enabled);
 }
 
+void
+TimeWindow::getTransformRegion(
+    const SUCOMPLEX * &origin,
+    SUCOMPLEX *&destination,
+    SUSCOUNT &length,
+    bool selection)
+{
+  const SUCOMPLEX *data = this->getDisplayData();
+  SUCOMPLEX *dest;
+  length = 0;
+
+  this->processedData.resize(this->getDisplayDataLength());
+  dest = this->processedData.data();
+
+  if (data == this->data->data())
+    memcpy(dest, data, this->getDisplayDataLength() * sizeof(SUCOMPLEX));
+
+  if (selection && this->ui->realWaveform->getHorizontalSelectionPresent()) {
+    qint64 selStart = static_cast<qint64>(
+          this->ui->realWaveform->getHorizontalSelectionStart());
+    qint64 selEnd = static_cast<qint64>(
+          this->ui->realWaveform->getHorizontalSelectionEnd());
+
+    origin      = data + selStart;
+    destination = dest + selStart;
+    length      = selEnd - selStart;
+  }
+
+  if (length == 0) {
+    origin = data;
+    destination = dest;
+    length = this->getDisplayDataLength();
+  }
+}
 
 void
 TimeWindow::populateSamplingProperties(SamplingProperties &prop)
@@ -492,16 +623,23 @@ TimeWindow::populateSamplingProperties(SamplingProperties &prop)
   prop.fs = this->fs;
   prop.loopGain = 0;
 
-  prop.sync = this->ui->clkGardnerButton->isChecked()
-      ? SamplingClockSync::GARDNER
-      : SamplingClockSync::MANUAL;
+  if (this->ui->clkGardnerButton->isChecked())
+    prop.sync = SamplingClockSync::GARDNER;
+  else if (this->ui->clkZcButton->isChecked())
+    prop.sync = SamplingClockSync::ZERO_CROSSING;
+  else
+    prop.sync = SamplingClockSync::MANUAL;
 
-  if (this->ui->decAmplitudeButton->isChecked())
+  if (this->ui->decAmplitudeButton->isChecked()) {
     prop.space = SamplingSpace::AMPLITUDE;
-  else if (this->ui->decPhaseButton->isChecked())
+    prop.zeroCrossingAngle = this->ui->clkComponentCombo->currentIndex() == 0
+        ? 1
+        : -I;
+  } else if (this->ui->decPhaseButton->isChecked()) {
     prop.space = SamplingSpace::PHASE;
-  else if (this->ui->decFrequencyButton->isChecked())
+  } else if (this->ui->decFrequencyButton->isChecked()) {
     prop.space = SamplingSpace::FREQUENCY;
+  }
 
   if (intSelection) {
     size_t start = static_cast<size_t>(
@@ -574,29 +712,29 @@ TimeWindow::samplingNotifySelection(bool selection, bool periodic)
 void
 TimeWindow::notifyTaskRunning(bool running)
 {
+  this->taskRunning = running;
+
   this->ui->taskAbortButton->setEnabled(running);
   this->carrierSyncSetEnabled(!running);
   this->samplingSetEnabled(!running);
-}
 
-void
-TimeWindow::recalcLimits(void)
-{
-  const SUCOMPLEX *data = this->getDisplayData();
-  int length = static_cast<int>(this->getDisplayDataLength());
-
-  if (length == 0) {
-    this->min = this->max = this->mean = this->rms = 0;
-  } else {
-    SigDiggerHelpers::kahanMeanAndRms(&this->mean, &this->rms, data, length);
-    SigDiggerHelpers::calcLimits(&this->min, &this->max, data, length);
-  }
+  this->ui->lpfApplyButton->setEnabled(!running);
+  this->ui->agcButton->setEnabled(!running);
+  this->ui->dcmButton->setEnabled(!running);
+  this->ui->cycloButton->setEnabled(!running);
+  this->ui->quadDemodButton->setEnabled(!running);
+  this->ui->resetTransformButton->setEnabled(!running);
+  this->ui->resetButton->setEnabled(!running);
+  this->ui->costasSyncButton->setEnabled(!running);
+  this->ui->pllSyncButton->setEnabled(!running);
 }
 
 void
 TimeWindow::refreshUi(void)
 {
   bool haveSelection = this->ui->realWaveform->getHorizontalSelectionPresent();
+  bool baudEditable;
+
   this->ui->periodicDivisionsSpin->setEnabled(
         this->ui->periodicSelectionCheck->isChecked());
   this->ui->selStartLabel->setEnabled(haveSelection);
@@ -620,20 +758,30 @@ TimeWindow::refreshUi(void)
           this->ui->realWaveform->getSampleRate())) +
         QStringLiteral(" sp/s"));
 
-  this->ui->clkRateFrame->setEnabled(
-        this->ui->clkManualButton->isChecked()
-        || this->ui->clkGardnerButton->isChecked());
+  baudEditable = this->ui->clkManualButton->isChecked()
+      || this->ui->clkGardnerButton->isChecked()
+      || this->ui->clkZcButton->isChecked();
+
+  this->ui->clkRateFrame->setEnabled(baudEditable);
   this->ui->clkPartitionFrame->setEnabled(
         this->ui->clkPartitionButton->isChecked());
   this->ui->clkGardnerFrame->setEnabled(
         this->ui->clkGardnerButton->isChecked());
+  this->ui->clkZcFrame->setEnabled(
+        this->ui->clkZcButton->isChecked());
+  this->ui->clkComponentCombo->setEnabled(
+        this->ui->decAmplitudeButton->isChecked());
+
+  SamplingProperties sp;
+  this->populateSamplingProperties(sp);
+  qreal baud = (sp.symbolCount * this->fs) / sp.length;
 
   if (this->ui->clkSelectionButton->isChecked()
-      || this->ui->clkPartitionButton->isChecked()) {
-    SamplingProperties sp;
-    this->populateSamplingProperties(sp);
-    this->ui->baudSpin->setValue((sp.symbolCount * this->fs) / sp.length);
-  }
+      || this->ui->clkPartitionButton->isChecked())
+    this->ui->baudSpin->setValue(baud);
+
+  this->onZeroPointChanged();
+  this->onZeroCrossingComponentChanged();
 
   this->hadSelectionBefore = haveSelection;
 }
@@ -649,7 +797,6 @@ TimeWindow::startSampling(void)
         this,
         SLOT(onSampleSet(SigDigger::WaveSampleSet)));
 
-  this->samplerDialog->show();
   this->notifyTaskRunning(true);
   this->taskController.process(QStringLiteral("triggerSampler"), ws);
 }
@@ -662,8 +809,8 @@ TimeWindow::refreshMeasures(void)
   qreal deltaT = 1. / this->ui->realWaveform->getSampleRate();
   SUCOMPLEX min, max, mean;
   SUFLOAT rms;
-  const SUCOMPLEX *data = this->getDisplayData();
   int length = static_cast<int>(this->getDisplayDataLength());
+  bool selection = false;
 
   if (this->ui->realWaveform->getHorizontalSelectionPresent()) {
     selStart = this->ui->realWaveform->getHorizontalSelectionStart();
@@ -675,7 +822,9 @@ TimeWindow::refreshMeasures(void)
       selEnd = length;
   }
 
-  if (selEnd - selStart > 0) {
+  if (selEnd - selStart > 0 && this->ui->realWaveform->isComplete()) {
+    WaveLimits limits;
+
     qreal period =
         (selEnd - selStart) /
         (this->ui->periodicSelectionCheck->isChecked()
@@ -684,17 +833,30 @@ TimeWindow::refreshMeasures(void)
         * deltaT;
     qreal baud = 1 / period;
 
-    SigDiggerHelpers::kahanMeanAndRms(
+#if 0
+    const SUCOMPLEX *data = this->getDisplayData();
+
+    SuWidgetsHelpers::kahanMeanAndRms(
           &mean,
           &rms,
           data + static_cast<qint64>(selStart),
-          static_cast<int>(selEnd - selStart));
-    SigDiggerHelpers::calcLimits(
+          SCAST(SUSCOUNT, selEnd - selStart));
+    SuWidgetsHelpers::calcLimits(
           &min,
           &max,
           data + static_cast<qint64>(selStart),
-          static_cast<int>(selEnd - selStart));
+          SCAST(SUSCOUNT, selEnd - selStart));
+#else
+    this->ui->realWaveform->computeLimits(selStart, selEnd, limits);
 
+    mean = limits.mean;
+    min  = limits.min;
+    max  = limits.max;
+    rms  = limits.envelope;
+
+    selection = true;
+
+#endif
     this->ui->periodLabel->setText(
           SuWidgetsHelpers::formatQuantityFromDelta(
             period,
@@ -726,10 +888,11 @@ TimeWindow::refreshMeasures(void)
             "s")
           + " (" + SuWidgetsHelpers::formatReal(selEnd - selStart) + ")");
   } else {
-    min = this->min;
-    max = this->max;
-    mean = this->mean;
-    rms = this->rms;
+    min  = this->ui->realWaveform->getDataMin();
+    max  = this->ui->realWaveform->getDataMax();
+    mean = this->ui->realWaveform->getDataMean();
+    rms  = this->ui->realWaveform->getDataRMS();
+
     this->ui->periodLabel->setText("N/A");
     this->ui->baudLabel->setText("N/A");
     this->ui->selStartLabel->setText("N/A");
@@ -749,7 +912,7 @@ TimeWindow::refreshMeasures(void)
         SuWidgetsHelpers::formatScientific(SU_C_REAL(min)));
 
   this->ui->maxILabel->setText(
-        SuWidgetsHelpers::formatScientific(SU_C_REAL(min)));
+        SuWidgetsHelpers::formatScientific(SU_C_REAL(max)));
 
   this->ui->meanILabel->setText(
         SuWidgetsHelpers::formatScientific(SU_C_REAL(mean)));
@@ -758,12 +921,13 @@ TimeWindow::refreshMeasures(void)
         SuWidgetsHelpers::formatScientific(SU_C_IMAG(min)));
 
   this->ui->maxQLabel->setText(
-        SuWidgetsHelpers::formatScientific(SU_C_IMAG(min)));
+        SuWidgetsHelpers::formatScientific(SU_C_IMAG(max)));
 
   this->ui->meanQLabel->setText(
         SuWidgetsHelpers::formatScientific(SU_C_IMAG(mean)));
 
   this->ui->rmsLabel->setText(
+        (selection ? "< " : "") +
         SuWidgetsHelpers::formatReal(rms));
 }
 
@@ -782,27 +946,49 @@ TimeWindow::setDisplayData(
     std::vector<SUCOMPLEX> const *displayData,
     bool keepView)
 {
+  QCursor cursor = this->cursor();
+
   this->displayData = displayData;
+
+  // This is just a workaround. TODO: fix build method in Waveformview
+  this->setCursor(Qt::WaitCursor);
 
   if (displayData->size() == 0) {
     this->ui->realWaveform->setData(nullptr, false);
     this->ui->imagWaveform->setData(nullptr, false);
   } else {
-    this->ui->realWaveform->setData(displayData, keepView);
-    this->ui->imagWaveform->setData(displayData, keepView);
+    qint64 currStart = this->ui->realWaveform->getSampleStart();
+    qint64 currEnd   = this->ui->realWaveform->getSampleEnd();
+
+    this->ui->realWaveform->setData(displayData, keepView, true);
+    this->ui->imagWaveform->setData(displayData, keepView, true);
+
+    if (currStart != currEnd) {
+      this->ui->realWaveform->zoomHorizontal(currStart, currEnd);
+      this->ui->imagWaveform->zoomHorizontal(currStart, currEnd);
+    }
   }
 
-
-  this->recalcLimits();
+  this->setCursor(Qt::ArrowCursor);
 
   this->refreshUi();
   this->refreshMeasures();
+  this->setCursor(cursor);
 }
 
 void
-TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs)
+TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs, qreal bw)
 {
-  this->fs = fs;
+  if (this->fs != fs) {
+    this->fs = fs;
+    this->ui->costasBwSpin->setValue(this->fs / 200);
+    this->ui->pllCutOffSpin->setValue(this->fs / 200);
+  }
+
+  if (!sufeq(this->bw, bw, 1e-6)) {
+    this->bw = bw;
+    this->ui->costasArmBwSpin->setValue(bw / 100);
+  }
 
   this->ui->syncFreqSpin->setMinimum(-this->fs / 2);
   this->ui->syncFreqSpin->setMaximum(this->fs / 2);
@@ -810,8 +996,8 @@ TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs)
   this->ui->imagWaveform->setSampleRate(fs);
 
   this->data = &data;
-  this->setDisplayData(&data);
 
+  this->setDisplayData(&data);
   this->onCarrierSlidersChanged();
 }
 
@@ -850,6 +1036,8 @@ TimeWindow::TimeWindow(QWidget *parent) :
   this->ui->realWaveform->setRealComponent(true);
   this->ui->imagWaveform->setRealComponent(false);
 
+  this->ui->imagWaveform->reuseDisplayData(this->ui->realWaveform);
+
   this->ui->syncFreqSpin->setExtraDecimals(6);
 
 #ifdef __APPLE__
@@ -873,12 +1061,19 @@ TimeWindow::TimeWindow(QWidget *parent) :
   this->ui->gridLayout_12->setVerticalSpacing(6);
 #endif
 
-  this->recalcLimits();
-
   this->refreshUi();
   this->refreshMeasures();
   SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
+
+  this->ui->toolBox->setCurrentIndex(0);
+
   this->connectAll();
+}
+
+void
+TimeWindow::postLoadInit()
+{
+  SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
 }
 
 TimeWindow::~TimeWindow()
@@ -1133,10 +1328,16 @@ TimeWindow::onSaveSelection(void)
 void
 TimeWindow::onFit(void)
 {
-  this->ui->realWaveform->fitToEnvelope();
-  this->ui->imagWaveform->fitToEnvelope();
-  this->ui->realWaveform->invalidate();
-  this->ui->imagWaveform->invalidate();
+  if (this->ui->realWaveform->isComplete()) {
+    this->ui->realWaveform->fitToEnvelope();
+    this->ui->imagWaveform->fitToEnvelope();
+
+    this->ui->realWaveform->zoomHorizontalReset();
+    this->ui->imagWaveform->zoomHorizontalReset();
+
+    this->ui->realWaveform->invalidate();
+    this->ui->imagWaveform->invalidate();
+  }
 }
 
 void
@@ -1190,9 +1391,11 @@ TimeWindow::onZoomToSelection(void)
 void
 TimeWindow::onZoomReset(void)
 {
-  // Should propagate to imaginary
   this->ui->realWaveform->zoomHorizontalReset();
+  this->ui->imagWaveform->zoomHorizontalReset();
+
   this->ui->realWaveform->zoomVerticalReset();
+  this->ui->imagWaveform->zoomVerticalReset();
 
   this->ui->realWaveform->invalidate();
   this->ui->imagWaveform->invalidate();
@@ -1309,24 +1512,26 @@ TimeWindow::onTaskDone(void)
     const CarrierDetector *cd =
         static_cast<const CarrierDetector *>(this->taskController.getTask());
     SUFLOAT relFreq = SU_ANG2NORM_FREQ(cd->getPeak());
+    const SUCOMPLEX *orig = nullptr;
+    SUCOMPLEX *dest = nullptr;
+    SUSCOUNT len = 0;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->afcSelCheck->isChecked());
 
     // Some UI feedback
     this->ui->syncFreqSpin->setValue(SU_NORM2ABS_FREQ(this->fs, relFreq));
 
-    // Resize and process
-    this->processedData.resize(this->getDisplayDataLength());
-
-    CarrierXlator *cx = new CarrierXlator(
-          this->getDisplayData(),
-          this->processedData.data(),
-          this->getDisplayDataLength(),
-          relFreq);
+    // Translate
+    CarrierXlator *cx = new CarrierXlator(orig, dest, len, relFreq, 0);
 
     // Launch carrier translator
     this->taskController.process("xlateCarrier", cx);
   } else if (this->taskController.getName() == "xlateCarrier") {
     this->setDisplayData(&this->processedData, true);
-
     this->notifyTaskRunning(false);
   } else if (this->taskController.getName() == "triggerHistogram") {
     this->histogramDialog->show();
@@ -1354,6 +1559,13 @@ TimeWindow::onTaskDone(void)
     this->dopplerDialog->giveSpectrum(std::move(spectrum));
     this->dopplerDialog->setMax(dc->getMax());
     this->dopplerDialog->show();
+  } else {
+    this->setDisplayData(this->data, true);
+    this->setDisplayData(&this->processedData, true);
+    this->ui->realWaveform->invalidate();
+    this->ui->imagWaveform->invalidate();
+    this->onFit();
+    this->notifyTaskRunning(false);
   }
 }
 
@@ -1407,14 +1619,18 @@ TimeWindow::onSyncCarrier(void)
   SUFLOAT relFreq = SU_ABS2NORM_FREQ(
         this->fs,
         this->ui->syncFreqSpin->value());
+  SUFLOAT phase = SU_DEG2RAD(this->ui->syncPhaseSpin->value());
+  const SUCOMPLEX *orig = nullptr;
+  SUCOMPLEX *dest = nullptr;
+  SUSCOUNT len = 0;
 
-  this->processedData.resize(this->getDisplayDataLength());
+  this->getTransformRegion(
+        orig,
+        dest,
+        len,
+        this->ui->afcSelCheck->isChecked());
 
-  CarrierXlator *cx = new CarrierXlator(
-        this->getDisplayData(),
-        this->processedData.data(),
-        this->getDisplayDataLength(),
-        relFreq);
+  CarrierXlator *cx = new CarrierXlator(orig, dest, len, relFreq, phase);
 
   this->notifyTaskRunning(true);
   this->taskController.process("xlateCarrier", cx);
@@ -1424,6 +1640,7 @@ void
 TimeWindow::onResetCarrier(void)
 {
   this->setDisplayData(this->data, true);
+  this->onFit();
   this->ui->syncFreqSpin->setValue(0);
 }
 
@@ -1461,6 +1678,9 @@ TimeWindow::onTriggerHistogram(void)
 {
   SamplingProperties props;
 
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   this->populateSamplingProperties(props);
 
   HistogramFeeder *hf = new HistogramFeeder(props);
@@ -1494,11 +1714,51 @@ TimeWindow::onSampleSet(SigDigger::WaveSampleSet set)
 void
 TimeWindow::onTriggerSampler(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   SamplingProperties props;
+  SUCOMPLEX dataMin = 2 * this->ui->realWaveform->getDataRMS();
+  SUCOMPLEX dataMax = 2 * this->ui->realWaveform->getDataRMS();
+  SUFLOAT   maxAmp;
 
   this->populateSamplingProperties(props);
 
+  if (props.length == 0) {
+    QMessageBox::warning(
+          this,
+          "Start sampling",
+          "Cannot perform sampling: nothing to sample");
+    return;
+  }
+
+  if (props.rate < props.fs / SCAST(qreal, props.length)) {
+    this->ui->baudSpin->setFocus();
+    QMessageBox::warning(
+          this,
+          "Start sampling",
+          "Cannot perform sampling: symbol rate is too small (or zero)");
+    return;
+  }
+
+  if (props.sync == ZERO_CROSSING) {
+    maxAmp = 1;
+  } else {
+    maxAmp =
+        SU_MAX(
+          SU_MAX(
+            SU_C_REAL(dataMin),
+            SU_C_IMAG(dataMin)),
+          SU_MAX(
+            SU_C_REAL(dataMax),
+            SU_C_IMAG(dataMax)));
+  }
+
+  if (maxAmp < 0)
+    maxAmp = 0;
+
   this->samplerDialog->reset();
+  this->samplerDialog->setAmplitudeLimits(0, maxAmp);
   this->samplerDialog->setProperties(props);
 
   this->startSampling();
@@ -1540,7 +1800,7 @@ TimeWindow::onFineTuneSelectionClicked(void)
       static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionStart());
   qint64 newSelEnd =
       static_cast<qint64>(this->ui->realWaveform->getHorizontalSelectionEnd());
-  qint64 delta = newSelEnd - newSelStart;
+  qint64 delta = (newSelEnd - newSelStart) / this->ui->periodicDivisionsSpin->value();
 
 #define CHECKBUTTON(btn) this->fineTuneSenderIs(this->ui->btn)
 
@@ -1583,6 +1843,9 @@ TimeWindow::onClkSourceButtonClicked(void)
 void
 TimeWindow::onCalculateDoppler(void)
 {
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
   if (this->ui->realWaveform->getHorizontalSelectionPresent()) {
     const SUCOMPLEX *data = this->getDisplayData();
     qint64 selStart = static_cast<qint64>(
@@ -1607,3 +1870,413 @@ TimeWindow::onCalculateDoppler(void)
   }
 }
 
+void
+TimeWindow::onCostasRecovery(void)
+{
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
+  try {
+    enum sigutils_costas_kind kind = SU_COSTAS_KIND_BPSK;
+
+    SUFLOAT relBw = SU_ABS2NORM_FREQ(
+          this->fs,
+          this->ui->costasBwSpin->value());
+
+    SUFLOAT tau = 1. / SU_ABS2NORM_BAUD(
+          this->fs,
+          this->ui->costasArmBwSpin->value());
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->afcSelCheck->isChecked());
+
+    switch (this->ui->costasOrderCombo->currentIndex()) {
+      case 0:
+        kind = SU_COSTAS_KIND_BPSK;
+        break;
+
+      case 1:
+        kind = SU_COSTAS_KIND_QPSK;
+        break;
+
+      case 2:
+        kind = SU_COSTAS_KIND_8PSK;
+        break;
+    }
+
+    CostasRecoveryTask *task = new CostasRecoveryTask(
+          orig,
+          dest,
+          len,
+          tau,
+          relBw,
+          kind);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("costas", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Costas carrier recovery",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onPLLRecovery(void)
+{
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
+  try {
+    SUFLOAT relBw = SU_ABS2NORM_FREQ(
+          this->fs,
+          this->ui->pllCutOffSpin->value());
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->afcSelCheck->isChecked());
+
+    PLLSyncTask *task = new PLLSyncTask(orig, dest, len, relBw);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("pll", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "PLL carrier recovery",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onCycloAnalysis(void)
+{
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
+  try {
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    DelayedConjTask *task = new DelayedConjTask(orig, dest, len, 1);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("cyclo", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Cyclostationary analysis",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onQuadDemod(void)
+{
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
+  try {
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    QuadDemodTask *task = new QuadDemodTask(orig, dest, len);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("quadDemod", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Quadrature demodulator",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onAGC(void)
+{
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
+  try {
+    SUFLOAT rate = SU_ABS2NORM_BAUD(
+          this->fs,
+          this->ui->agcRateSpin->value());
+    SUFLOAT tau = 1 / rate;
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    if (isinf(tau) || isnan(tau)) {
+      QMessageBox::warning(
+            this,
+            "Automatic Gain Control",
+            "Cannot perform automatic gain control: rate is too slow");
+    } else if (tau <= 1.) {
+      QMessageBox::warning(
+            this,
+            "Automatic Gain Control",
+            "Cannot perform automatic gain control: rate is faster than sample rate");
+    } else {
+      AGCTask *task = new AGCTask(orig, dest, len, tau);
+
+      this->notifyTaskRunning(true);
+      this->taskController.process("agc", task);
+    }
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Automatic Gain Control",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onLPF(void)
+{
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
+  try {
+    SUFLOAT bw = SU_ABS2NORM_FREQ(
+          this->fs,
+          this->ui->lpfSpin->value());
+    const SUCOMPLEX *orig;
+    SUCOMPLEX *dest;
+    SUSCOUNT len;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    if (bw >= 1.f)
+      bw = 1;
+
+    LPFTask *task = new LPFTask(orig, dest, len, bw);
+
+    this->notifyTaskRunning(true);
+    this->taskController.process("lpf", task);
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Low-pass filter",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onDelayedConjugate(void)
+{
+  if (!this->ui->realWaveform->isComplete())
+    return;
+
+  try {
+    SUFLOAT rate = SU_ABS2NORM_BAUD(
+          this->fs,
+          this->ui->dcmRateSpin->value());
+    SUFLOAT tau = 1. / rate;
+    SUSCOUNT samples = static_cast<SUSCOUNT>(tau);
+    const SUCOMPLEX *orig = nullptr;
+    SUCOMPLEX *dest = nullptr;
+    SUSCOUNT len = 0;
+
+    this->getTransformRegion(
+          orig,
+          dest,
+          len,
+          this->ui->transSelCheck->isChecked());
+
+    if (isinf(tau) || isnan(tau) || tau >= this->getDisplayDataLength()) {
+      QMessageBox::warning(
+            this,
+            "Product by the delayed conjugate",
+            "Product by the delayed conjugate exceeds capture length");
+    } else if (samples <= 1) {
+      QMessageBox::warning(
+            this,
+            "Product by the delayed conjugate",
+            "Product by the delayed conjugate: rate is faster than sample rate");
+    } else {
+      DelayedConjTask *task = new DelayedConjTask(orig, dest, len, samples);
+
+      this->notifyTaskRunning(true);
+      this->taskController.process("delayedConj", task);
+    }
+  } catch (Suscan::Exception &e) {
+    QMessageBox::warning(
+          this,
+          "Product by the delayed conjugate",
+          "Cannot perform operation: " + QString(e.what()));
+  }
+}
+
+void
+TimeWindow::onAGCRateChanged(void)
+{
+  SUFLOAT absRate = this->ui->agcRateSpin->value();
+  SUFLOAT rate = SU_ABS2NORM_BAUD(this->fs, absRate);
+  SUFLOAT tau = 1 / rate;
+  SUSCOUNT samples = static_cast<SUSCOUNT>(tau);
+
+  this->ui->agcTauLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          1. / absRate,
+          4) + " (" +
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(samples),
+          4,
+          "sp") + ")");
+}
+
+void
+TimeWindow::onDelayedConjChanged(void)
+{
+  SUFLOAT absRate = this->ui->dcmRateSpin->value();
+  SUFLOAT rate = SU_ABS2NORM_BAUD(this->fs, absRate);
+  SUFLOAT tau = 1 / rate;
+  SUSCOUNT samples = static_cast<SUSCOUNT>(tau);
+
+  this->ui->dcmTauLabel->setText(
+        SuWidgetsHelpers::formatQuantity(
+          1. / absRate,
+          4) + " (" +
+        SuWidgetsHelpers::formatQuantity(
+          static_cast<qreal>(samples),
+          4,
+          "sp") + ")");
+}
+
+void
+TimeWindow::onWaveViewChanged(void)
+{
+  this->refreshMeasures();
+  this->onFit();
+}
+
+void
+TimeWindow::onZeroCrossingComponentChanged(void)
+{
+  qreal min = -1, max = 1;
+  int digits;
+
+  switch (this->ui->clkComponentCombo->currentIndex()) {
+    case 0:
+      min = this->ui->realWaveform->getMin();
+      max = this->ui->realWaveform->getMax();
+      break;
+
+    case 1:
+      min = this->ui->imagWaveform->getMin();
+      max = this->ui->imagWaveform->getMax();
+      break;
+
+    case 2:
+      min = 0;
+      max = this->ui->realWaveform->getEnvelope();
+      break;
+  }
+
+  digits = SCAST(int, floor(log10(max - min)));
+
+  this->ui->zeroPointSpin->setDecimals(7 - digits);
+  this->ui->zeroPointSpin->setSingleStep(5e-3 * (max - min));
+  this->ui->zeroPointSpin->setMinimum(min);
+  this->ui->zeroPointSpin->setMaximum(max);
+
+  this->onZeroPointChanged();
+}
+
+void
+TimeWindow::onZeroPointChanged(void)
+{
+  QList<WaveVCursor> vCursors, vEmpty;
+  QList<WaveACursor> aCursors, aEmpty;
+  bool isAmplitude = false;
+  bool imag = false;
+  bool real = false;
+
+  isAmplitude = this->ui->decAmplitudeButton->isChecked();
+
+  this->ui->zeroPointSpin->setEnabled(isAmplitude);
+  this->ui->clkComponentCombo->setEnabled(isAmplitude);
+
+  if (this->ui->clkZcButton->isChecked() && isAmplitude) {
+    WaveVCursor vCursor;
+    WaveACursor aCursor;
+
+    vCursor.color  = QColor(0xff, 0xff, 0x00);
+    vCursor.string = "Zero point";
+
+    switch (this->ui->clkComponentCombo->currentIndex()) {
+      case 0:
+        vCursor.level = SCAST(SUCOMPLEX, this->ui->zeroPointSpin->value());
+        vCursors.append(vCursor);
+        real = true;
+        break;
+
+      case 1:
+        vCursor.level = I * SCAST(SUCOMPLEX, this->ui->zeroPointSpin->value());
+        vCursors.append(vCursor);
+        imag = true;
+        break;
+
+      case 2:
+        aCursor.color     = QColor(0xc1, 0x2e, 0x81);
+        aCursor.string    = vCursor.string;
+        aCursor.amplitude = this->ui->zeroPointSpin->value();
+        aCursors.append(aCursor);
+        real = imag = true;
+        break;
+    }
+  }
+
+  if (real) {
+    this->ui->realWaveform->setVCursorList(vCursors);
+    this->ui->realWaveform->setACursorList(aCursors);
+  } else {
+    this->ui->realWaveform->setVCursorList(vEmpty);
+    this->ui->realWaveform->setACursorList(aEmpty);
+  }
+
+  if (imag) {
+    this->ui->imagWaveform->setVCursorList(vCursors);
+    this->ui->imagWaveform->setACursorList(aCursors);
+  } else {
+    this->ui->imagWaveform->setVCursorList(vEmpty);
+    this->ui->imagWaveform->setACursorList(aEmpty);
+  }
+}

@@ -20,7 +20,9 @@
 #include <iostream>
 
 #include <QMetaType>
+#include <Suscan/Library.h>
 #include <Suscan/Analyzer.h>
+#include <SuWidgetsHelpers.h>
 
 Q_DECLARE_METATYPE(Suscan::Message);
 Q_DECLARE_METATYPE(Suscan::ChannelMessage);
@@ -31,19 +33,43 @@ Q_DECLARE_METATYPE(Suscan::SourceInfoMessage);
 Q_DECLARE_METATYPE(Suscan::StatusMessage);
 Q_DECLARE_METATYPE(Suscan::GenericMessage);
 Q_DECLARE_METATYPE(Suscan::EstimatorId);
+Q_DECLARE_METATYPE(Suscan::AnalyzerParams);
+Q_DECLARE_METATYPE(Suscan::OrbitReport);
+Q_DECLARE_METATYPE(Suscan::Orbit);
 
 using namespace Suscan;
+
+// Orbit
+void
+Orbit::debug(void) const
+{
+  printf("SAT NAME: %s\n", this->c_info->name);
+  printf("  Epoch:    %d + %g\n", this->c_info->ep_year, this->c_info->ep_day);
+  printf("  MM:       %g rev / day\n", this->c_info->rev);
+  printf("  dMM/dt:   %g rev / day²\n", this->c_info->drevdt);
+  printf("  d²MM/dt²: %g rev / day³\n", this->c_info->d2revdt2);
+  printf("  B*:       %g\n", this->c_info->bstar);
+  printf("  Incl:     %gº\n", SU_RAD2DEG(this->c_info->eqinc));
+  printf("  Ecc:      %g\n", this->c_info->ecc);
+  printf("  Mnan:     %gº\n", SU_RAD2DEG(this->c_info->mnan));
+  printf("  Argp:     %gº\n", SU_RAD2DEG(this->c_info->argp));
+  printf("  RAAN:     %gº\n", SU_RAD2DEG(this->c_info->ascn));
+  printf("  S. axis:  %gº\n", this->c_info->smjaxs);
+  printf("  Norb:     %ld\n", this->c_info->norb);
+  printf("  Satno:    %d\n", this->c_info->satno);
+}
 
 // Async thread
 void
 Analyzer::AsyncThread::run()
 {
   void *data = nullptr;
-  uint32_t type;
+  uint32_t type = 0;
   bool running = true;
 
   // FIXME: Capture allocation exceptions!
   do {
+    type = -1;
     data = this->owner->read(type);
 
     switch (type) {
@@ -53,6 +79,7 @@ Analyzer::AsyncThread::run()
       case SUSCAN_ANALYZER_MESSAGE_TYPE_SAMPLES:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INIT:
       case SUSCAN_ANALYZER_MESSAGE_TYPE_INTERNAL:
+      case SUSCAN_ANALYZER_MESSAGE_TYPE_PARAMS:
         emit message(type, data);
         break;
 
@@ -106,6 +133,12 @@ void
 Analyzer::setGain(std::string const &name, SUFLOAT value)
 {
   SU_ATTEMPT(suscan_analyzer_set_gain(this->instance, name.c_str(), value));
+}
+
+void
+Analyzer::seek(struct timeval const &tv)
+{
+  SU_ATTEMPT(suscan_analyzer_seek(this->instance, &tv));
 }
 
 void
@@ -210,6 +243,16 @@ Analyzer::getMeasuredSampleRate(void) const
         suscan_analyzer_get_measured_samp_rate(this->instance));
 }
 
+struct timeval
+Analyzer::getSourceTimeStamp(void) const
+{
+  struct timeval tv;
+
+  suscan_analyzer_get_source_time(this->instance, &tv);
+
+  return tv;
+}
+
 void
 Analyzer::halt(void)
 {
@@ -241,6 +284,10 @@ Analyzer::captureMessage(quint32 type, void *data)
     case SUSCAN_ANALYZER_MESSAGE_TYPE_INTERNAL:
     case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INIT:
       emit status_message(StatusMessage(static_cast<struct suscan_analyzer_status_msg *>(data)));
+      break;
+
+    case SUSCAN_ANALYZER_MESSAGE_TYPE_PARAMS:
+      emit analyzer_params(AnalyzerParams(*static_cast<struct suscan_analyzer_params *>(data)));
       break;
 
     // Exit conditions. These have no data.
@@ -275,9 +322,24 @@ Analyzer::assertTypeRegistration(void)
     qRegisterMetaType<Suscan::SamplesMessage>();
     qRegisterMetaType<Suscan::SourceInfoMessage>();
     qRegisterMetaType<Suscan::StatusMessage>();
+    qRegisterMetaType<Suscan::AnalyzerParams>();
+    qRegisterMetaType<Suscan::OrbitReport>();
+    qRegisterMetaType<Suscan::Orbit>();
 
     Analyzer::registered = true;
   }
+}
+
+uint32_t
+Analyzer::allocateRequestId()
+{
+  return ++this->requestId;
+}
+
+uint32_t
+Analyzer::allocateInspectorId()
+{
+  return ++this->inspectorId;
 }
 
 void
@@ -289,11 +351,11 @@ Analyzer::open(
   struct sigutils_channel c_ch =
       sigutils_channel_INITIALIZER;
 
-  c_ch.fc   = static_cast<float>(ch.fc);
-  c_ch.ft   = static_cast<float>(ch.ft);
-  c_ch.f_lo = static_cast<float>(ch.fLow);
-  c_ch.f_hi = static_cast<float>(ch.fHigh);
-  c_ch.bw   = static_cast<float>(ch.fHigh - ch.fLow);
+  c_ch.fc   = SCAST(SUFREQ, ch.fc);
+  c_ch.ft   = SCAST(SUFREQ, ch.ft);
+  c_ch.f_lo = SCAST(SUFREQ, ch.fLow);
+  c_ch.f_hi = SCAST(SUFREQ, ch.fHigh);
+  c_ch.bw   = SCAST(SUFLOAT, ch.fHigh - ch.fLow);
 
   SU_ATTEMPT(
         suscan_analyzer_open_async(
@@ -312,11 +374,11 @@ Analyzer::openPrecise(
   struct sigutils_channel c_ch =
       sigutils_channel_INITIALIZER;
 
-  c_ch.fc   = static_cast<float>(ch.fc);
-  c_ch.ft   = static_cast<float>(ch.ft);
-  c_ch.f_lo = static_cast<float>(ch.fLow);
-  c_ch.f_hi = static_cast<float>(ch.fHigh);
-  c_ch.bw   = static_cast<float>(ch.fHigh - ch.fLow);
+  c_ch.fc   = SCAST(SUFREQ, ch.fc);
+  c_ch.ft   = SCAST(SUFREQ, ch.ft);
+  c_ch.f_lo = SCAST(SUFREQ, ch.fLow);
+  c_ch.f_hi = SCAST(SUFREQ, ch.fHigh);
+  c_ch.bw   = SCAST(SUFLOAT, ch.fHigh - ch.fLow);
 
   SU_ATTEMPT(
         suscan_analyzer_open_ex_async(
@@ -324,6 +386,34 @@ Analyzer::openPrecise(
           inspClass.c_str(),
           &c_ch,
           SU_TRUE,
+          -1,
+          id));
+}
+
+void
+Analyzer::openEx(
+    std::string const &inspClass,
+    Channel const &ch,
+    bool precise,
+    Handle parent,
+    RequestId id)
+{
+  struct sigutils_channel c_ch =
+      sigutils_channel_INITIALIZER;
+
+  c_ch.fc   = SCAST(SUFREQ, ch.fc);
+  c_ch.ft   = SCAST(SUFREQ, ch.ft);
+  c_ch.f_lo = SCAST(SUFREQ, ch.fLow);
+  c_ch.f_hi = SCAST(SUFREQ, ch.fHigh);
+  c_ch.bw   = SCAST(SUFLOAT, ch.fHigh - ch.fLow);
+
+  SU_ATTEMPT(
+        suscan_analyzer_open_ex_async(
+          this->instance,
+          inspClass.c_str(),
+          &c_ch,
+          precise ? SU_TRUE : SU_FALSE,
+          parent,
           id));
 }
 
@@ -409,6 +499,33 @@ Analyzer::setInspectorEnabled(
 }
 
 void
+Analyzer::setInspectorDopplerCorrection(
+    Handle handle,
+    Orbit const &orbit,
+    RequestId id)
+{
+  SU_ATTEMPT(
+        suscan_analyzer_inspector_set_tle_async(
+          this->instance,
+          handle,
+          &orbit.getCOrbit(),
+          id));
+}
+
+void
+Analyzer::disableDopplerCorrection(
+    Handle handle,
+    RequestId id)
+{
+  SU_ATTEMPT(
+        suscan_analyzer_inspector_set_tle_async(
+          this->instance,
+          handle,
+          nullptr,
+          id));
+}
+
+void
 Analyzer::closeInspector(Handle handle, RequestId id)
 {
   SU_ATTEMPT(suscan_analyzer_close_async(this->instance, handle, id));
@@ -417,6 +534,9 @@ Analyzer::closeInspector(Handle handle, RequestId id)
 // Object construction and destruction
 Analyzer::Analyzer(AnalyzerParams &params, Source::Config const &config)
 {
+  this->requestId   = SCAST(uint32_t, rand() ^ (rand() << 16));
+  this->inspectorId = SCAST(uint32_t, rand() ^ (rand() << 16));
+
   assertTypeRegistration();
 
   SU_ATTEMPT(this->instance = suscan_analyzer_new(

@@ -19,47 +19,43 @@
 #ifndef APPUI_H
 #define APPUI_H
 
-#include "AboutDialog.h"
-#include "SourcePanel.h"
-#include "InspectorPanel.h"
-#include "FftPanel.h"
-#include "AudioPanel.h"
-#include "MainSpectrum.h"
-#include "ConfigDialog.h"
-#include "Palette.h"
-#include "AutoGain.h"
-#include "Averager.h"
-#include "DeviceGain.h"
-#include "Inspector.h"
-#include "ui_MainWindow.h"
-#include "ConfigDialog.h"
-#include "DeviceDialog.h"
-#include "PanoramicDialog.h"
-#include "LogDialog.h"
-#include "BackgroundTasksDialog.h"
-#include "AddBookmarkDialog.h"
-#include "BookmarkManagerDialog.h"
+#include <Suscan/Analyzer.h>
+
+class QMainWindow;
+class Ui_MainWindow;
+class QToolBar;
+class QDialog;
 
 namespace SigDigger {
+  class ConfigDialog;
+  class DeviceDialog;
+  class PanoramicDialog;
+  class MainSpectrum;
+  class AboutDialog;
+  class DataSaverUI;
+  class LogDialog;
+  class BackgroundTasksDialog;
+  class AddBookmarkDialog;
+  class BookmarkManagerDialog;
+  class QTimeSlider;
+  class Inspector;
+  class QuickConnectDialog;
+
   struct AppUI {
     Ui_MainWindow *main = nullptr;
     ConfigDialog *configDialog = nullptr;
     DeviceDialog *deviceDialog = nullptr;
     PanoramicDialog *panoramicDialog = nullptr;
     MainSpectrum *spectrum = nullptr;
-    SourcePanel *sourcePanel = nullptr;
-    InspectorPanel *inspectorPanel = nullptr;
-    FftPanel *fftPanel = nullptr;
-    AudioPanel *audioPanel = nullptr;
     AboutDialog *aboutDialog = nullptr;
     DataSaverUI *dataSaverUI = nullptr;
     LogDialog *logDialog = nullptr;
+    QuickConnectDialog *quickConnectDialog = nullptr;
     BackgroundTasksDialog *backgroundTasksDialog = nullptr;
     AddBookmarkDialog *addBookmarkDialog = nullptr;
     BookmarkManagerDialog *bookmarkManagerDialog = nullptr;
-
-    std::map<Suscan::InspectorId, Inspector *> inspectorTable;
-    Suscan::InspectorId lastId = 0;
+    QToolBar *timeToolbar;
+    QTimeSlider *timeSlider = nullptr;
 
     AppUI(QMainWindow *);
     void postLoadInit(QMainWindow *owner);

@@ -26,6 +26,7 @@ CarrierXlator::CarrierXlator(
     SUCOMPLEX *destination,
     size_t length,
     SUFLOAT relFreq,
+    SUFLOAT phase,
     QObject *parent) : CancellableTask(parent)
 {
   this->origin      = data;
@@ -33,6 +34,7 @@ CarrierXlator::CarrierXlator(
   this->length      = length;
 
   su_ncqo_init(&this->ncqo, -relFreq);
+  su_ncqo_set_phase(&this->ncqo, -phase);
 
   this->setProgress(0);
 

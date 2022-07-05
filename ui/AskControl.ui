@@ -60,50 +60,13 @@
        <number>3</number>
       </property>
       <item row="5" column="1">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Offset</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
        <widget class="QCheckBox" name="pllCheck">
         <property name="text">
          <string>Use PLL</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1" colspan="2">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;ASK Detection&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>PLL Cutoff</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1" rowspan="2">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Bits per sample</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2" colspan="2">
+      <item row="3" column="2" colspan="2">
        <widget class="QSpinBox" name="bitsSpin">
         <property name="minimum">
          <number>1</number>
@@ -113,7 +76,27 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="2">
+      <item row="3" column="1">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Bits per sample</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Offset</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2">
        <widget class="QDoubleSpinBox" name="pllCutoffSpin">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -129,7 +112,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="2">
+      <item row="7" column="2">
        <widget class="QDoubleSpinBox" name="pllOffsetSpin">
         <property name="prefix">
          <string/>
@@ -137,6 +120,49 @@
         <property name="suffix">
          <string> Hz</string>
         </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>PLL Cutoff</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;ASK Detection&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Component</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2" colspan="2">
+       <widget class="QComboBox" name="componentCombo">
+        <item>
+         <property name="text">
+          <string>Both</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>In-phase</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Quadrature</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>

@@ -21,7 +21,7 @@
 
 #include <QDialog>
 #include <QModelIndex>
-#include <BookmarkInfo.h>
+#include <WFHelpers.h>
 
 namespace Ui {
   class BookmarkManagerDialog;

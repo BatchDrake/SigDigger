@@ -22,23 +22,22 @@
 
 #include <Suscan/Source.h>
 #include <Suscan/Analyzer.h>
+#include <QTimer>
 
 /* Local includes */
 #include "AppConfig.h"
 #include "UIMediator.h"
-#include "AudioPlayback.h"
-#include "FileDataSaver.h"
-#include "AudioFileSaver.h"
-#include "Scanner.h"
-#include <BookmarkInfo.h>
 
 namespace SigDigger {
+  class Scanner;
+  class FileDataSaver;
+
   class DeviceDetectWorker : public QObject {
       Q_OBJECT
 
   public:
       DeviceDetectWorker();
-      ~DeviceDetectWorker();
+      ~DeviceDetectWorker() override;
 
   public slots:
       void process();
@@ -56,8 +55,6 @@ namespace SigDigger {
 
     // Suscan core object
     std::unique_ptr<Suscan::Analyzer> analyzer = nullptr;
-    std::unique_ptr<FileDataSaver> dataSaver = nullptr;
-    std::unique_ptr<AudioFileSaver> audioFileSaver = nullptr;
 
     bool profileSelected = false;
     unsigned int currSampleRate;
@@ -66,32 +63,13 @@ namespace SigDigger {
     // UI
     AppUI ui;
     UIMediator *mediator = nullptr;
-
-    // Audio
-    std::unique_ptr<AudioPlayback> playBack = nullptr;
-    Suscan::Handle audioInspHandle = 0;
-    unsigned int audioSampleRate = 0;
-    suscan_config_t *audioCfgTemplate = nullptr;
-    bool audioInspectorOpened = false;
-    bool audioConfigured = false;
-    SUFREQ maxAudioBw = SIGDIGGER_AUDIO_INSPECTOR_BANDWIDTH;
-    SUFREQ lastAudioLo = 0;
-
-    // Raw inspector for time view
-    Suscan::Handle rawInspHandle = 0;
-    bool rawInspectorOpened = false;
+    QTimer uiTimer;
+    bool sourceInfoReceived = false;
 
     // Panoramic spectrum
     Scanner *scanner = nullptr;
     SUFREQ scanMinFreq;
     SUFREQ scanMaxFreq;
-
-    // Delayed audio parameters
-    unsigned int delayedRate = 0;
-    SUFLOAT delayedCutOff = 0;
-    unsigned int delayedDemod = 0;
-    SUFLOAT delayedSqlLevel = 0;
-    bool delayedEnableSql = false;
 
     // Rediscover devices
     QThread *deviceDetectThread;
@@ -101,26 +79,11 @@ namespace SigDigger {
     QString getLogText(void);
     void connectUI(void);
     void connectAnalyzer(void);
-    void connectDataSaver(void);
-    void connectAudioFileSaver(void);
     void connectDeviceDetect(void);
     void connectScanner(void);
 
-    int  openCaptureFile(void);
-    void installDataSaver(int fd);
-    void uninstallDataSaver(void);
-    bool openAudioFileSaver(void);
-    void closeAudioFileSaver(void);
+    void hotApplyProfile(Suscan::Source::Config const *);
     void orderedHalt(void);
-    void setAudioInspectorParams(
-        unsigned int rate,
-        SUFLOAT cutOff,
-        unsigned int demod,
-        bool squelch,
-        SUFLOAT squelchLevel);
-    SUFREQ getAudioInspectorLo(void) const;
-    SUFREQ getAudioInspectorBandwidth(void) const;
-    void   assertAudioInspectorLo(void);
 
   public:
     // Application methods
@@ -133,17 +96,15 @@ namespace SigDigger {
     void restartCapture(void);
     void stopCapture(void);
     void setThrottleEnabled(bool);
-    bool openAudio(unsigned int rate);
-    void closeAudio(void);
 
     FileDataSaver *getSaver(void) const;
 
     explicit Application(QWidget *parent = nullptr);
-    ~Application();
+    ~Application() override;
 
 
   protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 
   signals:
     void detectDevices(void);
@@ -152,30 +113,13 @@ namespace SigDigger {
     // UI Slots
     void onCaptureStart(void);
     void onCaptureStop(void);
-    void onProfileChanged(void);
-    void onGainChanged(QString name, float val);
+    void onProfileChanged(bool);
     void onFrequencyChanged(qint64, qint64);
-    void onOpenInspector(void);
-    void onOpenRawInspector(void);
-    void onCloseRawInspector(void);
-    void onThrottleConfigChanged(void);
-    void onToggleRecord(void);
-    void onToggleDCRemove(void);
-    void onToggleIQReverse(void);
-    void onToggleAGCEnabled(void);
-    void onParamsChanged(void);
-    void onLoChanged(qint64);
-    void onChannelBandwidthChanged(qreal);
-    void onAudioChanged(void);
-    void onAudioRecordStateChanged(void);
-    void onAudioVolumeChanged(float);
-    void onAntennaChanged(QString antenna);
-    void onBandwidthChanged(void);
-    void onPPMChanged(void);
+    void onSeek(struct timeval);
     void onDeviceRefresh(void);
     void onRecentSelected(QString profile);
     void onRecentCleared(void);
-    void onAddBookmark(BookmarkInfo info);
+    void onTick(void);
     void quit(void);
 
     // Analyzer slots
@@ -183,22 +127,9 @@ namespace SigDigger {
     void onAnalyzerReadError(void);
     void onAnalyzerEos(void);
     void onPSDMessage(const Suscan::PSDMessage &);
-    void onInspectorMessage(const Suscan::InspectorMessage &);
-    void onInspectorSamples(const Suscan::SamplesMessage &);
     void onSourceInfoMessage(const Suscan::SourceInfoMessage &);
     void onStatusMessage(const Suscan::StatusMessage &);
-
-    // DataSaver slots
-    void onSaveError(void);
-    void onSaveSwamped(void);
-    void onSaveRate(qreal rate);
-    void onCommit(void);
-
-    // AudioFileSaver slots
-    void onAudioSaveError(void);
-    void onAudioSaveSwamped(void);
-    void onAudioSaveRate(qreal rate);
-    void onAudioCommit(void);
+    void onAnalyzerParams(const Suscan::AnalyzerParams &);
 
     // Device detect slots
     void onDetectFinished(void);

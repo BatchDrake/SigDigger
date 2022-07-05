@@ -25,6 +25,10 @@
 
 #include <Loader.h>
 
+#ifdef HAVE_CURL
+#include <curl/curl.h>
+#endif // HAVE_CURL
+
 using namespace SigDigger;
 
 //////////////////////////////// Loader thread ///////////////////////////////
@@ -45,20 +49,25 @@ InitThread::run()
     sing->init_estimators();
     emit change("Loading inspectors");
     sing->init_inspectors();
-    emit change("Loading codecs");
-    sing->init_codecs();
     emit change("Loading palettes");
     sing->init_palettes();
     emit change("Loading frequency tables");
     sing->init_fats();
     emit change("Loading bookmarks");
     sing->init_bookmarks();
+    emit change("Loading locations");
+    sing->init_locations();
+    emit change("Loading TLE sources");
+    sing->init_tle_sources();
+    emit change("Loading satellites from TLE");
+    sing->init_tle();
     emit change("Loading auto gains");
     sing->init_autogains();
     emit change("Loading UI config");
     sing->init_ui_config();
     emit change("Loading profile history");
     sing->init_recent_list();
+    emit change("Init done, reloading devices");
   } catch (Suscan::Exception const &e) {
     emit failure(QString(e.what()));
   }
@@ -83,6 +92,14 @@ Loader::Loader(Application *app)
 
   this->suscan = Suscan::Singleton::get_instance();
   this->app = app;
+
+  // Init CURL
+#ifdef HAVE_CURL
+  if (curl_global_init(CURL_GLOBAL_ALL) != 0) {
+    fprintf(stderr, "*** CURL Initialization failed ***\n");
+    exit(EXIT_FAILURE);
+  }
+#endif // HAVE_CURL
 
   // Allocate resources
   this->flushLog();

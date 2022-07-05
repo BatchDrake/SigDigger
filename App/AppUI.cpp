@@ -17,8 +17,30 @@
 //    <http://www.gnu.org/licenses/>
 //
 
+
+#include "AboutDialog.h"
+#include "MainSpectrum.h"
+#include "ConfigDialog.h"
+#include "Palette.h"
+#include "AutoGain.h"
+#include "Averager.h"
+#include "DeviceGain.h"
+#include "ui_MainWindow.h"
+#include "ConfigDialog.h"
+#include "DeviceDialog.h"
+#include "PanoramicDialog.h"
+#include "LogDialog.h"
+#include "BackgroundTasksDialog.h"
+#include "AddBookmarkDialog.h"
+#include "BookmarkManagerDialog.h"
+#include <QToolBar>
+#include "QTimeSlider.h"
 #include "AppUI.h"
+#include "QuickConnectDialog.h"
+
 #include "SigDiggerHelpers.h"
+#include <QToolBar>
+#include <QTimeSlider.h>
 
 using namespace SigDigger;
 
@@ -28,6 +50,17 @@ AppUI::AppUI(QMainWindow *owner)
 
   this->main->setupUi(owner);
 
+  this->timeToolbar = new QToolBar("Time controls");
+  this->timeSlider = new QTimeSlider(nullptr);
+
+  this->timeToolbar->setAllowedAreas(Qt::ToolBarArea::AllToolBarAreas);
+  this->timeToolbar->setMovable(false);
+
+  owner->addToolBarBreak(Qt::TopToolBarArea);
+  owner->addToolBar(Qt::TopToolBarArea, timeToolbar);
+
+  this->timeToolbar->addWidget(this->timeSlider);
+
   // In MacOS X there is already a system feature to show windows in full
   // screen, and therefore this option is not needed.
 #ifdef __APPLE__
@@ -36,10 +69,7 @@ AppUI::AppUI(QMainWindow *owner)
 #endif // __APPLE__
   
   this->spectrum = new MainSpectrum(owner);
-  this->sourcePanel = new SourcePanel(owner);
-  this->inspectorPanel = new InspectorPanel(owner);
-  this->fftPanel = new FftPanel(owner);
-  this->audioPanel = new AudioPanel(owner);
+  this->quickConnectDialog = new QuickConnectDialog(owner);
   this->aboutDialog = new AboutDialog(owner);
   this->deviceDialog = new DeviceDialog(owner);
   this->panoramicDialog = new PanoramicDialog(owner);
@@ -56,10 +86,9 @@ AppUI::postLoadInit(QMainWindow *owner)
   SigDiggerHelpers::instance()->deserializePalettes();
 
   this->configDialog = new ConfigDialog(owner);
-  this->fftPanel->refreshPalettes();
-  this->sourcePanel->deserializeAutoGains();
   this->spectrum->deserializeFATs();
-  this->inspectorPanel->postLoadInit();
+
+  this->spectrum->adjustSizes();
 }
 
 AppUI::~AppUI(void)

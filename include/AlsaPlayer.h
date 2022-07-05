@@ -22,7 +22,7 @@
 #include <GenericAudioPlayer.h>
 #include <alsa/asoundlib.h>
 
-#define ALSAPLAYER_UNDERRUN_WAIT_PERIOD_MS 100
+#define ALSAPLAYER_UNDERRUN_WAIT_PERIOD_MS 150
 
 namespace SigDigger {
   class AlsaPlayer : public GenericAudioPlayer {

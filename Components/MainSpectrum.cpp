@@ -20,8 +20,21 @@
 #include "MainSpectrum.h"
 #include "ui_MainSpectrum.h"
 #include <Suscan/Library.h>
+#include <QTimeSlider.h>
+
+#include "Waterfall.h"
+#include "GLWaterfall.h"
+#include <WFHelpers.h>
 
 using namespace SigDigger;
+
+#define WATERFALL_CALL(call)        \
+  do {                              \
+    if (this->wf != nullptr)        \
+      this->wf->call;               \
+    else if (this->glWf != nullptr) \
+      this->glWf->call;             \
+  } while (false);                  \
 
 namespace SigDigger {
   class SuscanBookmarkSource : public BookmarkSource {
@@ -55,13 +68,12 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   ui(new Ui::MainSpectrum)
 {
   ui->setupUi(this);
+
   this->connectAll();
+
   this->setFreqs(0, 0);
-  this->setShowFATs(true);
-
+  this->lastFreqUpdate.start();
   this->bookmarkSource = new SuscanBookmarkSource();
-
-  this->ui->mainSpectrum->setBookmarkSource(this->bookmarkSource);
 }
 
 MainSpectrum::~MainSpectrum()
@@ -75,19 +87,99 @@ MainSpectrum::~MainSpectrum()
 }
 
 void
-MainSpectrum::connectAll(void)
+MainSpectrum::connectWf(void)
 {
   connect(
-        this->ui->mainSpectrum,
+        this->wf,
         SIGNAL(newFilterFreq(int, int)),
         this,
         SLOT(onWfBandwidthChanged(int, int)));
 
   connect(
+        this->wf,
+        SIGNAL(newDemodFreq(qint64, qint64)),
+        this,
+        SLOT(onWfLoChanged(void)));
+
+  connect(
+        this->wf,
+        SIGNAL(pandapterRangeChanged(float, float)),
+        this,
+        SLOT(onRangeChanged(float, float)));
+
+  connect(
+        this->wf,
+        SIGNAL(newCenterFreq(qint64)),
+        this,
+        SLOT(onNewCenterFreq(qint64)));
+
+  connect(
+        this->wf,
+        SIGNAL(newZoomLevel(float)),
+        this,
+        SLOT(onNewZoomLevel(float)));
+
+  connect(
+        this->wf,
+        SIGNAL(newModulation(QString)),
+        this,
+        SLOT(onNewModulation(QString)));
+}
+
+void
+MainSpectrum::connectGLWf(void)
+{
+  connect(
+        this->glWf,
+        SIGNAL(newFilterFreq(int, int)),
+        this,
+        SLOT(onWfBandwidthChanged(int, int)));
+
+  connect(
+        this->glWf,
+        SIGNAL(newDemodFreq(qint64, qint64)),
+        this,
+        SLOT(onWfLoChanged(void)));
+
+  connect(
+        this->glWf,
+        SIGNAL(pandapterRangeChanged(float, float)),
+        this,
+        SLOT(onRangeChanged(float, float)));
+
+  connect(
+        this->glWf,
+        SIGNAL(newCenterFreq(qint64)),
+        this,
+        SLOT(onNewCenterFreq(qint64)));
+
+  connect(
+        this->glWf,
+        SIGNAL(newZoomLevel(float)),
+        this,
+        SLOT(onNewZoomLevel(float)));
+
+  connect(
+        this->glWf,
+        SIGNAL(newModulation(QString)),
+        this,
+        SLOT(onNewModulation(QString)));
+}
+
+void
+MainSpectrum::connectAll(void)
+{
+  connect(
         this->ui->fcLcd,
         SIGNAL(valueChanged(void)),
         this,
         SLOT(onFrequencyChanged(void)));
+
+  connect(
+        this->ui->fcLcd,
+        SIGNAL(lockStateChanged(void)),
+        this,
+        SLOT(onLockStateChanged(void)));
 
   connect(
         this->ui->lnbLcd,
@@ -100,50 +192,53 @@ MainSpectrum::connectAll(void)
         SIGNAL(valueChanged(void)),
         this,
         SLOT(onLoChanged(void)));
-
-  connect(
-        this->ui->mainSpectrum,
-        SIGNAL(newDemodFreq(qint64, qint64)),
-        this,
-        SLOT(onWfLoChanged(void)));
-
-  connect(
-        this->ui->mainSpectrum,
-        SIGNAL(pandapterRangeChanged(float, float)),
-        this,
-        SLOT(onRangeChanged(float, float)));
-
-  connect(
-        this->ui->mainSpectrum,
-        SIGNAL(newCenterFreq(qint64)),
-        this,
-        SLOT(onNewCenterFreq(qint64)));
-
-  connect(
-        this->ui->mainSpectrum,
-        SIGNAL(newZoomLevel(float)),
-        this,
-        SLOT(onNewZoomLevel(float)));
-
-  connect(
-        this->ui->mainSpectrum,
-        SIGNAL(newModulation(QString)),
-        this,
-        SLOT(onNewModulation(QString)));
 }
 
 void
-MainSpectrum::feed(float *data, int size)
+MainSpectrum::addToolWidget(QWidget *widget, QString const &title)
 {
-  this->ui->mainSpectrum->setNewFftData(data, size);
+  int widthHint = widget->sizeHint().width();
+  bool collapsed = widget->property("collapsed").value<bool>();
+
+  this->ui->multiToolBox->addItem(
+        new MultiToolBoxItem(
+          title,
+          widget,
+          !collapsed));
+
+  if (this->maxToolWidth < widthHint)
+    this->maxToolWidth = widthHint;
 }
 
+void
+MainSpectrum::feed(float *data, int size, struct timeval const &tv, bool looped)
+{
+  QDateTime dateTime;
+
+  dateTime.setMSecsSinceEpoch(tv.tv_sec * 1000 + tv.tv_usec / 1000);
+
+  WATERFALL_CALL(setNewFftData(data, size, dateTime, looped));
+
+  if (!this->resAdjusted) {
+    this->resAdjusted = true;
+    int res = static_cast<int>(
+          round(static_cast<qreal>(this->cachedRate) / size));
+    if (res < 1)
+      res = 1;
+    WATERFALL_CALL(setClickResolution(res));
+    WATERFALL_CALL(setFilterClickResolution(res));
+  }
+}
 
 void
 MainSpectrum::updateLimits(void)
 {
-  qint64 minLcd = this->minFreq + this->getLnbFreq();
-  qint64 maxLcd = this->maxFreq + this->getLnbFreq();
+  qint64 minFreq = this->noLimits ? 0         : this->minFreq;
+  qint64 maxFreq = this->noLimits ? 300000000000 : this->maxFreq;
+
+  qint64 minLcd = minFreq + this->getLnbFreq();
+  qint64 maxLcd = maxFreq + this->getLnbFreq();
+
 
   // Center frequency LCD limits
   this->ui->fcLcd->setMinSilent(minLcd);
@@ -155,6 +250,9 @@ MainSpectrum::updateLimits(void)
 
   this->ui->loLcd->setMinSilent(minLcd);
   this->ui->loLcd->setMaxSilent(maxLcd);
+
+  WATERFALL_CALL(setFrequencyLimitsEnabled(!this->noLimits));
+  WATERFALL_CALL(setFrequencyLimits(minLcd, maxLcd));
 }
 
 void
@@ -203,7 +301,7 @@ MainSpectrum::setThrottling(bool value)
 void
 MainSpectrum::setTimeSpan(quint64 span)
 {
-  this->ui->mainSpectrum->setWaterfallSpan(span * 1000);
+  WATERFALL_CALL(setWaterfallSpan(span * 1000));
 }
 
 void
@@ -234,7 +332,10 @@ MainSpectrum::getFrequencyUnits(qint64 freq)
 void
 MainSpectrum::notifyHalt(void)
 {
-  this->ui->mainSpectrum->setRunningState(false);
+  WATERFALL_CALL(setRunningState(false));
+  WATERFALL_CALL(setClickResolution(1));
+  WATERFALL_CALL(setFilterClickResolution(1));
+  this->resAdjusted = false;
 }
 
 void
@@ -248,7 +349,7 @@ MainSpectrum::setLoFreq(qint64 loFreq)
 {
   if (loFreq != this->getLoFreq()) {
     this->ui->loLcd->setValue(loFreq + this->getCenterFreq());
-    this->ui->mainSpectrum->setFilterOffset(loFreq);
+    WATERFALL_CALL(setFilterOffset(loFreq));
     emit loChanged(loFreq);
   }
 }
@@ -260,21 +361,43 @@ MainSpectrum::setLnbFreq(qint64 lnbFreq)
 }
 
 void
+MainSpectrum::setLocked(bool locked)
+{
+  this->ui->fcLcd->setLocked(locked);
+  this->ui->lnbLcd->setLocked(locked);
+
+  this->ui->fcLcd->setEnabled(!locked);
+  this->ui->lnbLcd->setEnabled(!locked);
+
+  this->onLockStateChanged();
+}
+
+void
+MainSpectrum::setGracePeriod(qint64 period)
+{
+  this->freqGracePeriod = period;
+}
+
+void
 MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq, bool silent)
 {
   qint64 newLo = this->ui->loLcd->getValue() - freq;
+
+  if (silent
+      && !this->lastFreqUpdate.hasExpired(this->freqGracePeriod))
+    return;
 
   if (silent) {
     this->ui->lnbLcd->setValueSilent(lnbFreq);
     this->ui->fcLcd->setValueSilent(freq);
   } else {
+    this->lastFreqUpdate.start();
     this->ui->lnbLcd->setValue(lnbFreq);
     this->ui->fcLcd->setValue(freq);
   }
 
-
-  this->ui->mainSpectrum->setCenterFreq(freq);
-  this->ui->mainSpectrum->setFreqUnits(getFrequencyUnits(freq));
+  WATERFALL_CALL(setCenterFreq(freq));
+  WATERFALL_CALL(setFreqUnits(getFrequencyUnits(freq)));
 
   this->updateLimits();
   this->setLoFreq(newLo);
@@ -283,57 +406,63 @@ MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq, bool silent)
 void
 MainSpectrum::setPaletteGradient(const QColor *table)
 {
-  this->ui->mainSpectrum->setPalette(table);
+  WATERFALL_CALL(setPalette(table));
 }
 
 void
 MainSpectrum::setPandapterRange(float min, float max)
 {
-  this->ui->mainSpectrum->setPandapterRange(min, max);
+  WATERFALL_CALL(setPandapterRange(min, max));
 }
 
 void
 MainSpectrum::setWfRange(float min, float max)
 {
-  this->ui->mainSpectrum->setWaterfallRange(min, max);
+  WATERFALL_CALL(setWaterfallRange(min, max));
 }
 
 void
 MainSpectrum::setPanWfRatio(float ratio)
 {
-  this->ui->mainSpectrum->setPercent2DScreen(static_cast<int>(ratio * 100));
+  WATERFALL_CALL(setPercent2DScreen(static_cast<int>(ratio * 100)));
 }
 
 void
 MainSpectrum::setPeakHold(bool hold)
 {
-  this->ui->mainSpectrum->setPeakHold(hold);
+  WATERFALL_CALL(setPeakHold(hold));
 }
 
 void
 MainSpectrum::setPeakDetect(bool det)
 {
-  this->ui->mainSpectrum->setPeakDetection(det, 5);
+  WATERFALL_CALL(setPeakDetection(det, 5));
+}
+
+void
+MainSpectrum::setFilled(bool filled)
+{
+  WATERFALL_CALL(setFftFill(filled));
 }
 
 void
 MainSpectrum::setExpectedRate(int rate)
 {
-  this->ui->mainSpectrum->setExpectedRate(rate);
+  WATERFALL_CALL(setExpectedRate(rate));
 }
 
 void
 MainSpectrum::setTimeStamps(bool enabled)
 {
-  this->ui->mainSpectrum->setTimeStampsEnabled(enabled);
-  this->ui->mainSpectrum->updateOverlay();
+  WATERFALL_CALL(setTimeStampsEnabled(enabled));
+  WATERFALL_CALL(updateOverlay());
 }
 
 void
 MainSpectrum::setBookmarks(bool enabled)
 {
-  this->ui->mainSpectrum->setBookmarksEnabled(enabled);
-  this->ui->mainSpectrum->updateOverlay();
+  WATERFALL_CALL(setBookmarksEnabled(enabled));
+  WATERFALL_CALL(updateOverlay());
 }
 
 void
@@ -358,43 +487,77 @@ MainSpectrum::setColorConfig(ColorConfig const &cfg)
   this->ui->captureModeLabel->setStyleSheet(styleSheet);
   this->ui->throttlingLabel->setStyleSheet(styleSheet);
 
-  this->ui->mainSpectrum->setFftPlotColor(cfg.spectrumForeground);
-  this->ui->mainSpectrum->setFftAxesColor(cfg.spectrumAxes);
-  this->ui->mainSpectrum->setFftBgColor(cfg.spectrumBackground);
-  this->ui->mainSpectrum->setFftTextColor(cfg.spectrumText);
-  this->ui->mainSpectrum->setFilterBoxColor(cfg.filterBox);
+  WATERFALL_CALL(setFftPlotColor(cfg.spectrumForeground));
+  WATERFALL_CALL(setFftAxesColor(cfg.spectrumAxes));
+  WATERFALL_CALL(setFftBgColor(cfg.spectrumBackground));
+  WATERFALL_CALL(setFftTextColor(cfg.spectrumText));
+  WATERFALL_CALL(setFilterBoxColor(cfg.filterBox));
+  WATERFALL_CALL(setTimeStampColor(cfg.spectrumTimeStamps));
+
+  this->lastColorConfig = cfg;
 }
 
 void
 MainSpectrum::setGuiConfig(GuiConfig const &cfg)
 {
-  this->ui->mainSpectrum->setUseLBMdrag(cfg.useLMBdrag);
+  if (this->noLimits != cfg.noLimits) {
+    this->noLimits = cfg.noLimits;
+    this->updateLimits();
+  }
+
+  if (this->wf == nullptr && this->glWf == nullptr) {
+    if (cfg.useGLWaterfall) {
+      // OpenGL waterfall
+      this->glWf = new GLWaterfall(this);
+      this->glWf->setObjectName(QStringLiteral("mainSpectrum"));
+      this->ui->gridLayout->addWidget(this->glWf, 2, 0, 1, 4);
+      this->connectGLWf();
+    } else {
+      // Classic waterfall
+      this->wf = new Waterfall(this);
+      this->wf->setObjectName(QStringLiteral("mainSpectrum"));
+      this->ui->gridLayout->addWidget(this->wf, 2, 0, 1, 4);
+      this->connectWf();
+    }
+
+    WATERFALL_CALL(setBookmarkSource(this->bookmarkSource));
+    WATERFALL_CALL(setClickResolution(1));
+    WATERFALL_CALL(setFilterClickResolution(1));
+
+    this->setShowFATs(true);
+    this->setColorConfig(this->lastColorConfig);
+  }
+
+  if (this->glWf != nullptr)
+    this->glWf->setMaxBlending(cfg.useMaxBlending);
+
+  WATERFALL_CALL(setUseLBMdrag(cfg.useLMBdrag));
 }
 
 void
 MainSpectrum::updateOverlay(void)
 {
-  this->ui->mainSpectrum->updateOverlay();
+  WATERFALL_CALL(updateOverlay());
 }
 
 void
 MainSpectrum::setGain(float gain)
 {
-  this->ui->mainSpectrum->setGain(gain);
+  WATERFALL_CALL(setGain(gain));
 }
 
 void
 MainSpectrum::setZeroPoint(float zeroPoint)
 {
-  this->ui->mainSpectrum->setZeroPoint(zeroPoint);
+  WATERFALL_CALL(setZeroPoint(zeroPoint));
 }
 
 void
 MainSpectrum::setUnits(QString const &name, float dBPerUnit, float zeroPoint)
 {
-  this->ui->mainSpectrum->setUnitName(name);
-  this->ui->mainSpectrum->setdBPerUnit(dBPerUnit);
-  this->ui->mainSpectrum->setZeroPoint(zeroPoint);
+  WATERFALL_CALL(setUnitName(name));
+  WATERFALL_CALL(setdBPerUnit(dBPerUnit));
+  WATERFALL_CALL(setZeroPoint(zeroPoint));
 }
 
 void
@@ -403,9 +566,9 @@ MainSpectrum::setFilterBandwidth(unsigned int bw)
   if (this->bandwidth != bw) {
     int freq = static_cast<int>(bw);
 
-    this->ui->mainSpectrum->setHiLowCutFrequencies(
+   WATERFALL_CALL(setHiLowCutFrequencies(
           computeLowCutFreq(freq),
-          computeHighCutFreq(freq));
+          computeHighCutFreq(freq)));
     this->bandwidth = bw;
   }
 }
@@ -422,12 +585,12 @@ MainSpectrum::setFilterSkewness(Skewness skw)
     bool upperSideBand =
         this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
 
-    this->ui->mainSpectrum->setDemodRanges(
+    WATERFALL_CALL(setDemodRanges(
           lowerSideBand ? -freq / 2 : 1,
           1,
           1,
           upperSideBand ? +freq / 2 : 1,
-          skw == SYMMETRIC);
+          skw == SYMMETRIC));
 
     this->bandwidth = 0;
     this->setFilterBandwidth(bw);
@@ -440,8 +603,7 @@ MainSpectrum::setZoom(unsigned int zoom)
 {
   if (zoom > 0) {
     this->zoom = zoom;
-    this->ui->mainSpectrum->setSpanFreq(
-          this->cachedRate / zoom);
+    WATERFALL_CALL(setSpanFreq(this->cachedRate / zoom));
   }
 }
 
@@ -455,20 +617,21 @@ MainSpectrum::setSampleRate(unsigned int rate)
     bool upperSideBand =
         this->filterSkewness == SYMMETRIC || this->filterSkewness == UPPER;
 
-    this->ui->mainSpectrum->setDemodRanges(
+    WATERFALL_CALL(setDemodRanges(
           lowerSideBand ? -freq / 2 : 1,
           1,
           1,
           upperSideBand ? +freq / 2 : 1,
-          this->filterSkewness == SYMMETRIC);
+          this->filterSkewness == SYMMETRIC));
 
-    this->ui->mainSpectrum->setSampleRate(rate);
+    WATERFALL_CALL(setSampleRate(rate));
 
-    this->ui->mainSpectrum->setSpanFreq(rate / this->zoom);
+    WATERFALL_CALL(setSpanFreq(rate / this->zoom));
     this->ui->loLcd->setMin(-freq / 2 + this->getCenterFreq());
     this->ui->loLcd->setMax(freq / 2 + this->getCenterFreq());
 
     this->cachedRate = rate;
+    this->resAdjusted = false;
   }
 }
 
@@ -489,19 +652,19 @@ qint32 MainSpectrum::computeHighCutFreq(int bw) const
 void
 MainSpectrum::setShowFATs(bool show)
 {
-  this->ui->mainSpectrum->setFATsVisible(show);
+  WATERFALL_CALL(setFATsVisible(show));
 }
 
 void
 MainSpectrum::pushFAT(FrequencyAllocationTable *fat)
 {
-  this->ui->mainSpectrum->pushFAT(fat);
+  WATERFALL_CALL(pushFAT(fat));
 }
 
 void
 MainSpectrum::removeFAT(QString const &name)
 {
-  this->ui->mainSpectrum->removeFAT(name.toStdString());
+  WATERFALL_CALL(removeFAT(name.toStdString()));
 }
 
 FrequencyBand
@@ -531,6 +694,51 @@ MainSpectrum::getFAT(QString const &name) const
       return p;
 
   return nullptr;
+}
+
+void
+MainSpectrum::adjustSizes(void)
+{
+  this->setSidePanelWidth(qBound(0, this->maxToolWidth, 220));
+}
+
+qreal
+MainSpectrum::sidePanelRatio(void) const
+{
+  int fullWidth = this->ui->splitter->width();
+
+  return static_cast<qreal>(this->ui->splitter->sizes()[1])
+      / static_cast<qreal>(fullWidth);
+}
+
+void
+MainSpectrum::setSidePanelWidth(int width)
+{
+  QList<int> sizes;
+  int fullWidth = this->ui->splitter->width();
+
+  if (fullWidth > 0) {
+    sizes.append(fullWidth - width);
+    sizes.append(width);
+
+    this->ui->splitter->setSizes(sizes);
+  }
+}
+
+int
+MainSpectrum::sidePanelWidth(void) const
+{
+  return this->ui->splitter->sizes()[1];
+}
+
+void
+MainSpectrum::setSidePanelRatio(qreal ratio)
+{
+  int fullWidth = this->ui->splitter->width();
+
+  int width = static_cast<int>(ratio * fullWidth);
+
+  this->setSidePanelWidth(width);
 }
 
 void
@@ -637,14 +845,18 @@ MainSpectrum::onLnbFrequencyChanged(void)
 void
 MainSpectrum::onWfLoChanged(void)
 {
-  this->ui->loLcd->setValue(this->ui->mainSpectrum->getFilterOffset() + this->getCenterFreq());
+  if (this->wf != nullptr)
+    this->ui->loLcd->setValue(this->wf->getFilterOffset() + this->getCenterFreq());
+  else if (this->glWf != nullptr)
+    this->ui->loLcd->setValue(this->glWf->getFilterOffset() + this->getCenterFreq());
+
   emit loChanged(this->getLoFreq());
 }
 
 void
 MainSpectrum::onLoChanged(void)
 {
-  this->ui->mainSpectrum->setFilterOffset(this->getLoFreq());
+  WATERFALL_CALL(setFilterOffset(this->getLoFreq()));
   emit loChanged(this->getLoFreq());
 }
 
@@ -664,4 +876,10 @@ void
 MainSpectrum::onNewModulation(QString modulation)
 {
   emit modulationChanged(modulation);
+}
+
+void
+MainSpectrum::onLockStateChanged(void)
+{
+  WATERFALL_CALL(setFreqDragLocked(this->ui->fcLcd->isLocked()));
 }

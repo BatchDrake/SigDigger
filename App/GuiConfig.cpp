@@ -34,7 +34,13 @@ GuiConfig::GuiConfig(Suscan::Object const &conf) : GuiConfig()
 void
 GuiConfig::loadDefaults(void)
 {
-  this->useLMBdrag = false;
+  this->useLMBdrag     = false;
+  this->noLimits       = false;
+  this->useGLWaterfall = false;
+  this->useGlInWindows = false;
+  this->useMaxBlending = false;
+  this->enableMsgTTL   = true;
+  this->msgTTL         = 15; // in milliseconds
 }
 
 #define STRINGFY(x) #x
@@ -47,7 +53,14 @@ GuiConfig::serialize(void)
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
   obj.setClass("guicfg");
+
   STORE(useLMBdrag);
+  STORE(noLimits);
+  STORE(useGLWaterfall);
+  STORE(useMaxBlending);
+  STORE(useGlInWindows);
+  STORE(enableMsgTTL);
+  STORE(msgTTL);
 
   return this->persist(obj);
 }
@@ -56,4 +69,10 @@ void
 GuiConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(useLMBdrag);
+  LOAD(noLimits);
+  LOAD(useGLWaterfall);
+  LOAD(useMaxBlending);
+  LOAD(useGlInWindows);
+  LOAD(enableMsgTTL);
+  LOAD(msgTTL);
 }

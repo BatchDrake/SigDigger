@@ -80,7 +80,7 @@ jobs:
         cd Scripts
         chmod a+x dist-appimage.sh
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
-        SIGDIGGER_EMBED_SOAPYSDR=1 ./dist-appimage.sh 
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Release ./dist-appimage.sh 
         cd ..
 
     - name: Archive AppImage files
@@ -163,7 +163,7 @@ jobs:
       run: |
         cd Scripts
         chmod a+x dist-dmg.sh
-        SIGDIGGER_EMBED_SOAPYSDR=1 ./dist-dmg.sh
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Release ./dist-dmg.sh
         cd ..
 
     - name: Archive .DMG files

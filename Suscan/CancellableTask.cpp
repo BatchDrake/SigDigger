@@ -17,6 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include <Suscan/CancellableTask.h>
+#include <Suscan/Library.h>
 
 using namespace Suscan;
 
@@ -63,8 +64,12 @@ CancellableTask::setStatus(QString status)
 void
 CancellableTask::onWorkRequested(void)
 {
-  if (this->work())
-    emit progress(prog, status);
+  try {
+    if (this->work())
+      emit progress(prog, status);
+  } catch (Suscan::Exception &e) {
+    emit error(QString::fromStdString(e.what()));
+  }
 }
 
 void

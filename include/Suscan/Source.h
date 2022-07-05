@@ -24,6 +24,7 @@
 
 #include <Suscan/Compat.h>
 #include <Suscan/Object.h>
+#include <QPair>
 #include <analyzer/source.h>
 
 struct suscan_analyzer_gain_info;
@@ -310,6 +311,12 @@ namespace Suscan {
     friend class Analyzer;
     friend class Source;
 
+    static SUBOOL walkParams(
+        const suscan_source_config_t *,
+        const char *,
+        const char *,
+        void *);
+
   public:
     suscan_source_config_t *instance;
     std::string label(void) const;
@@ -324,10 +331,16 @@ namespace Suscan {
     std::string getAntenna(void) const;
     bool getDCRemove(void) const;
     bool getIQBalance(void) const;
+    struct timeval getStartTime(void) const;
+    struct timeval getEndTime(void) const;
+    bool fileIsValid(void) const;
     std::string getInterface(void) const;
     SUFLOAT getBandwidth(void) const;
     SUFLOAT getGain(const std::string &) const;
     std::string getParam(const std::string &key) const;
+    bool hasParam(const std::string &key) const;
+    QList<QPair<std::string, std::string>> getParamList(void) const;
+    bool isRemote(void) const;
     SUFLOAT getPPM(void) const;
 
     const Source::Device &getDevice(void);
@@ -339,6 +352,7 @@ namespace Suscan {
     void setLoop(bool);
     void setDCRemove(bool);
     void setIQBalance(bool);
+    void setStartTime(struct timeval const &tv);
     void setFormat(enum suscan_source_format fmt);
     void setType(enum suscan_source_type type);
     void setLabel(const std::string &);
@@ -350,6 +364,8 @@ namespace Suscan {
     void setAntenna(const std::string &);    
     void setInterface(std::string const &interface);
     void setParam(std::string const &key, std::string const &param);
+    void clearParams(void);
+
     void setPPM(SUFLOAT);
 
     Config& operator=(const Config &);

@@ -77,8 +77,37 @@ function assert_symlink()
   return $?
 }
 
+function embed_suscli_deps()
+{
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DEPLOYROOT/usr/lib"
+
+    DEPS=`ldd "$DEPLOYROOT"/usr/bin/suscli | grep '=>' | sed 's/^.*=> \(.*\) .*$/\1/g' | tr -d '[ \t]' | sort | uniq`
+
+    for i in $DEPS; do
+	name=`basename "$i"`
+	if [ ! -f "$DEPLOYROOT"/usr/lib/"$name" ] && ! excluded "$name"; then
+	    try "Bringing $name..." cp -L "$i" "$DEPLOYROOT"/usr/lib
+	else
+	    rm -f "$DEPLOYROOT"/usr/lib/"$name"
+	    skip "Skipping $name..."
+	fi
+    done
+}
+
+function build_fixups()
+{
+  if [ "$OSTYPE" == "Linux" ]; then
+    cp -f "$BUILDROOT/"sigutils/build/libsigutils.so.* "$DEPLOYROOT/usr/lib"
+    cp -f "$BUILDROOT/"suscan/build/libsuscan.so.*     "$DEPLOYROOT/usr/lib"
+  fi
+
+  return 0
+}
+
 function embed_soapysdr()
 {
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DEPLOYROOT/usr/lib"
+    
     SOAPYSDRVER=`ldd $DEPLOYROOT/usr/bin/SigDigger | grep Soapy | sed 's/ =>.*$//g' | sed 's/^.*\.so\.//g'`
     try "Testing SoapySDR version..." [ "$SOAPYSDRVER" != "" ]
     try "Testing SoapySDR dir..." find_soapysdr
@@ -135,29 +164,12 @@ else
     APPIMAGE_NAME="$DISTFILENAME-lite".AppImage
 fi
 
+embed_suscli_deps
+
+try "Executing build fixups..." build_fixups
 try "Calling linuxdeployqt..." linuxdeployqt "$DEPLOYROOT"/usr/share/applications/SigDigger.desktop -bundle-non-qt-libs
-
 try "Moving SigDigger binary..." mv "$DEPLOYROOT"/usr/bin/SigDigger "$DEPLOYROOT"/usr/bin/SigDigger.app
-
-if [ "$SIGDIGGER_EMBED_SOAPYSDR" != "" ]; then
-    echo '#!/bin/sh
-SELF=$(readlink -f "$0")
-HERE=${SELF%/*}
-export SUSCAN_CONFIG_PATH="${HERE}/../share/suscan/config"
-export SOAPY_SDR_ROOT="${HERE}/.."
-if [ "x$SIGDIGGER_SOAPY_SDR_ROOT" != "x" ]; then
-  export SOAPY_SDR_ROOT="$SIGDIGGER_SOAPY_SDR_ROOT"
-fi
-export LD_LIBRARY_PATH="${HERE}/../lib:$LD_LIBRARY_PATH"
-exec "${HERE}"/SigDigger.app "$@"' > "$DEPLOYROOT"/usr/bin/SigDigger
-else
-    echo '#!/bin/sh
-SELF=$(readlink -f "$0")
-HERE=${SELF%/*}
-export SUSCAN_CONFIG_PATH="${HERE}/../share/suscan/config"
-export LD_LIBRARY_PATH="${HERE}/../lib:$LD_LIBRARY_PATH"
-exec "${HERE}"/SigDigger.app "$@"' > "$DEPLOYROOT"/usr/bin/SigDigger
-fi
+try "Copying wrapper script..." cp "$DISTROOT"/AppRun "$DEPLOYROOT"/usr/bin/SigDigger
 try "Setting permissions to wrapper script..." chmod a+x "$DEPLOYROOT"/usr/bin/SigDigger
 try "Calling AppImageTool and finishing..." appimagetool "$DEPLOYROOT"
 try "Renaming to $APPIMAGE_NAME..." mv "$SRC_APPIMAGE_NAME" "$DISTROOT/$APPIMAGE_NAME"

@@ -62,6 +62,31 @@ PSDMessage::getMeasuredSampleRate(void) const
   return static_cast<unsigned int>(msg->measured_samp_rate);
 }
 
+struct timeval
+PSDMessage::getTimeStamp(void) const
+{
+  const struct suscan_analyzer_psd_msg *msg
+      = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
+  return msg->timestamp;
+}
+
+struct timeval
+PSDMessage::getRealTimeStamp(void) const
+{
+  const struct suscan_analyzer_psd_msg *msg
+      = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
+  return msg->rt_time;
+}
+
+bool
+PSDMessage::hasLooped(void) const
+{
+  const struct suscan_analyzer_psd_msg *msg
+      = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
+
+  return msg->looped;
+}
+
 SUFREQ
 PSDMessage::getFrequency(void) const
 {

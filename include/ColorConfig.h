@@ -27,6 +27,7 @@ namespace SigDigger {
       QColor spectrumBackground;
       QColor spectrumAxes;
       QColor spectrumText;
+      QColor spectrumTimeStamps;
       QColor constellationForeground;
       QColor constellationBackground;
       QColor constellationAxes;
