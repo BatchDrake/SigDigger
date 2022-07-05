@@ -23,6 +23,7 @@
 #include <QFont>
 #include <QSurface>
 #include "Loader.h"
+#include <QtGlobal>
 
 #include <sigutils/version.h>
 #include <analyzer/version.h>
@@ -96,6 +97,10 @@ runSigDigger(QApplication &app)
 {
   int ret = 1;
 
+#ifdef Q_OS_MACOS
+  qputenv("QT_MAC_WANTS_LAYER", "1");
+#endif // Q_OS_MACOS
+  
   try {
     Application main_app;
     Loader loader(&main_app);
