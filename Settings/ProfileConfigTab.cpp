@@ -28,8 +28,10 @@
 #include "DeviceTweaks.h"
 #include "ui_ProfileConfigTab.h"
 
-#define PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ 0
-#define PROFILE_CONFIG_TAB_MAX_DEVICE_FREQ 7.5e9
+#define PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ       0
+#define PROFILE_CONFIG_TAB_MAX_DEVICE_FREQ       7.5e9
+
+#define PROFILE_CONFIG_SAMPLE_RATE_MATCH_REL_TOL 1e-6
 
 using namespace SigDigger;
 
@@ -149,7 +151,10 @@ ProfileConfigTab::populateCombos(void)
 void
 ProfileConfigTab::sampRateCtlHint(int index)
 {
-  if (this->ui->sampleRateCombo->count() == 0)
+  this->ui->overrideCheck->setEnabled(index == 0);
+
+  if (this->ui->sampleRateCombo->count() == 0
+      || this->ui->overrideCheck->isChecked())
     index = 1;
 
   this->ui->sampRateStack->setCurrentIndex(index);
@@ -721,6 +726,12 @@ ProfileConfigTab::connectAll(void)
         SIGNAL(accepted(void)),
         this,
         SLOT(onDeviceTweaksAccepted(void)));
+
+  connect(
+        this->ui->overrideCheck,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onOverrideSampleRate(void)));
 }
 
 void
@@ -1047,17 +1058,30 @@ ProfileConfigTab::setSelectedSampleRate(unsigned int rate)
 {
   // Set sample rate in both places
   qreal dist = std::numeric_limits<qreal>::infinity();
+  qreal bestRate = std::numeric_limits<qreal>::infinity();
+
   int bestIndex = -1;
   for (auto i = 0; i < this->ui->sampleRateCombo->count(); ++i) {
     qreal value = this->ui->sampleRateCombo->itemData(i).value<qreal>();
     if (fabs(value - rate) < dist) {
       bestIndex = i;
+      bestRate = rate;
       dist = fabs(value - rate);
     }
   }
 
-  if (bestIndex != -1)
-    this->ui->sampleRateCombo->setCurrentIndex(bestIndex);
+  // bestIndex different from -1 means that there is at least one optioon
+
+  if (bestIndex != -1) {
+    bool optionIsGood =
+        dist / bestRate < PROFILE_CONFIG_SAMPLE_RATE_MATCH_REL_TOL;
+
+    if (optionIsGood)
+      this->ui->sampleRateCombo->setCurrentIndex(bestIndex);
+
+    this->ui->overrideCheck->setChecked(!optionIsGood);
+  }
+
 
   this->ui->sampleRateSpinBox->setValue(rate);
 }
@@ -1497,4 +1521,15 @@ ProfileConfigTab::onDeviceTweaksAccepted(void)
     this->configChanged(true);
     this->hasTweaks = true;
   }
+}
+
+void
+ProfileConfigTab::onOverrideSampleRate(void)
+{
+  if (!this->ui->overrideCheck->isChecked()) {
+    this->sampRateCtlHint(0);
+    this->onSpinsChanged();
+  }
+
+  this->refreshUiState();
 }
