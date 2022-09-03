@@ -18,6 +18,7 @@
 //
 #include <Suscan/AnalyzerRequestTracker.h>
 #include <Suscan/Analyzer.h>
+#include <cassert>
 
 using namespace Suscan;
 

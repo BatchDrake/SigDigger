@@ -22,6 +22,7 @@
 #include <AppConfig.h>
 #include <SuWidgetsHelpers.h>
 #include <Suscan/AnalyzerRequestTracker.h>
+#include <cassert>
 
 using namespace SigDigger;
 
