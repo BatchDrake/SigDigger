@@ -218,6 +218,32 @@ RMSViewTab::disconnectSocket(void)
 }
 
 void
+RMSViewTab::toggleModes(QObject *sender)
+{
+  if (sender == nullptr || sender == this->ui->autoScrollButton)
+    this->ui->waveform->setAutoScroll(this->ui->autoScrollButton->isChecked());
+
+  if (sender == nullptr || sender == this->ui->autoFitButton)
+    this->ui->resetButton->setEnabled(!this->ui->autoFitButton->isChecked());
+
+  if (sender == nullptr || sender == this->ui->dbButton) {
+    if (this->ui->dbButton->isChecked()) {
+      this->ui->waveform->setVerticalUnits("dB");
+      this->ui->waveform->setRealComponent(false);
+    } else {
+      this->ui->waveform->setVerticalUnits("");
+      this->ui->waveform->setRealComponent(true);
+    }
+  }
+
+  if (sender == nullptr || sender == this->ui->autoFitButton) {
+    this->ui->waveform->refreshData();
+    if (this->ui->autoFitButton->isChecked())
+      this->fitVertical();
+  }
+}
+
+void
 RMSViewTab::fitVertical(void)
 {
   SUCOMPLEX dataMin = this->ui->waveform->getDataMin();
@@ -331,22 +357,9 @@ RMSViewTab::onTimeout(void)
 void
 RMSViewTab::onToggleModes(void)
 {
+  QObject *sender = QObject::sender();
 
-  this->ui->waveform->setAutoScroll(this->ui->autoScrollButton->isChecked());
-
-  this->ui->resetButton->setEnabled(!this->ui->autoFitButton->isChecked());
-
-  if (this->ui->dbButton->isChecked()) {
-    this->ui->waveform->setVerticalUnits("dB");
-    this->ui->waveform->setRealComponent(false);
-  } else {
-    this->ui->waveform->setVerticalUnits("");
-    this->ui->waveform->setRealComponent(true);
-  }
-
-  this->ui->waveform->refreshData();
-  if (this->ui->autoFitButton->isChecked())
-    this->fitVertical();
+  this->toggleModes(sender);
 }
 
 void

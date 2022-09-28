@@ -123,6 +123,7 @@ namespace SigDigger {
     void onChangeSourceTimeUTC(void);
     void onDeviceTweaksClicked(void);
     void onDeviceTweaksAccepted(void);
+    void onOverrideSampleRate(void);
   };
 }
 

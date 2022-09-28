@@ -18,6 +18,7 @@
 //
 #include <FeatureFactory.h>
 #include <Suscan/Plugin.h>
+#include <cassert>
 
 using namespace Suscan;
 

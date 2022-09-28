@@ -21,6 +21,7 @@
 #include <QFileDialog>
 #include <util/compat-statvfs.h>
 #include <SuWidgetsHelpers.h>
+#include <cassert>
 
 #include "UIMediator.h"
 #include "ProfileConfigTab.h"
