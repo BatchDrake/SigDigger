@@ -598,13 +598,16 @@ InspToolWidget::startRawCapture()
     ch.fLow  = - .5 * ch.bw;
     ch.fHigh = + .5 * ch.bw;
 
-    m_tracker->requestOpen("raw", ch, QVariant(), true);
+    if (m_tracker->requestOpen("raw", ch, QVariant(), true))
+      m_mediator->setUIBusy(true);
   }
 }
 
 void
 InspToolWidget::stopRawCapture()
 {
+  m_mediator->setUIBusy(false);
+
   if (m_analyzer != nullptr) {
     if (m_opened)
       m_analyzer->closeInspector(m_request.handle);
@@ -617,6 +620,7 @@ void
 InspToolWidget::setState(int, Suscan::Analyzer *analyzer)
 {
   if (m_analyzer != analyzer) {
+    m_mediator->setUIBusy(false);
     m_analyzer = analyzer;
 
     m_tracker->setAnalyzer(analyzer);
@@ -806,18 +810,22 @@ InspToolWidget::onOpened(Suscan::AnalyzerRequest const &request)
   m_opened = true;
   m_request = request;
 
+  m_mediator->setUIBusy(false);
+
   this->resetRawInspector(SCAST(qreal, request.equivRate));
 }
 
 void
 InspToolWidget::onCancelled(Suscan::AnalyzerRequest const &)
 {
-
+  m_mediator->setUIBusy(false);
 }
 
 void
 InspToolWidget::onError(Suscan::AnalyzerRequest const &, std::string const &error)
 {
+  m_mediator->setUIBusy(false);
+
   QMessageBox::critical(
         this,
         "Failed to open raw inspector",
