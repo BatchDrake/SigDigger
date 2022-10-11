@@ -102,6 +102,8 @@ Suscan::qHash(const Suscan::Source::Device &dev)
 
 Singleton::Singleton()
 {
+  suscan_sigutils_init(SUSCAN_MODE_NOLOG);
+  
   this->sources_initd = false;
   this->estimators_initd = false;
   this->spectrum_sources_initd = false;

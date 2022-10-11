@@ -32,19 +32,19 @@ void
 UIMediator::connectRequestTracker()
 {
   connect(
-        this->m_requestTracker,
+        m_requestTracker,
         SIGNAL(opened(Suscan::AnalyzerRequest const &)),
         this,
         SLOT(onOpened(Suscan::AnalyzerRequest const &)));
 
   connect(
-        this->m_requestTracker,
+        m_requestTracker,
         SIGNAL(cancelled(Suscan::AnalyzerRequest const &)),
         this,
         SLOT(onCancelled(Suscan::AnalyzerRequest const &)));
 
   connect(
-        this->m_requestTracker,
+        m_requestTracker,
         SIGNAL(error(Suscan::AnalyzerRequest const &, const std::string &)),
         this,
         SLOT(onError(Suscan::AnalyzerRequest const &, const std::string &)));
@@ -104,6 +104,8 @@ UIMediator::openInspectorTab(
     return false;
   }
 
+  this->owner->setCursor(Qt::WaitCursor);
+
   // And the opening procedure must succeed
   return m_requestTracker->requestOpen(
         inspClass,
@@ -161,6 +163,8 @@ UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
   InspectionWidgetFactory *factory;
   Suscan::Singleton *s = Suscan::Singleton::get_instance();
 
+  this->owner->setCursor(Qt::ArrowCursor);
+
   if ((factory = s->findInspectionWidgetFactory(factoryName)) == nullptr) {
     QMessageBox::critical(
           this,
@@ -182,12 +186,14 @@ UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
 void
 UIMediator::onCancelled(Suscan::AnalyzerRequest const &)
 {
-
+  this->owner->setCursor(Qt::ArrowCursor);
 }
 
 void
 UIMediator::onError(Suscan::AnalyzerRequest const &r, std::string const &error)
 {
+  this->owner->setCursor(Qt::ArrowCursor);
+
   QMessageBox::critical(
         this,
         "Cannot open inspector",

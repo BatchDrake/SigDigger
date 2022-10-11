@@ -656,6 +656,9 @@ void
 UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 {
   if (m_state != state) {
+    // Reset to previous state
+    this->owner->setCursor(Qt::ArrowCursor);
+
     // Sanity check
     switch (state) {
       case HALTED:
