@@ -74,6 +74,7 @@ namespace SigDigger {
 
     // Other references
     MainSpectrum     *m_spectrum = nullptr;
+    UIMediator       *m_mediator = nullptr;
 
     // Private methods
     void connectAll();

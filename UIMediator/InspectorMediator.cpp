@@ -104,7 +104,7 @@ UIMediator::openInspectorTab(
     return false;
   }
 
-  this->owner->setCursor(Qt::WaitCursor);
+  this->setUIBusy(true);
 
   // And the opening procedure must succeed
   return m_requestTracker->requestOpen(
@@ -163,7 +163,7 @@ UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
   InspectionWidgetFactory *factory;
   Suscan::Singleton *s = Suscan::Singleton::get_instance();
 
-  this->owner->setCursor(Qt::ArrowCursor);
+  this->setUIBusy(false);
 
   if ((factory = s->findInspectionWidgetFactory(factoryName)) == nullptr) {
     QMessageBox::critical(
@@ -186,13 +186,13 @@ UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
 void
 UIMediator::onCancelled(Suscan::AnalyzerRequest const &)
 {
-  this->owner->setCursor(Qt::ArrowCursor);
+  this->setUIBusy(false);
 }
 
 void
 UIMediator::onError(Suscan::AnalyzerRequest const &r, std::string const &error)
 {
-  this->owner->setCursor(Qt::ArrowCursor);
+  this->setUIBusy(false);
 
   QMessageBox::critical(
         this,

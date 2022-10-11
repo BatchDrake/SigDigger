@@ -331,6 +331,12 @@ UIMediator::floatTabWidget(TabWidget *tabWidget)
 }
 
 void
+UIMediator::setUIBusy(bool busy)
+{
+  this->owner->setCursor(busy ? Qt::WaitCursor : Qt::ArrowCursor);
+}
+
+void
 UIMediator::refreshUI()
 {
   QString stateString;
@@ -657,7 +663,7 @@ UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 {
   if (m_state != state) {
     // Reset to previous state
-    this->owner->setCursor(Qt::ArrowCursor);
+    this->setUIBusy(false);
 
     // Sanity check
     switch (state) {

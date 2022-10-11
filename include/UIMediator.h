@@ -161,6 +161,7 @@ namespace SigDigger {
     State getState() const;
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
     void notifyTimeStamp(struct timeval const &timestamp);
+    void setUIBusy(bool);
 
     // Recent list handling
     void clearRecent();
