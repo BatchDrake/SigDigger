@@ -87,7 +87,6 @@ function gather_dlls()
     fetch_dll libglib-2.0-0.dll
     fetch_dll libintl-8.dll
     fetch_dll libiconv-2.dll
-    fetch_dll libpcre-1.dll
     fetch_dll libgraphite2.dll
     fetch_dll libmd4c.dll
     fetch_dll libcrypto-1_1-x64.dll
