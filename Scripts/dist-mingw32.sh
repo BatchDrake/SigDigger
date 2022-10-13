@@ -73,6 +73,7 @@ function gather_dlls()
     fetch_dll libicuin71.dll
     fetch_dll libicuuc71.dll
     fetch_dll libicudt71.dll
+    fetch_dll libpcre2-8-0.dll
     fetch_dll libpcre2-16-0.dll
     fetch_dll zlib1.dll
     fetch_dll libzstd.dll
