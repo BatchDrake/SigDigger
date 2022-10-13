@@ -46,6 +46,9 @@ function fetch_dll()
     elif [ -f "/mingw64/bin/$1" ]; then
 	    try "Fetching $1 (bin)..." cp "/mingw64/bin/$1" "$STAGINGDIR/$2"
     else
+            echo "$DEPLOYROOT/usr/lib/*.dll"
+            echo /mingw64/bin/*.dll
+            echo /mingw64/lib/*.dll
 	    try "$1 NOT FOUND!" false
     fi
 }
