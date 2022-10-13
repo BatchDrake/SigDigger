@@ -70,9 +70,9 @@ function gather_dlls()
     fetch_dll libgcc_s_seh-1.dll
     fetch_dll libwinpthread-1.dll
     fetch_dll libdouble-conversion.dll
-    fetch_dll libicuin69.dll
-    fetch_dll libicuuc69.dll
-    fetch_dll libicudt69.dll
+    fetch_dll libicuin71.dll
+    fetch_dll libicuuc71.dll
+    fetch_dll libicudt71.dll
     fetch_dll libpcre2-16-0.dll
     fetch_dll zlib1.dll
     fetch_dll libzstd.dll
