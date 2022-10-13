@@ -106,6 +106,7 @@ function gather_dlls()
     fetch_dll libvolk.dll
     fetch_dll liblzma-5.dll
     fetch_dll liborc-0.4-0.dll
+    fetch_dll libsystre-0.dll
 }
 
 function create_bundle()
