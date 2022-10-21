@@ -1,0 +1,104 @@
+name: DevelopReleaseLinuxOnly
+
+on:
+  workflow_dispatch:
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  # Installation of dependencies is too OS-dependent now, we don't
+  # miss that much by particularizing this in a per-OS basis.
+  
+  build-linux-appimage:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup interactive shell session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+
+    - name: Install sndfile
+      run: sudo apt-get install libsndfile1-dev
+
+    # libvolk2-dev is not available in Ubuntu 18.04
+    - name: Install Volk
+      run: sudo apt-get install libvolk1-dev
+
+    - name: Install cURL
+      run: sudo apt-get install libcurl4-openssl-dev
+      
+    - name: Install FFTW3
+      run: sudo apt-get install libfftw3-dev
+
+    - name: Install SoapySDR modules
+      run: sudo apt-get install soapysdr-module-all
+
+    - name: Install SoapySDR development files
+      run: sudo apt-get install libsoapysdr-dev
+
+    - name: Install libxml2
+      run: sudo apt-get install libxml2-dev
+
+    - name: Install portaudio
+      run: sudo apt-get install portaudio19-dev
+
+    - name: Install ALSA libraries
+      run: sudo apt-get install libasound2-dev
+    
+    - name: Download linuxdeployqt AppImage
+      run: wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+    
+    - name: Install linuxdeployqt system-wide
+      run: |
+        sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
+        sudo chmod a+x /usr/bin/linuxdeployqt
+
+    - name: Download appimagetool
+      run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+    
+    - name: Install appimagetool system-wide
+      run: |
+        sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
+        sudo chmod a+x /usr/bin/appimagetool
+    
+    - name: Build & Distribute (SigDigger)
+      run: |
+        cd Scripts
+        chmod a+x dist-appimage.sh
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-appimage.sh 
+        cd ..
+
+    - name: Archive AppImage files
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-latest-appimage
+        path: Scripts/*.AppImage
+
+
+  do_release:
+    needs: [ build-linux-appimage ]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Download binaries
+        uses: actions/download-artifact@v2
+
+      - name: Deploy 'latest' release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "SigDigger Development Build (${{steps.date.outputs.date}}, GNU/Linux Only)"
+          files: |
+            linux-latest-appimage/*.AppImage
