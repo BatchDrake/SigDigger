@@ -49,7 +49,7 @@ LogDialog::saveLog(QString path)
   FILE *fp;
 
   if ((fp = fopen(path.toStdString().c_str(), "w")) == nullptr) {
-    QString error(errno);
+    QString error(strerror(errno));
 
     QMessageBox::critical(
           this,
@@ -151,8 +151,8 @@ LogDialog::onMessage(Suscan::LoggerMessage msg)
         newRow,
         1,
         new QTableWidgetItem(
-          QDateTime::fromTime_t(
-            static_cast<unsigned int>(msg.time.tv_sec)).toString()));
+          QDateTime::fromSecsSinceEpoch(
+            static_cast<qint64>(msg.time.tv_sec)).toString()));
 
   this->ui->logTableWidget->setItem(
         newRow,

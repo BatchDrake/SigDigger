@@ -845,7 +845,9 @@ Singleton::normalizeTLEName(QString const &name)
 {
   QString normalized = name;
 
-  return name.trimmed().replace(QRegExp("[^-a-zA-Z0-9()]"), "_");
+  return name.trimmed().replace(
+        QRegularExpression(QStringLiteral("[^-a-zA-Z0-9()]")),
+        "_");
 }
 
 bool

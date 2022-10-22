@@ -83,8 +83,8 @@ ButtonDelegate::editorEvent(
     this->pressed = false;
   } else if (event->type() == QEvent::MouseButtonRelease) {
     QMouseEvent * e = static_cast<QMouseEvent *>(event);
-    int clickX = e->x();
-    int clickY = e->y();
+    int clickX = static_cast<int>(e->position().x());
+    int clickY = static_cast<int>(e->position().y());
 
     QRect r = option.rect; //getting the rect of the cell
     int x, y, w, h;

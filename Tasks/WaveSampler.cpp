@@ -259,7 +259,7 @@ WaveSampler::sampleZeroCrossing(void)
 
       case FREQUENCY:
         x = this->properties.data[p];
-        var = SU_C_ARG(I * x * SU_C_CONJ(prev));
+        var = SU_C_ARG(SU_I * x * SU_C_CONJ(prev));
         prev = x;
         break;
     }

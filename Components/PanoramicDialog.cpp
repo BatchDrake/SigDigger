@@ -294,15 +294,15 @@ PanoramicDialog::connectAll(void)
 
   connect(
         this->ui->walkStrategyCombo,
-        SIGNAL(currentIndexChanged(const QString &)),
+        SIGNAL(currentIndexChanged(int)),
         this,
-        SLOT(onStrategyChanged(QString)));
+        SLOT(onStrategyChanged(int)));
 
   connect(
         this->ui->partitioningCombo,
-        SIGNAL(currentIndexChanged(const QString &)),
+        SIGNAL(currentIndexChanged(int)),
         this,
-        SIGNAL(partitioningChanged(QString)));
+        SLOT(onPartitioningChanged(int)));
 
   connect(
         this->ui->exportButton,
@@ -1075,10 +1075,18 @@ PanoramicDialog::onPaletteChanged(int)
 }
 
 void
-PanoramicDialog::onStrategyChanged(QString strategy)
+PanoramicDialog::onStrategyChanged(int)
 {
+  QString strategy = this->ui->walkStrategyCombo->currentText();
+
   this->ui->partitioningCombo->setEnabled(strategy != QString("Progressive"));
   emit strategyChanged(strategy);
+}
+
+void
+PanoramicDialog::onPartitioningChanged(int)
+{
+  emit partitioningChanged(this->ui->partitioningCombo->currentText());
 }
 
 void

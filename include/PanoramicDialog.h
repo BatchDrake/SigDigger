@@ -167,11 +167,12 @@ namespace SigDigger {
       void onBandPlanChanged(int);
       void onNewCenterFreq(qint64);
       void onPaletteChanged(int);
-      void onStrategyChanged(QString);
+      void onStrategyChanged(int);
       void onLnbOffsetChanged(void);
       void onExport(void);
       void onGainChanged(QString name, float val);
       void onSampleRateSpinChanged(void);
+      void onPartitioningChanged(int);
 
     private:
       Ui::PanoramicDialog *ui;

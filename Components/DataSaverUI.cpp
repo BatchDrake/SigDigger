@@ -24,6 +24,11 @@
 
 using namespace SigDigger;
 
+// I stopped caring long ago
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  define DirectoryOnly Directory
+#endif
+
 //////////////////////////// DataSaverConfig ///////////////////////////////////
 #define STRINGFY(x) #x
 #define STORE(field) obj.set(STRINGFY(field), this->field)

@@ -895,7 +895,7 @@ InspectorUI::feed(const SUCOMPLEX *data, unsigned int size)
 
           case Decider::ARGUMENT:
             for (unsigned i = 0; i < size; ++i)
-              this->floatBuffer[i] = SU_C_ARG(I * data[i]) / PI;
+              this->floatBuffer[i] = SU_C_ARG(SU_I * data[i]) / PI;
             break;
         }
 
