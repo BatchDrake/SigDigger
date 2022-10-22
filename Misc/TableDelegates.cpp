@@ -24,6 +24,13 @@
 using namespace SigDigger;
 
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  define GET_X(e) static_cast<int>((e)->position().x())
+#  define GET_Y(e) static_cast<int>((e)->position().y())
+#else
+#  define GET_X(e) (e)->x()
+#  define GET_Y(e) (e)->y()
+#endif // QT_VERSION
 
 ButtonDelegate::ButtonDelegate(QObject *parent, QString text)
     : QItemDelegate(parent)
@@ -83,8 +90,8 @@ ButtonDelegate::editorEvent(
     this->pressed = false;
   } else if (event->type() == QEvent::MouseButtonRelease) {
     QMouseEvent * e = static_cast<QMouseEvent *>(event);
-    int clickX = static_cast<int>(e->position().x());
-    int clickY = static_cast<int>(e->position().y());
+    int clickX = GET_X(e);
+    int clickY = GET_Y(e);
 
     QRect r = option.rect; //getting the rect of the cell
     int x, y, w, h;

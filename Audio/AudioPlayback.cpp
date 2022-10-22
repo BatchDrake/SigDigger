@@ -30,6 +30,11 @@
 #  include "PortAudioPlayer.h"
 #endif // SIGIDGGER_HAVE_ALSA
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  define QMutexLocker QMutexLocker<QRecursiveMutex>
+#endif
+
+
 using namespace SigDigger;
 
 #define ATTEMPT(expr, what) \
@@ -213,7 +218,7 @@ AudioBufferList::AudioBufferList(unsigned int num)
 void
 AudioBufferList::reset(void)
 {
-  QMutexLocker<QRecursiveMutex> locker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   if (this->current != nullptr) {
     AudioBuffer *buffer = this->current;
@@ -247,7 +252,7 @@ AudioBufferList::reset(void)
 float *
 AudioBufferList::reserve(void)
 {
-  QMutexLocker<QRecursiveMutex> locker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   // You cannot reserve a buffer before committing int
   if (this->current != nullptr) {
@@ -268,7 +273,7 @@ AudioBufferList::reserve(void)
 void
 AudioBufferList::commit(void)
 {
-  QMutexLocker<QRecursiveMutex> locker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   // You cannot commit if the current buffer is null
   if (this->current == nullptr) {
@@ -293,7 +298,7 @@ AudioBufferList::commit(void)
 float *
 AudioBufferList::next(void)
 {
-  QMutexLocker<QRecursiveMutex> locker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   if (this->playBuffer != nullptr) {
     std::cerr << "Invalid next(), please call release() first!" << std::endl;
@@ -318,7 +323,7 @@ AudioBufferList::next(void)
 void
 AudioBufferList::release(void)
 {
-  QMutexLocker<QRecursiveMutex> locker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   if (this->playBuffer == nullptr) {
     std::cerr << "Invalid release(), please call next() first!" << std::endl;
@@ -335,7 +340,7 @@ AudioBufferList::release(void)
 void
 AudioBufferList::clear(void)
 {
-  QMutexLocker<QRecursiveMutex> locker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   // You cannot commit if the current buffer is null
   if (this->current != nullptr) {
