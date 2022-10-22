@@ -106,7 +106,7 @@ namespace SigDigger {
     AudioBuffer *playBuffer = nullptr;
 
     // Mutex to ensure ordered access
-    QMutex listMutex;
+    QRecursiveMutex listMutex;
 
   public:
     AudioBufferList(unsigned int num);
