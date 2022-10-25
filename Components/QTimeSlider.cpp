@@ -27,6 +27,10 @@
 #include "SigDiggerHelpers.h"
 #include <QProxyStyle>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  define MidButton MiddleButton
+#endif
+
 using namespace SigDigger;
 
 class AbsolutePositioningStyle : public QProxyStyle

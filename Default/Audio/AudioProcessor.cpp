@@ -18,6 +18,7 @@
 //
 #include "AudioProcessor.h"
 #include "AudioPlayback.h"
+#include "UIMediator.h"
 
 #include <AppConfig.h>
 #include <SuWidgetsHelpers.h>
@@ -26,9 +27,11 @@
 
 using namespace SigDigger;
 
-AudioProcessor::AudioProcessor(UIMediator *, QObject *parent)
+AudioProcessor::AudioProcessor(UIMediator *mediator, QObject *parent)
   : QObject(parent)
 {
+  m_mediator = mediator;
+
   try {
     m_playBack = new AudioPlayback("default", m_sampleRate);
     m_tracker = new Suscan::AnalyzerRequestTracker(this);
@@ -134,12 +137,16 @@ AudioProcessor::openAudio()
     m_opening = opening;
   }
 
+  m_mediator->setUIBusy(opening);
+
   return opening;
 }
 
 bool
 AudioProcessor::closeAudio()
 {
+  m_mediator->setUIBusy(false);
+
   assert(m_analyzer != nullptr);
 
   if (m_opening || m_opened) {
@@ -236,6 +243,8 @@ AudioProcessor::setParams()
 void
 AudioProcessor::disconnectAnalyzer()
 {
+  m_mediator->setUIBusy(false);
+
   disconnect(m_analyzer, nullptr, this, nullptr);
 }
 
@@ -630,6 +639,8 @@ AudioProcessor::onOpened(Suscan::AnalyzerRequest const &req)
   // Async step 2: update state
   m_opening = false;
 
+  m_mediator->setUIBusy(false);
+
   if (m_analyzer != nullptr) {
     // We do a lazy initialization of the audio channel parameters. Instead of
     // creating our own audio configuration template in the constructor, we
@@ -670,6 +681,8 @@ AudioProcessor::onOpened(Suscan::AnalyzerRequest const &req)
 void
 AudioProcessor::onCancelled(Suscan::AnalyzerRequest const &)
 {
+  m_mediator->setUIBusy(false);
+
   m_opening = false;
   m_settingRate = false;
   m_playBack->stop();
@@ -678,6 +691,8 @@ AudioProcessor::onCancelled(Suscan::AnalyzerRequest const &)
 void
 AudioProcessor::onError(Suscan::AnalyzerRequest const &, std::string const &err)
 {
+  m_mediator->setUIBusy(false);
+
   m_opening = false;
   m_settingRate = false;
   m_playBack->stop();

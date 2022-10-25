@@ -403,7 +403,7 @@ TimeWindow::connectAll(void)
 
   connect(
         this->ui->clckSourceBtnGrp,
-        SIGNAL(buttonClicked(int)),
+        SIGNAL(buttonClicked(QAbstractButton *)),
         this,
         SLOT(onClkSourceButtonClicked()));
 
@@ -433,7 +433,7 @@ TimeWindow::connectAll(void)
 
   connect(
         this->ui->spaceButtonGrp,
-        SIGNAL(buttonClicked(int)),
+        SIGNAL(buttonClicked(QAbstractButton *)),
         this,
         SLOT(onZeroPointChanged(void)));
 
@@ -634,7 +634,7 @@ TimeWindow::populateSamplingProperties(SamplingProperties &prop)
     prop.space = SamplingSpace::AMPLITUDE;
     prop.zeroCrossingAngle = this->ui->clkComponentCombo->currentIndex() == 0
         ? 1
-        : -I;
+        : -SU_I;
   } else if (this->ui->decPhaseButton->isChecked()) {
     prop.space = SamplingSpace::PHASE;
   } else if (this->ui->decFrequencyButton->isChecked()) {
@@ -2249,7 +2249,7 @@ TimeWindow::onZeroPointChanged(void)
         break;
 
       case 1:
-        vCursor.level = I * SCAST(SUCOMPLEX, this->ui->zeroPointSpin->value());
+        vCursor.level = SU_I * SCAST(SUCOMPLEX, this->ui->zeroPointSpin->value());
         vCursors.append(vCursor);
         imag = true;
         break;

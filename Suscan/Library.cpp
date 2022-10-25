@@ -102,6 +102,8 @@ Suscan::qHash(const Suscan::Source::Device &dev)
 
 Singleton::Singleton()
 {
+  suscan_sigutils_init(SUSCAN_MODE_NOLOG);
+  
   this->sources_initd = false;
   this->estimators_initd = false;
   this->spectrum_sources_initd = false;
@@ -843,7 +845,9 @@ Singleton::normalizeTLEName(QString const &name)
 {
   QString normalized = name;
 
-  return name.trimmed().replace(QRegExp("[^-a-zA-Z0-9()]"), "_");
+  return name.trimmed().replace(
+        QRegularExpression(QStringLiteral("[^-a-zA-Z0-9()]")),
+        "_");
 }
 
 bool

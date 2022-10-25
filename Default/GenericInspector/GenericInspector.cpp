@@ -264,6 +264,10 @@ GenericInspector::inspectorMessage(Suscan::InspectorMessage const &msg)
         this->disableCorrection();
       break;
 
+    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_ESTIMATOR:
+      this->updateEstimator(msg.getEstimatorId(), msg.getEstimation());
+      break;
+
     default:
       break;
   }

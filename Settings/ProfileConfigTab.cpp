@@ -453,7 +453,7 @@ ProfileConfigTab::refreshProfileUi(void)
     this->ui->sourceTimeEdit->setDateTime(dateTime);
   } else {
     this->ui->sourceTimeEdit->setDateTime(
-          QDateTime::fromTime_t(
+          QDateTime::fromSecsSinceEpoch(
             static_cast<unsigned int>(time(nullptr))));
   }
 

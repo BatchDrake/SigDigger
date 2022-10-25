@@ -4,10 +4,10 @@
 #
 #-------------------------------------------------
 
-QT           += core gui network
+QT           += core gui network widgets opengl
 unix: QMAKE_LFLAGS += -rdynamic
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
+greaterThan(QT_MAJOR_VERSION, 5): QT += openglwidgets
 
 TARGET   = SigDigger
 TEMPLATE = app

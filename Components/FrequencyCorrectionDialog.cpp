@@ -917,7 +917,11 @@ FrequencyCorrectionDialog::parseCurrentTLE(void)
 
 FrequencyCorrectionDialog::~FrequencyCorrectionDialog()
 {
-  orbit_finalize(&this->currentOrbit);
+  if (this->haveOrbit) {
+    sgdp4_prediction_finalize(&this->prediction);
+    orbit_finalize(&this->currentOrbit);
+  }
+
   delete ui;
 }
 

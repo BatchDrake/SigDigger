@@ -97,7 +97,7 @@ RMSViewTab::integrateMeasure(qreal timestamp, SUFLOAT mag)
     this->energy_accum /= intLen;
     this->data.push_back(
           this->energy_accum
-          + I * SU_ASFLOAT(SU_POWER_DB_RAW(this->energy_accum)));
+          + SU_I * SU_ASFLOAT(SU_POWER_DB_RAW(this->energy_accum)));
     this->last = timestamp;
     this->accum_ctr = 0;
     this->energy_accum = 0;
@@ -153,7 +153,7 @@ RMSViewTab::parseLine(void)
           mag);
 
     if (this->data.size() > 0) {
-      date.setTime_t(static_cast<unsigned int>(this->last));
+      date.setSecsSinceEpoch(static_cast<qint64>(this->last));
       this->ui->lastLabel->setText("Last: " + date.toString());
 
       if (this->data.size() == 1) {

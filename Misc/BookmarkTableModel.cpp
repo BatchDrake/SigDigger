@@ -24,6 +24,10 @@
 
 using namespace SigDigger;
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  define BackgroundColorRole BackgroundRole
+#endif
+
 BookmarkTableModel::BookmarkTableModel(
     QObject *parent,
     const QMap<qint64,Suscan::Bookmark> *map) : QAbstractTableModel(parent)
