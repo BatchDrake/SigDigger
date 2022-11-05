@@ -1476,8 +1476,8 @@ InspectorUI::onSpectrumConfigChanged(void)
   if (QObject::sender() == this->ui->peakHoldButton)
     m_tabConfig->peakHold = this->ui->peakHoldButton->isChecked();
 
-  WATERFALL_CALL(setPeakDetection(m_tabConfig->peakHold, 3));
-  WATERFALL_CALL(setPeakHold(m_tabConfig->peakDetect));
+  WATERFALL_CALL(setPeakDetection(m_tabConfig->peakDetect, 3));
+  WATERFALL_CALL(setPeakHold(m_tabConfig->peakHold));
 }
 
 void
