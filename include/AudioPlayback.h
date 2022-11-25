@@ -37,6 +37,10 @@
 #define SIGDIGGER_AUDIO_BUFFER_SIZE_MIN     256
 #define SIGDIGGER_AUDIO_BUFFER_DELAY_MS     20
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+#  define QRecursiveMutex QMutex
+#endif
+
 namespace SigDigger {
   class AudioBufferList;
   class GenericAudioPlayer;
