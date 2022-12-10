@@ -36,6 +36,14 @@ using namespace SigDigger;
       this->glWf->call;             \
   } while (false);                  \
 
+#define WATERFALL_CALL_LHT(t, call) \
+  do {                              \
+    if (this->wf != nullptr)        \
+      t this->wf->call;             \
+    else if (this->glWf != nullptr) \
+      t this->glWf->call;           \
+  } while (false);                  \
+
 namespace SigDigger {
   class SuscanBookmarkSource : public BookmarkSource {
     public:
@@ -770,6 +778,63 @@ MainSpectrum::deserializeFATs(void)
     ++ndx;
   }
 }
+
+///////////////////////////// Named Channel API ///////////////////////////////
+NamedChannelSetIterator MainSpectrum::addChannel(
+    QString name,
+    qint64 frequency,
+    qint32 fMin,
+    qint32 fMax,
+    QColor boxColor,
+    QColor markerColor,
+    QColor cutOffColor)
+{
+  WATERFALL_CALL_LHT(
+      return,
+      addChannel(
+          name, frequency, fMin,
+          fMax, boxColor, markerColor,
+          cutOffColor));
+
+  return NamedChannelSetIterator();
+}
+
+void
+MainSpectrum::removeChannel(NamedChannelSetIterator it)
+{
+  WATERFALL_CALL(removeChannel(it));
+}
+
+void
+MainSpectrum::refreshChannel(NamedChannelSetIterator it)
+{
+  WATERFALL_CALL(refreshChannel(it));
+}
+
+NamedChannelSetIterator
+MainSpectrum::findChannel(qint64 freq)
+{
+  WATERFALL_CALL_LHT(return, findChannel(freq));
+
+  return NamedChannelSetIterator();
+}
+
+NamedChannelSetIterator
+MainSpectrum::channelCBegin() const
+{
+  WATERFALL_CALL_LHT(return, channelCBegin());
+
+  return NamedChannelSetIterator();
+}
+
+NamedChannelSetIterator
+MainSpectrum::channelCEnd() const
+{
+  WATERFALL_CALL_LHT(return, channelCEnd());
+
+  return NamedChannelSetIterator();
+}
+
 
 ////////////////////////////////// Getters ////////////////////////////////////
 bool
