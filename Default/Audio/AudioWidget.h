@@ -35,8 +35,10 @@ namespace SigDigger {
 
   class AudioWidgetConfig : public Suscan::Serializable {
   public:
-    bool enabled = false;
-    bool collapsed = false;
+    bool enabled        = false;
+    bool collapsed      = false;
+    bool lockToFreq     = false;
+
     std::string demod;
     std::string savePath;
     unsigned int rate   = 44100;
@@ -89,11 +91,13 @@ namespace SigDigger {
     void populateRates();
     void refreshUi();
     void refreshNamedChannel();
+    void applySpectrumState();
 
     // Private setters
     void setBandwidth(SUFLOAT);
     void setDemodFreq(qint64);
     void setEnabled(bool);
+    void setLockToFreq(bool);
     void setDemod(enum AudioDemod);
     void setSampleRate(unsigned int);
     void setCutOff(SUFLOAT);
@@ -116,6 +120,7 @@ namespace SigDigger {
     bool getEnabled() const;
     bool shouldOpenAudio() const;
     enum AudioDemod getDemod() const;
+    bool getLockToFreq() const;
     unsigned int getSampleRate() const;
     SUFLOAT getCutOff() const;
     SUFLOAT getVolume() const;
@@ -125,8 +130,8 @@ namespace SigDigger {
     bool    getSquelchEnabled() const;
     SUFLOAT getSquelchLevel() const;
     Suscan::Orbit getOrbit() const;
-    bool getRecordState(void) const;
-    std::string getRecordSavePath(void) const;
+    bool getRecordState() const;
+    std::string getRecordSavePath() const;
 
   public:
     AudioWidget(AudioWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
@@ -145,7 +150,7 @@ namespace SigDigger {
     void setProfile(Suscan::Source::Config &) override;
 
   public slots:
-    void onSpectrumBandwidthChanged(void);
+    void onSpectrumBandwidthChanged();
     void onSpectrumLoChanged(qint64);
     void onSpectrumFrequencyChanged(qint64 freq);
 
@@ -162,6 +167,7 @@ namespace SigDigger {
     void onToggleSquelch();
     void onSquelchLevelChanged();
     void onOpenDopplerSettings();
+    void onLockToFreqChanged();
 
     // Notifications
     void onSetTLE(Suscan::InspectorMessage const &);
@@ -171,10 +177,10 @@ namespace SigDigger {
     void onAudioError(QString);
 
     // Saver UI
-    void onAudioSaveError(void);
-    void onAudioSaveSwamped(void);
+    void onAudioSaveError();
+    void onAudioSaveSwamped();
     void onAudioSaveRate(qreal rate);
-    void onAudioCommit(void);
+    void onAudioCommit();
 
     // Analyzer slots
     void onSourceInfoMessage(Suscan::SourceInfoMessage const &);

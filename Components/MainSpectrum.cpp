@@ -806,7 +806,7 @@ MainSpectrum::removeChannel(NamedChannelSetIterator it)
 }
 
 void
-MainSpectrum::refreshChannel(NamedChannelSetIterator it)
+MainSpectrum::refreshChannel(NamedChannelSetIterator &it)
 {
   WATERFALL_CALL(refreshChannel(it));
 }
