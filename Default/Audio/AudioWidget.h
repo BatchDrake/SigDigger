@@ -81,11 +81,14 @@ namespace SigDigger {
     Ui::AudioPanel *ui = nullptr;
     ColorConfig colorConfig;
     FrequencyCorrectionDialog *fcDialog = nullptr;
+    NamedChannelSetIterator m_namChan;
+    bool m_haveNamChan = false;
 
     // Private methods
     void connectAll();
     void populateRates();
     void refreshUi();
+    void refreshNamedChannel();
 
     // Private setters
     void setBandwidth(SUFLOAT);

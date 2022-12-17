@@ -86,12 +86,13 @@ namespace SigDigger {
     void setParams();
     void setTrueLoFreq();
     void setTrueBandwidth();
-    SUFREQ calcTrueLoFreq();
-    SUFREQ calcTrueBandwidth();
 
   public:
     explicit AudioProcessor(UIMediator *, QObject *parent = nullptr);
     virtual ~AudioProcessor() override;
+
+    SUFREQ calcTrueLoFreq() const;
+    SUFREQ calcTrueBandwidth() const;
 
     void setAnalyzer(Suscan::Analyzer *);
     void setEnabled(bool);
@@ -105,8 +106,11 @@ namespace SigDigger {
     void setCutOff(float);
     void setTunerFreq(SUFREQ);
     void setLoFreq(SUFREQ);
-
     void setBandwidth(SUFREQ);
+
+    SUFREQ getTrueChannelFreq() const;
+    SUFREQ getChannelFreq() const;
+    SUFREQ getChannelBandwidth() const;
 
     bool isAudioAvailable() const;
     QString getAudioError() const;

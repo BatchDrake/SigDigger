@@ -497,6 +497,7 @@ AudioWidget::setSampleRate(unsigned int rate)
     this->ui->cutoffSlider->setMaximum(rate / 2);
 
     m_processor->setSampleRate(rate);
+    refreshNamedChannel();
   }
 }
 
@@ -560,12 +561,46 @@ AudioWidget::setSquelchLevel(SUFLOAT val)
 }
 
 void
+AudioWidget::refreshNamedChannel()
+{
+  if (m_haveNamChan) {
+    qint64 cfFreq = static_cast<qint64>(m_processor->getTrueChannelFreq());
+    qint32 chBw   = static_cast<qint32>(m_processor->calcTrueBandwidth());
+
+    m_namChan.value()->frequency   = cfFreq;
+    m_namChan.value()->lowFreqCut  = -chBw / 2;
+    m_namChan.value()->highFreqCut = +chBw / 2;
+  }
+}
+
+void
 AudioWidget::setEnabled(bool enabled)
 {
   this->panelConfig->enabled = enabled;
   this->ui->audioPreviewCheck->setChecked(enabled);
 
   m_processor->setEnabled(enabled && this->shouldOpenAudio());
+
+  if (enabled != m_haveNamChan) {
+    m_haveNamChan = enabled;
+
+    if (m_haveNamChan) {
+      auto cfFreq = static_cast<qint64>(m_processor->getTrueChannelFreq());
+      auto chBw   = static_cast<qint32>(m_processor->calcTrueBandwidth());
+
+      m_namChan = this->m_mediator->getMainSpectrum()->addChannel(
+                  "Audio channel",
+                  cfFreq,
+                  -chBw / 2,
+                  +chBw / 2,
+                  QColor("#2f2fff"),
+                  QColor(Qt::white),
+                  QColor("#2f2fff"));
+      refreshNamedChannel();
+    } else {
+       this->m_mediator->getMainSpectrum()->removeChannel(m_namChan);
+    }
+  }
 
   this->refreshUi();
 }
@@ -637,6 +672,8 @@ AudioWidget::applyConfig(void)
   m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
   m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
   m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
+
+  refreshNamedChannel();
 }
 
 bool
@@ -743,6 +780,8 @@ AudioWidget::setProfile(Suscan::Source::Config &profile)
   this->fcDialog->setTimeLimits(start, end);
 
   m_processor->setTunerFreq(profile.getFreq());
+
+  refreshNamedChannel();
 }
 
 //////////////////////////////// Slots ////////////////////////////////////////
@@ -750,36 +789,42 @@ void
 AudioWidget::onSpectrumBandwidthChanged()
 {
   m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
+  refreshNamedChannel();
 }
 
 void
 AudioWidget::onSpectrumLoChanged(qint64 lo)
 {
   m_processor->setLoFreq(SCAST(SUFREQ, lo));
+  refreshNamedChannel();
 }
 
 void
 AudioWidget::onSpectrumFrequencyChanged(qint64 freq)
 {
   m_processor->setTunerFreq(SCAST(SUFREQ, freq));
+  refreshNamedChannel();
 }
 
 void
 AudioWidget::onDemodChanged(void)
 {
   this->setDemod(this->getDemod());
+  refreshNamedChannel();
 }
 
 void
 AudioWidget::onSampleRateChanged(void)
 {
   this->setSampleRate(this->getSampleRate());
+  refreshNamedChannel();
 }
 
 void
 AudioWidget::onFilterChanged(void)
 {
   this->setCutOff(this->getCutOff());
+  refreshNamedChannel();
 }
 
 void
@@ -991,6 +1036,8 @@ AudioWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
       m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
       m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
       m_processor->setAnalyzer(m_analyzer);
+
+      refreshNamedChannel();
     }
 
     m_haveSourceInfo = true;
