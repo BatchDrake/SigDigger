@@ -287,6 +287,18 @@ AudioWidget::connectAll()
         SIGNAL(audioError(QString)),
         this,
         SLOT(onAudioError(QString)));
+
+  this->connect(
+        m_processor,
+        SIGNAL(setTLE(Suscan::InspectorMessage const &)),
+        this,
+        SLOT(onSetTLE(Suscan::InspectorMessage const &)));
+
+  this->connect(
+        m_processor,
+        SIGNAL(orbitReport(Suscan::InspectorMessage const &)),
+        this,
+        SLOT(onOrbitReport(Suscan::InspectorMessage const &)));
 }
 
 bool
@@ -578,10 +590,24 @@ void
 AudioWidget::refreshNamedChannel()
 {
   if (m_haveNamChan) {
-    qint64 cfFreq = static_cast<qint64>(m_processor->getTrueChannelFreq());
+    qint64 cfFreq = static_cast<qint64>(
+          isCorrectionEnabled()
+          ? m_processor->getTrueChannelFreq() - m_lastCorrection
+          : m_processor->getTrueChannelFreq());
     qint32 chBw   = static_cast<qint32>(m_processor->calcTrueBandwidth());
     auto name     = m_namChan.value()->name.toStdString();
     QColor color  = this->getLockToFreq() ? QColor("#ff2f2f") : QColor("#2f2fff");
+    QColor markerColor;
+    QString text;
+
+    if (isCorrectionEnabled()) {
+      auto t = SuWidgetsHelpers::formatQuantity(-m_lastCorrection, 4, "Hz", true);
+      text = "Audio inspector (" + t + ")";
+      markerColor = QColor(Qt::yellow);
+    } else {
+      markerColor = QColor(Qt::white);
+      text = "Audio inspector";
+    }
 
     m_namChan.value()->frequency   = cfFreq;
     m_namChan.value()->lowFreqCut  = -chBw / 2;
@@ -589,6 +615,8 @@ AudioWidget::refreshNamedChannel()
 
     m_namChan.value()->boxColor    = color;
     m_namChan.value()->cutOffColor = color;
+    m_namChan.value()->markerColor = markerColor;
+    m_namChan.value()->name        = text;
 
     m_spectrum->refreshChannel(m_namChan);
   }
@@ -600,6 +628,8 @@ AudioWidget::applySpectrumState()
   m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
   m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
   m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
+
+  this->fcDialog->setFrequency(m_processor->getTrueChannelFreq());
 
   refreshNamedChannel();
 }
@@ -627,7 +657,6 @@ AudioWidget::setEnabled(bool enabled)
                   QColor("#2f2fff"),
                   QColor(Qt::white),
                   QColor("#2f2fff"));
-      printf("Named channel created on frequency %lld (bw %d)\n", cfFreq, chBw);
       refreshNamedChannel();
     } else {
       m_spectrum->removeChannel(m_namChan);
@@ -703,12 +732,14 @@ AudioWidget::applyConfig()
   this->setProperty("collapsed", this->panelConfig->collapsed);
 
   // Frequency correction dialog
-  this->fcDialog->setCorrectionEnabled(this->panelConfig->tleCorrection);
+  this->fcDialog->findNewSatellites();
   this->fcDialog->setCorrectionFromSatellite(this->panelConfig->isSatellite);
   this->fcDialog->setCurrentSatellite(
         QString::fromStdString(this->panelConfig->satName));
   this->fcDialog->setCurrentTLE(
         QString::fromStdString(this->panelConfig->tleData));
+  this->fcDialog->setCorrectionEnabled(this->panelConfig->tleCorrection);
+  this->onAcceptCorrectionSetting(); // Flow this back to the widget
 
   // Recorder
   if (this->panelConfig->savePath.size() > 0)
@@ -993,25 +1024,30 @@ AudioWidget::onAcceptCorrectionSetting()
   } else {
     m_processor->setCorrectionEnabled(false);
   }
+
+  refreshNamedChannel();
 }
 
 //////////////////////////// Notification slots ////////////////////////////////
 void
 AudioWidget::onSetTLE(Suscan::InspectorMessage const &msg)
 {
-  if (!msg.isTLEEnabled())
+  if (!msg.isTLEEnabled()) {
     this->ui->correctionLabel->setText("None");
+    m_lastCorrection = 0;
+  }
 }
 
 void
 AudioWidget::onOrbitReport(Suscan::InspectorMessage const &msg)
 {
+  m_lastCorrection = static_cast<qreal>(
+        msg.getOrbitReport().getFrequencyCorrection());
+
   this->ui->correctionLabel->setText(
-        SuWidgetsHelpers::formatQuantity(
-          static_cast<qreal>(msg.getOrbitReport().getFrequencyCorrection()),
-          4,
-          "Hz",
-          true));
+        SuWidgetsHelpers::formatQuantity(m_lastCorrection, 4, "Hz", true));
+
+  refreshNamedChannel();
 }
 
 void

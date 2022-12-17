@@ -420,19 +420,17 @@ FrequencyCorrectionDialog::refreshOrbit(void)
 {
   auto sus = Suscan::Singleton::get_instance();
 
-  if (this->ui->correctionTypeCombo->currentIndex() == 1) {
-    // TLE-based correction
-    if (this->ui->satRadio->isChecked()) {
-      // Take TLE from satellite
-      if (sus->getSatelliteMap().find(this->desiredSelected) !=
-          sus->getLastSatellite()) {
-        this->setCurrentOrbit(
+  // TLE-based correction
+  if (this->ui->satRadio->isChecked()) {
+    // Take TLE from satellite
+    if (sus->getSatelliteMap().find(this->desiredSelected) !=
+        sus->getLastSatellite()) {
+      this->setCurrentOrbit(
             &sus->getSatelliteMap()[this->desiredSelected].getCOrbit());
-      }
-    } else {
-      // Take TLE from textbox
-      this->parseCurrentTLE();
     }
+  } else {
+    // Take TLE from textbox
+    this->parseCurrentTLE();
   }
 }
 

@@ -85,6 +85,7 @@ namespace SigDigger {
     FrequencyCorrectionDialog *fcDialog = nullptr;
     NamedChannelSetIterator m_namChan;
     bool m_haveNamChan = false;
+    qreal m_lastCorrection = 0;
 
     // Private methods
     void connectAll();

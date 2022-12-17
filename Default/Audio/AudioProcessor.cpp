@@ -390,8 +390,12 @@ AudioProcessor::setCorrectionEnabled(bool enabled)
   if (m_correctionEnabled != enabled) {
     m_correctionEnabled = enabled;
 
-    if (m_correctionEnabled && m_audioInspectorOpened)
-      m_analyzer->setInspectorDopplerCorrection(m_audioInspHandle, m_orbit);
+    if (m_audioInspectorOpened) {
+      if (m_correctionEnabled)
+        m_analyzer->setInspectorDopplerCorrection(m_audioInspHandle, m_orbit);
+      else
+        m_analyzer->disableDopplerCorrection(m_audioInspHandle);
+    }
   }
 }
 
