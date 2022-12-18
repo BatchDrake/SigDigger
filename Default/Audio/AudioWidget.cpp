@@ -589,24 +589,46 @@ AudioWidget::setSquelchLevel(SUFLOAT val)
 void
 AudioWidget::refreshNamedChannel()
 {
+  bool shouldHaveNamChan = m_processor->isOpened() && isCorrectionEnabled();
+
+  // Check whether we should have a named channel here.
+  if (shouldHaveNamChan != m_haveNamChan) { // Inconsistency!
+    m_haveNamChan = shouldHaveNamChan;
+
+    // Make sure we have a named channel
+    if (m_haveNamChan) {
+      auto cfFreq = static_cast<qint64>(m_processor->getTrueChannelFreq());
+      auto chBw   = static_cast<qint32>(m_processor->calcTrueBandwidth());
+
+      m_namChan = this->m_mediator->getMainSpectrum()->addChannel(
+            "",
+            cfFreq,
+            -chBw / 2,
+            +chBw / 2,
+            QColor("#2f2fff"),
+            QColor(Qt::white),
+            QColor("#2f2fff"));
+    } else {
+      // We should NOT have a named channel, remove
+      m_spectrum->removeChannel(m_namChan);
+      m_spectrum->updateOverlay();
+    }
+  }
+
   if (m_haveNamChan) {
     qint64 cfFreq = static_cast<qint64>(
           isCorrectionEnabled()
           ? m_processor->getTrueChannelFreq() - m_lastCorrection
           : m_processor->getTrueChannelFreq());
     qint32 chBw   = static_cast<qint32>(m_processor->calcTrueBandwidth());
-    auto name     = m_namChan.value()->name.toStdString();
     QColor color  = this->getLockToFreq() ? QColor("#ff2f2f") : QColor("#2f2fff");
     QColor markerColor;
     QString text;
 
     if (isCorrectionEnabled()) {
       auto t = SuWidgetsHelpers::formatQuantity(-m_lastCorrection, 4, "Hz", true);
-      text = "Audio inspector (" + t + ")";
-      markerColor = QColor(Qt::yellow);
-    } else {
-      markerColor = QColor(Qt::white);
-      text = "Audio inspector";
+      text = "Frequency correction (" + t + ")";
+      markerColor = this->getLockToFreq() ? QColor("#ff7f7f") : QColor("#7f7fff");
     }
 
     m_namChan.value()->frequency   = cfFreq;
@@ -646,27 +668,7 @@ AudioWidget::setEnabled(bool enabled)
 
   m_processor->setEnabled(enabled && this->shouldOpenAudio());
 
-  if (enabled != m_haveNamChan) {
-    m_haveNamChan = enabled;
-
-    if (m_haveNamChan) {
-      auto cfFreq = static_cast<qint64>(m_processor->getTrueChannelFreq());
-      auto chBw   = static_cast<qint32>(m_processor->calcTrueBandwidth());
-
-      m_namChan = this->m_mediator->getMainSpectrum()->addChannel(
-                  "Audio channel",
-                  cfFreq,
-                  -chBw / 2,
-                  +chBw / 2,
-                  QColor("#2f2fff"),
-                  QColor(Qt::white),
-                  QColor("#2f2fff"));
-      refreshNamedChannel();
-    } else {
-      m_spectrum->removeChannel(m_namChan);
-      m_spectrum->updateOverlay();
-    }
-  }
+  refreshNamedChannel();
 
   this->refreshUi();
 }

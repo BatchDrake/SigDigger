@@ -355,11 +355,11 @@ MainSpectrum::setCenterFreq(qint64 freq)
 void
 MainSpectrum::setLoFreq(qint64 loFreq)
 {
-  if (loFreq != this->getLoFreq()) {
-    this->ui->loLcd->setValue(loFreq + this->getCenterFreq());
-    WATERFALL_CALL(setFilterOffset(loFreq));
+  this->ui->loLcd->setValue(loFreq + this->getCenterFreq());
+  WATERFALL_CALL(setFilterOffset(loFreq));
+
+  if (loFreq != this->getLoFreq())
     emit loChanged(loFreq);
-  }
 }
 
 void
