@@ -23,11 +23,14 @@
 #include <Suscan/AnalyzerRequestTracker.h>
 #include <SuWidgets/WFHelpers.h>
 
+class QColorDialog;
+
 namespace SigDigger {
   class InspectionWidgetFactory;
-
   class InspectionWidget : public TabWidget {
     Q_OBJECT
+
+    QColorDialog           *m_colorDialog = nullptr;
 
   protected:
     Suscan::AnalyzerRequest m_request;
@@ -66,6 +69,8 @@ namespace SigDigger {
 
     public slots:
       void onNameChanged(QString name);
+      void onRequestChangeColor();
+      void onColorSelected(const QColor &);
   };
 
   class InspectionWidgetFactory : public TabWidgetFactory

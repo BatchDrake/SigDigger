@@ -59,6 +59,19 @@ TabWidget::TabWidget(
         SLOT(onFloat()));
 }
 
+void
+TabWidget::addAction(QAction *action)
+{
+  m_menu->insertAction(m_renameTab, action);
+}
+
+void
+TabWidget::addSeparator()
+{
+  m_menu->insertSeparator(m_renameTab);
+}
+
+
 TabWidget::~TabWidget()
 {
   if (m_mediator != nullptr)

@@ -20,6 +20,7 @@
 #include <Suscan/Library.h>
 #include <UIMediator.h>
 #include <MainSpectrum.h>
+#include <QColorDialog>
 
 using namespace SigDigger;
 
@@ -63,11 +64,31 @@ InspectionWidget::InspectionWidget(
   m_request(request),
   m_config(m_request.config)
 {
+  QAction *newColor = new QAction("Change &color", this);
+
+  m_colorDialog = new QColorDialog(this);
+
+  this->addAction(newColor);
+  this->addSeparator();
+
   connect(
         this,
         SIGNAL(nameChanged(QString)),
         this,
         SLOT(onNameChanged(QString)));
+
+
+  connect(
+        newColor,
+        SIGNAL(triggered()),
+        this,
+        SLOT(onRequestChangeColor()));
+
+  connect(
+        m_colorDialog,
+        SIGNAL(colorSelected(const QColor &)),
+        this,
+        SLOT(onColorSelected(const QColor &)));
 }
 
 InspectionWidget::~InspectionWidget()
@@ -204,6 +225,27 @@ InspectionWidget::onNameChanged(QString name)
   }
 }
 
+
+void
+InspectionWidget::onRequestChangeColor()
+{
+  m_colorDialog->show();
+}
+
+void
+InspectionWidget::onColorSelected(const QColor &color)
+{
+  if (m_haveNamedChannel) {
+    auto it = this->namedChannel();
+    it.value()->boxColor    = color;
+    it.value()->cutOffColor = color;
+    it.value()->markerColor = color;
+
+    this->refreshNamedChannel();
+  }
+}
+
+///////////////////////// InspectionWidgetFactory //////////////////////////////
 const char *
 InspectionWidgetFactory::description() const
 {
