@@ -21,7 +21,7 @@
 
 #include <TabWidgetFactory.h>
 #include <Suscan/AnalyzerRequestTracker.h>
-#include <SuWidgets/WFHelpers.h>
+#include <WFHelpers.h>
 
 class QColorDialog;
 
