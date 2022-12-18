@@ -453,7 +453,7 @@ AudioWidget::isMuted() const
 bool
 AudioWidget::isCorrectionEnabled() const
 {
-  return this->fcDialog->isCorrectionEnabled();
+  return this->panelConfig->tleCorrection;
 }
 
 bool
@@ -1026,7 +1026,7 @@ AudioWidget::onAcceptCorrectionSetting()
   this->panelConfig->satName       = this->fcDialog->getCurrentSatellite().toStdString();
   this->panelConfig->tleData       = this->fcDialog->getCurrentTLE().toStdString();
 
-  if (this->fcDialog->isCorrectionEnabled()) {
+  if (this->isCorrectionEnabled()) {
    m_processor->setAudioCorrection(this->fcDialog->getOrbit());
    m_processor->setCorrectionEnabled(true);
   } else {
