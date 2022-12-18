@@ -425,6 +425,11 @@ UIMediator::refreshUI()
         "SigDigger - "
         + sourceDesc
         + " - " + stateString);
+
+  this->ui->spectrum->setFreqs(
+        static_cast<qint64>(this->appConfig->profile.getFreq()),
+        static_cast<qint64>(this->appConfig->profile.getLnbFreq()));
+  this->setSampleRate(this->appConfig->profile.getDecimatedSampleRate());
 }
 
 void
