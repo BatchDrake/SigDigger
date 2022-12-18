@@ -589,7 +589,8 @@ AudioWidget::setSquelchLevel(SUFLOAT val)
 void
 AudioWidget::refreshNamedChannel()
 {
-  bool shouldHaveNamChan = m_processor->isOpened() && isCorrectionEnabled();
+  bool shouldHaveNamChan = m_processor->isOpened()
+      && (isCorrectionEnabled() || this->getLockToFreq());
 
   // Check whether we should have a named channel here.
   if (shouldHaveNamChan != m_haveNamChan) { // Inconsistency!
@@ -622,13 +623,14 @@ AudioWidget::refreshNamedChannel()
           : m_processor->getTrueChannelFreq());
     qint32 chBw   = static_cast<qint32>(m_processor->calcTrueBandwidth());
     QColor color  = this->getLockToFreq() ? QColor("#ff2f2f") : QColor("#2f2fff");
-    QColor markerColor;
+    QColor markerColor = this->getLockToFreq() ? QColor("#ff7f7f") : QColor("#7f7fff");
     QString text;
 
     if (isCorrectionEnabled()) {
       auto t = SuWidgetsHelpers::formatQuantity(-m_lastCorrection, 4, "Hz", true);
       text = "Frequency correction (" + t + ")";
-      markerColor = this->getLockToFreq() ? QColor("#ff7f7f") : QColor("#7f7fff");
+    } else {
+      text = "Audio inspector";
     }
 
     m_namChan.value()->frequency   = cfFreq;
