@@ -38,6 +38,7 @@ namespace SigDigger {
       InspectorUI *ui = nullptr;
       uint32_t lastSpectrumId = 0;
       bool adjusted = false;
+      qint64 m_tunerFreq;
 
       QString getInspectorTabTitle() const;
 

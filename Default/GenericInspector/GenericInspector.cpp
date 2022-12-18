@@ -373,6 +373,7 @@ GenericInspector::disableCorrection(void)
 void
 GenericInspector::setTunerFrequency(SUFREQ freq)
 {
+  m_tunerFreq = static_cast<qint64>(freq);
   this->ui->setTunerFrequency(freq);
 }
 
@@ -434,21 +435,34 @@ GenericInspector::onSetSpectrumSource(unsigned int index)
 void
 GenericInspector::onLoChanged(void)
 {
-  if (this->analyzer() != nullptr)
+  if (this->analyzer() != nullptr) {
     this->analyzer()->setInspectorFreq(
         this->request().handle,
         this->ui->getLo(),
         0);
+
+    if (m_haveNamedChannel) {
+      m_namedChannel.value()->frequency = m_tunerFreq + this->ui->getLo();
+      this->refreshNamedChannel();
+    }
+  }
 }
 
 void
 GenericInspector::onBandwidthChanged(void)
 {
-  if (this->analyzer() != nullptr)
+  if (this->analyzer() != nullptr) {
     this->analyzer()->setInspectorBandwidth(
         this->request().handle,
         this->ui->getBandwidth(),
         0);
+    if (m_haveNamedChannel) {
+      auto halfBw = this->ui->getBandwidth() / 2;
+      m_namedChannel.value()->lowFreqCut  = -halfBw;
+      m_namedChannel.value()->highFreqCut = +halfBw;
+      this->refreshNamedChannel();
+    }
+  }
 }
 
 void
@@ -514,5 +528,5 @@ GenericInspector::onOpenInspector(
 void
 GenericInspector::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
 {
-  this->ui->setTunerFrequency(msg.info()->getFrequency());
+  this->setTunerFrequency(msg.info()->getFrequency());
 }
