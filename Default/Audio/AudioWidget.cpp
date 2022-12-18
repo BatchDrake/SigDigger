@@ -625,9 +625,13 @@ AudioWidget::refreshNamedChannel()
 void
 AudioWidget::applySpectrumState()
 {
-  m_processor->setBandwidth(SCAST(SUFREQ, m_spectrum->getBandwidth()));
-  m_processor->setLoFreq(SCAST(SUFREQ, m_spectrum->getLoFreq()));
-  m_processor->setTunerFreq(SCAST(SUFREQ, m_spectrum->getCenterFreq()));
+  auto bandwidth  = m_spectrum->getBandwidth();
+  auto loFreq     = m_spectrum->getLoFreq();
+  auto centerFreq = m_spectrum->getCenterFreq();
+
+  m_processor->setBandwidth(SCAST(SUFREQ, bandwidth));
+  m_processor->setLoFreq(SCAST(SUFREQ, loFreq));
+  m_processor->setTunerFreq(SCAST(SUFREQ, centerFreq));
 
   this->fcDialog->setFrequency(m_processor->getTrueChannelFreq());
 

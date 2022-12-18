@@ -50,6 +50,7 @@ namespace SigDigger {
 
   public:
     enum State {
+      INVALID,
       HALTED,
       HALTING,
       RUNNING,
@@ -107,7 +108,7 @@ namespace SigDigger {
     void setSourceTimeEnd(struct timeval const &);
 
     // Refactored UI State
-    State                              m_state = HALTED;
+    State                              m_state = INVALID;
     Suscan::Analyzer                  *m_analyzer = nullptr;
     QList<UIComponent *>               m_components;
     QList<TabWidget *>                 m_tabWidgets;

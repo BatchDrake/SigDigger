@@ -347,6 +347,9 @@ UIMediator::refreshUI()
   const Suscan::Source::Device &dev = config->getDevice();
 
   switch (m_state) {
+    case INVALID:
+      break;
+
     case HALTED:
       stateString = QString("Idle");
       this->ui->spectrum->setCaptureMode(MainSpectrum::UNAVAILABLE);
@@ -667,6 +670,17 @@ UIMediator::setState(State state, Suscan::Analyzer *analyzer)
 
     // Sanity check
     switch (state) {
+      case INVALID:
+        QMessageBox::critical(
+              this,
+              "Internal error",
+              "A component requested the UI to enter an invalid state. "
+              "This is most certaintly a bug from a plugin. Check if new plugins "
+              "have been installed and contact the developer.\n\n"
+              "SigDigger cannot run in this state and will be closed."
+              );
+        abort();
+
       case HALTED:
       case HALTING:
       case RESTARTING:
