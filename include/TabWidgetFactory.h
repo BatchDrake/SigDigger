@@ -40,6 +40,9 @@ namespace SigDigger {
     QString  m_cachedLabel;
 
   protected:
+    void addAction(QAction *);
+    void addSeparator();
+
     TabWidget(TabWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
 
   public:

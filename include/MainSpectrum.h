@@ -109,6 +109,24 @@ namespace SigDigger {
 
     void deserializeFATs(void);
 
+    // Named channel API
+    NamedChannelSetIterator addChannel(
+        QString name,
+        qint64 frequency,
+        qint32 fMin,
+        qint32 fMax,
+        QColor boxColor,
+        QColor markerColor,
+        QColor cutOffColor);
+
+    void removeChannel(NamedChannelSetIterator);
+    void refreshChannel(NamedChannelSetIterator &);
+    NamedChannelSetIterator findChannel(qint64 freq);
+
+    NamedChannelSetIterator channelCBegin() const;
+    NamedChannelSetIterator channelCEnd() const;
+
+
     // Setters
     void setThrottling(bool);
     void setFrequencyLimits(qint64 min, qint64 max);

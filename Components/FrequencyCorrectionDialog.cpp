@@ -420,19 +420,17 @@ FrequencyCorrectionDialog::refreshOrbit(void)
 {
   auto sus = Suscan::Singleton::get_instance();
 
-  if (this->ui->correctionTypeCombo->currentIndex() == 1) {
-    // TLE-based correction
-    if (this->ui->satRadio->isChecked()) {
-      // Take TLE from satellite
-      if (sus->getSatelliteMap().find(this->desiredSelected) !=
-          sus->getLastSatellite()) {
-        this->setCurrentOrbit(
+  // TLE-based correction
+  if (this->ui->satRadio->isChecked()) {
+    // Take TLE from satellite
+    if (sus->getSatelliteMap().find(this->desiredSelected) !=
+        sus->getLastSatellite()) {
+      this->setCurrentOrbit(
             &sus->getSatelliteMap()[this->desiredSelected].getCOrbit());
-      }
-    } else {
-      // Take TLE from textbox
-      this->parseCurrentTLE();
     }
+  } else {
+    // Take TLE from textbox
+    this->parseCurrentTLE();
   }
 }
 
@@ -447,6 +445,7 @@ FrequencyCorrectionDialog::recalcALOS(void)
       xyz_t azel;
       SUDOUBLE window;
       SUDOUBLE searchWindow;
+      time_t maxDelta;
       struct timeval delta, search;
       this->haveALOS = false;
 
@@ -485,9 +484,13 @@ FrequencyCorrectionDialog::recalcALOS(void)
         delta.tv_sec += 1;
 
         // Step 3
+        maxDelta = static_cast<time_t>(
+              sgdp4_prediction_get_max_delta_t(&this->prediction) / COARSE_SEARCH_REL_STEP);
+
         do {
           timersub(&this->losTime, &delta, &search);
-          SigDiggerHelpers::timerdup(&delta);
+
+          delta.tv_sec += maxDelta;
 
           if (!sgdp4_prediction_update(&this->prediction, &search))
             break;
@@ -511,12 +514,8 @@ FrequencyCorrectionDialog::recalcALOS(void)
         if (!this->haveALOS)
           return;
 
-        this->haveALOS =
-            sgdp4_prediction_find_los(
-              &this->prediction,
-              &search,
-              searchWindow,
-              &this->losTime);
+        search = this->aosTime;
+        search.tv_sec += maxDelta;
       } else {
         // For non-visible satellites, the strategy is as follows:
         //   1. In the current timeStamp, look for the next AOS event.
@@ -532,9 +531,14 @@ FrequencyCorrectionDialog::recalcALOS(void)
         if (!this->haveALOS)
           return;
 
+        search = this->aosTime;
+        maxDelta = static_cast<time_t>(
+              sgdp4_prediction_get_max_delta_t(&this->prediction));
+        search.tv_sec += maxDelta;
+
         this->haveALOS = sgdp4_prediction_find_los(
               &this->prediction,
-              &this->timeStamp,
+              &search,
               searchWindow,
               &this->losTime);
       }

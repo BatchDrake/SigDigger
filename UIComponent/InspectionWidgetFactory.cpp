@@ -19,6 +19,8 @@
 #include "InspectionWidgetFactory.h"
 #include <Suscan/Library.h>
 #include <UIMediator.h>
+#include <MainSpectrum.h>
+#include <QColorDialog>
 
 using namespace SigDigger;
 
@@ -32,6 +34,12 @@ Suscan::Analyzer *
 InspectionWidget::analyzer() const
 {
   return m_analyzer;
+}
+
+NamedChannelSetIterator &
+InspectionWidget::namedChannel()
+{
+  return m_namedChannel;
 }
 
 Suscan::AnalyzerRequest const &
@@ -56,13 +64,40 @@ InspectionWidget::InspectionWidget(
   m_request(request),
   m_config(m_request.config)
 {
+  QAction *newColor = new QAction("Change &color", this);
 
+  m_colorDialog = new QColorDialog(this);
+
+  this->addAction(newColor);
+  this->addSeparator();
+
+  connect(
+        this,
+        SIGNAL(nameChanged(QString)),
+        this,
+        SLOT(onNameChanged(QString)));
+
+
+  connect(
+        newColor,
+        SIGNAL(triggered()),
+        this,
+        SLOT(onRequestChangeColor()));
+
+  connect(
+        m_colorDialog,
+        SIGNAL(colorSelected(const QColor &)),
+        this,
+        SLOT(onColorSelected(const QColor &)));
 }
 
 InspectionWidget::~InspectionWidget()
 {
-  if (m_mediator != nullptr)
+  if (m_mediator != nullptr) {
+    if (m_haveNamedChannel)
+      m_mediator->getMainSpectrum()->removeChannel(m_namedChannel);
     m_mediator->detachInspectionWidget(this);
+  }
 }
 
 void
@@ -117,10 +152,45 @@ InspectionWidget::setState(int state, Suscan::Analyzer *analyzer)
     if (analyzer != nullptr && !m_onceAttached) {
       m_analyzer = analyzer;
       m_onceAttached = true;
+
+      //
+      // Leverage this to create the named channel
+      //
+
+      if (!m_haveNamedChannel) {
+        auto spectrum = m_mediator->getMainSpectrum();
+        auto fc       = spectrum->getCenterFreq();
+
+        m_namedChannel = spectrum->addChannel(
+              QString::fromStdString(this->getLabel()),
+              fc + static_cast<qint64>(m_request.channel.fc),
+              static_cast<qint32>(m_request.channel.fLow),
+              static_cast<qint32>(m_request.channel.fHigh),
+              QColor("#00a8ae"),
+              QColor("#00a8ae"),
+              QColor("#00a8ae"));
+        m_haveNamedChannel = true;
+      }
+
       this->attachAnalyzer(analyzer);
     } else {
       m_analyzer = nullptr;
+
+      if (m_haveNamedChannel) {
+        auto spectrum = m_mediator->getMainSpectrum();
+        spectrum->removeChannel(m_namedChannel);
+        m_haveNamedChannel = false;
+      }
     }
+  }
+}
+
+void
+InspectionWidget::refreshNamedChannel()
+{
+  if (m_haveNamedChannel) {
+    auto spectrum = m_mediator->getMainSpectrum();
+    spectrum->refreshChannel(m_namedChannel);
   }
 }
 
@@ -130,6 +200,12 @@ InspectionWidget::closeRequested()
   // Close requests are handled differently, depending on whether we are
   // attached or not.
 
+  if (m_haveNamedChannel) {
+    auto spectrum = m_mediator->getMainSpectrum();
+    spectrum->removeChannel(m_namedChannel);
+    m_haveNamedChannel = false;
+  }
+
   if (m_analyzer != nullptr)
     m_analyzer->closeInspector(m_request.handle, 0);
   else
@@ -137,6 +213,39 @@ InspectionWidget::closeRequested()
 }
 
 
+////////////////////////////////// Slots ///////////////////////////////////////
+void
+InspectionWidget::onNameChanged(QString name)
+{
+  if (m_haveNamedChannel) {
+    auto it = this->namedChannel();
+    it.value()->name = name;
+
+    this->refreshNamedChannel();
+  }
+}
+
+
+void
+InspectionWidget::onRequestChangeColor()
+{
+  m_colorDialog->show();
+}
+
+void
+InspectionWidget::onColorSelected(const QColor &color)
+{
+  if (m_haveNamedChannel) {
+    auto it = this->namedChannel();
+    it.value()->boxColor    = color;
+    it.value()->cutOffColor = color;
+    it.value()->markerColor = color;
+
+    this->refreshNamedChannel();
+  }
+}
+
+///////////////////////// InspectionWidgetFactory //////////////////////////////
 const char *
 InspectionWidgetFactory::description() const
 {
@@ -171,3 +280,4 @@ InspectionWidgetFactory::InspectionWidgetFactory(Suscan::Plugin *plugin)
 {
 
 }
+

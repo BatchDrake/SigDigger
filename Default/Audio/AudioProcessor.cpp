@@ -172,7 +172,7 @@ AudioProcessor::closeAudio()
 }
 
 SUFREQ
-AudioProcessor::calcTrueBandwidth()
+AudioProcessor::calcTrueBandwidth() const
 {
   SUFREQ bw = m_bw;
 
@@ -188,7 +188,7 @@ AudioProcessor::calcTrueBandwidth()
 }
 
 SUFREQ
-AudioProcessor::calcTrueLoFreq()
+AudioProcessor::calcTrueLoFreq() const
 {
   SUFREQ delta = 0;
   SUFREQ bw = this->calcTrueBandwidth();
@@ -390,8 +390,12 @@ AudioProcessor::setCorrectionEnabled(bool enabled)
   if (m_correctionEnabled != enabled) {
     m_correctionEnabled = enabled;
 
-    if (m_correctionEnabled && m_audioInspectorOpened)
-      m_analyzer->setInspectorDopplerCorrection(m_audioInspHandle, m_orbit);
+    if (m_audioInspectorOpened) {
+      if (m_correctionEnabled)
+        m_analyzer->setInspectorDopplerCorrection(m_audioInspHandle, m_orbit);
+      else
+        m_analyzer->disableDopplerCorrection(m_audioInspHandle);
+    }
   }
 }
 
@@ -492,6 +496,25 @@ AudioProcessor::setBandwidth(SUFREQ bw)
         this->setTrueLoFreq();
     }
   }
+}
+
+SUFREQ
+AudioProcessor::getTrueChannelFreq() const
+{
+  return calcTrueLoFreq() + m_tuner;
+}
+
+
+SUFREQ
+AudioProcessor::getChannelFreq() const
+{
+  return m_lo + m_tuner;
+}
+
+SUFREQ
+AudioProcessor::getChannelBandwidth() const
+{
+  return m_bw;
 }
 
 bool
