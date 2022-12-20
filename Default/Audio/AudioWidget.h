@@ -177,7 +177,9 @@ namespace SigDigger {
     // Processor slots
     void onAudioError(QString);
 
-    // Saver UI
+    // Audio processor UI
+    void onAudioOpened();
+    void onAudioClosed();
     void onAudioSaveError();
     void onAudioSaveSwamped();
     void onAudioSaveRate(qreal rate);
