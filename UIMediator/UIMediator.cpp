@@ -741,6 +741,8 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
           info.testPermission(
             SUSCAN_ANALYZER_PERM_SEEK));
   }
+
+  this->setSampleRate(static_cast<unsigned>(info.getSampleRate()));
 }
 
 void

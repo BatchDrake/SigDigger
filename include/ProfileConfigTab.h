@@ -35,6 +35,11 @@ namespace Ui {
 
 namespace SigDigger {
   class DeviceTweaks;
+  enum SampleRateCtlHint {
+    SAMPLE_RATE_CTL_HINT_LIST,
+    SAMPLE_RATE_CTL_HINT_MANUAL
+  };
+
   class ProfileConfigTab : public ConfigTab
   {
     Q_OBJECT
@@ -45,6 +50,7 @@ namespace SigDigger {
     bool needsRestart  = false;
     bool refreshing    = true;
     bool hasTweaks     = false;
+    SampleRateCtlHint m_rateHint = SAMPLE_RATE_CTL_HINT_LIST;
 
     Suscan::Source::Config profile;
     Suscan::Source::Device remoteDevice;
@@ -53,77 +59,78 @@ namespace SigDigger {
 
     SaveProfileDialog saveProfileDialog;
 
-    void connectAll(void);
+    void connectAll();
 
-    void populateProfileCombo(void);
-    void populateDeviceCombo(void);
-    void populateRemoteDeviceCombo(void);
+    void populateProfileCombo();
+    void populateDeviceCombo();
+    void populateRemoteDeviceCombo();
 
-    void populateCombos(void);
-    void refreshAntennas(void);
-    void refreshSampRates(void);
-    void refreshProfileUi(void);
-    void refreshFrequencyLimits(void);
-    void refreshUi(void);
-    void refreshAnalyzerTypeUi(void);
-    void refreshUiState(void);
-    void sampRateCtlHint(int);
-    void refreshTrueSampleRate(void);
+    void populateCombos();
+    void refreshAntennas();
+    void refreshSampRates();
+    void refreshProfileUi();
+    void refreshFrequencyLimits();
+    void refreshUi();
+    void refreshAnalyzerTypeUi();
+    void refreshUiState();
+    void refreshSampRateCtl();
+    void sampRateCtlHint(SampleRateCtlHint);
+    void refreshTrueSampleRate();
     void loadProfile(Suscan::Source::Config &config);
-    void guessParamsFromFileName(void);
-    void updateRemoteParams(void);
+    void guessParamsFromFileName();
+    void updateRemoteParams();
     void configChanged(bool restart = false);
-    bool shouldDisregardTweaks(void);
+    bool shouldDisregardTweaks();
 
-    int  findRemoteProfileIndex(void);
-    unsigned int getSelectedSampleRate(void) const;
+    int  findRemoteProfileIndex();
+    unsigned int getSelectedSampleRate() const;
     void setSelectedSampleRate(unsigned int);
 
     static QString getSampRateString(qreal rate);
     static QString getBaseName(const QString &string);
 
   public:
-    void save(void) override;
+    void save() override;
 
-    void setUnchanged(void);
-    bool hasChanged(void) const override;
-    bool shouldRestart(void) const;
+    void setUnchanged();
+    bool hasChanged() const override;
+    bool shouldRestart() const;
 
     void setProfile(const Suscan::Source::Config &profile);
     void setAnalyzerParams(const Suscan::AnalyzerParams &params);
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
-    void notifySingletonChanges(void);
+    void notifySingletonChanges();
 
-    bool remoteSelected(void) const;
+    bool remoteSelected() const;
 
     float getGain(std::string const &name) const;
-    Suscan::Source::Config getProfile(void) const;
-    Suscan::AnalyzerParams getAnalyzerParams(void);
+    Suscan::Source::Config getProfile() const;
+    Suscan::AnalyzerParams getAnalyzerParams();
 
     explicit ProfileConfigTab(QWidget *parent = nullptr);
     ~ProfileConfigTab();
 
   public slots:
-    void onLoadProfileClicked(void);
+    void onLoadProfileClicked();
     void onToggleSourceType(bool);
     void onDeviceChanged(int);
     void onFormatChanged(int);
     void onAntennaChanged(int);
     void onAnalyzerTypeChanged(int);
     void onCheckButtonsToggled(bool);
-    void onSpinsChanged(void);
+    void onSpinsChanged();
     void onBandwidthChanged(double);
-    void onBrowseCaptureFile(void);
-    void onSaveProfile(void);
-    void onChangeConnectionType(void);
-    void onRemoteParamsChanged(void);
-    void onRefreshRemoteDevices(void);
-    void onRemoteProfileSelected(void);
-    void onChangeSourceTimeUTC(void);
-    void onDeviceTweaksClicked(void);
-    void onDeviceTweaksAccepted(void);
-    void onOverrideSampleRate(void);
+    void onBrowseCaptureFile();
+    void onSaveProfile();
+    void onChangeConnectionType();
+    void onRemoteParamsChanged();
+    void onRefreshRemoteDevices();
+    void onRemoteProfileSelected();
+    void onChangeSourceTimeUTC();
+    void onDeviceTweaksClicked();
+    void onDeviceTweaksAccepted();
+    void onOverrideSampleRate();
   };
 }
 

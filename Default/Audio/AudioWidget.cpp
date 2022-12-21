@@ -260,6 +260,18 @@ AudioWidget::connectAll()
 
   this->connect(
         m_processor,
+        SIGNAL(audioOpened()),
+        this,
+        SLOT(onAudioOpened()));
+
+  this->connect(
+        m_processor,
+        SIGNAL(audioClosed()),
+        this,
+        SLOT(onAudioClosed()));
+
+  this->connect(
+        m_processor,
         SIGNAL(recStopped()),
         this,
         SLOT(onAudioSaveError()));
@@ -377,6 +389,8 @@ AudioWidget::refreshUi()
   m_spectrum->setFilterSkewness(skewness);
 
   this->ui->recordStartStopButton->setText(recording ? "Stop" : "Record");
+
+  refreshNamedChannel();
 }
 
 void
@@ -589,7 +603,9 @@ AudioWidget::setSquelchLevel(SUFLOAT val)
 void
 AudioWidget::refreshNamedChannel()
 {
-  bool shouldHaveNamChan = m_processor->isOpened()
+  bool shouldHaveNamChan =
+         m_analyzer != nullptr
+      && m_processor->isOpened()
       && (isCorrectionEnabled() || this->getLockToFreq());
 
   // Check whether we should have a named channel here.
@@ -1073,7 +1089,19 @@ AudioWidget::onAudioError(QString error)
 }
 
 
-////////////////////////// AudioFileSaver slots ////////////////////////////////
+////////////////////////// AudioProcessor slots ////////////////////////////////
+void
+AudioWidget::onAudioOpened()
+{
+  refreshNamedChannel();
+}
+
+void
+AudioWidget::onAudioClosed()
+{
+  refreshNamedChannel();
+}
+
 void
 AudioWidget::onAudioSaveError()
 {

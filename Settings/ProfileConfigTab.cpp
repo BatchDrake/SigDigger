@@ -55,7 +55,7 @@ ProfileConfigTab::configChanged(bool restart)
 }
 
 bool
-ProfileConfigTab::shouldDisregardTweaks(void)
+ProfileConfigTab::shouldDisregardTweaks()
 {
   QMessageBox::StandardButton reply;
 
@@ -75,7 +75,7 @@ ProfileConfigTab::shouldDisregardTweaks(void)
 }
 
 void
-ProfileConfigTab::populateProfileCombo(void)
+ProfileConfigTab::populateProfileCombo()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
@@ -88,7 +88,7 @@ ProfileConfigTab::populateProfileCombo(void)
 }
 
 void
-ProfileConfigTab::populateDeviceCombo(void)
+ProfileConfigTab::populateDeviceCombo()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   int currentIndex = this->ui->deviceCombo->currentIndex();
@@ -121,7 +121,7 @@ ProfileConfigTab::populateDeviceCombo(void)
 }
 
 void
-ProfileConfigTab::populateRemoteDeviceCombo(void)
+ProfileConfigTab::populateRemoteDeviceCombo()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
@@ -139,7 +139,7 @@ ProfileConfigTab::populateRemoteDeviceCombo(void)
 
 
 void
-ProfileConfigTab::populateCombos(void)
+ProfileConfigTab::populateCombos()
 {
   this->populateProfileCombo();
   this->populateDeviceCombo();
@@ -149,19 +149,40 @@ ProfileConfigTab::populateCombos(void)
 }
 
 void
-ProfileConfigTab::sampRateCtlHint(int index)
+ProfileConfigTab::refreshSampRateCtl()
 {
-  this->ui->overrideCheck->setEnabled(index == 0);
+  int index;
+
+  index = m_rateHint == SAMPLE_RATE_CTL_HINT_LIST ? 0 : 1;
 
   if (this->ui->sampleRateCombo->count() == 0
       || this->ui->overrideCheck->isChecked())
-    index = 1;
+    index = 1; // User has overriden this
 
   this->ui->sampRateStack->setCurrentIndex(index);
 }
 
+//
+// This method simply informs the UI which is the preferred way to obtain
+// a sample rate: whether from a combo box or manually from a spinbox. Sometimes
+// that is simply not possible. In those cases, the function may decide
+// which widget to display depending on the supported rates.
+//
 void
-ProfileConfigTab::refreshUiState(void)
+ProfileConfigTab::sampRateCtlHint(SampleRateCtlHint hint)
+{
+  // index 0: list (enable combo)
+  // index 1: manual (enable spinbox)
+
+  m_rateHint = hint;
+
+  // Override only makes sense if we provide a combo box
+  this->ui->overrideCheck->setEnabled(hint == SAMPLE_RATE_CTL_HINT_LIST);
+  this->refreshSampRateCtl();
+}
+
+void
+ProfileConfigTab::refreshUiState()
 {
   int analyzerTypeIndex = this->ui->analyzerTypeCombo->currentIndex();
   bool netProfile = this->ui->useNetworkProfileRadio->isChecked();
@@ -174,18 +195,18 @@ ProfileConfigTab::refreshUiState(void)
     if (this->ui->sdrRadio->isChecked()) {
       this->ui->sdrFrame->setEnabled(true);
       this->ui->fileFrame->setEnabled(false);
-      this->sampRateCtlHint(0);
+      this->sampRateCtlHint(SAMPLE_RATE_CTL_HINT_LIST);
       this->ui->ppmSpinBox->setEnabled(true);
     } else {
       this->ui->sdrFrame->setEnabled(false);
       this->ui->fileFrame->setEnabled(true);
       this->ui->ppmSpinBox->setEnabled(false);
-      this->sampRateCtlHint(1);
+      this->sampRateCtlHint(SAMPLE_RATE_CTL_HINT_MANUAL);
       adjustStartTime = true;
     }
   } else {
     /* Remote analyzer */
-    this->sampRateCtlHint(1);
+    this->sampRateCtlHint(SAMPLE_RATE_CTL_HINT_MANUAL);
 
     if (this->ui->remoteDeviceCombo->count() == 0) {
       if (netProfile)
@@ -210,7 +231,7 @@ ProfileConfigTab::refreshUiState(void)
 }
 
 void
-ProfileConfigTab::refreshAntennas(void)
+ProfileConfigTab::refreshAntennas()
 {
   SigDiggerHelpers::populateAntennaCombo(
         this->profile,
@@ -218,7 +239,7 @@ ProfileConfigTab::refreshAntennas(void)
 }
 
 void
-ProfileConfigTab::refreshSampRates(void)
+ProfileConfigTab::refreshSampRates()
 {
   Suscan::Source::Device device = this->profile.getDevice();
 
@@ -235,7 +256,7 @@ ProfileConfigTab::refreshSampRates(void)
 }
 
 void
-ProfileConfigTab::refreshFrequencyLimits(void)
+ProfileConfigTab::refreshFrequencyLimits()
 {
   SUFREQ lnbFreq = this->ui->lnbSpinBox->value();
   SUFREQ devMinFreq = PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ;
@@ -274,7 +295,7 @@ ProfileConfigTab::getSampRateString(qreal trueRate)
 }
 
 void
-ProfileConfigTab::refreshTrueSampleRate(void)
+ProfileConfigTab::refreshTrueSampleRate()
 {
   float step = SU_POW(10., SU_FLOOR(SU_LOG(this->profile.getSampleRate())));
   QString rateText;
@@ -287,7 +308,7 @@ ProfileConfigTab::refreshTrueSampleRate(void)
 }
 
 void
-ProfileConfigTab::refreshAnalyzerTypeUi(void)
+ProfileConfigTab::refreshAnalyzerTypeUi()
 {
   if (this->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
     this->ui->analyzerTypeCombo->setCurrentIndex(0);
@@ -300,13 +321,13 @@ ProfileConfigTab::refreshAnalyzerTypeUi(void)
 }
 
 int
-ProfileConfigTab::findRemoteProfileIndex(void)
+ProfileConfigTab::findRemoteProfileIndex()
 {
   return this->ui->remoteDeviceCombo->findText(this->profile.label().c_str());
 }
 
 void
-ProfileConfigTab::refreshProfileUi(void)
+ProfileConfigTab::refreshProfileUi()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   bool adjustableSourceTime = false;
@@ -326,12 +347,12 @@ ProfileConfigTab::refreshProfileUi(void)
   switch (this->profile.getType()) {
     case SUSCAN_SOURCE_TYPE_SDR:
       this->ui->sdrRadio->setChecked(true);
-      this->sampRateCtlHint(0);
+      this->sampRateCtlHint(SAMPLE_RATE_CTL_HINT_LIST);
       break;
 
     case SUSCAN_SOURCE_TYPE_FILE:
       this->ui->fileRadio->setChecked(true);
-      this->sampRateCtlHint(1);
+      this->sampRateCtlHint(SAMPLE_RATE_CTL_HINT_MANUAL);
       break;
   }
 
@@ -466,7 +487,7 @@ ProfileConfigTab::refreshProfileUi(void)
 }
 
 void
-ProfileConfigTab::refreshUi(void)
+ProfileConfigTab::refreshUi()
 {
   this->refreshing = true;
 
@@ -502,26 +523,26 @@ ProfileConfigTab::save()
 }
 
 void
-ProfileConfigTab::setUnchanged(void)
+ProfileConfigTab::setUnchanged()
 {
   this->modified     = false;
   this->needsRestart = false;
 }
 
 bool
-ProfileConfigTab::hasChanged(void) const
+ProfileConfigTab::hasChanged() const
 {
   return this->modified;
 }
 
 bool
-ProfileConfigTab::shouldRestart(void) const
+ProfileConfigTab::shouldRestart() const
 {
   return this->needsRestart;
 }
 
 void
-ProfileConfigTab::connectAll(void)
+ProfileConfigTab::connectAll()
 {
   connect(
         this->ui->deviceCombo,
@@ -539,7 +560,7 @@ ProfileConfigTab::connectAll(void)
         this->ui->loadProfileButton,
         SIGNAL(clicked()),
         this,
-        SLOT(onLoadProfileClicked(void)));
+        SLOT(onLoadProfileClicked()));
 
   connect(
         this->ui->sdrRadio,
@@ -557,37 +578,37 @@ ProfileConfigTab::connectAll(void)
         this->ui->frequencySpinBox,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
         this->ui->lnbSpinBox,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
         this->ui->sampleRateSpinBox,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
         this->ui->decimationSpin,
         SIGNAL(valueChanged(int)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
         this->ui->sampleRateCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
         this->ui->ppmSpinBox,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
         this->ui->removeDCCheck,
@@ -621,15 +642,15 @@ ProfileConfigTab::connectAll(void)
 
   connect(
         this->ui->browseButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onBrowseCaptureFile(void)));
+        SLOT(onBrowseCaptureFile()));
 
   connect(
         this->ui->saveProfileButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onSaveProfile(void)));
+        SLOT(onSaveProfile()));
 
   connect(
         this->ui->analyzerTypeCombo,
@@ -677,61 +698,61 @@ ProfileConfigTab::connectAll(void)
         this->ui->useNetworkProfileRadio,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onChangeConnectionType(void)));
+        SLOT(onChangeConnectionType()));
 
   connect(
         this->ui->useHostPortRadio,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onChangeConnectionType(void)));
+        SLOT(onChangeConnectionType()));
 
   connect(
         this->ui->remoteDeviceCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onRemoteProfileSelected(void)));
+        SLOT(onRemoteProfileSelected()));
 
   connect(
         this->ui->refreshButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onRefreshRemoteDevices(void)));
+        SLOT(onRefreshRemoteDevices()));
 
   connect(
         this->ui->ppmSpinBox,
         SIGNAL(valueChanged(qreal)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
         this->ui->sourceTimeEdit,
         SIGNAL(dateTimeChanged(QDateTime const &)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
         this->ui->sourceTimeIsUTCCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onChangeSourceTimeUTC(void)));
+        SLOT(onChangeSourceTimeUTC()));
 
   connect(
         this->ui->deviceTweaksButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onDeviceTweaksClicked(void)));
+        SLOT(onDeviceTweaksClicked()));
 
   connect(
         this->tweaks,
-        SIGNAL(accepted(void)),
+        SIGNAL(accepted()),
         this,
-        SLOT(onDeviceTweaksAccepted(void)));
+        SLOT(onDeviceTweaksAccepted()));
 
   connect(
         this->ui->overrideCheck,
-        SIGNAL(clicked(bool)),
+        SIGNAL(toggled(bool)),
         this,
-        SLOT(onOverrideSampleRate(void)));
+        SLOT(onOverrideSampleRate()));
 }
 
 void
@@ -751,14 +772,14 @@ ProfileConfigTab::setFrequency(qint64 val)
 }
 
 void
-ProfileConfigTab::notifySingletonChanges(void)
+ProfileConfigTab::notifySingletonChanges()
 {
   this->populateCombos();
   this->refreshUi();
 }
 
 bool
-ProfileConfigTab::remoteSelected(void) const
+ProfileConfigTab::remoteSelected() const
 {
   return this->ui->analyzerTypeCombo->currentIndex() == 1;
 }
@@ -776,13 +797,13 @@ ProfileConfigTab::getGain(std::string const &name) const
 }
 
 Suscan::Source::Config
-ProfileConfigTab::getProfile(void) const
+ProfileConfigTab::getProfile() const
 {
   return this->profile;
 }
 
 void
-ProfileConfigTab::updateRemoteParams(void)
+ProfileConfigTab::updateRemoteParams()
 {
   this->profile.clearParams();
 
@@ -856,7 +877,7 @@ ProfileConfigTab::~ProfileConfigTab()
 
 //////////////// Slots //////////////////
 void
-ProfileConfigTab::onLoadProfileClicked(void)
+ProfileConfigTab::onLoadProfileClicked()
 {
   QVariant data = this->ui->profileCombo->itemData(this->ui->profileCombo->currentIndex());
 
@@ -1001,7 +1022,7 @@ ProfileConfigTab::onAnalyzerTypeChanged(int index)
 }
 
 void
-ProfileConfigTab::onRemoteParamsChanged(void)
+ProfileConfigTab::onRemoteParamsChanged()
 {
   if (this->remoteSelected()) {
     this->ui->mcInterfaceEdit->setEnabled(this->ui->mcCheck->isChecked());
@@ -1033,7 +1054,7 @@ ProfileConfigTab::onCheckButtonsToggled(bool)
 }
 
 unsigned int
-ProfileConfigTab::getSelectedSampleRate(void) const
+ProfileConfigTab::getSelectedSampleRate() const
 {
   unsigned int sampRate = 0;
 
@@ -1078,8 +1099,8 @@ ProfileConfigTab::setSelectedSampleRate(unsigned int rate)
 
     if (optionIsGood)
       this->ui->sampleRateCombo->setCurrentIndex(bestIndex);
-
-    this->ui->overrideCheck->setChecked(!optionIsGood);
+    else
+      this->ui->overrideCheck->setChecked(true);
   }
 
 
@@ -1087,7 +1108,7 @@ ProfileConfigTab::setSelectedSampleRate(unsigned int rate)
 }
 
 void
-ProfileConfigTab::onSpinsChanged(void)
+ProfileConfigTab::onSpinsChanged()
 {
   if (!this->refreshing) {
     SUFREQ freq;
@@ -1168,7 +1189,7 @@ ProfileConfigTab::onBandwidthChanged(double)
 }
 
 void
-ProfileConfigTab::guessParamsFromFileName(void)
+ProfileConfigTab::guessParamsFromFileName()
 {
   QFileInfo fi(QString::fromStdString(this->profile.getPath()));
   std::string baseName = fi.baseName().toStdString();
@@ -1298,7 +1319,7 @@ ProfileConfigTab::guessParamsFromFileName(void)
 }
 
 void
-ProfileConfigTab::onBrowseCaptureFile(void)
+ProfileConfigTab::onBrowseCaptureFile()
 {
   QString title;
   QFileInfo fi(this->ui->pathEdit->text());
@@ -1373,7 +1394,7 @@ ProfileConfigTab::onBrowseCaptureFile(void)
 }
 
 void
-ProfileConfigTab::onSaveProfile(void)
+ProfileConfigTab::onSaveProfile()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   std::string name = "My " + this->profile.label();
@@ -1406,7 +1427,7 @@ ProfileConfigTab::onSaveProfile(void)
 }
 
 void
-ProfileConfigTab::onChangeConnectionType(void)
+ProfileConfigTab::onChangeConnectionType()
 {
   if (this->ui->useNetworkProfileRadio->isChecked()) {
     this->onRemoteProfileSelected();
@@ -1423,7 +1444,7 @@ ProfileConfigTab::onChangeConnectionType(void)
 }
 
 void
-ProfileConfigTab::onRefreshRemoteDevices(void)
+ProfileConfigTab::onRefreshRemoteDevices()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   int countBefore = this->ui->remoteDeviceCombo->count();
@@ -1445,7 +1466,7 @@ ProfileConfigTab::onRefreshRemoteDevices(void)
 }
 
 void
-ProfileConfigTab::onRemoteProfileSelected(void)
+ProfileConfigTab::onRemoteProfileSelected()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
@@ -1490,7 +1511,7 @@ ProfileConfigTab::onRemoteProfileSelected(void)
 }
 
 void
-ProfileConfigTab::onChangeSourceTimeUTC(void)
+ProfileConfigTab::onChangeSourceTimeUTC()
 {
   QDateTime dateTime = this->ui->sourceTimeEdit->dateTime();
   qint64 epochMsec   = dateTime.toMSecsSinceEpoch();
@@ -1507,14 +1528,14 @@ ProfileConfigTab::onChangeSourceTimeUTC(void)
 }
 
 void
-ProfileConfigTab::onDeviceTweaksClicked(void)
+ProfileConfigTab::onDeviceTweaksClicked()
 {
   this->tweaks->setProfile(&this->profile);
   this->tweaks->exec();
 }
 
 void
-ProfileConfigTab::onDeviceTweaksAccepted(void)
+ProfileConfigTab::onDeviceTweaksAccepted()
 {
   if (this->tweaks->hasChanged()) {
     this->tweaks->commitConfig();
@@ -1524,10 +1545,10 @@ ProfileConfigTab::onDeviceTweaksAccepted(void)
 }
 
 void
-ProfileConfigTab::onOverrideSampleRate(void)
+ProfileConfigTab::onOverrideSampleRate()
 {
   if (!this->ui->overrideCheck->isChecked()) {
-    this->sampRateCtlHint(0);
+    this->refreshSampRateCtl();
     this->onSpinsChanged();
   }
 
