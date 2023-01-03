@@ -298,7 +298,7 @@ namespace Suscan {
     void *read(uint32_t &type);
     void registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t, void *);
 
-    void setFrequency(SUFREQ freq, SUFREQ lnbFreq = 0);
+    void setFrequency(SUFREQ freq, SUFREQ lnbFreq);
     void setFrequency(SUFREQ freq);
     void setGain(std::string const &name, SUFLOAT val);
     void seek(struct timeval const &tv);
