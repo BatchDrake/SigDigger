@@ -41,7 +41,7 @@ using namespace Suscan;
 
 // Orbit
 void
-Orbit::debug(void) const
+Orbit::debug() const
 {
   printf("SAT NAME: %s\n", this->c_info->name);
   printf("  Epoch:    %d + %g\n", this->c_info->ep_year, this->c_info->ep_day);
@@ -176,9 +176,18 @@ Analyzer::setPPM(SUFLOAT value)
 }
 
 void
+Analyzer::setFrequency(SUFREQ freq)
+{
+  SU_ATTEMPT(suscan_analyzer_set_freq(this->instance, freq, lastLnbFreq));
+  lastFreq = freq;
+}
+
+void
 Analyzer::setFrequency(SUFREQ freq, SUFREQ lnb)
 {
   SU_ATTEMPT(suscan_analyzer_set_freq(this->instance, freq, lnb));
+  lastLnbFreq = lnb;
+  lastFreq = freq;
 }
 
 void
@@ -230,21 +239,33 @@ Analyzer::setBufferingSize(SUSCOUNT len)
   SU_ATTEMPT(suscan_analyzer_set_buffering_size(this->instance, len));
 }
 
+SUFREQ
+Analyzer::getFrequency() const
+{
+  return lastFreq;
+}
+
+SUFREQ
+Analyzer::getLnbFrequency() const
+{
+  return lastLnbFreq;
+}
+
 SUSCOUNT
-Analyzer::getSampleRate(void) const
+Analyzer::getSampleRate() const
 {
   return suscan_analyzer_get_samp_rate(this->instance);
 }
 
 SUSCOUNT
-Analyzer::getMeasuredSampleRate(void) const
+Analyzer::getMeasuredSampleRate() const
 {
   return static_cast<SUSCOUNT>(
         suscan_analyzer_get_measured_samp_rate(this->instance));
 }
 
 struct timeval
-Analyzer::getSourceTimeStamp(void) const
+Analyzer::getSourceTimeStamp() const
 {
   struct timeval tv;
 
@@ -254,7 +275,7 @@ Analyzer::getSourceTimeStamp(void) const
 }
 
 void
-Analyzer::halt(void)
+Analyzer::halt()
 {
   suscan_analyzer_req_halt(this->instance);
 }
@@ -263,10 +284,14 @@ Analyzer::halt(void)
 void
 Analyzer::captureMessage(quint32 type, void *data)
 {
+  auto asSrcInfo = static_cast<struct suscan_analyzer_source_info *>(data);
+
   switch (type) {
     // Data messages
     case SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INFO:
-      emit source_info_message(SourceInfoMessage(static_cast<struct suscan_analyzer_source_info *>(data)));
+      lastFreq = asSrcInfo->frequency;
+      lastLnbFreq = asSrcInfo->lnb;
+      emit source_info_message(SourceInfoMessage(asSrcInfo));
       break;
 
     case SUSCAN_ANALYZER_MESSAGE_TYPE_INSPECTOR:
@@ -312,7 +337,7 @@ Analyzer::captureMessage(quint32 type, void *data)
 bool Analyzer::registered = false; // Yes, C++!
 
 void
-Analyzer::assertTypeRegistration(void)
+Analyzer::assertTypeRegistration()
 {
   if (!Analyzer::registered) {
     qRegisterMetaType<Suscan::Message>();

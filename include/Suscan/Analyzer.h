@@ -110,7 +110,7 @@ namespace Suscan {
     }
 
     inline uint64_t
-    getPermissions(void) const
+    getPermissions() const
     {
       return this->c_info->permissions;
     }
@@ -122,55 +122,55 @@ namespace Suscan {
     }
 
     inline SUSCOUNT
-    getSampleRate(void) const
+    getSampleRate() const
     {
       return this->c_info->source_samp_rate;
     }
 
     inline SUSCOUNT
-    getEffectiveSampleRate(void) const
+    getEffectiveSampleRate() const
     {
       return this->c_info->effective_samp_rate;
     }
 
     inline SUFLOAT
-    getMeasuredSampleRate(void) const
+    getMeasuredSampleRate() const
     {
       return this->c_info->measured_samp_rate;
     }
 
     inline SUFREQ
-    getFrequency(void) const
+    getFrequency() const
     {
       return this->c_info->frequency;
     }
 
     inline SUFREQ
-    getMinFrequency(void) const
+    getMinFrequency() const
     {
       return this->c_info->freq_min;
     }
 
     inline SUFREQ
-    getMaxFrequency(void) const
+    getMaxFrequency() const
     {
       return this->c_info->freq_max;
     }
 
     inline SUFREQ
-    getLnbFrequency(void) const
+    getLnbFrequency() const
     {
       return this->c_info->lnb;
     }
 
     inline SUFLOAT
-    getBandwidth(void) const
+    getBandwidth() const
     {
       return this->c_info->bandwidth;
     }
 
     inline std::string
-    getAntenna(void) const
+    getAntenna() const
     {
       return this->c_info->antenna == nullptr
           ? "N/A"
@@ -178,43 +178,43 @@ namespace Suscan {
     }
 
     inline bool
-    getDCRemove(void) const
+    getDCRemove() const
     {
       return this->c_info->dc_remove != SU_FALSE;
     }
 
     inline bool
-    getIQReverse(void) const
+    getIQReverse() const
     {
       return this->c_info->iq_reverse != SU_FALSE;
     }
 
     inline bool
-    getAGC(void) const
+    getAGC() const
     {
       return this->c_info->agc != SU_FALSE;
     }
 
     inline float
-    getPPM(void) const
+    getPPM() const
     {
       return this->c_info->ppm;
     }
 
     inline bool
-    isSeekable(void) const
+    isSeekable() const
     {
       return this->c_info->seekable != SU_FALSE;
     }
 
     inline struct timeval
-    getSourceStartTime(void) const
+    getSourceStartTime() const
     {
       return this->c_info->source_start;
     }
 
     inline struct timeval
-    getSourceEndTime(void) const
+    getSourceEndTime() const
     {
       return this->c_info->source_end;
     }
@@ -262,11 +262,12 @@ namespace Suscan {
     AsyncThread *asyncThread = nullptr;
     uint32_t requestId = 0;
     uint32_t inspectorId = 0;
-
+    SUFREQ lastFreq = 0;
+    SUFREQ lastLnbFreq = 0;
     MQ mq;
 
     static bool registered;
-    static void assertTypeRegistration(void);
+    static void assertTypeRegistration();
 
   signals:
     void psd_message(const Suscan::PSDMessage &message);
@@ -275,24 +276,29 @@ namespace Suscan {
     void status_message(const Suscan::StatusMessage &message);
     void source_info_message(const Suscan::SourceInfoMessage &message);
     void analyzer_params(const Suscan::AnalyzerParams &params);
-    void read_error(void);
-    void eos(void);
-    void halted(void);
+    void read_error();
+    void eos();
+    void halted();
 
   public slots:
     void captureMessage(quint32 type, void *data);
 
   public:
-    uint32_t allocateRequestId(void);
-    uint32_t allocateInspectorId(void);
+    uint32_t allocateRequestId();
+    uint32_t allocateInspectorId();
 
-    SUSCOUNT getSampleRate(void) const;
-    SUSCOUNT getMeasuredSampleRate(void) const;
-    struct timeval getSourceTimeStamp(void) const;
+    SUSCOUNT getSampleRate() const;
+    SUSCOUNT getMeasuredSampleRate() const;
+    SUFREQ   getFrequency() const;
+    SUFREQ   getLnbFrequency() const;
+
+    struct timeval getSourceTimeStamp() const;
 
     void *read(uint32_t &type);
     void registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t, void *);
+
     void setFrequency(SUFREQ freq, SUFREQ lnbFreq = 0);
+    void setFrequency(SUFREQ freq);
     void setGain(std::string const &name, SUFLOAT val);
     void seek(struct timeval const &tv);
     void setSweepStrategy(SweepStrategy);
@@ -307,7 +313,7 @@ namespace Suscan {
     void setAGC(bool enabled);
     void setHopRange(SUFREQ min, SUFREQ max);
     void setBufferingSize(SUSCOUNT len);
-    void halt(void);
+    void halt();
 
     // Analyzer asynchronous requests
     void open(std::string const &inspClass, Channel const &ch, RequestId id = 0);
