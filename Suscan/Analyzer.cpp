@@ -274,6 +274,14 @@ Analyzer::getSourceTimeStamp() const
   return tv;
 }
 
+Suscan::AnalyzerSourceInfo
+Analyzer::getSourceInfo() const
+{
+  return Suscan::AnalyzerSourceInfo(
+        suscan_analyzer_get_source_info(this->instance),
+        true);
+}
+
 void
 Analyzer::halt()
 {
