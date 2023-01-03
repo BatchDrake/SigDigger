@@ -262,7 +262,8 @@ namespace Suscan {
     AsyncThread *asyncThread = nullptr;
     uint32_t requestId = 0;
     uint32_t inspectorId = 0;
-
+    SUFREQ lastFreq = 0;
+    SUFREQ lastLnbFreq = 0;
     MQ mq;
 
     static bool registered;
