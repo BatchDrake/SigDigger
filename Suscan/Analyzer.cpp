@@ -41,7 +41,7 @@ using namespace Suscan;
 
 // Orbit
 void
-Orbit::debug(void) const
+Orbit::debug() const
 {
   printf("SAT NAME: %s\n", this->c_info->name);
   printf("  Epoch:    %d + %g\n", this->c_info->ep_year, this->c_info->ep_day);
@@ -231,20 +231,20 @@ Analyzer::setBufferingSize(SUSCOUNT len)
 }
 
 SUSCOUNT
-Analyzer::getSampleRate(void) const
+Analyzer::getSampleRate() const
 {
   return suscan_analyzer_get_samp_rate(this->instance);
 }
 
 SUSCOUNT
-Analyzer::getMeasuredSampleRate(void) const
+Analyzer::getMeasuredSampleRate() const
 {
   return static_cast<SUSCOUNT>(
         suscan_analyzer_get_measured_samp_rate(this->instance));
 }
 
 struct timeval
-Analyzer::getSourceTimeStamp(void) const
+Analyzer::getSourceTimeStamp() const
 {
   struct timeval tv;
 
@@ -253,8 +253,16 @@ Analyzer::getSourceTimeStamp(void) const
   return tv;
 }
 
+Suscan::AnalyzerSourceInfo
+Analyzer::getSourceInfo() const
+{
+  return Suscan::AnalyzerSourceInfo(
+        suscan_analyzer_get_source_info(this->instance),
+        true);
+}
+
 void
-Analyzer::halt(void)
+Analyzer::halt()
 {
   suscan_analyzer_req_halt(this->instance);
 }
@@ -312,7 +320,7 @@ Analyzer::captureMessage(quint32 type, void *data)
 bool Analyzer::registered = false; // Yes, C++!
 
 void
-Analyzer::assertTypeRegistration(void)
+Analyzer::assertTypeRegistration()
 {
   if (!Analyzer::registered) {
     qRegisterMetaType<Suscan::Message>();
