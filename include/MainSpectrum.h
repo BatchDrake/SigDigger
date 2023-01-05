@@ -87,11 +87,11 @@ namespace SigDigger {
     unsigned int zoom = 1;
 
     // Private methods
-    void connectAll(void);
-    void connectWf(void);
-    void connectGLWf(void);
-    void refreshUi(void);
-    void updateLimits(void);
+    void connectAll();
+    void connectWf();
+    void connectGLWf();
+    void refreshUi();
+    void updateLimits();
 
     // Static members
     static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
@@ -107,7 +107,7 @@ namespace SigDigger {
         struct timeval const &tv,
         bool looped = false);
 
-    void deserializeFATs(void);
+    void deserializeFATs();
 
     // Named channel API
     NamedChannelSetIterator addChannel(
@@ -157,9 +157,9 @@ namespace SigDigger {
     void setShowFATs(bool);
     void pushFAT(FrequencyAllocationTable *);
     void removeFAT(QString const &name);
-    void notifyHalt(void);
+    void notifyHalt();
     void setFilterSkewness(enum Skewness); // TODO: Return *actual* bw
-    void updateOverlay(void);
+    void updateOverlay();
 
     void setGain(float);
     void setZeroPoint(float);
@@ -171,17 +171,18 @@ namespace SigDigger {
     void setLocked(bool);
 
     // Getters
-    bool getThrottling(void) const;
-    CaptureMode getCaptureMode(void) const;
-    qint64 getCenterFreq(void) const;
-    qint64 getLoFreq(void) const;
-    qint64 getLnbFreq(void) const;
-    unsigned int getBandwidth(void) const;
-    unsigned int getZoom(void) const;
+    bool getThrottling() const;
+    CaptureMode getCaptureMode() const;
+    qint64 getCenterFreq() const;
+    qint64 getLoFreq() const;
+    qint64 getLnbFreq() const;
+    unsigned int getBandwidth() const;
+    unsigned int getZoom() const;
+    Skewness getFilterSkewness() const;
     FrequencyAllocationTable *getFAT(QString const &) const;
-    void adjustSizes(void);
-    int sidePanelWidth(void) const;
-    qreal sidePanelRatio(void) const;
+    void adjustSizes();
+    int sidePanelWidth() const;
+    qreal sidePanelRatio() const;
 
     static int getFrequencyUnits(qint64 frew);
 
@@ -189,7 +190,7 @@ namespace SigDigger {
     qint32 computeHighCutFreq(int bw) const;
 
   signals:
-    void bandwidthChanged(void);
+    void bandwidthChanged();
     void frequencyChanged(qint64);
     void lnbFrequencyChanged(qint64);
     void loChanged(qint64);
@@ -202,14 +203,14 @@ namespace SigDigger {
   public slots:
     void onRangeChanged(float, float);
     void onWfBandwidthChanged(int, int);
-    void onWfLoChanged(void);
-    void onFrequencyChanged(void);
+    void onWfLoChanged();
+    void onFrequencyChanged();
     void onNewCenterFreq(qint64);
-    void onLoChanged(void);
+    void onLoChanged();
     void onNewZoomLevel(float);
     void onNewModulation(QString);
-    void onLnbFrequencyChanged(void);
-    void onLockStateChanged(void);
+    void onLnbFrequencyChanged();
+    void onLockStateChanged();
   };
 }
 
