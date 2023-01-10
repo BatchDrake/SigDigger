@@ -117,10 +117,18 @@ DeviceTweaks::commitConfig(void)
     this->profile->clearParams();
 
     for (int i = 0; i < rows; ++i) {
-      auto key = this->ui->tableWidget->item(i, 0)->text().toStdString();
-      auto val = this->ui->tableWidget->item(i, 1)->text().toStdString();
+      auto keyItem = this->ui->tableWidget->item(i, 0);
+      auto valItem = this->ui->tableWidget->item(i, 1);
+      if (keyItem != nullptr) { 
+        auto key = keyItem->text().toStdString();
 
-      this->profile->setParam(key, val);
+        if (valItem != nullptr) {
+          auto val = valItem->text().toStdString();
+          this->profile->setParam(key, val);
+        } else {
+          this->profile->setParam(key, "");
+        }
+      }
     }
   }
 }
