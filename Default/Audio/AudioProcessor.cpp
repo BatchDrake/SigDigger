@@ -42,6 +42,8 @@ AudioProcessor::AudioProcessor(UIMediator *mediator, QObject *parent)
     m_audioError = e.what();
     m_playBack = nullptr;
   }
+
+  m_squelchLevel = 1e-2;
 }
 
 AudioProcessor::~AudioProcessor()

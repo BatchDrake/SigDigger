@@ -704,6 +704,12 @@ MainSpectrum::getFAT(QString const &name) const
   return nullptr;
 }
 
+MainSpectrum::Skewness
+MainSpectrum::getFilterSkewness() const
+{
+  return filterSkewness;
+}
+
 void
 MainSpectrum::adjustSizes(void)
 {

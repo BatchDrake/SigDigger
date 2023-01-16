@@ -83,13 +83,18 @@ namespace Suscan {
 
       void populate(void);
 
+      void replace(Config const &);
+
     public:
       Config();
+      Config(Config const &);
       Config(const suscan_config_t *instance);
       Config(suscan_config_t *instance);
       ~Config();
 
       FieldValue const *get(std::string const &name) const;
+
+      Config &operator = (const Config &);
 
       const suscan_config_t *
       getInstance(void) const
