@@ -637,10 +637,12 @@ TVProcessorTab::onToggleTVProcessor(void)
 {
   this->tvProcessing = this->ui->enableTvButton->isChecked();
 
-  if (this->tvProcessing)
+  if (this->tvProcessing) {
+    onTVProcessorUiChanged();
     emit startTVProcessor();
-  else
+  } else {
     emit stopTVProcessor();
+  }
 }
 
 void
