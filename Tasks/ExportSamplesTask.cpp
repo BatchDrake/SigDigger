@@ -281,7 +281,7 @@ ExportSamplesTask::openRaw(void)
         "Cannot open "
         + this->path
         + ": "
-        + QString(strerror(errno));
+        + QString(sf_strerror(nullptr));
     return false;
   }
 
