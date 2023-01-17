@@ -154,8 +154,8 @@ SigDiggerHelpers::openSaveSamplesDialog(
       if (!task->attemptOpen()) {
         QMessageBox::critical(
               root,
-              task->getLastError(),
-              "Save samples to file");
+              "Save samples to file",
+              task->getLastError());
         delete task;
       } else {
         QFileInfo info(path);
