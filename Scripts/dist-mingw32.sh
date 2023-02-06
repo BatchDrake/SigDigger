@@ -92,7 +92,7 @@ function gather_dlls()
     fetch_dll libmd4c.dll
     fetch_dll libcrypto-3-x64.dll
     fetch_dll libidn2-0.dll
-    fetch_dll libunistring-2.dll
+    fetch_dll libunistring-5.dll
     fetch_dll libnghttp2-14.dll
     fetch_dll libpsl-5.dll
     fetch_dll libssh2-1.dll
