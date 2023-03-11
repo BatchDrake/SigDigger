@@ -27,6 +27,8 @@
 
 #include <InspectionWidgetFactory.h>
 
+#define RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS 100
+
 namespace Ui {
   class RMSInspector;
 }
@@ -37,6 +39,7 @@ namespace SigDigger {
 
   struct RMSInspectorConfig : public Suscan::Serializable {
     unsigned integrate = 1;
+    float integrationTime = RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS * 1e-3;
     bool dBscale = true;
     bool autoFit = true;
     bool autoScroll = true;
@@ -49,6 +52,13 @@ namespace SigDigger {
   {
     Q_OBJECT
 
+    Suscan::Analyzer *m_analyzer = nullptr;
+    qreal m_sampleRate = 0;
+    qreal m_kahanAcc = 0;
+    qreal m_kahanC = 0;
+    quint64 m_count = 0;
+    quint64 m_maxSamples = 0;
+
     // Config
     RMSInspectorConfig *m_uiConfig = nullptr;
 
@@ -58,6 +68,9 @@ namespace SigDigger {
     qint64 m_tunerFreq = 0;
 
     QString getInspectorTabTitle() const;
+
+    void updateMaxSamples();
+    void checkMaxSamples();
 
     void connectAll();
 
@@ -88,6 +101,9 @@ namespace SigDigger {
           QWidget *parent);
 
       ~RMSInspector() override;
+
+  public slots:
+      void configChanged();
 
   private:
     Ui::RMSInspector *ui;

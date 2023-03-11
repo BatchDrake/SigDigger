@@ -55,6 +55,19 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
 
 }
 
+void
+RMSViewTab::setSampleRate(qreal rate)
+{
+  this->rate = rate;
+  this->ui->waveform->setSampleRate(rate);
+}
+
+void
+RMSViewTab::feed(qreal timeStamp, qreal mag)
+{
+  this->integrateMeasure(timeStamp, SCAST(SUFLOAT, mag));
+}
+
 // https://stackoverflow.com/questions/12966957/is-there-an-equivalent-in-c-of-phps-explode-function
 
 bool

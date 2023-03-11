@@ -57,6 +57,9 @@ namespace SigDigger {
       void toggleModes(QObject *sender);
 
     public:
+      void setSampleRate(qreal);
+      void feed(qreal, qreal);
+
       explicit RMSViewTab(QWidget *parent, QTcpSocket *socket);
       ~RMSViewTab();
 

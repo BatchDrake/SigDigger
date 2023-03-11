@@ -32,6 +32,7 @@ void
 RMSInspectorConfig::deserialize(Suscan::Object const &conf)
 {
   LOAD(integrate);
+  LOAD(integrationTime);
   LOAD(dBscale);
   LOAD(autoFit);
   LOAD(autoScroll);
@@ -45,6 +46,7 @@ RMSInspectorConfig::serialize(void)
   obj.setClass("RMSInspectorConfig");
 
   STORE(integrate);
+  STORE(integrationTime);
   STORE(dBscale);
   STORE(autoFit);
   STORE(autoScroll);
@@ -67,7 +69,11 @@ RMSInspector::getInspectorTabTitle() const
 void
 RMSInspector::connectAll()
 {
-
+  connect(
+        ui->integrationTimeSpin,
+        SIGNAL(changed(qreal, qreal)),
+        this,
+        SLOT(configChanged()));
 }
 
 RMSInspector::RMSInspector(
@@ -81,12 +87,58 @@ RMSInspector::RMSInspector(
   ui->setupUi(this);
 
   m_rmsTab = new RMSViewTab(nullptr, nullptr);
+  m_sampleRate = SCAST(qreal, request.equivRate);
+
+  m_rmsTab->setSampleRate(m_sampleRate);
+
+  ui->integrationTimeSpin->setSampleRate(m_sampleRate);
+  ui->integrationTimeSpin->setTimeMax(4);
+  ui->integrationTimeSpin->setTimeValue(RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS * 1e-3);
+
+  printf("Minimum is %g\n", SCAST(qreal, 1.f / request.equivRate));
+  printf("Maximum is 4\n");
+  printf("Value is %g\n", ui->integrationTimeSpin->timeValue());
+
+  updateMaxSamples();
+
+  printf("MaxSamples is %d\n", m_maxSamples);
 
   ui->tabWidget->insertTab(0, m_rmsTab, "Power plot");
   ui->tabWidget->setCurrentIndex(0);
+
+
   connectAll();
 }
 
+void
+RMSInspector::checkMaxSamples()
+{
+  if (m_count >= m_maxSamples) {
+    if (m_count > 0) {
+      qreal mean = m_kahanAcc / SCAST(qreal, m_count);
+      qreal rms  = sqrt(mean);
+
+      if (m_analyzer != nullptr) {
+        struct timeval tv = m_analyzer->getSourceTimeStamp();
+        m_rmsTab->feed(
+              SCAST(qreal, tv.tv_sec) + 1e-6 * SCAST(qreal, tv.tv_usec),
+              rms);
+      }
+
+    }
+    m_kahanC = m_kahanAcc = 0;
+    m_maxSamples = 0;
+  }
+}
+
+void
+RMSInspector::updateMaxSamples()
+{
+  qreal maxTime = ui->integrationTimeSpin->timeValue();
+  m_maxSamples = SCAST(quint64, maxTime * m_sampleRate);
+
+  checkMaxSamples();
+}
 
 RMSInspector::~RMSInspector()
 {
@@ -96,15 +148,15 @@ RMSInspector::~RMSInspector()
 
 /////////////////////////// Overriden methods /////////////////////////////////
 void
-RMSInspector::attachAnalyzer(Suscan::Analyzer *)
+RMSInspector::attachAnalyzer(Suscan::Analyzer *analyzer)
 {
-
+  m_analyzer = analyzer;
 }
 
 void
 RMSInspector::detachAnalyzer()
 {
-
+  m_analyzer = nullptr;
 }
 
 void
@@ -131,9 +183,27 @@ RMSInspector::inspectorMessage(Suscan::InspectorMessage const &)
 }
 
 void
-RMSInspector::samplesMessage(Suscan::SamplesMessage const &)
+RMSInspector::samplesMessage(Suscan::SamplesMessage const &samplesMsg)
 {
+  unsigned int count, i;
+  qreal input, y, t;
+  const SUCOMPLEX *samples = samplesMsg.getSamples();
+  count = samplesMsg.getCount();
 
+  // TODO: We can make this actually a little better. Look for the max
+  // number of samples we can process in a row before calling
+  // checkMaxSamples and then deliver to the rmstab
+
+  for (i = 0; i < count; ++i) {
+    input = SCAST(qreal, SU_C_REAL(samples[i] * SU_C_CONJ(samples[i])));
+    y = input - m_kahanC;
+    t = m_kahanAcc + y;
+
+    m_kahanC = (t - m_kahanAcc) - y;
+    m_kahanAcc = t;
+
+    checkMaxSamples();
+  }
 }
 
 Suscan::Serializable *
@@ -147,6 +217,8 @@ RMSInspector::allocConfig()
 void
 RMSInspector::applyConfig()
 {
+  this->ui->integrationTimeSpin->setTimeValue(m_uiConfig->integrationTime);
+
   // TODO
 }
 
@@ -174,4 +246,11 @@ std::string
 RMSInspector::getLabel() const
 {
   return this->getInspectorTabTitle().toStdString();
+}
+
+//////////////////////////////// Slots /////////////////////////////////////////
+void
+RMSInspector::configChanged()
+{
+  updateMaxSamples();
 }

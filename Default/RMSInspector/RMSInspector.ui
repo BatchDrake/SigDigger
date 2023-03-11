@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>809</width>
-    <height>543</height>
+    <width>757</width>
+    <height>438</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,13 +21,62 @@
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Passband config</string>
+       <string>Configuration</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="5" column="0" colspan="4">
+       <property name="leftMargin">
+        <number>6</number>
+       </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
+        <number>6</number>
+       </property>
+       <property name="spacing">
+        <number>3</number>
+       </property>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Bandwidth</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Frequency offset</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="3">
+        <widget class="FrequencySpinBox" name="frequencySpin">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="4">
         <widget class="Waterfall" name="passBandSpectrum"/>
        </item>
-       <item row="4" column="0" colspan="4">
+       <item row="0" column="1">
+        <widget class="TimeSpinBox" name="integrationTimeSpin">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="4">
         <widget class="Line" name="line">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -40,37 +89,7 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Bandwidth</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Frequency offset</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
-        <widget class="QPushButton" name="pushButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
-         <property name="text">
-          <string>&amp;Show passband spectrum</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
+       <item row="3" column="0" colspan="3">
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -83,8 +102,8 @@
          </property>
         </spacer>
        </item>
-       <item row="0" column="1" colspan="3">
-        <widget class="FrequencySpinBox" name="frequencySpin">
+       <item row="2" column="1" colspan="3">
+        <widget class="FrequencySpinBox" name="bandWidthSpin">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -93,13 +112,32 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1" colspan="3">
-        <widget class="FrequencySpinBox" name="bandWidthSpin">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Integration time</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QPushButton" name="pushButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>&amp;Show passband spectrum</string>
          </property>
         </widget>
        </item>
@@ -119,6 +157,11 @@
    <class>FrequencySpinBox</class>
    <extends>QWidget</extends>
    <header>FrequencySpinBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TimeSpinBox</class>
+   <extends>QWidget</extends>
+   <header>TimeSpinBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
