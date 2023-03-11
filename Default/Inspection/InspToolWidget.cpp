@@ -47,7 +47,7 @@ InspToolWidgetConfig::deserialize(Suscan::Object const &conf)
 }
 
 Suscan::Object &&
-InspToolWidgetConfig::serialize(void)
+InspToolWidgetConfig::serialize()
 {
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
@@ -67,7 +67,7 @@ InspToolWidgetConfig::serialize(void)
 
 ////////////////////////// Inspector panel widget //////////////////////////////
 Suscan::Serializable *
-InspToolWidget::allocConfig(void)
+InspToolWidget::allocConfig()
 {
   if (this->timeWindow == nullptr)
     this->timeWindow = new TimeWindow(this);
@@ -80,6 +80,7 @@ InspToolWidget::refreshInspectorCombo()
 {
   std::string factory = this->panelConfig->inspFactory;
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  auto currClass = QString::fromStdString(getInspectorClass());
 
   int index = -1;
   int i = 0;
@@ -88,25 +89,29 @@ InspToolWidget::refreshInspectorCombo()
 
   for (auto p = sus->getFirstInspectionWidgetFactory();
        p != sus->getLastInspectionWidgetFactory();
-       ++p, ++i) {
-    this->ui->inspectorCombo->addItem(
-          QString((*p)->description()),
-          QVariant::fromValue<QString>((*p)->name()));
-
-    if ((*p)->name() == factory)
-      index = i;
+       ++p) {
+    if ((*p)->worksWith(currClass)) {
+      this->ui->inspectorCombo->addItem(
+            QString((*p)->description()),
+            QVariant::fromValue<QString>((*p)->name()));
+      if ((*p)->name() == factory)
+        index = i;
+      ++i;
+    }
   }
 
-  this->ui->inspectorCombo->setEnabled(index != -1);
+  this->ui->inspectorCombo->setEnabled(i > 0);
 
   if (index != -1)
     this->ui->inspectorCombo->setCurrentIndex(index);
+  else if (i > 0)
+    this->ui->inspectorCombo->setCurrentIndex(0);
 
   this->refreshUi();
 }
 
 void
-InspToolWidget::applyConfig(void)
+InspToolWidget::applyConfig()
 {
   this->refreshInspectorCombo();
   this->setInspectorClass(this->panelConfig->inspectorClass);
@@ -125,9 +130,9 @@ InspToolWidget::applyConfig(void)
   // Track changes now
   connect(
         this->timeWindow,
-        SIGNAL(configChanged(void)),
+        SIGNAL(configChanged()),
         this,
-        SLOT(onTimeWindowConfigChanged(void)));
+        SLOT(onTimeWindowConfigChanged()));
 }
 
 bool
@@ -145,8 +150,33 @@ InspToolWidget::event(QEvent *event)
 }
 
 void
-InspToolWidget::connectAll(void)
+InspToolWidget::connectAll()
 {
+  connect(
+        this->ui->askRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onInspClassChanged()));
+  connect(
+        this->ui->pskRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onInspClassChanged()));
+  connect(
+        this->ui->fskRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onInspClassChanged()));
+  connect(
+        this->ui->audioRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onInspClassChanged()));
+  connect(
+        this->ui->rawRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onInspClassChanged()));
   connect(
         this->ui->bandwidthSpin,
         SIGNAL(valueChanged(double)),
@@ -157,43 +187,43 @@ InspToolWidget::connectAll(void)
         this->ui->openInspectorButton,
         SIGNAL(clicked(bool)),
         this,
-        SLOT(onOpenInspector(void)));
+        SLOT(onOpenInspector()));
 
   connect(
         this->ui->preciseCheck,
         SIGNAL(stateChanged(int)),
         this,
-        SLOT(onPreciseChanged(void)));
+        SLOT(onPreciseChanged()));
 
   connect(
         this->ui->captureButton,
-        SIGNAL(pressed(void)),
+        SIGNAL(pressed()),
         this,
-        SLOT(onPressHold(void)));
+        SLOT(onPressHold()));
 
   connect(
         this->ui->captureButton,
-        SIGNAL(released(void)),
+        SIGNAL(released()),
         this,
-        SLOT(onReleaseHold(void)));
+        SLOT(onReleaseHold()));
 
   connect(
         this->ui->autoSquelchButton,
-        SIGNAL(pressed(void)),
+        SIGNAL(pressed()),
         this,
-        SLOT(onPressAutoSquelch(void)));
+        SLOT(onPressAutoSquelch()));
 
   connect(
         this->ui->autoSquelchButton,
-        SIGNAL(released(void)),
+        SIGNAL(released()),
         this,
-        SLOT(onReleaseAutoSquelch(void)));
+        SLOT(onReleaseAutoSquelch()));
 
   connect(
         this->ui->autoSquelchButton,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onToggleAutoSquelch(void)));
+        SLOT(onToggleAutoSquelch()));
 
   connect(
         this->ui->triggerSpin,
@@ -246,7 +276,7 @@ InspToolWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 }
 
 void
-InspToolWidget::refreshUi(void)
+InspToolWidget::refreshUi()
 {
   bool haveInspFactories = this->ui->inspectorCombo->count() > 0;
   bool inspAllowed = this->sourceInfo.testPermission(
@@ -317,13 +347,13 @@ InspToolWidget::setState(enum State state)
 }
 
 enum InspToolWidget::State
-InspToolWidget::getState(void) const
+InspToolWidget::getState() const
 {
   return this->state;
 }
 
 bool
-InspToolWidget::getPrecise(void) const
+InspToolWidget::getPrecise() const
 {
   return this->ui->preciseCheck->isChecked();
 }
@@ -339,10 +369,12 @@ InspToolWidget::setInspectorClass(std::string const &cls)
     this->ui->askRadio->setChecked(true);
   else if (cls == "audio")
     this->ui->audioRadio->setChecked(true);
+  else if (cls == "raw")
+    this->ui->rawRadio->setChecked(true);
 }
 
 std::string
-InspToolWidget::getInspectorClass(void) const
+InspToolWidget::getInspectorClass() const
 {
   if (this->ui->pskRadio->isChecked())
     return "psk";
@@ -352,11 +384,13 @@ InspToolWidget::getInspectorClass(void) const
     return "ask";
   else if (this->ui->audioRadio->isChecked())
     return "audio";
+  else if (this->ui->rawRadio->isChecked())
+    return "raw";
   return "";
 }
 
 unsigned int
-InspToolWidget::getBandwidth(void) const
+InspToolWidget::getBandwidth() const
 {
   return static_cast<unsigned int>(this->ui->bandwidthSpin->value());
 }
@@ -384,7 +418,7 @@ InspToolWidget::resetRawInspector(qreal fs)
 }
 
 void
-InspToolWidget::refreshCaptureInfo(void)
+InspToolWidget::refreshCaptureInfo()
 {
   this->ui->durationLabel->setText(
         SuWidgetsHelpers::formatQuantityFromDelta(
@@ -397,7 +431,7 @@ InspToolWidget::refreshCaptureInfo(void)
 }
 
 void
-InspToolWidget::transferHistory(void)
+InspToolWidget::transferHistory()
 {
   // Insert older samples
   this->data.insert(
@@ -527,7 +561,7 @@ InspToolWidget::feedRawInspector(const SUCOMPLEX *data, size_t size)
 }
 
 void
-InspToolWidget::openTimeWindow(void)
+InspToolWidget::openTimeWindow()
 {
   this->timeWindow->setData(
         this->data,
@@ -549,7 +583,7 @@ InspToolWidget::openTimeWindow(void)
 }
 
 void
-InspToolWidget::enableAutoSquelch(void)
+InspToolWidget::enableAutoSquelch()
 {
   // Enable autoSquelch
   this->autoSquelch = true;
@@ -567,7 +601,7 @@ InspToolWidget::enableAutoSquelch(void)
 }
 
 void
-InspToolWidget::cancelAutoSquelch(void)
+InspToolWidget::cancelAutoSquelch()
 {
   // Cancel autoSquelch
   this->autoSquelch = false;
@@ -648,6 +682,8 @@ InspToolWidget::setState(int, Suscan::Analyzer *analyzer)
 
     this->setState(m_analyzer == nullptr ? DETACHED : ATTACHED);
   }
+
+  this->refreshInspectorCombo();
 }
 
 void
@@ -684,7 +720,13 @@ InspToolWidget::~InspToolWidget()
 
 /////////////////////////////////// Slots /////////////////////////////////////
 void
-InspToolWidget::onOpenInspector(void)
+InspToolWidget::onInspClassChanged()
+{
+  refreshInspectorCombo();
+}
+
+void
+InspToolWidget::onOpenInspector()
 {
   Suscan::Channel ch;
   ch.bw    = this->getBandwidth();
@@ -716,13 +758,13 @@ InspToolWidget::onBandwidthChanged(double bw)
 }
 
 void
-InspToolWidget::onPreciseChanged(void)
+InspToolWidget::onPreciseChanged()
 {
   this->panelConfig->precise = this->ui->preciseCheck->isChecked();
 }
 
 void
-InspToolWidget::onPressAutoSquelch(void)
+InspToolWidget::onPressAutoSquelch()
 {
   if (!this->autoSquelch) {
     this->enableAutoSquelch();
@@ -735,7 +777,7 @@ InspToolWidget::onPressAutoSquelch(void)
 }
 
 void
-InspToolWidget::onReleaseAutoSquelch(void)
+InspToolWidget::onReleaseAutoSquelch()
 {
   if (this->autoSquelch) {
     if (this->powerSamples == 0) {
@@ -753,19 +795,19 @@ InspToolWidget::onReleaseAutoSquelch(void)
 }
 
 void
-InspToolWidget::onToggleAutoSquelch(void)
+InspToolWidget::onToggleAutoSquelch()
 {
   this->ui->autoSquelchButton->setChecked(this->autoSquelch);
 }
 
 void
-InspToolWidget::onPressHold(void)
+InspToolWidget::onPressHold()
 {
   startRawCapture();
 }
 
 void
-InspToolWidget::onReleaseHold(void)
+InspToolWidget::onReleaseHold()
 {
   stopRawCapture();
 
@@ -774,7 +816,7 @@ InspToolWidget::onReleaseHold(void)
 }
 
 void
-InspToolWidget::onTimeWindowConfigChanged(void)
+InspToolWidget::onTimeWindowConfigChanged()
 {
   this->panelConfig->palette = this->timeWindow->getPalette();
   this->panelConfig->paletteOffset = this->timeWindow->getPaletteOffset();
@@ -790,13 +832,13 @@ InspToolWidget::onTriggerSNRChanged(double val)
 
 // Main UI slots
 void
-InspToolWidget::onSpectrumBandwidthChanged(void)
+InspToolWidget::onSpectrumBandwidthChanged()
 {
   this->setBandwidth(this->mediator()->getMainSpectrum()->getBandwidth());
 }
 
 void
-InspToolWidget::onSpectrumFrequencyChanged(void)
+InspToolWidget::onSpectrumFrequencyChanged()
 {
   this->setDemodFrequency(
         this->mediator()->getMainSpectrum()->getLoFreq()

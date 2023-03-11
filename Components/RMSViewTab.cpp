@@ -47,7 +47,9 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
   this->onToggleModes();
 
   this->timer.start(TIMER_INTERVAL_MS);
-  this->processSocketData();
+
+  if (socket != nullptr)
+    this->processSocketData();
 
   this->connectAll();
 
@@ -270,11 +272,13 @@ RMSViewTab::connectAll(void)
         this,
         SLOT(onTimeout()));
 
-  connect(
-        this->socket,
-        SIGNAL(disconnected()),
-        this,
-        SLOT(onSocketDisconnected()));
+  if (socket != nullptr){
+    connect(
+          this->socket,
+          SIGNAL(disconnected()),
+          this,
+          SLOT(onSocketDisconnected()));
+  }
 
   connect(
         this->ui->stopButton,

@@ -152,11 +152,13 @@ namespace SigDigger {
 
   public slots:
     // UI slots
+    void onInspClassChanged();
     void onOpenInspector(void);
     void onBandwidthChanged(double);
     void onPreciseChanged(void);
     void onPressHold(void);
     void onReleaseHold(void);
+
 
     void onPressAutoSquelch(void);
     void onReleaseAutoSquelch(void);
