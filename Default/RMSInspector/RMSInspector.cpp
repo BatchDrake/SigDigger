@@ -84,24 +84,21 @@ RMSInspector::RMSInspector(
   InspectionWidget(factory, request, mediator, parent),
   ui(new Ui::RMSInspector())
 {
+  qreal intTime = RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS * 1e-3;
   ui->setupUi(this);
 
   m_rmsTab = new RMSViewTab(nullptr, nullptr);
   m_sampleRate = SCAST(qreal, request.equivRate);
 
-  m_rmsTab->setSampleRate(m_sampleRate);
-
   ui->integrationTimeSpin->setSampleRate(m_sampleRate);
   ui->integrationTimeSpin->setTimeMax(4);
-  ui->integrationTimeSpin->setTimeValue(RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS * 1e-3);
+  ui->integrationTimeSpin->setTimeValue(intTime);
 
-  printf("Minimum is %g\n", SCAST(qreal, 1.f / request.equivRate));
-  printf("Maximum is 4\n");
-  printf("Value is %g\n", ui->integrationTimeSpin->timeValue());
+  intTime = ui->integrationTimeSpin->timeValue();
+
+  m_rmsTab->setSampleRate(1 / intTime);
 
   updateMaxSamples();
-
-  printf("MaxSamples is %d\n", m_maxSamples);
 
   ui->tabWidget->insertTab(0, m_rmsTab, "Power plot");
   ui->tabWidget->setCurrentIndex(0);
@@ -127,7 +124,7 @@ RMSInspector::checkMaxSamples()
 
     }
     m_kahanC = m_kahanAcc = 0;
-    m_maxSamples = 0;
+    m_count = 0;
   }
 }
 
@@ -177,6 +174,20 @@ RMSInspector::setQth(Suscan::Location const &)
 }
 
 void
+RMSInspector::setColorConfig(ColorConfig const &cfg)
+{
+  m_rmsTab->setColorConfig(cfg);
+
+#define WATERFALL_CALL(x) ui->passBandSpectrum->x
+  WATERFALL_CALL(setFftPlotColor(cfg.spectrumForeground));
+  WATERFALL_CALL(setFftBgColor(cfg.spectrumBackground));
+  WATERFALL_CALL(setFftAxesColor(cfg.spectrumAxes));
+  WATERFALL_CALL(setFftTextColor(cfg.spectrumText));
+  WATERFALL_CALL(setFilterBoxColor(cfg.filterBox));
+#undef WATERFALL_CALL
+}
+
+void
 RMSInspector::inspectorMessage(Suscan::InspectorMessage const &)
 {
 
@@ -202,6 +213,7 @@ RMSInspector::samplesMessage(Suscan::SamplesMessage const &samplesMsg)
     m_kahanC = (t - m_kahanAcc) - y;
     m_kahanAcc = t;
 
+    ++m_count;
     checkMaxSamples();
   }
 }

@@ -60,14 +60,44 @@ RMSViewTab::setSampleRate(qreal rate)
 {
   this->rate = rate;
   this->ui->waveform->setSampleRate(rate);
+  this->ui->waveform->zoomHorizontal(SCAST(qint64, 0), SCAST(qint64, 1000));
 }
 
 void
 RMSViewTab::feed(qreal timeStamp, qreal mag)
 {
+  bool firstTime = this->data.size() == 0;
+
   this->integrateMeasure(timeStamp, SCAST(SUFLOAT, mag));
+
+  if (this->data.size() > 0) {
+    QDateTime date;
+    date.setSecsSinceEpoch(static_cast<qint64>(this->last));
+    this->ui->lastLabel->setText("Last: " + date.toString());
+
+    if (this->data.size() == 1) {
+      this->first = this->last;
+      this->ui->sinceLabel->setText("Since: " + date.toString());
+    }
+
+    if (firstTime) {
+      qint64 width = this->ui->waveform->getVerticalAxisWidth();
+      this->ui->waveform->zoomHorizontal(
+            -width,
+            static_cast<qint64>(this->ui->waveform->size().width()) - width);
+    }
+  }
 }
 
+void
+RMSViewTab::setColorConfig(ColorConfig const &cfg)
+{
+  this->ui->waveform->setBackgroundColor(cfg.spectrumBackground);
+  this->ui->waveform->setForegroundColor(cfg.spectrumForeground);
+  this->ui->waveform->setAxesColor(cfg.spectrumAxes);
+  this->ui->waveform->setTextColor(cfg.spectrumText);
+  this->ui->waveform->setSelectionColor(cfg.selection);
+}
 // https://stackoverflow.com/questions/12966957/is-there-an-equivalent-in-c-of-phps-explode-function
 
 bool
@@ -163,19 +193,8 @@ RMSViewTab::parseLine(void)
     if (sscanf(fields[3].c_str(), "%g", &db) < 1)
       return false;
 
-    this->integrateMeasure(
-          static_cast<qreal>(sec) + usec,
-          mag);
+    this->feed(SCAST(qreal, sec) + usec, SCAST(qreal, mag));
 
-    if (this->data.size() > 0) {
-      date.setSecsSinceEpoch(static_cast<qint64>(this->last));
-      this->ui->lastLabel->setText("Last: " + date.toString());
-
-      if (this->data.size() == 1) {
-        this->first = this->last;
-        this->ui->sinceLabel->setText("Since: " + date.toString());
-      }
-    }
     return true;
   }
 
@@ -186,7 +205,6 @@ void
 RMSViewTab::processSocketData(void)
 {
   char c;
-  bool firstTime = this->data.size() == 0;
 
   while (this->socket->bytesAvailable() > 0) {
     if (this->socket->read(&c, 1) < 1) {
@@ -208,13 +226,6 @@ RMSViewTab::processSocketData(void)
               "Remote peer attempted to flood us. Preventively disconnected");
       }
     }
-  }
-
-  if (firstTime && this->data.size() > 0) {
-    qint64 width = this->ui->waveform->getVerticalAxisWidth();
-    this->ui->waveform->zoomHorizontal(
-          -width,
-          static_cast<qint64>(this->ui->waveform->size().width()) - width);
   }
 }
 

@@ -27,7 +27,7 @@
 
 #include <InspectionWidgetFactory.h>
 
-#define RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS 100
+#define RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS 20
 
 namespace Ui {
   class RMSInspector;
@@ -81,7 +81,7 @@ namespace SigDigger {
       void setProfile(Suscan::Source::Config &) override;
       void setTimeStamp(struct timeval const &) override;
       void setQth(Suscan::Location const &) override;
-
+      void setColorConfig(ColorConfig const &) override;
       void inspectorMessage(Suscan::InspectorMessage const &) override;
       void samplesMessage(Suscan::SamplesMessage const &) override;
 

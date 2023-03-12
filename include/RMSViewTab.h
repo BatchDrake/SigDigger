@@ -24,6 +24,7 @@
 #include <QTcpSocket>
 #include <sigutils/types.h>
 #include <vector>
+#include <ColorConfig.h>
 
 namespace Ui {
   class RMSViewTab;
@@ -59,6 +60,7 @@ namespace SigDigger {
     public:
       void setSampleRate(qreal);
       void feed(qreal, qreal);
+      void setColorConfig(ColorConfig const &);
 
       explicit RMSViewTab(QWidget *parent, QTcpSocket *socket);
       ~RMSViewTab();
