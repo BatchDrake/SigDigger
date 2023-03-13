@@ -44,6 +44,8 @@ namespace SigDigger {
       qreal first;
       qreal last;
 
+      qreal m_time = 0;
+
       int     accum_ctr = 0;
       SUFLOAT energy_accum = 0;
 
@@ -58,6 +60,10 @@ namespace SigDigger {
       void toggleModes(QObject *sender);
 
     public:
+      void setIntegrationTimeMode(qreal, qreal);
+      void setIntegrationTimeHint(qreal);
+      qreal getIntegrationTimeHint() const;
+
       void setSampleRate(qreal);
       void feed(qreal, qreal);
       void setColorConfig(ColorConfig const &);
@@ -70,8 +76,10 @@ namespace SigDigger {
 
     signals:
       void titleChanged(QString);
+      void integrationTimeChanged(qreal);
 
     public slots:
+      void onTimeChanged(qreal, qreal);
       void onTimeout();
       void onStop(void);
       void onSave(void);

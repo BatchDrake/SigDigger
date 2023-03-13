@@ -26,6 +26,7 @@
 #include <string>
 #include <QDateTime>
 #include <QFileDialog>
+#include <QMessageBox>
 
 #define MAX_LINE_SIZE  4096
 #define TIMER_INTERVAL_MS 100
@@ -56,11 +57,37 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
 }
 
 void
+RMSViewTab::setIntegrationTimeMode(qreal min, qreal max)
+{
+  this->ui->timeSpinBox->setTimeMin(min);
+  this->ui->timeSpinBox->setTimeMax(max);
+
+  ui->stackedWidget->setCurrentIndex(1);
+}
+
+void
+RMSViewTab::setIntegrationTimeHint(qreal hint)
+{
+  m_time = hint;
+
+  ui->timeSpinBox->setTimeValue(hint);
+  ui->timeSpinBox->setBestUnits(true);
+
+  setSampleRate(1 / hint);
+}
+
+qreal
+RMSViewTab::getIntegrationTimeHint() const
+{
+  return ui->timeSpinBox->timeValue();
+}
+
+
+void
 RMSViewTab::setSampleRate(qreal rate)
 {
   this->rate = rate;
   this->ui->waveform->setSampleRate(rate);
-  this->ui->waveform->zoomHorizontal(SCAST(qint64, 0), SCAST(qint64, 1000));
 }
 
 void
@@ -311,6 +338,12 @@ RMSViewTab::connectAll(void)
         SLOT(onStop()));
 
   connect(
+        this->ui->timeSpinBox,
+        SIGNAL(changed(qreal, qreal)),
+        this,
+        SLOT(onTimeChanged(qreal, qreal)));
+
+  connect(
         this->ui->saveButton,
         SIGNAL(clicked(bool)),
         this,
@@ -416,4 +449,46 @@ RMSViewTab::onValueChanged(int)
   this->ui->waveform->refreshData();
   if (this->ui->autoFitButton->isChecked())
     this->fitVertical();
+}
+
+void
+RMSViewTab::onTimeChanged(qreal time, qreal)
+{
+  bool blocked = ui->timeSpinBox->blockSignals(true);
+  if (this->data.size() > 0) {
+    auto reply = QMessageBox::question(
+          this,
+          "Reset current plot",
+          "Changing the integration time will clear the current data from the plot. "
+          "Do you want to save it first?",
+          QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel);
+    if (reply == QMessageBox::StandardButton::Cancel) {
+      ui->timeSpinBox->setTimeValue(m_time);
+      goto done;
+    }
+    if (reply == QMessageBox::StandardButton::Yes) {
+      QString fileName =
+          QFileDialog::getSaveFileName(
+            this,
+            "Save data to MATLAB file",
+            "power.m",
+            "MATLAB scripts (*.m)");
+
+      if (fileName.size() == 0) {
+        ui->timeSpinBox->setTimeValue(m_time);
+        goto done;
+      }
+
+      this->saveToMatlab(fileName);
+    }
+  }
+
+  onValueChanged(0);
+
+  setIntegrationTimeHint(time);
+
+  emit integrationTimeChanged(time);
+
+done:
+  ui->timeSpinBox->blockSignals(blocked);
 }

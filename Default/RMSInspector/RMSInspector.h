@@ -53,11 +53,18 @@ namespace SigDigger {
     Q_OBJECT
 
     Suscan::Analyzer *m_analyzer = nullptr;
+    uint32_t m_lastSpectrumId;
     qreal m_sampleRate = 0;
     qreal m_kahanAcc = 0;
     qreal m_kahanC = 0;
     quint64 m_count = 0;
     quint64 m_maxSamples = 0;
+
+    std::vector<SUFLOAT>  m_fftData;
+    SUSCOUNT              m_lastRate = 0;
+    SUSCOUNT              m_lastLen = 0;
+    unsigned int          m_spectrumAdjustCounter = 0;
+    bool                  m_haveSpectrumLimits = false;
 
     // Config
     RMSInspectorConfig *m_uiConfig = nullptr;
@@ -71,6 +78,12 @@ namespace SigDigger {
 
     void updateMaxSamples();
     void checkMaxSamples();
+
+    void feedSpectrum(
+        const SUFLOAT *data,
+        SUSCOUNT len,
+        SUSCOUNT rate,
+        uint32_t id);
 
     void connectAll();
 
@@ -103,8 +116,13 @@ namespace SigDigger {
       ~RMSInspector() override;
 
   public slots:
-      void configChanged();
+      void onConfigChanged();
+      void onTabChanged();
+      void onRangeChanged(float min, float max);
+      void onChangeLo();
+      void onChangeBandwidth();
 
+      void onSourceInfoMessage(Suscan::SourceInfoMessage const &);
   private:
     Ui::RMSInspector *ui;
   };
