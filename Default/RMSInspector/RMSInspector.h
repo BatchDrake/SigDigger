@@ -24,7 +24,7 @@
 #include <QWidget>
 #include <Suscan/Analyzer.h>
 #include <Suscan/Config.h>
-
+#include <suscan/cli/datasaver.h>
 #include <InspectionWidgetFactory.h>
 
 #define RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS 20
@@ -37,6 +37,12 @@ namespace SigDigger {
   class AppConfig;
   class RMSViewTab;
 
+  extern "C" {
+    typedef void (*datasaver_param_init_cb) (
+      struct suscli_datasaver_params *self,
+      const hashlist_t *params);
+  }
+
   struct RMSInspectorConfig : public Suscan::Serializable {
     unsigned integrate = 1;
     float integrationTime = RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS * 1e-3;
@@ -44,6 +50,9 @@ namespace SigDigger {
     bool autoFit = true;
     bool autoScroll = true;
 
+    bool logData = false;
+    std::string logDir = "";
+    std::string logFormat = "csv";
     void deserialize(Suscan::Object const &conf) override;
     Suscan::Object &&serialize() override;
   };
@@ -60,6 +69,13 @@ namespace SigDigger {
     quint64 m_count = 0;
     quint64 m_maxSamples = 0;
 
+    std::vector<suscli_datasaver_params> m_datasaverList;
+    QString               m_dataFile;
+    std::string           m_fullPathStd;
+    hashlist_t           *m_datasaverParams = nullptr;
+    suscli_datasaver     *m_datasaver = nullptr;
+    struct timeval        m_t0;
+    struct timeval        m_lastUpdate;
     std::vector<SUFLOAT>  m_fftData;
     SUSCOUNT              m_lastRate = 0;
     SUSCOUNT              m_lastLen = 0;
@@ -84,6 +100,12 @@ namespace SigDigger {
         SUSCOUNT len,
         SUSCOUNT rate,
         uint32_t id);
+
+    void registerDataSaver(
+        QString const &desc,
+        datasaver_param_init_cb);
+
+    const suscli_datasaver_params *currentDataSaverParams();
 
     void connectAll();
 
@@ -116,12 +138,13 @@ namespace SigDigger {
       ~RMSInspector() override;
 
   public slots:
+      void onToggleDataLogger();
       void onConfigChanged();
       void onTabChanged();
       void onRangeChanged(float min, float max);
       void onChangeLo();
       void onChangeBandwidth();
-
+      void onBrowseDirectory();
       void onSourceInfoMessage(Suscan::SourceInfoMessage const &);
   private:
     Ui::RMSInspector *ui;

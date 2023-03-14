@@ -23,6 +23,13 @@
 #include "UIMediator.h"
 #include "Default/FFT/FFTWidget.h"
 #include "SigDiggerHelpers.h"
+#include <sys/stat.h>
+#include <QFileDialog>
+
+// I will never accept this
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  define DirectoryOnly Directory
+#endif
 
 using namespace SigDigger;
 
@@ -38,6 +45,9 @@ RMSInspectorConfig::deserialize(Suscan::Object const &conf)
   LOAD(dBscale);
   LOAD(autoFit);
   LOAD(autoScroll);
+  LOAD(logData);
+  LOAD(logDir);
+  LOAD(logFormat);
 }
 
 Suscan::Object &&
@@ -52,6 +62,9 @@ RMSInspectorConfig::serialize(void)
   STORE(dBscale);
   STORE(autoFit);
   STORE(autoScroll);
+  STORE(logData);
+  STORE(logDir);
+  STORE(logFormat);
 
   return this->persist(obj);
 }
@@ -100,6 +113,24 @@ RMSInspector::connectAll()
         SIGNAL(valueChanged(void)),
         this,
         SLOT(onChangeBandwidth(void)));
+
+  connect(
+        ui->logCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onToggleDataLogger()));
+
+  connect(
+        ui->browseButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onBrowseDirectory()));
+
+  connect(
+        ui->formatCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onConfigChanged()));
 }
 
 RMSInspector::RMSInspector(
@@ -135,8 +166,45 @@ RMSInspector::RMSInspector(
   ui->tabWidget->insertTab(0, m_rmsTab, "Power plot");
   ui->tabWidget->setCurrentIndex(0);
 
+  // Initialize data logger
+  m_datasaverParams = hashlist_new();
 
+  registerDataSaver(
+        "Comma-separated values (CSV)",
+        suscli_datasaver_params_init_csv);
+  registerDataSaver(
+        "Binary MAT v5 file",
+        suscli_datasaver_params_init_mat5);
+  registerDataSaver(
+        "Matlab script",
+        suscli_datasaver_params_init_matlab);
   connectAll();
+}
+
+RMSInspector::~RMSInspector()
+{
+  if (m_datasaver != nullptr)
+    suscli_datasaver_destroy(m_datasaver);
+
+  if (m_datasaverParams != nullptr)
+    hashlist_destroy(m_datasaverParams);
+
+  delete ui;
+}
+
+
+void
+RMSInspector::registerDataSaver(
+    QString const &desc,
+    datasaver_param_init_cb initializer)
+{
+  auto index = m_datasaverList.size();
+
+  m_datasaverList.resize(index + 1);
+
+  (initializer) (&m_datasaverList[index], m_datasaverParams);
+
+  ui->formatCombo->insertItem(SCAST(int, index), desc);
 }
 
 void
@@ -147,12 +215,30 @@ RMSInspector::checkMaxSamples()
       qreal mean = m_kahanAcc / SCAST(qreal, m_count);
 
       if (m_analyzer != nullptr) {
+        struct timeval currTv, diff;
         struct timeval tv = m_analyzer->getSourceTimeStamp();
 
         if (m_rmsTab->running())
           m_rmsTab->feed(
                 SCAST(qreal, tv.tv_sec) + 1e-6 * SCAST(qreal, tv.tv_usec),
                 mean);
+
+        if (m_datasaver != nullptr) {
+          gettimeofday(&currTv, nullptr);
+          timersub(&currTv, &m_lastUpdate, &diff);
+
+          if (diff.tv_sec >= 1) {
+            struct stat sbuf;
+            m_lastUpdate = currTv;
+
+            stat(m_fullPathStd.c_str(), &sbuf);
+
+            ui->sizeLabel->setText(
+                  SuWidgetsHelpers::formatBinaryQuantity(sbuf.st_size));
+          }
+
+          suscli_datasaver_write_timestamp(m_datasaver, &tv, SU_ASFLOAT(mean));
+        }
       }
 
     }
@@ -236,12 +322,6 @@ RMSInspector::updateMaxSamples()
   checkMaxSamples();
 }
 
-RMSInspector::~RMSInspector()
-{
-  delete ui;
-}
-
-
 /////////////////////////// Overriden methods /////////////////////////////////
 void
 RMSInspector::attachAnalyzer(Suscan::Analyzer *analyzer)
@@ -253,12 +333,16 @@ RMSInspector::attachAnalyzer(Suscan::Analyzer *analyzer)
         SIGNAL(source_info_message(Suscan::SourceInfoMessage const &)),
         this,
         SLOT(onSourceInfoMessage(Suscan::SourceInfoMessage const &)));
+
+  onToggleDataLogger();
 }
 
 void
 RMSInspector::detachAnalyzer()
 {
   m_analyzer = nullptr;
+
+  onToggleDataLogger();
 }
 
 void
@@ -382,8 +466,22 @@ void
 RMSInspector::applyConfig()
 {
   FFTWidgetConfig config;
+  QString dir = QString::fromStdString(m_uiConfig->logDir);
 
   m_rmsTab->setIntegrationTimeHint(SCAST(qreal, m_uiConfig->integrationTime));
+
+  if (dir == "")
+    dir = QDir::currentPath();
+
+  ui->logCheck->setChecked(m_uiConfig->logData);
+  ui->directoryEdit->setText(dir);
+
+  if (m_uiConfig->logFormat == "csv")
+    ui->formatCombo->setCurrentIndex(0);
+  else if (m_uiConfig->logFormat == "mat5")
+    ui->formatCombo->setCurrentIndex(1);
+  else if (m_uiConfig->logFormat == "matlab")
+    ui->formatCombo->setCurrentIndex(2);
 
   updateMaxSamples();
 
@@ -426,6 +524,20 @@ RMSInspector::getLabel() const
 void
 RMSInspector::onConfigChanged()
 {
+  switch (ui->formatCombo->currentIndex()) {
+    case 0:
+      m_uiConfig->logFormat = "csv";
+      break;
+
+    case 1:
+      m_uiConfig->logFormat = "mat5";
+      break;
+
+    case 2:
+      m_uiConfig->logFormat = "matlab";
+      break;
+  }
+
   updateMaxSamples();
 }
 
@@ -495,4 +607,101 @@ void
 RMSInspector::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
 {
   m_tunerFreq = msg.info()->getFrequency();
+}
+
+const suscli_datasaver_params *
+RMSInspector::currentDataSaverParams()
+{
+  int index = ui->formatCombo->currentIndex();
+  if (index == -1)
+    return nullptr;
+
+  return &m_datasaverList[index];
+}
+
+void
+RMSInspector::onToggleDataLogger()
+{
+  bool enabled = ui->logCheck->isChecked();
+  bool haveDataLogger = m_datasaver != nullptr;
+
+  ui->directoryEdit->setEnabled(!enabled);
+  ui->browseButton->setEnabled(!enabled);
+  ui->formatCombo->setEnabled(!enabled);
+
+  if (m_analyzer == nullptr)
+    enabled = false;
+
+  if (enabled != haveDataLogger) {
+    if (enabled) {
+      const suscli_datasaver_params *params = currentDataSaverParams();
+      if (params != nullptr) {
+        char *file = suscli_datasaver_get_filename(params);
+
+        if (file == nullptr) {
+          QMessageBox::critical(
+                this,
+                "Internal error",
+                "Selected datasaver failed to provide a filename hint");
+        } else {
+          m_t0 = m_analyzer->getSourceTimeStamp();
+          m_dataFile = file;
+          free(file);
+
+          m_fullPathStd = (ui->directoryEdit->text() + "/" + m_dataFile).toStdString();
+
+          hashlist_set(m_datasaverParams, "path", m_fullPathStd.data());
+          hashlist_set(m_datasaverParams, "_t0", &m_t0);
+
+          m_datasaver = suscli_datasaver_new(params);
+
+          if (m_datasaver == nullptr) {
+            QMessageBox::critical(
+                  this,
+                  "Internal error",
+                  "Failed to create datasaver object. See log messages for details.");
+          }
+
+          ui->currentFileLabel->setText(m_dataFile);
+
+          gettimeofday(&m_lastUpdate, NULL);
+        }
+      }
+
+    } else {
+      // Delete datalogger
+      suscli_datasaver_destroy(m_datasaver);
+      m_datasaver = nullptr;
+
+      ui->currentFileLabel->setText("N/A");
+      ui->sizeLabel->setText("0 bytes");
+    }
+  }
+
+  haveDataLogger = m_datasaver != nullptr;
+
+  ui->tabWidget->setTabText(
+        ui->tabWidget->indexOf(ui->loggingTab),
+        haveDataLogger ? "Data logger [logging]" : "Data logger");
+
+  if (m_analyzer != nullptr)
+    ui->logCheck->setChecked(haveDataLogger);
+
+  m_uiConfig->logData = ui->logCheck->isChecked();
+}
+
+void
+RMSInspector::onBrowseDirectory()
+{
+  QFileDialog dialog(this->ui->browseButton);
+
+  dialog.setFileMode(QFileDialog::DirectoryOnly);
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+  dialog.setWindowTitle(QString("Select current save directory"));
+
+  if (dialog.exec()) {
+    QString path = dialog.selectedFiles().first();
+    this->ui->directoryEdit->setText(path);
+    m_uiConfig->logDir = path.toStdString();
+  }
 }
