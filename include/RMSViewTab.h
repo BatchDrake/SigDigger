@@ -46,6 +46,8 @@ namespace SigDigger {
 
       qreal m_time = 0;
 
+      bool m_running = true;
+
       int     accum_ctr = 0;
       SUFLOAT energy_accum = 0;
 
@@ -59,6 +61,8 @@ namespace SigDigger {
       void fitVertical(void);
       void toggleModes(QObject *sender);
 
+      bool userClear(QString const &);
+
     public:
       void setIntegrationTimeMode(qreal, qreal);
       void setIntegrationTimeHint(qreal);
@@ -67,6 +71,8 @@ namespace SigDigger {
       void setSampleRate(qreal);
       void feed(qreal, qreal);
       void setColorConfig(ColorConfig const &);
+
+      bool running() const;
 
       explicit RMSViewTab(QWidget *parent, QTcpSocket *socket);
       ~RMSViewTab();
@@ -77,11 +83,12 @@ namespace SigDigger {
     signals:
       void titleChanged(QString);
       void integrationTimeChanged(qreal);
+      void toggleState();
 
     public slots:
       void onTimeChanged(qreal, qreal);
       void onTimeout();
-      void onStop(void);
+      void onToggleStartStop(void);
       void onSave(void);
       void onToggleModes(void);
       void onResetZoom(void);

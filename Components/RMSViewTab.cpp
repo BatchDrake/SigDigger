@@ -59,6 +59,9 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
 void
 RMSViewTab::setIntegrationTimeMode(qreal min, qreal max)
 {
+  this->ui->stopButton->setIcon(QIcon(":/icons/start-capture.png"));
+  this->ui->stopButton->setToolTip("Toggle capture on / off");
+
   this->ui->timeSpinBox->setTimeMin(min);
   this->ui->timeSpinBox->setTimeMax(max);
 
@@ -263,11 +266,11 @@ RMSViewTab::disconnectSocket(void)
     this->socket->close();
     delete this->socket;
     this->socket = nullptr;
-  }
 
-  this->ui->stopButton->setEnabled(false);
-  this->ui->stopButton->setChecked(false);
-  this->ui->stopButton->setIcon(QIcon(":/icons/offline.png"));
+    this->ui->stopButton->setEnabled(false);
+    this->ui->stopButton->setChecked(false);
+    this->ui->stopButton->setIcon(QIcon(":/icons/offline.png"));
+  }
 }
 
 void
@@ -314,6 +317,39 @@ RMSViewTab::fitVertical(void)
   this->ui->waveform->zoomVertical(min, max);
 }
 
+bool
+RMSViewTab::userClear(QString const &message)
+{
+  if (this->data.size() > 0) {
+    auto reply = QMessageBox::question(
+          this,
+          "Clear current plot",
+          message,
+          QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel);
+    if (reply == QMessageBox::StandardButton::Cancel) {
+      ui->timeSpinBox->setTimeValue(m_time);
+      return false;
+    }
+    if (reply == QMessageBox::StandardButton::Yes) {
+      QString fileName =
+          QFileDialog::getSaveFileName(
+            this,
+            "Save data to MATLAB file",
+            "power.m",
+            "MATLAB scripts (*.m)");
+
+      if (fileName.size() == 0) {
+        ui->timeSpinBox->setTimeValue(m_time);
+        return false;
+      }
+
+      this->saveToMatlab(fileName);
+    }
+  }
+
+  return true;
+}
+
 void
 RMSViewTab::connectAll(void)
 {
@@ -333,9 +369,9 @@ RMSViewTab::connectAll(void)
 
   connect(
         this->ui->stopButton,
-        SIGNAL(clicked(bool)),
+        SIGNAL(toggled(bool)),
         this,
-        SLOT(onStop()));
+        SLOT(onToggleStartStop()));
 
   connect(
         this->ui->timeSpinBox,
@@ -380,6 +416,12 @@ RMSViewTab::connectAll(void)
         SLOT(onValueChanged(int)));
 }
 
+bool
+RMSViewTab::running() const
+{
+  return m_running;
+}
+
 RMSViewTab::~RMSViewTab()
 {
   this->disconnectSocket();
@@ -403,9 +445,25 @@ RMSViewTab::onSave(void)
 }
 
 void
-RMSViewTab::onStop(void)
+RMSViewTab::onToggleStartStop(void)
 {
-  this->disconnectSocket();
+  if (m_running != ui->stopButton->isChecked()) {
+    if (m_running) {
+      // Disconnect
+      this->disconnectSocket();
+    } else {
+      // Starting
+      if (!userClear(
+            "Starting a capture will overwrite the current plot. Do you want to save it first?")) {
+        ui->stopButton->setChecked(false);
+        return;
+      }
+
+      onValueChanged(0);
+    }
+    m_running = ui->stopButton->isChecked();
+    emit toggleState();
+  }
 }
 
 void
@@ -455,33 +513,11 @@ void
 RMSViewTab::onTimeChanged(qreal time, qreal)
 {
   bool blocked = ui->timeSpinBox->blockSignals(true);
-  if (this->data.size() > 0) {
-    auto reply = QMessageBox::question(
-          this,
-          "Reset current plot",
-          "Changing the integration time will clear the current data from the plot. "
-          "Do you want to save it first?",
-          QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel);
-    if (reply == QMessageBox::StandardButton::Cancel) {
-      ui->timeSpinBox->setTimeValue(m_time);
-      goto done;
-    }
-    if (reply == QMessageBox::StandardButton::Yes) {
-      QString fileName =
-          QFileDialog::getSaveFileName(
-            this,
-            "Save data to MATLAB file",
-            "power.m",
-            "MATLAB scripts (*.m)");
 
-      if (fileName.size() == 0) {
-        ui->timeSpinBox->setTimeValue(m_time);
-        goto done;
-      }
-
-      this->saveToMatlab(fileName);
-    }
-  }
+  if (!userClear(
+        "Changing the integration time will clear the data of the current plot. "
+        "Do you want to save the current plot first?"))
+    goto done;
 
   onValueChanged(0);
 

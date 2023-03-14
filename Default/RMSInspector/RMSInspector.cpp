@@ -148,9 +148,11 @@ RMSInspector::checkMaxSamples()
 
       if (m_analyzer != nullptr) {
         struct timeval tv = m_analyzer->getSourceTimeStamp();
-        m_rmsTab->feed(
-              SCAST(qreal, tv.tv_sec) + 1e-6 * SCAST(qreal, tv.tv_usec),
-              mean);
+
+        if (m_rmsTab->running())
+          m_rmsTab->feed(
+                SCAST(qreal, tv.tv_sec) + 1e-6 * SCAST(qreal, tv.tv_usec),
+                mean);
       }
 
     }
