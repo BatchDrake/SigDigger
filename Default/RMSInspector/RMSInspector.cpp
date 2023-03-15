@@ -501,8 +501,10 @@ RMSInspector::applyConfig()
 
   updateMaxSamples();
 
-  config.deserialize(
-        mediator()->getAppConfig()->getComponentConfig("FFTWidget"));
+  try {
+    config.deserialize(
+          mediator()->getAppConfig()->getComponentConfig("FFTWidget"));
+  } catch (Suscan::Exception &) {}
 
   auto palette = SigDiggerHelpers::instance()->getPalette(config.palette);
 
