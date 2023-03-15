@@ -27,7 +27,8 @@
 #include <QDateTime>
 #include <QFileDialog>
 #include <QMessageBox>
-
+#include <complex.h>
+#include <QToolTip>
 #define MAX_LINE_SIZE  4096
 #define TIMER_INTERVAL_MS 100
 using namespace SigDigger;
@@ -414,6 +415,18 @@ RMSViewTab::connectAll(void)
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onValueChanged(int)));
+
+  connect(
+        this->ui->waveform,
+        SIGNAL(pointClicked(qreal, qreal)),
+        this,
+        SLOT(onPointClicked(qreal,qreal)));
+
+  connect(
+        this->ui->waveform,
+        SIGNAL(toolTipAt(int, int, qreal, qreal)),
+        this,
+        SLOT(onToolTip(int,int,qreal,qreal)));
 }
 
 bool
@@ -570,4 +583,67 @@ RMSViewTab::onTimeChanged(qreal time, qreal)
 
 done:
   ui->timeSpinBox->blockSignals(blocked);
+}
+
+void
+RMSViewTab::onPointClicked(qreal, qreal level)
+{
+  WaveVCursor cursor;
+  QList<WaveVCursor> list;
+
+  cursor.color = QColor(0xff, 0xff, 0);
+
+  if (ui->dbButton->isChecked()) {
+    m_markerDb = level;
+    m_markerLinear = SU_POWER_MAG_RAW(level);
+  } else {
+    m_markerDb = SU_POWER_DB_RAW(level);
+    m_markerLinear = level;
+  }
+
+  cursor.string = QString::asprintf("Ref: %.3f dB (", m_markerDb) +
+      SuWidgetsHelpers::formatQuantity(m_markerLinear, 4, "") + ")";
+  cursor.level = SUCOMPLEX(SU_ASFLOAT(m_markerLinear), SU_ASFLOAT(m_markerDb));
+
+  list.push_back(cursor);
+  ui->waveform->setVCursorList(list);
+
+  m_haveMarker = true;
+}
+
+void
+RMSViewTab::onToolTip(int x, int y, qreal, qreal level)
+{
+  qreal levelDb, levelLinear;
+  QString string;
+
+  if (ui->dbButton->isChecked()) {
+    levelDb = level;
+    levelLinear = SU_POWER_MAG_RAW(level);
+  } else {
+    levelDb = SU_POWER_DB_RAW(level);
+    levelLinear = level;
+  }
+
+  if (!m_haveMarker) {
+    string = QString::asprintf("%.3f dB (", levelDb) +
+        SuWidgetsHelpers::formatQuantity(levelLinear, 4, "") + ")";
+  } else {
+    qreal diffLinear, diffDb;
+
+    diffLinear = levelLinear - m_markerLinear;
+    diffDb     = levelDb - m_markerDb;
+
+    if (ui->dbButton->isChecked()) {
+      string = QString::asprintf("%.3f dB (%+.3f dB delta)", levelDb, diffDb);
+    } else {
+      string = SuWidgetsHelpers::formatQuantity(levelLinear, 4, "")
+          + " ("
+          + SuWidgetsHelpers::formatQuantity(diffLinear, 4, "", true)
+          + " delta)";
+
+    }
+  }
+
+  QToolTip::showText(QPoint(x, y), string);
 }

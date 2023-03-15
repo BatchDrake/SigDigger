@@ -47,6 +47,10 @@ namespace SigDigger {
       qreal m_time = 0;
 
       bool m_running = true;
+      bool m_haveMarker = 0;
+
+      qreal m_markerLinear = 0;
+      qreal m_markerDb = 0;
 
       int     accum_ctr = 0;
       SUFLOAT energy_accum = 0;
@@ -103,6 +107,8 @@ namespace SigDigger {
       void onResetZoom(void);
       void onSocketDisconnected(void);
       void onValueChanged(int);
+      void onPointClicked(qreal, qreal);
+      void onToolTip(int, int, qreal, qreal);
   };
 
 }

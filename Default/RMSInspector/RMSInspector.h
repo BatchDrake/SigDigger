@@ -147,6 +147,7 @@ namespace SigDigger {
       void onChangeBandwidth();
       void onBrowseDirectory();
       void onSourceInfoMessage(Suscan::SourceInfoMessage const &);
+
   private:
     Ui::RMSInspector *ui;
   };
