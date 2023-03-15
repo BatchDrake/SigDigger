@@ -91,6 +91,12 @@ FloatingTabWindow::connectAll()
         SLOT(onRename()));
 
   connect(
+        ui->action_Close,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(onClose()));
+
+  connect(
         m_tabWidget,
         SIGNAL(nameChanged(QString)),
         this,
@@ -108,4 +114,12 @@ FloatingTabWindow::onRename(QString name)
   setWindowTitle(
         "SigDigger - "
         + name);
+}
+
+void
+FloatingTabWindow::onClose()
+{
+  hide();
+
+  emit finished();
 }
