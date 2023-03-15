@@ -43,9 +43,7 @@ FloatingTabWindow::FloatingTabWindow(TabWidget *widget, QWidget *parent) :
     m_tabWidget->addCustomActionsToMenu(m_customMenu);
   }
 
-  setWindowTitle(
-        "SigDigger - "
-        + QString::fromStdString(m_tabWidget->getLabel()));
+  setWindowTitle("SigDigger - " + m_tabWidget->getCurrentLabel());
 
   connectAll();
 }
@@ -61,10 +59,7 @@ FloatingTabWindow::takeTabWidget()
 {
   TabWidget *widget = m_tabWidget;
 
-  if (widget == nullptr)
-    return nullptr;
-
-  m_layout->removeWidget(widget);
+  m_tabWidget->setParent(nullptr);
 
   m_tabWidget = nullptr;
 
@@ -101,6 +96,12 @@ FloatingTabWindow::connectAll()
         SIGNAL(nameChanged(QString)),
         this,
         SLOT(onRename(QString)));
+
+  connect(
+        ui->actionRe_attach,
+        SIGNAL(triggered(bool)),
+        this,
+        SIGNAL(reattach()));
 }
 
 FloatingTabWindow::~FloatingTabWindow()

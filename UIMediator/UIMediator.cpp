@@ -201,7 +201,7 @@ UIMediator::addTabWidget(TabWidget *tabWidget)
   index = this->ui->main->mainTab->insertTab(
         this->ui->main->mainTab->count(),
         tabWidget,
-        QString::fromStdString(tabWidget->getLabel()));
+        tabWidget->getCurrentLabel());
 
   connect(
         tabWidget,
@@ -306,6 +306,12 @@ UIMediator::floatTabWidget(TabWidget *tabWidget)
         this,
         SLOT(onCloseTabWindow()));
 
+  connect(
+        window,
+        SIGNAL(reattach()),
+        this,
+        SLOT(onReattachTabWindow()));
+
   tabWidget->floatEnd();
   tabWidget->show();
 
@@ -314,6 +320,47 @@ UIMediator::floatTabWidget(TabWidget *tabWidget)
   m_floatingTabs[tabWidget] = window;
 
   window->show();
+
+  return true;
+}
+
+bool
+UIMediator::unFloatTabWidget(TabWidget *tabWidget)
+{
+  int index = this->ui->main->mainTab->indexOf(tabWidget);
+  auto p = m_floatingTabs.find(tabWidget);
+
+  // Already a tab
+  if (index != -1)
+    return true;
+
+  // Not a float of ours
+  if (p == m_floatingTabs.end())
+    return false;
+
+  tabWidget->floatStart();
+
+  FloatingTabWindow *d = p.value();
+
+  m_floatingTabs.erase(p);
+
+  tabWidget = d->takeTabWidget();
+
+  d->close();
+  d->hide();
+  d->deleteLater();
+
+  m_tabWidgets.push_back(tabWidget);
+
+  index = this->ui->main->mainTab->insertTab(
+        this->ui->main->mainTab->count(),
+        tabWidget,
+        tabWidget->getCurrentLabel());
+
+  tabWidget->floatEnd();
+  tabWidget->show();
+
+  this->ui->main->mainTab->setCurrentIndex(index);
 
   return true;
 }
@@ -1438,7 +1485,19 @@ UIMediator::onCloseTabWindow()
   tabWidget = sender->getTabWidget();
 
   // We simply tell the tab widget that someone requested its closure
-  tabWidget->closeRequested();
+  if (tabWidget != nullptr)
+    tabWidget->closeRequested();
+}
+
+void
+UIMediator::onReattachTabWindow()
+{
+  FloatingTabWindow *sender = qobject_cast<FloatingTabWindow *>(QObject::sender());
+  TabWidget *tabWidget;
+
+  tabWidget = sender->getTabWidget();
+
+  this->unFloatTabWidget(tabWidget);
 }
 
 void

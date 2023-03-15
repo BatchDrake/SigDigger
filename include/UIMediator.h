@@ -143,6 +143,7 @@ namespace SigDigger {
     bool          addUIListener(UIListener *);
     bool          closeTabWidget(TabWidget *);
     bool          floatTabWidget(TabWidget *);
+    bool          unFloatTabWidget(TabWidget *);
     void          detachInspectionWidget(InspectionWidget *);
 
     // Shortcut methods
@@ -287,6 +288,7 @@ namespace SigDigger {
 
     // UI Components
     void onCloseTabWindow();
+    void onReattachTabWindow();
     void onTabCloseRequested(int i);
     void onTabMenuRequested(const QPoint &);
     void onTabRename(QString);

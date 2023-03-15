@@ -59,6 +59,15 @@ TabWidget::TabWidget(
         SLOT(onFloat()));
 }
 
+QString
+TabWidget::getCurrentLabel() const
+{
+  if (!m_labelChanged)
+    return QString::fromStdString(getLabel());
+
+  return m_cachedLabel;
+}
+
 void
 TabWidget::addAction(QAction *action)
 {

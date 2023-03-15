@@ -53,10 +53,12 @@ namespace SigDigger {
 
   signals:
     void finished();
+    void reattach();
 
   public slots:
     void onRename(QString);
     void onClose();
+
 
   private:
     Ui::FloatingTabWindow *ui;

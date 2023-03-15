@@ -54,6 +54,7 @@ namespace SigDigger {
     virtual void floatEnd();
     virtual void closeRequested();
 
+    QString getCurrentLabel() const;
     bool hasCustomActions() const;
     void addCustomActionsToMenu(QMenu *);
     void popupMenu();
