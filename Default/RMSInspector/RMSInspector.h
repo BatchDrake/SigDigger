@@ -1,5 +1,5 @@
 //
-//    RMSInspector.h: description
+//    RMSInspector.h: RMS inspector
 //    Copyright (C) 2023 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -139,6 +139,7 @@ namespace SigDigger {
 
   public slots:
       void onToggleDataLogger();
+      void onRMSTabViewChanged();
       void onConfigChanged();
       void onTabChanged();
       void onRangeChanged(float min, float max);

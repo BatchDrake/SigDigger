@@ -64,6 +64,14 @@ namespace SigDigger {
       bool userClear(QString const &);
 
     public:
+      bool isLogScale() const;
+      bool isAutoFit() const;
+      bool isAutoScroll() const;
+
+      void setLogScale(bool);
+      void setAutoFit(bool);
+      void setAutoScroll(bool);
+
       void setIntegrationTimeMode(qreal, qreal);
       void setIntegrationTimeHint(qreal);
       qreal getIntegrationTimeHint() const;
@@ -82,6 +90,7 @@ namespace SigDigger {
 
     signals:
       void titleChanged(QString);
+      void viewTypeChanged();
       void integrationTimeChanged(qreal);
       void toggleState();
 

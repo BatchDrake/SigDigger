@@ -131,6 +131,12 @@ RMSInspector::connectAll()
         SIGNAL(activated(int)),
         this,
         SLOT(onConfigChanged()));
+
+  connect(
+        m_rmsTab,
+        SIGNAL(viewTypeChanged()),
+        this,
+        SLOT(onRMSTabViewChanged()));
 }
 
 RMSInspector::RMSInspector(
@@ -468,7 +474,12 @@ RMSInspector::applyConfig()
   FFTWidgetConfig config;
   QString dir = QString::fromStdString(m_uiConfig->logDir);
 
+  bool blocked = m_rmsTab->blockSignals(true);
   m_rmsTab->setIntegrationTimeHint(SCAST(qreal, m_uiConfig->integrationTime));
+  m_rmsTab->setAutoFit(m_uiConfig->autoFit);
+  m_rmsTab->setAutoScroll(m_uiConfig->autoScroll);
+  m_rmsTab->setLogScale(m_uiConfig->dBscale);
+  m_rmsTab->blockSignals(blocked);
 
   if (dir == "")
     dir = QDir::currentPath();
@@ -705,3 +716,12 @@ RMSInspector::onBrowseDirectory()
     m_uiConfig->logDir = path.toStdString();
   }
 }
+
+void
+RMSInspector::onRMSTabViewChanged()
+{
+  m_uiConfig->autoFit = m_rmsTab->isAutoFit();
+  m_uiConfig->autoScroll = m_rmsTab->isAutoScroll();
+  m_uiConfig->dBscale = m_rmsTab->isLogScale();
+}
+

@@ -428,6 +428,47 @@ RMSViewTab::~RMSViewTab()
   delete ui;
 }
 
+bool
+RMSViewTab::isLogScale() const
+{
+  return ui->dbButton->isChecked();
+}
+
+bool
+RMSViewTab::isAutoFit() const
+{
+  return ui->autoFitButton->isChecked();
+}
+
+bool
+RMSViewTab::isAutoScroll() const
+{
+  return ui->autoScrollButton->isChecked();
+}
+
+void
+RMSViewTab::setLogScale(bool enabled)
+{
+  ui->dbButton->setChecked(enabled);
+
+  toggleModes(ui->dbButton);
+}
+
+void
+RMSViewTab::setAutoFit(bool enabled)
+{
+  ui->autoFitButton->setChecked(enabled);
+
+  toggleModes(ui->autoFitButton);
+}
+
+void
+RMSViewTab::setAutoScroll(bool enabled)
+{
+  ui->autoScrollButton->setChecked(enabled);
+
+  toggleModes(ui->autoScrollButton);
+}
 
 //////////////////////////////////// Slots /////////////////////////////////////
 void
@@ -479,6 +520,8 @@ RMSViewTab::onToggleModes(void)
   QObject *sender = QObject::sender();
 
   this->toggleModes(sender);
+
+  emit viewTypeChanged();
 }
 
 void
