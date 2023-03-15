@@ -669,7 +669,7 @@ RMSInspector::onToggleDataLogger()
 
           m_fullPathStd = (ui->directoryEdit->text() + "/" + m_dataFile).toStdString();
 
-          hashlist_set(m_datasaverParams, "path", m_fullPathStd.data());
+          hashlist_set(m_datasaverParams, "path", const_cast<char *>(m_fullPathStd.data()));
           hashlist_set(m_datasaverParams, "_t0", &m_t0);
 
           m_datasaver = suscli_datasaver_new(params);
