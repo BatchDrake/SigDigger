@@ -24,7 +24,7 @@
 #include <QWidget>
 #include <Suscan/Analyzer.h>
 #include <Suscan/Config.h>
-#include <suscan/cli/datasaver.h>
+#include <cli/datasaver.h>
 #include <InspectionWidgetFactory.h>
 
 #define RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS 20
