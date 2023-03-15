@@ -24,6 +24,7 @@
 #include "FFT/FFTWidgetFactory.h"
 #include "DefaultTab/DefaultTabWidgetFactory.h"
 #include "GenericInspector/GenericInspectorFactory.h"
+#include "RMSInspector/RMSInspectorFactory.h"
 
 #include <Suscan/Library.h>
 
@@ -49,6 +50,7 @@ SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
   sus->registerTabWidgetFactory(new DefaultTabWidgetFactory(plugin));
 
   sus->registerInspectionWidgetFactory(new GenericInspectorFactory(plugin));
+  sus->registerInspectionWidgetFactory(new RMSInspectorFactory(plugin));
 
   return true;
 }

@@ -176,6 +176,7 @@ UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
   } else {
     InspectionWidget *widget = factory->make(request, this);
 
+    widget->setColorConfig(appConfig->colors);
     m_inspectors.push_back(widget);
     m_inspTable[request.inspectorId] = widget;
 

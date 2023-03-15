@@ -119,6 +119,8 @@ SOURCES += \
     Default/GenericInspector/WaveformTab.cpp \
     Default/Inspection/InspToolWidget.cpp \
     Default/Inspection/InspToolWidgetFactory.cpp \
+    Default/RMSInspector/RMSInspector.cpp \
+    Default/RMSInspector/RMSInspectorFactory.cpp \
     Default/Registration.cpp \
     Default/Source/SourceWidget.cpp \
     Default/Source/SourceWidgetFactory.cpp \
@@ -297,6 +299,8 @@ HEADERS += \
     Default/GenericInspector/WaveformTab.h \
     Default/Inspection/InspToolWidget.h \
     Default/Inspection/InspToolWidgetFactory.h \
+    Default/RMSInspector/RMSInspector.h \
+    Default/RMSInspector/RMSInspectorFactory.h \
     Default/Registration.h \
     Default/Source/SourceWidget.h \
     Default/Source/SourceWidgetFactory.h \
@@ -370,6 +374,7 @@ FORMS += \
     Default/GenericInspector/TVProcessorTab.ui \
     Default/GenericInspector/WaveformTab.ui \
     Default/Inspection/InspToolWidget.ui \
+    Default/RMSInspector/RMSInspector.ui \
     Default/Source/SourceWidget.ui \
     ui/AboutDialog.ui \
     ui/AddTLESourceDialog.ui \

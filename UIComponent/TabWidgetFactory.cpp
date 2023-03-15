@@ -32,7 +32,7 @@ TabWidget::TabWidget(
 {
   m_menu = new QMenu(this);
   m_renameTab = new QAction("&Rename...", this);
-  m_floatTab = new QAction("&Detach to a separate window", this);
+  m_floatTab = new QAction("&Detach to window", this);
   m_closeTab = new QAction("&Close", this);
 
   m_menu->addAction(m_renameTab);

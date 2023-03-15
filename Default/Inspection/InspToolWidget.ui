@@ -103,17 +103,14 @@ font-weight: bold;</string>
       <property name="verticalSpacing">
        <number>6</number>
       </property>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="inspectorCombo">
-        <property name="enabled">
-         <bool>false</bool>
+      <item row="3" column="0" colspan="2">
+       <widget class="QRadioButton" name="fskRadio">
+        <property name="text">
+         <string>Digital &amp;FM demodulator (FSK)</string>
         </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup</string>
+        </attribute>
        </widget>
       </item>
       <item row="2" column="0" colspan="2">
@@ -129,6 +126,13 @@ font-weight: bold;</string>
         </attribute>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Inspector type</string>
+        </property>
+       </widget>
+      </item>
       <item row="4" column="0" colspan="2">
        <widget class="QRadioButton" name="askRadio">
         <property name="text">
@@ -139,27 +143,33 @@ font-weight: bold;</string>
         </attribute>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Inspector type</string>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="inspectorCombo">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QRadioButton" name="fskRadio">
+      <item row="6" column="0">
+       <widget class="QRadioButton" name="audioRadio">
         <property name="text">
-         <string>Digital &amp;FM demodulator (FSK)</string>
+         <string>&amp;Audio demodulator</string>
         </property>
         <attribute name="buttonGroup">
          <string notr="true">buttonGroup</string>
         </attribute>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QRadioButton" name="audioRadio">
+      <item row="7" column="0" colspan="2">
+       <widget class="QRadioButton" name="rawRadio">
         <property name="text">
-         <string>&amp;Audio demodulator</string>
+         <string>Pass-through (no demodulation)</string>
         </property>
         <attribute name="buttonGroup">
          <string notr="true">buttonGroup</string>
@@ -258,7 +268,6 @@ font-weight: bold;</string>
        <widget class="QLabel" name="label">
         <property name="font">
          <font>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -349,7 +358,6 @@ font-weight: bold;</string>
            </property>
            <property name="font">
             <font>
-             <weight>75</weight>
              <bold>true</bold>
             </font>
            </property>
@@ -368,7 +376,6 @@ font-weight: bold;</string>
            </property>
            <property name="font">
             <font>
-             <weight>75</weight>
              <bold>true</bold>
             </font>
            </property>

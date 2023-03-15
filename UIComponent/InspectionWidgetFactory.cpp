@@ -124,6 +124,7 @@ InspectionWidget::samplesMessage(Suscan::SamplesMessage const &)
  // NO-OP
 }
 
+
 // Overriden methods
 
 //
@@ -265,6 +266,12 @@ InspectionWidgetFactory::registerGlobally()
   Suscan::Singleton *s = Suscan::Singleton::get_instance();
 
   return s->registerInspectionWidgetFactory(this);
+}
+
+bool
+InspectionWidgetFactory::worksWith(QString inspClass) const
+{
+  return inspClass != "raw";
 }
 
 bool

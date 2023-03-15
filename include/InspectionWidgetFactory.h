@@ -84,6 +84,7 @@ namespace SigDigger {
         UIMediator *) = 0;
 
     // Overriden methods
+    virtual bool worksWith(QString) const;
     bool registerGlobally() override;
     bool unregisterGlobally() override;
 

@@ -26,6 +26,7 @@
 #include <string>
 #include <QDateTime>
 #include <QFileDialog>
+#include <QMessageBox>
 
 #define MAX_LINE_SIZE  4096
 #define TIMER_INTERVAL_MS 100
@@ -47,12 +48,86 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
   this->onToggleModes();
 
   this->timer.start(TIMER_INTERVAL_MS);
-  this->processSocketData();
+
+  if (socket != nullptr)
+    this->processSocketData();
 
   this->connectAll();
 
 }
 
+void
+RMSViewTab::setIntegrationTimeMode(qreal min, qreal max)
+{
+  this->ui->stopButton->setIcon(QIcon(":/icons/start-capture.png"));
+  this->ui->stopButton->setToolTip("Toggle capture on / off");
+
+  this->ui->timeSpinBox->setTimeMin(min);
+  this->ui->timeSpinBox->setTimeMax(max);
+
+  ui->stackedWidget->setCurrentIndex(1);
+}
+
+void
+RMSViewTab::setIntegrationTimeHint(qreal hint)
+{
+  m_time = hint;
+
+  ui->timeSpinBox->setTimeValue(hint);
+  ui->timeSpinBox->setBestUnits(true);
+
+  setSampleRate(1 / hint);
+}
+
+qreal
+RMSViewTab::getIntegrationTimeHint() const
+{
+  return ui->timeSpinBox->timeValue();
+}
+
+
+void
+RMSViewTab::setSampleRate(qreal rate)
+{
+  this->rate = rate;
+  this->ui->waveform->setSampleRate(rate);
+}
+
+void
+RMSViewTab::feed(qreal timeStamp, qreal mag)
+{
+  bool firstTime = this->data.size() == 0;
+
+  this->integrateMeasure(timeStamp, SCAST(SUFLOAT, mag));
+
+  if (this->data.size() > 0) {
+    QDateTime date;
+    date.setSecsSinceEpoch(static_cast<qint64>(this->last));
+    this->ui->lastLabel->setText("Last: " + date.toString());
+
+    if (this->data.size() == 1) {
+      this->first = this->last;
+      this->ui->sinceLabel->setText("Since: " + date.toString());
+    }
+
+    if (firstTime) {
+      qint64 width = this->ui->waveform->getVerticalAxisWidth();
+      this->ui->waveform->zoomHorizontal(
+            -width,
+            static_cast<qint64>(this->ui->waveform->size().width()) - width);
+    }
+  }
+}
+
+void
+RMSViewTab::setColorConfig(ColorConfig const &cfg)
+{
+  this->ui->waveform->setBackgroundColor(cfg.spectrumBackground);
+  this->ui->waveform->setForegroundColor(cfg.spectrumForeground);
+  this->ui->waveform->setAxesColor(cfg.spectrumAxes);
+  this->ui->waveform->setTextColor(cfg.spectrumText);
+  this->ui->waveform->setSelectionColor(cfg.selection);
+}
 // https://stackoverflow.com/questions/12966957/is-there-an-equivalent-in-c-of-phps-explode-function
 
 bool
@@ -148,19 +223,8 @@ RMSViewTab::parseLine(void)
     if (sscanf(fields[3].c_str(), "%g", &db) < 1)
       return false;
 
-    this->integrateMeasure(
-          static_cast<qreal>(sec) + usec,
-          mag);
+    this->feed(SCAST(qreal, sec) + usec, SCAST(qreal, mag));
 
-    if (this->data.size() > 0) {
-      date.setSecsSinceEpoch(static_cast<qint64>(this->last));
-      this->ui->lastLabel->setText("Last: " + date.toString());
-
-      if (this->data.size() == 1) {
-        this->first = this->last;
-        this->ui->sinceLabel->setText("Since: " + date.toString());
-      }
-    }
     return true;
   }
 
@@ -171,7 +235,6 @@ void
 RMSViewTab::processSocketData(void)
 {
   char c;
-  bool firstTime = this->data.size() == 0;
 
   while (this->socket->bytesAvailable() > 0) {
     if (this->socket->read(&c, 1) < 1) {
@@ -194,13 +257,6 @@ RMSViewTab::processSocketData(void)
       }
     }
   }
-
-  if (firstTime && this->data.size() > 0) {
-    qint64 width = this->ui->waveform->getVerticalAxisWidth();
-    this->ui->waveform->zoomHorizontal(
-          -width,
-          static_cast<qint64>(this->ui->waveform->size().width()) - width);
-  }
 }
 
 void
@@ -210,11 +266,11 @@ RMSViewTab::disconnectSocket(void)
     this->socket->close();
     delete this->socket;
     this->socket = nullptr;
-  }
 
-  this->ui->stopButton->setEnabled(false);
-  this->ui->stopButton->setChecked(false);
-  this->ui->stopButton->setIcon(QIcon(":/icons/offline.png"));
+    this->ui->stopButton->setEnabled(false);
+    this->ui->stopButton->setChecked(false);
+    this->ui->stopButton->setIcon(QIcon(":/icons/offline.png"));
+  }
 }
 
 void
@@ -261,6 +317,39 @@ RMSViewTab::fitVertical(void)
   this->ui->waveform->zoomVertical(min, max);
 }
 
+bool
+RMSViewTab::userClear(QString const &message)
+{
+  if (this->data.size() > 0) {
+    auto reply = QMessageBox::question(
+          this,
+          "Clear current plot",
+          message,
+          QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel);
+    if (reply == QMessageBox::StandardButton::Cancel) {
+      ui->timeSpinBox->setTimeValue(m_time);
+      return false;
+    }
+    if (reply == QMessageBox::StandardButton::Yes) {
+      QString fileName =
+          QFileDialog::getSaveFileName(
+            this,
+            "Save data to MATLAB file",
+            "power.m",
+            "MATLAB scripts (*.m)");
+
+      if (fileName.size() == 0) {
+        ui->timeSpinBox->setTimeValue(m_time);
+        return false;
+      }
+
+      this->saveToMatlab(fileName);
+    }
+  }
+
+  return true;
+}
+
 void
 RMSViewTab::connectAll(void)
 {
@@ -270,17 +359,25 @@ RMSViewTab::connectAll(void)
         this,
         SLOT(onTimeout()));
 
-  connect(
-        this->socket,
-        SIGNAL(disconnected()),
-        this,
-        SLOT(onSocketDisconnected()));
+  if (socket != nullptr){
+    connect(
+          this->socket,
+          SIGNAL(disconnected()),
+          this,
+          SLOT(onSocketDisconnected()));
+  }
 
   connect(
         this->ui->stopButton,
-        SIGNAL(clicked(bool)),
+        SIGNAL(toggled(bool)),
         this,
-        SLOT(onStop()));
+        SLOT(onToggleStartStop()));
+
+  connect(
+        this->ui->timeSpinBox,
+        SIGNAL(changed(qreal, qreal)),
+        this,
+        SLOT(onTimeChanged(qreal, qreal)));
 
   connect(
         this->ui->saveButton,
@@ -319,12 +416,59 @@ RMSViewTab::connectAll(void)
         SLOT(onValueChanged(int)));
 }
 
+bool
+RMSViewTab::running() const
+{
+  return m_running;
+}
+
 RMSViewTab::~RMSViewTab()
 {
   this->disconnectSocket();
   delete ui;
 }
 
+bool
+RMSViewTab::isLogScale() const
+{
+  return ui->dbButton->isChecked();
+}
+
+bool
+RMSViewTab::isAutoFit() const
+{
+  return ui->autoFitButton->isChecked();
+}
+
+bool
+RMSViewTab::isAutoScroll() const
+{
+  return ui->autoScrollButton->isChecked();
+}
+
+void
+RMSViewTab::setLogScale(bool enabled)
+{
+  ui->dbButton->setChecked(enabled);
+
+  toggleModes(ui->dbButton);
+}
+
+void
+RMSViewTab::setAutoFit(bool enabled)
+{
+  ui->autoFitButton->setChecked(enabled);
+
+  toggleModes(ui->autoFitButton);
+}
+
+void
+RMSViewTab::setAutoScroll(bool enabled)
+{
+  ui->autoScrollButton->setChecked(enabled);
+
+  toggleModes(ui->autoScrollButton);
+}
 
 //////////////////////////////////// Slots /////////////////////////////////////
 void
@@ -342,9 +486,25 @@ RMSViewTab::onSave(void)
 }
 
 void
-RMSViewTab::onStop(void)
+RMSViewTab::onToggleStartStop(void)
 {
-  this->disconnectSocket();
+  if (m_running != ui->stopButton->isChecked()) {
+    if (m_running) {
+      // Disconnect
+      this->disconnectSocket();
+    } else {
+      // Starting
+      if (!userClear(
+            "Starting a capture will overwrite the current plot. Do you want to save it first?")) {
+        ui->stopButton->setChecked(false);
+        return;
+      }
+
+      onValueChanged(0);
+    }
+    m_running = ui->stopButton->isChecked();
+    emit toggleState();
+  }
 }
 
 void
@@ -360,6 +520,8 @@ RMSViewTab::onToggleModes(void)
   QObject *sender = QObject::sender();
 
   this->toggleModes(sender);
+
+  emit viewTypeChanged();
 }
 
 void
@@ -388,4 +550,24 @@ RMSViewTab::onValueChanged(int)
   this->ui->waveform->refreshData();
   if (this->ui->autoFitButton->isChecked())
     this->fitVertical();
+}
+
+void
+RMSViewTab::onTimeChanged(qreal time, qreal)
+{
+  bool blocked = ui->timeSpinBox->blockSignals(true);
+
+  if (!userClear(
+        "Changing the integration time will clear the data of the current plot. "
+        "Do you want to save the current plot first?"))
+    goto done;
+
+  onValueChanged(0);
+
+  setIntegrationTimeHint(time);
+
+  emit integrationTimeChanged(time);
+
+done:
+  ui->timeSpinBox->blockSignals(blocked);
 }
