@@ -175,6 +175,7 @@ SOURCES += \
     UIComponent/ToolWidgetFactory.cpp \
     UIComponent/UIComponentFactory.cpp \
     UIComponent/UIListenerFactory.cpp \
+    UIMediator/FloatingTabWindow.cpp \
     UIMediator/InspectorMediator.cpp \
     UIMediator/PanoramicDialogMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
@@ -315,6 +316,7 @@ HEADERS += \
     include/DeviceTweaks.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
+    include/FloatingTabWindow.h \
     include/FrequencyCorrectionDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
@@ -388,6 +390,7 @@ FORMS += \
     ui/DeviceTweaks.ui \
     ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
+    ui/FloatingTabWindow.ui \
     ui/FrequencyCorrectionDialog.ui \
     ui/GainControl.ui \
     ui/GainSlider.ui \

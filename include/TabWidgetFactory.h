@@ -20,6 +20,7 @@
 #define TABWIDGETFACTORY_H
 
 #include <UIComponentFactory.h>
+#include <QList>
 
 class QMenu;
 
@@ -36,6 +37,8 @@ namespace SigDigger {
     QAction *m_renameTab = nullptr;
     QAction *m_floatTab = nullptr;
 
+    QList<QAction *> m_customActions;
+
     bool     m_labelChanged = false;
     QString  m_cachedLabel;
 
@@ -51,6 +54,8 @@ namespace SigDigger {
     virtual void floatEnd();
     virtual void closeRequested();
 
+    bool hasCustomActions() const;
+    void addCustomActionsToMenu(QMenu *);
     void popupMenu();
 
     ~TabWidget() override;

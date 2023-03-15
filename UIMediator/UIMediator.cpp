@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QScreen>
 #include <QTimeSlider.h>
+#include <FloatingTabWindow.h>
 
 #include <fstream>
 
@@ -266,13 +267,11 @@ UIMediator::closeTabWidget(TabWidget *tabWidget)
   } else {
     auto p = m_floatingTabs.find(tabWidget);
     if (p != m_floatingTabs.end()) {
-      QDialog *d = p.value();
+      FloatingTabWindow *d = p.value();
 
       m_floatingTabs.erase(p);
 
       tabWidget->setParent(nullptr);
-
-      d->setProperty("tab-ptr", QVariant::fromValue<TabWidget *>(nullptr));
 
       d->close();
       d->deleteLater();
@@ -296,36 +295,25 @@ UIMediator::floatTabWidget(TabWidget *tabWidget)
   if (p != m_floatingTabs.end())
     return true;
 
-  QDialog *dialog = new QDialog(this->owner);
-  QVBoxLayout *layout = new QVBoxLayout;
-
   tabWidget->floatStart();
   this->closeTabWidget(tabWidget);
 
-  dialog->setProperty(
-        "tab-ptr",
-        QVariant::fromValue<TabWidget *>(tabWidget));
-  dialog->setLayout(layout);
-  dialog->setWindowFlags(Qt::Window);
+  FloatingTabWindow *window = new FloatingTabWindow(tabWidget, this->owner);
 
   connect(
-        dialog,
-        SIGNAL(finished(int)),
+        window,
+        SIGNAL(finished()),
         this,
         SLOT(onCloseTabWindow()));
-
-  layout->addWidget(tabWidget);
 
   tabWidget->floatEnd();
   tabWidget->show();
 
-  dialog->move(this->owner->pos());
-  dialog->setWindowTitle(
-        "SigDigger - " + QString::fromStdString(tabWidget->getLabel()));
+  window->move(this->owner->pos());
 
-  m_floatingTabs[tabWidget] = dialog;
+  m_floatingTabs[tabWidget] = window;
 
-  dialog->show();
+  window->show();
 
   return true;
 }
@@ -1444,10 +1432,10 @@ UIMediator::onJumpToBookmark(BookmarkInfo info)
 void
 UIMediator::onCloseTabWindow()
 {
-  QDialog *sender = qobject_cast<QDialog *>(QObject::sender());
+  FloatingTabWindow *sender = qobject_cast<FloatingTabWindow *>(QObject::sender());
   TabWidget *tabWidget;
 
-  tabWidget = sender->property("tab-ptr").value<TabWidget *>();
+  tabWidget = sender->getTabWidget();
 
   // We simply tell the tab widget that someone requested its closure
   tabWidget->closeRequested();

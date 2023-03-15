@@ -44,6 +44,7 @@ namespace SigDigger {
   class TabWidget;
   class InspectionWidget;
   class UIListener;
+  class FloatingTabWindow;
 
   class UIMediator : public PersistentWidget {
     Q_OBJECT
@@ -112,7 +113,7 @@ namespace SigDigger {
     Suscan::Analyzer                  *m_analyzer = nullptr;
     QList<UIComponent *>               m_components;
     QList<TabWidget *>                 m_tabWidgets;
-    QMap<TabWidget *, QDialog *>       m_floatingTabs;
+    QMap<TabWidget *, FloatingTabWindow *> m_floatingTabs;
     struct timeval                     m_lastTimeStamp;
     Suscan::Object                     m_hollowConfig;
 

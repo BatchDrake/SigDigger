@@ -62,15 +62,33 @@ TabWidget::TabWidget(
 void
 TabWidget::addAction(QAction *action)
 {
+  m_customActions.push_back(action);
   m_menu->insertAction(m_renameTab, action);
 }
 
 void
 TabWidget::addSeparator()
 {
+  m_customActions.push_back(nullptr);
   m_menu->insertSeparator(m_renameTab);
 }
 
+bool
+TabWidget::hasCustomActions() const
+{
+  return m_customActions.size() > 0;
+}
+
+void
+TabWidget::addCustomActionsToMenu(QMenu *menu)
+{
+  for (auto action : m_customActions) {
+    if (action == nullptr)
+      menu->addSeparator();
+    else
+      menu->addAction(action);
+  }
+}
 
 TabWidget::~TabWidget()
 {
