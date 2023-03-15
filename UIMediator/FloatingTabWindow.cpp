@@ -38,7 +38,7 @@ FloatingTabWindow::FloatingTabWindow(TabWidget *widget, QWidget *parent) :
   setCentralWidget(m_tabWidget);
 
   if (m_tabWidget->hasCustomActions()) {
-    m_customMenu = new QMenu;
+    m_customMenu = new QMenu("&Actions", this);
     ui->menubar->addMenu(m_customMenu);
     m_tabWidget->addCustomActionsToMenu(m_customMenu);
   }

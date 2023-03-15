@@ -25,7 +25,7 @@
    </property>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
-     <string>Window</string>
+     <string>&amp;Window</string>
     </property>
     <addaction name="action_Rename"/>
     <addaction name="actionRe_attach"/>
