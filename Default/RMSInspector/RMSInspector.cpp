@@ -334,6 +334,9 @@ RMSInspector::attachAnalyzer(Suscan::Analyzer *analyzer)
 {
   m_analyzer = analyzer;
 
+  ui->passBandSpectrum->setCenterFreq(
+        SCAST(qint64, m_analyzer->getFrequency()) + ui->freqLcd->getValue());
+
   connect(
         analyzer,
         SIGNAL(source_info_message(Suscan::SourceInfoMessage const &)),
@@ -355,6 +358,8 @@ void
 RMSInspector::setProfile(Suscan::Source::Config &profile)
 {
   m_tunerFreq = profile.getFreq();
+
+  ui->passBandSpectrum->setCenterFreq(m_tunerFreq + ui->freqLcd->getValue());
 }
 
 void
@@ -591,6 +596,7 @@ RMSInspector::onChangeLo()
 
     if (m_haveNamedChannel) {
       m_namedChannel.value()->frequency = m_tunerFreq + lo;
+      ui->passBandSpectrum->setCenterFreq(m_namedChannel.value()->frequency);
       refreshNamedChannel();
     }
   }
@@ -617,7 +623,9 @@ RMSInspector::onChangeBandwidth()
 void
 RMSInspector::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
 {
-  m_tunerFreq = msg.info()->getFrequency();
+  m_tunerFreq = SCAST(qint64, msg.info()->getFrequency());
+
+  ui->passBandSpectrum->setCenterFreq(m_tunerFreq + ui->freqLcd->getValue());
 }
 
 const suscli_datasaver_params *
