@@ -35,6 +35,10 @@ TabWidget::TabWidget(
   m_floatTab = new QAction("&Detach to window", this);
   m_closeTab = new QAction("&Close", this);
 
+  m_renameTab->setShortcut(QString("CTRL + R"));
+  m_closeTab->setShortcut(QString("CTRL + W"));
+  m_floatTab->setShortcut(QString("CTRL + SHIFT + W"));
+  
   m_menu->addAction(m_renameTab);
   m_menu->addAction(m_floatTab);
   m_menu->addSeparator();

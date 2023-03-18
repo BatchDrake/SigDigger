@@ -37,8 +37,14 @@ FloatingTabWindow::FloatingTabWindow(TabWidget *widget, QWidget *parent) :
 
   setCentralWidget(m_tabWidget);
 
+  ui->action_Rename->setShortcut(QString("CTRL+R"));
+  
+  ui->action_Close->setShortcut(QString("CTRL+W"));
+  ui->actionRe_attach->setShortcut(QString("CTRL+SHIFT+W"));
+  
   if (m_tabWidget->hasCustomActions()) {
     m_customMenu = new QMenu("&Actions", this);
+    
     ui->menubar->addMenu(m_customMenu);
     m_tabWidget->addCustomActionsToMenu(m_customMenu);
   }
