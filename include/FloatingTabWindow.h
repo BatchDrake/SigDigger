@@ -58,7 +58,7 @@ namespace SigDigger {
   public slots:
     void onRename(QString);
     void onClose();
-
+    void onChildDestroyed();
 
   private:
     Ui::FloatingTabWindow *ui;

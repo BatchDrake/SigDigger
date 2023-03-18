@@ -203,6 +203,7 @@ UIMediator::addTabWidget(TabWidget *tabWidget)
         tabWidget,
         tabWidget->getCurrentLabel());
 
+  tabWidget->addActionsToParent(tabWidget);
   connect(
         tabWidget,
         SIGNAL(nameChanged(QString)),

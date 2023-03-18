@@ -35,12 +35,22 @@ TabWidget::TabWidget(
   m_floatTab = new QAction("&Detach to window", this);
   m_closeTab = new QAction("&Close", this);
 
-  m_renameTab->setShortcut(QString("CTRL + R"));
-  m_closeTab->setShortcut(QString("CTRL + W"));
-  m_floatTab->setShortcut(QString("CTRL + SHIFT + W"));
-  
+  m_renameTab->setShortcut(QString("F2"));
+  m_renameTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+  m_closeTab->setShortcut(QString("CTRL+W"));
+  m_closeTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  QWidget::addAction(m_closeTab);
+
+  m_floatTab->setShortcut(QString("CTRL+SHIFT+W"));
+  m_floatTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
   m_menu->addAction(m_renameTab);
+  QWidget::addAction(m_renameTab);
+
   m_menu->addAction(m_floatTab);
+  QWidget::addAction(m_floatTab);
+
   m_menu->addSeparator();
   m_menu->addAction(m_closeTab);
 
@@ -77,6 +87,8 @@ TabWidget::addAction(QAction *action)
 {
   m_customActions.push_back(action);
   m_menu->insertAction(m_renameTab, action);
+
+  QWidget::addAction(action);
 }
 
 void
@@ -102,6 +114,32 @@ TabWidget::addCustomActionsToMenu(QMenu *menu)
       menu->addAction(action);
   }
 }
+
+void
+TabWidget::addCommonActionsToMenu(QMenu *menu)
+{
+  menu->addAction(m_renameTab);
+  menu->addSeparator();
+  menu->addAction(m_closeTab);
+}
+
+void
+TabWidget::addActionsToParent(QWidget *widget)
+{
+  m_renameTab->setShortcutContext(Qt::ApplicationShortcut);
+  m_floatTab->setShortcutContext(Qt::ApplicationShortcut);
+
+  widget->addAction(m_renameTab);
+  widget->addAction(m_closeTab);
+
+  for (auto action : m_customActions) {
+    if (action != nullptr) {
+      widget->addAction(action);
+            action->setShortcutContext(Qt::ApplicationShortcut);
+    }
+  }
+}
+
 
 TabWidget::~TabWidget()
 {

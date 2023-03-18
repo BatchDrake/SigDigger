@@ -65,6 +65,7 @@ InspectionWidget::InspectionWidget(
   m_config(m_request.config)
 {
   QAction *newColor = new QAction("Change &color", this);
+  newColor->setShortcut(QString("CTRL+SHIFT+C"));
 
   m_colorDialog = new QColorDialog(this);
 

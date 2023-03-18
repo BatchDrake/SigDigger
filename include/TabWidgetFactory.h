@@ -40,6 +40,7 @@ namespace SigDigger {
     QList<QAction *> m_customActions;
 
     bool     m_labelChanged = false;
+
     QString  m_cachedLabel;
 
   protected:
@@ -57,6 +58,9 @@ namespace SigDigger {
     QString getCurrentLabel() const;
     bool hasCustomActions() const;
     void addCustomActionsToMenu(QMenu *);
+    void addCommonActionsToMenu(QMenu *);
+    void addActionsToParent(QWidget *);
+
     void popupMenu();
 
     ~TabWidget() override;

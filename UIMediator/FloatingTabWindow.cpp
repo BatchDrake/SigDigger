@@ -28,20 +28,12 @@ FloatingTabWindow::FloatingTabWindow(TabWidget *widget, QWidget *parent) :
 {
   ui->setupUi(this);
 
-  //m_layout = new QVBoxLayout;
-
-  //setLayout(m_layout);
-
-  //m_layout->addWidget(m_tabWidget);
-  //m_tabWidget->setParent(this);
-
   setCentralWidget(m_tabWidget);
 
-  ui->action_Rename->setShortcut(QString("CTRL+R"));
-  
-  ui->action_Close->setShortcut(QString("CTRL+W"));
-  ui->actionRe_attach->setShortcut(QString("CTRL+SHIFT+W"));
-  
+  ui->actionRe_attach->setShortcut(QString("CTRL+SHIFT+A"));
+
+  m_tabWidget->addCommonActionsToMenu(ui->menuWindow);
+
   if (m_tabWidget->hasCustomActions()) {
     m_customMenu = new QMenu("&Actions", this);
     
@@ -86,22 +78,16 @@ void
 FloatingTabWindow::connectAll()
 {
   connect(
-        ui->action_Rename,
-        SIGNAL(triggered(bool)),
-        m_tabWidget,
-        SLOT(onRename()));
-
-  connect(
-        ui->action_Close,
-        SIGNAL(triggered(bool)),
-        this,
-        SLOT(onClose()));
-
-  connect(
         m_tabWidget,
         SIGNAL(nameChanged(QString)),
         this,
         SLOT(onRename(QString)));
+
+  connect(
+        m_tabWidget,
+        SIGNAL(destroyed(QObject*)),
+        this,
+        SLOT(onChildDestroyed()));
 
   connect(
         ui->actionRe_attach,
@@ -129,4 +115,10 @@ FloatingTabWindow::onClose()
   hide();
 
   emit finished();
+}
+
+void
+FloatingTabWindow::onChildDestroyed()
+{
+  deleteLater();
 }
