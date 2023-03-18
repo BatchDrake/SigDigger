@@ -418,9 +418,9 @@ RMSViewTab::connectAll(void)
 
   connect(
         this->ui->waveform,
-        SIGNAL(pointClicked(qreal, qreal)),
+        SIGNAL(pointClicked(qreal, qreal, Qt::KeyboardModifiers)),
         this,
-        SLOT(onPointClicked(qreal,qreal)));
+        SLOT(onPointClicked(qreal,qreal, Qt::KeyboardModifiers)));
 
   connect(
         this->ui->waveform,
@@ -586,29 +586,53 @@ done:
 }
 
 void
-RMSViewTab::onPointClicked(qreal, qreal level)
+RMSViewTab::onPointClicked(qreal, qreal level, Qt::KeyboardModifiers mod)
 {
   WaveVCursor cursor;
   QList<WaveVCursor> list;
-
-  cursor.color = QColor(0xff, 0xff, 0);
+  qreal dbLevel, linearLevel;
 
   if (ui->dbButton->isChecked()) {
-    m_markerDb = level;
-    m_markerLinear = SU_POWER_MAG_RAW(level);
+    dbLevel = level;
+    linearLevel = SU_POWER_MAG_RAW(level);
   } else {
-    m_markerDb = SU_POWER_DB_RAW(level);
-    m_markerLinear = level;
+    dbLevel = SU_POWER_DB_RAW(level);
+    linearLevel = level;
   }
 
-  cursor.string = QString::asprintf("Ref: %.3f dB (", m_markerDb) +
-      SuWidgetsHelpers::formatQuantity(m_markerLinear, 4, "") + ")";
-  cursor.level = SUCOMPLEX(SU_ASFLOAT(m_markerLinear), SU_ASFLOAT(m_markerDb));
+  if (!m_haveMarker) {
+    m_markerDb = dbLevel;
+    m_markerLinear = linearLevel;
+    m_haveMarker = true;
+  } else if (!m_haveDeltaMarker
+             || mod.testFlag(Qt::KeyboardModifier::ShiftModifier)) {
+    m_markerDeltaDb = dbLevel;
+    m_markerDeltaLinear = linearLevel;
+    m_haveDeltaMarker = true;
+  } else {
+    m_haveMarker = m_haveDeltaMarker = false;
+  }
 
-  list.push_back(cursor);
+  if (m_haveMarker) {
+    cursor.color = QColor(0xff, 0xff, 0);
+    cursor.string = QString::asprintf("Ref: %.3f dB (", m_markerDb) +
+        SuWidgetsHelpers::formatQuantity(m_markerLinear, 4, "") + ")";
+    cursor.level = SUCOMPLEX(SU_ASFLOAT(m_markerLinear), SU_ASFLOAT(m_markerDb));
+
+    list.push_back(cursor);
+  }
+
+  if (m_haveDeltaMarker) {
+    cursor.color = QColor(0, 0xff, 0xff);
+    cursor.string = QString::asprintf("R = %.3f dB (Δ = ", m_markerDeltaDb - m_markerDb) +
+        SuWidgetsHelpers::formatQuantity(m_markerDeltaLinear - m_markerLinear, 4, "") + ")";
+    cursor.level = SUCOMPLEX(SU_ASFLOAT(m_markerDeltaLinear), SU_ASFLOAT(m_markerDeltaDb));
+
+    list.push_back(cursor);
+  }
+
+
   ui->waveform->setVCursorList(list);
-
-  m_haveMarker = true;
 }
 
 void
@@ -635,12 +659,12 @@ RMSViewTab::onToolTip(int x, int y, qreal, qreal level)
     diffDb     = levelDb - m_markerDb;
 
     if (ui->dbButton->isChecked()) {
-      string = QString::asprintf("%.3f dB (%+.3f dB delta)", levelDb, diffDb);
+      string = QString::asprintf("%.3f dB (R = %+.3f dB)", levelDb, diffDb);
     } else {
       string = SuWidgetsHelpers::formatQuantity(levelLinear, 4, "")
-          + " ("
+          + " (Δ = "
           + SuWidgetsHelpers::formatQuantity(diffLinear, 4, "", true)
-          + " delta)";
+          + ")";
 
     }
   }
