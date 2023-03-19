@@ -226,6 +226,128 @@ SigDiggerHelpers::deserializePalettes(void)
     this->palettes.push_back(Palette(*i));
 }
 
+bool
+SigDiggerHelpers::guessCaptureFileParams(
+    CaptureFileParams &params,
+    const char *path)
+{
+  QFileInfo fi(path);
+  std::string baseName = fi.baseName().toStdString();
+  SUFREQ fc;
+  unsigned int fs;
+  unsigned int date, time;
+
+  memset(&params.tm, 0, sizeof(struct tm));
+
+  if (sscanf(
+        baseName.c_str(),
+        "sigdigger_%08d_%06dZ_%d_%lg_float32_iq",
+        &date,
+        &time,
+        &fs,
+        &fc) == 4) {
+    params.haveFc   = true;
+    params.haveFs   = true;
+    params.haveDate = true;
+    params.haveTime = true;
+    params.isUTC    = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "sigdigger_%d_%lg_float32_iq",
+        &fs,
+        &fc) == 2) {
+    params.haveFc = true;
+    params.haveFs = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "gqrx_%08d_%06d_%lg_%d_fc",
+        &date,
+        &time,
+        &fc,
+        &fs) == 4) {
+    params.haveFc   = true;
+    params.haveFs   = true;
+    params.haveDate = true;
+    params.haveTime = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "SDRSharp_%08d_%06dZ_%lg_IQ",
+        &date,
+        &time,
+        &fc) == 3) {
+    params.haveFc   = true;
+    params.haveDate = true;
+    params.haveTime = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "HDSDR_%08d_%06dZ_%lgkHz",
+        &date,
+        &time,
+        &fc) == 3) {
+    params.fc      *= 1e3;
+    params.haveFc   = true;
+    params.haveDate = true;
+    params.haveTime = true;
+    params.isUTC    = true;
+  } else if (sscanf(
+        baseName.c_str(),
+        "baseband_%lgHz_%02d-%02d-%02d_%02d-%02d-%04d",
+        &fc,
+        &params.tm.tm_hour,
+        &params.tm.tm_min,
+        &params.tm.tm_sec,
+        &params.tm.tm_mday,
+        &params.tm.tm_mon,
+        &params.tm.tm_year) == 7) {
+    params.tm.tm_year -= 1900;
+    params.tm.tm_mon  -= 1;
+
+    params.haveFc   = true;
+    params.haveTm   = true;
+    params.isUTC    = true;
+  } else {
+    // Unrecognized
+    return false;
+  }
+
+  if (params.haveDate || params.haveTime) {
+    params.haveTm = true;
+    if (params.haveDate) {
+      params.tm.tm_year = date / 10000 - 1900;
+      params.tm.tm_mon  = ((date / 100) % 100) - 1;
+      params.tm.tm_mday = date % 100;
+    }
+
+    if (params.haveTime) {
+      params.tm.tm_hour = time / 10000;
+      params.tm.tm_min  = (time / 100) % 100;
+      params.tm.tm_sec  = time % 100;
+    }
+  }
+
+  if (params.haveTm) {
+    if (params.isUTC) {
+      pushUTCTZ();
+      params.tm.tm_isdst = 0;
+      params.tv.tv_sec = mktime(&params.tm);
+    } else {
+      pushLocalTZ();
+      params.tm.tm_isdst = -1;
+      params.tv.tv_sec = mktime(&params.tm);
+    }
+
+    popTZ();
+  }
+
+  if (params.haveFc)
+    params.fc = fc;
+
+  if (params.haveFs)
+    params.fs = fs;
+
+  return true;
+}
+
 void
 SigDiggerHelpers::populatePaletteCombo(QComboBox *cb)
 {

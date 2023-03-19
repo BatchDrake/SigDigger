@@ -1191,131 +1191,22 @@ ProfileConfigTab::onBandwidthChanged(double)
 void
 ProfileConfigTab::guessParamsFromFileName()
 {
-  QFileInfo fi(QString::fromStdString(this->profile.getPath()));
-  std::string baseName = fi.baseName().toStdString();
   SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
+  CaptureFileParams params;
 
-  SUFREQ fc;
-  unsigned int fs;
-  unsigned int date, time;
-  bool haveFc   = false;
-  bool haveFs   = false;
-  bool haveDate = false;
-  bool haveTime = false;
-  bool isUTC    = false;
-  bool haveTm   = false;
-  struct tm tm;
-  struct timeval tv = {0, 0};
+  if (hlp->guessCaptureFileParams(params, this->profile.getPath().c_str())) {
+    if (params.haveTm)
+      this->profile.setStartTime(params.tv);
 
-  memset(&tm, 0, sizeof(struct tm));
+    if (params.haveFs)
+      this->profile.setSampleRate(params.fs);
 
-  if (sscanf(
-        baseName.c_str(),
-        "sigdigger_%08d_%06dZ_%d_%lg_float32_iq",
-        &date,
-        &time,
-        &fs,
-        &fc) == 4) {
-    haveFc   = true;
-    haveFs   = true;
-    haveDate = true;
-    haveTime = true;
-    isUTC    = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "sigdigger_%d_%lg_float32_iq",
-        &fs,
-        &fc) == 2) {
-    haveFc = true;
-    haveFs = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "gqrx_%08d_%06d_%lg_%d_fc",
-        &date,
-        &time,
-        &fc,
-        &fs) == 4) {
-    haveFc   = true;
-    haveFs   = true;
-    haveDate = true;
-    haveTime = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "SDRSharp_%08d_%06dZ_%lg_IQ",
-        &date,
-        &time,
-        &fc) == 3) {
-    haveFc   = true;
-    haveDate = true;
-    haveTime = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "HDSDR_%08d_%06dZ_%lgkHz",
-        &date,
-        &time,
-        &fc) == 3) {
-    fc      *= 1e3;
-    haveFc   = true;
-    haveDate = true;
-    haveTime = true;
-    isUTC    = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "baseband_%lgHz_%02d-%02d-%02d_%02d-%02d-%04d",
-        &fc,
-        &tm.tm_hour,
-        &tm.tm_min,
-        &tm.tm_sec,
-        &tm.tm_mday,
-        &tm.tm_mon,
-        &tm.tm_year) == 7) {
-    tm.tm_year -= 1900;
-    tm.tm_mon  -= 1;
+    if (params.haveFc)
+      this->profile.setFreq(params.fc);
 
-    haveFc   = true;
-    haveTm   = true;
-    isUTC    = true;
+    if (params.haveFs || params.haveFc || params.haveTm)
+      this->refreshUi();
   }
-
-  if (haveDate || haveTime) {
-    haveTm = true;
-    if (haveDate) {
-      tm.tm_year = date / 10000 - 1900;
-      tm.tm_mon  = ((date / 100) % 100) - 1;
-      tm.tm_mday = date % 100;
-    }
-
-    if (haveTime) {
-      tm.tm_hour = time / 10000;
-      tm.tm_min  = (time / 100) % 100;
-      tm.tm_sec  = time % 100;
-    }
-  }
-
-  if (haveTm) {
-    if (isUTC) {
-      hlp->pushUTCTZ();
-      tm.tm_isdst = 0;
-      tv.tv_sec = mktime(&tm);
-    } else {
-      hlp->pushLocalTZ();
-      tm.tm_isdst = -1;
-      tv.tv_sec = mktime(&tm);
-    }
-
-    hlp->popTZ();
-
-    this->profile.setStartTime(tv);
-  }
-
-  if (haveFs)
-    this->profile.setSampleRate(fs);
-
-  if (haveFc)
-    this->profile.setFreq(fc);
-
-  if (haveFs || haveFc || haveTm)
-    this->refreshUi();
 }
 
 void

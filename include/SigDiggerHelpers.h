@@ -26,6 +26,8 @@
 #include <QStyledItemDelegate>
 #include <QItemDelegate>
 #include <list>
+#include <time.h>
+#include <sys/time.h>
 
 class QComboBox;
 
@@ -37,6 +39,21 @@ namespace SigDigger {
     FM,
     USB,
     LSB
+  };
+
+  struct CaptureFileParams {
+    bool haveFc = false;
+    bool haveFs = false;
+    bool haveDate = false;
+    bool haveTime = false;
+    bool isUTC = false;
+    bool haveTm = false;
+
+    SUFREQ fc = 0;
+    unsigned int fs = 0;
+
+    struct tm tm;
+    struct timeval tv = {0, 0};
   };
 
   class SigDiggerHelpers
@@ -79,6 +96,7 @@ namespace SigDigger {
     int getPaletteIndex(std::string const &) const;
     const Palette *getPalette(std::string const &) const;
     const Palette *getPalette(int index) const;
+    bool guessCaptureFileParams(CaptureFileParams &, const char *);
     void populatePaletteCombo(QComboBox *combo);
     static void populateAntennaCombo(
         Suscan::Source::Config &profile,
