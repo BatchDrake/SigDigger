@@ -82,8 +82,7 @@ FileViewer::processFile(QString path)
 
   const SUCOMPLEX *data = reinterpret_cast<SUCOMPLEX *>(file.map(
         0,
-        file.size(),
-        QFileDevice::MemoryMapFlag::MapPrivateOption));
+        file.size()));
 
   if (data == nullptr) {
     QMessageBox::critical(
