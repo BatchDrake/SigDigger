@@ -247,10 +247,15 @@ MainSpectrum::updateLimits(void)
   qint64 minLcd = minFreq + this->getLnbFreq();
   qint64 maxLcd = maxFreq + this->getLnbFreq();
 
-
   // Center frequency LCD limits
   this->ui->fcLcd->setMinSilent(minLcd);
   this->ui->fcLcd->setMaxSilent(maxLcd);
+
+  WATERFALL_CALL(setFrequencyLimitsEnabled(!this->noLimits));
+  WATERFALL_CALL(
+        setFrequencyLimits(
+          minLcd - this->cachedRate / 2,
+          maxLcd + this->cachedRate / 2));
 
   // Demod frequency LCD limits
   minLcd = this->ui->fcLcd->getValue() - this->cachedRate / 2;
@@ -258,9 +263,6 @@ MainSpectrum::updateLimits(void)
 
   this->ui->loLcd->setMinSilent(minLcd);
   this->ui->loLcd->setMaxSilent(maxLcd);
-
-  WATERFALL_CALL(setFrequencyLimitsEnabled(!this->noLimits));
-  WATERFALL_CALL(setFrequencyLimits(minLcd, maxLcd));
 }
 
 void
@@ -404,8 +406,8 @@ MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq, bool silent)
     this->ui->fcLcd->setValue(freq);
   }
 
-  WATERFALL_CALL(setCenterFreq(freq));
   WATERFALL_CALL(setFreqUnits(getFrequencyUnits(freq)));
+  WATERFALL_CALL(setCenterFreq(freq));
 
   this->updateLimits();
   this->setLoFreq(newLo);
