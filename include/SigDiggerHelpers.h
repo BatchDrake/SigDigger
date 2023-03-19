@@ -48,6 +48,7 @@ namespace SigDigger {
     bool haveTime = false;
     bool isUTC = false;
     bool haveTm = false;
+    bool isRaw = false;
 
     SUFREQ fc = 0;
     unsigned int fs = 0;
@@ -96,7 +97,7 @@ namespace SigDigger {
     int getPaletteIndex(std::string const &) const;
     const Palette *getPalette(std::string const &) const;
     const Palette *getPalette(int index) const;
-    bool guessCaptureFileParams(CaptureFileParams &, const char *);
+    bool guessCaptureFileParams(CaptureFileParams &, QString const &);
     void populatePaletteCombo(QComboBox *combo);
     static void populateAntennaCombo(
         Suscan::Source::Config &profile,

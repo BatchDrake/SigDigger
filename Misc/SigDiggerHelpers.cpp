@@ -229,7 +229,7 @@ SigDiggerHelpers::deserializePalettes(void)
 bool
 SigDiggerHelpers::guessCaptureFileParams(
     CaptureFileParams &params,
-    const char *path)
+    QString const &path)
 {
   QFileInfo fi(path);
   std::string baseName = fi.baseName().toStdString();
@@ -251,6 +251,7 @@ SigDiggerHelpers::guessCaptureFileParams(
     params.haveDate = true;
     params.haveTime = true;
     params.isUTC    = true;
+    params.isRaw    = true;
   } else if (sscanf(
         baseName.c_str(),
         "sigdigger_%d_%lg_float32_iq",
@@ -258,6 +259,7 @@ SigDiggerHelpers::guessCaptureFileParams(
         &fc) == 2) {
     params.haveFc = true;
     params.haveFs = true;
+    params.isRaw    = true;
   } else if (sscanf(
         baseName.c_str(),
         "gqrx_%08d_%06d_%lg_%d_fc",
@@ -269,6 +271,7 @@ SigDiggerHelpers::guessCaptureFileParams(
     params.haveFs   = true;
     params.haveDate = true;
     params.haveTime = true;
+    params.isRaw    = true;
   } else if (sscanf(
         baseName.c_str(),
         "SDRSharp_%08d_%06dZ_%lg_IQ",
@@ -305,6 +308,7 @@ SigDiggerHelpers::guessCaptureFileParams(
     params.haveFc   = true;
     params.haveTm   = true;
     params.isUTC    = true;
+    params.isRaw    = true;
   } else {
     // Unrecognized
     return false;

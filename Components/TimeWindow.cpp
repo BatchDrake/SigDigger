@@ -449,13 +449,13 @@ TimeWindow::getPeriodicDivision(void) const
 const SUCOMPLEX *
 TimeWindow::getDisplayData(void) const
 {
-  return this->displayData->data();
+  return displayDataPtr;
 }
 
 size_t
 TimeWindow::getDisplayDataLength(void) const
 {
-  return this->displayData->size();
+  return displayDataLength;
 }
 
 void
@@ -577,6 +577,18 @@ TimeWindow::samplingSetEnabled(bool enabled)
   this->ui->samplingPage->setEnabled(enabled);
 }
 
+const SUCOMPLEX *
+TimeWindow::getData() const
+{
+  return this->data == nullptr ? roDataPtr : this->data->data();
+}
+
+size_t
+TimeWindow::getLength() const
+{
+  return this->data == nullptr ? roDataLength : this->data->size();
+}
+
 void
 TimeWindow::getTransformRegion(
     const SUCOMPLEX * &origin,
@@ -591,7 +603,7 @@ TimeWindow::getTransformRegion(
   this->processedData.resize(this->getDisplayDataLength());
   dest = this->processedData.data();
 
-  if (data == this->data->data())
+  if (data == this->getData())
     memcpy(dest, data, this->getDisplayDataLength() * sizeof(SUCOMPLEX));
 
   if (selection && this->ui->realWaveform->getHorizontalSelectionPresent()) {
@@ -943,25 +955,27 @@ TimeWindow::setCenterFreq(SUFREQ center)
 
 void
 TimeWindow::setDisplayData(
-    std::vector<SUCOMPLEX> const *displayData,
+    const SUCOMPLEX *displayData,
+    size_t displayLen,
     bool keepView)
 {
   QCursor cursor = this->cursor();
 
-  this->displayData = displayData;
+  this->displayDataPtr    = displayData;
+  this->displayDataLength = displayLen;
 
   // This is just a workaround. TODO: fix build method in Waveformview
   this->setCursor(Qt::WaitCursor);
 
-  if (displayData->size() == 0) {
+  if (displayLen == 0) {
     this->ui->realWaveform->setData(nullptr, false);
     this->ui->imagWaveform->setData(nullptr, false);
   } else {
     qint64 currStart = this->ui->realWaveform->getSampleStart();
     qint64 currEnd   = this->ui->realWaveform->getSampleEnd();
 
-    this->ui->realWaveform->setData(displayData, keepView, true);
-    this->ui->imagWaveform->setData(displayData, keepView, true);
+    this->ui->realWaveform->setData(displayData, displayLen, keepView, true);
+    this->ui->imagWaveform->setData(displayData, displayLen, keepView, true);
 
     if (currStart != currEnd) {
       this->ui->realWaveform->zoomHorizontal(currStart, currEnd);
@@ -977,7 +991,7 @@ TimeWindow::setDisplayData(
 }
 
 void
-TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs, qreal bw)
+TimeWindow::setData(const SUCOMPLEX *data, size_t size, qreal fs, qreal bw)
 {
   if (this->fs != fs) {
     this->fs = fs;
@@ -995,10 +1009,17 @@ TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs, qreal bw)
   this->ui->realWaveform->setSampleRate(fs);
   this->ui->imagWaveform->setSampleRate(fs);
 
-  this->data = &data;
+  this->roDataPtr    = data;
+  this->roDataLength = size;
 
-  this->setDisplayData(&data);
-  this->onCarrierSlidersChanged();
+  this->setDisplayData(data, size);
+  this->onCarrierSlidersChanged();  
+}
+
+void
+TimeWindow::setData(std::vector<SUCOMPLEX> const &data, qreal fs, qreal bw)
+{
+  setData(data.data(), data.size(), fs, bw);
 }
 
 void
@@ -1010,6 +1031,12 @@ TimeWindow::adjustButtonToSize(QPushButton *button, QString text)
   button->setMaximumWidth(
         SuWidgetsHelpers::getWidgetTextWidth(button, text) +
         5 * SuWidgetsHelpers::getWidgetTextWidth(button, " "));
+}
+
+void
+TimeWindow::closeEvent(QCloseEvent *)
+{
+  emit closed();
 }
 
 TimeWindow::TimeWindow(QWidget *parent) :
@@ -1146,7 +1173,7 @@ void
 TimeWindow::onHoverTime(qreal time)
 {
   const SUCOMPLEX *data = this->getDisplayData();
-  int length = static_cast<int>(this->getDisplayDataLength());
+  qint64 length = static_cast<qint64>(this->getDisplayDataLength());
   qreal samp = this->ui->realWaveform->t2samp(time);
   qint64 iSamp = static_cast<qint64>(std::floor(samp));
   qint64 selStart = 0, selEnd = 0, selLen = 0;
@@ -1531,7 +1558,10 @@ TimeWindow::onTaskDone(void)
     // Launch carrier translator
     this->taskController.process("xlateCarrier", cx);
   } else if (this->taskController.getName() == "xlateCarrier") {
-    this->setDisplayData(&this->processedData, true);
+    this->setDisplayData(
+          this->processedData.data(),
+          this->processedData.size(),
+          true);
     this->notifyTaskRunning(false);
   } else if (this->taskController.getName() == "triggerHistogram") {
     this->histogramDialog->show();
@@ -1560,8 +1590,11 @@ TimeWindow::onTaskDone(void)
     this->dopplerDialog->setMax(dc->getMax());
     this->dopplerDialog->show();
   } else {
-    this->setDisplayData(this->data, true);
-    this->setDisplayData(&this->processedData, true);
+    this->setDisplayData(this->getData(), this->getLength(), true);
+    this->setDisplayData(
+          this->processedData.data(),
+          this->processedData.size(),
+          true);
     this->ui->realWaveform->invalidate();
     this->ui->imagWaveform->invalidate();
     this->onFit();
@@ -1639,7 +1672,7 @@ TimeWindow::onSyncCarrier(void)
 void
 TimeWindow::onResetCarrier(void)
 {
-  this->setDisplayData(this->data, true);
+  this->setDisplayData(this->getData(), this->getLength(), true);
   this->onFit();
   this->ui->syncFreqSpin->setValue(0);
 }
@@ -1856,8 +1889,8 @@ TimeWindow::onCalculateDoppler(void)
     if (selStart < 0)
       selStart = 0;
 
-    if (selEnd >= static_cast<qint64>(this->data->size()))
-      selEnd = static_cast<qint64>(this->data->size());
+    if (selEnd >= static_cast<qint64>(this->getLength()))
+      selEnd = static_cast<qint64>(this->getLength());
 
     DopplerCalculator *dc = new DopplerCalculator(
           this->ui->refFreqSpin->value(),

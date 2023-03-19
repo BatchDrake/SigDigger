@@ -17,8 +17,8 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include <QFileDialog>
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include <Suscan/Library.h>
 #include <SuWidgetsHelpers.h>

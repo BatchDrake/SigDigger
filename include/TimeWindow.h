@@ -59,10 +59,14 @@ namespace SigDigger {
     qreal     fs = 0;
     qreal     bw = 0;
 
-    std::vector<SUCOMPLEX> const *data;
+    std::vector<SUCOMPLEX> const *data = nullptr;
+    const SUCOMPLEX *roDataPtr = nullptr;
+    size_t           roDataLength = 0;
+
     std::vector<SUCOMPLEX> processedData;
 
-    std::vector<SUCOMPLEX> const *displayData = &processedData;
+    const SUCOMPLEX *displayDataPtr = nullptr;
+    size_t           displayDataLength = 0;
 
     SUFREQ    centerFreq;
 
@@ -101,7 +105,8 @@ namespace SigDigger {
     void startSampling(void);
 
     void setDisplayData(
-        std::vector<SUCOMPLEX> const *displayData,
+        const SUCOMPLEX *displayData,
+        size_t           displayLen,
         bool keepView = false);
     const SUCOMPLEX *getDisplayData(void) const;
     size_t getDisplayDataLength(void) const;
@@ -110,13 +115,23 @@ namespace SigDigger {
             QPushButton *button,
             QString text = "");
 
+    const SUCOMPLEX *getData() const;
+    size_t getLength() const;
+
   public:
+    void closeEvent(QCloseEvent *event) override;
+
     explicit TimeWindow(QWidget *parent = nullptr);
     ~TimeWindow() override;
 
     void setCenterFreq(SUFREQ center);
     void setData(
         std::vector<SUCOMPLEX> const &data,
+        qreal fs,
+        qreal bw);
+    void setData(
+        const SUCOMPLEX *data,
+        size_t size,
         qreal fs,
         qreal bw);
     void setPalette(std::string const &);
@@ -134,6 +149,7 @@ namespace SigDigger {
 
   signals:
     void configChanged();
+    void closed();
 
   public slots:
     void onHZoom(qint64 min, qint64 max);

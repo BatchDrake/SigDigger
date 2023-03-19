@@ -126,6 +126,7 @@ SOURCES += \
     Default/Source/SourceWidgetFactory.cpp \
     Misc/AutoGain.cpp \
     Misc/Averager.cpp \
+    Misc/FileViewer.cpp \
     Misc/Palette.cpp \
     Misc/SNREstimator.cpp \
     Misc/SigDiggerHelpers.cpp \
@@ -316,6 +317,7 @@ HEADERS += \
     include/DeviceTweaks.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
+    include/FileViewer.h \
     include/FloatingTabWindow.h \
     include/FrequencyCorrectionDialog.h \
     include/GenericAudioPlayer.h \
