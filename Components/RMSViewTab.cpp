@@ -636,7 +636,7 @@ RMSViewTab::onPointClicked(qreal, qreal level, Qt::KeyboardModifiers mod)
 }
 
 void
-RMSViewTab::onToolTip(int x, int y, qreal, qreal level)
+RMSViewTab::onToolTip(int x, int y, qreal t, qreal level)
 {
   qreal levelDb, levelLinear;
   QString valueString;
@@ -651,7 +651,7 @@ RMSViewTab::onToolTip(int x, int y, qreal, qreal level)
   }
 
   timeString = "t = " + SuWidgetsHelpers::formatQuantityFromDelta(
-        ui->waveform->px2t(x),
+        t,
         ui->timeSpinBox->timeValue(),
         "s");
 
