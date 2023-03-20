@@ -165,7 +165,6 @@ void
 RMSViewTab::integrateMeasure(qreal timestamp, SUFLOAT mag)
 {
   int intLen = this->ui->intSpin->value();
-  QDateTime date;
 
   this->energy_accum += mag;
 
@@ -301,21 +300,56 @@ RMSViewTab::toggleModes(QObject *sender)
 }
 
 void
-RMSViewTab::fitVertical(void)
+RMSViewTab::setVerticalLimitsLinear(qreal min, qreal max)
 {
-  SUCOMPLEX dataMin = this->ui->waveform->getDataMin();
-  SUCOMPLEX dataMax = this->ui->waveform->getDataMax();
-  qreal min, max;
-
   if (this->ui->dbButton->isChecked()) {
-    min = SU_C_IMAG(dataMin);
-    max = SU_C_IMAG(dataMax);
-  } else {
-    min = SU_C_REAL(dataMin);
-    max = SU_C_REAL(dataMax);
+    setVerticalLimitsDb(SU_POWER_DB_RAW(min), SU_POWER_DB_RAW(max));
+    return;
   }
 
-  this->ui->waveform->zoomVertical(min, max);
+  ui->waveform->zoomVertical(min, max);}
+
+void
+RMSViewTab::setVerticalLimitsDb(qreal min, qreal max)
+{
+  if (!this->ui->dbButton->isChecked()) {
+    setVerticalLimitsLinear(SU_POWER_MAG_RAW(min), SU_POWER_MAG_RAW(max));
+    return;
+  }
+
+  ui->waveform->zoomVertical(min, max);
+}
+
+qreal
+RMSViewTab::getMin() const
+{
+  return ui->waveform->getMin();
+}
+
+qreal
+RMSViewTab::getMax() const
+{
+  return ui->waveform->getMax();
+}
+
+void
+RMSViewTab::fitVertical(void)
+{
+  if (this->ui->waveform->getDataLength() > 0) {
+    SUCOMPLEX dataMin = this->ui->waveform->getDataMin();
+    SUCOMPLEX dataMax = this->ui->waveform->getDataMax();
+    qreal min, max;
+
+    if (this->ui->dbButton->isChecked()) {
+      min = SU_C_IMAG(dataMin);
+      max = SU_C_IMAG(dataMax);
+    } else {
+      min = SU_C_REAL(dataMin);
+      max = SU_C_REAL(dataMax);
+    }
+
+    this->ui->waveform->zoomVertical(min, max);
+  }
 }
 
 bool

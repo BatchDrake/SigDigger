@@ -45,6 +45,8 @@ RMSInspectorConfig::deserialize(Suscan::Object const &conf)
   LOAD(dBscale);
   LOAD(autoFit);
   LOAD(autoScroll);
+  LOAD(currScaleMin);
+  LOAD(currScaleMax);
   LOAD(logData);
   LOAD(logDir);
   LOAD(logFormat);
@@ -62,6 +64,8 @@ RMSInspectorConfig::serialize(void)
   STORE(dBscale);
   STORE(autoFit);
   STORE(autoScroll);
+  STORE(currScaleMin);
+  STORE(currScaleMax);
   STORE(logData);
   STORE(logDir);
   STORE(logFormat);
@@ -187,6 +191,17 @@ RMSInspector::RMSInspector(
   connectAll();
 }
 
+void
+RMSInspector::closeRequested()
+{
+  if (!m_uiConfig->autoFit) {
+    m_uiConfig->currScaleMin = m_rmsTab->getMin();
+    m_uiConfig->currScaleMax = m_rmsTab->getMax();
+  }
+
+  InspectionWidget::closeRequested();
+}
+
 RMSInspector::~RMSInspector()
 {
   if (m_datasaver != nullptr)
@@ -224,10 +239,25 @@ RMSInspector::checkMaxSamples()
         struct timeval currTv, diff;
         struct timeval tv = m_analyzer->getSourceTimeStamp();
 
-        if (m_rmsTab->running())
+        if (m_rmsTab->running()) {
+          if (m_firstMeasurement) {
+            if (!m_uiConfig->autoFit) {
+              if (m_uiConfig->dBscale)
+                m_rmsTab->setVerticalLimitsDb(
+                      m_uiConfig->currScaleMin,
+                      m_uiConfig->currScaleMax);
+              else
+                m_rmsTab->setVerticalLimitsLinear(
+                      m_uiConfig->currScaleMin,
+                      m_uiConfig->currScaleMax);
+            }
+            m_firstMeasurement = false;
+          }
+
           m_rmsTab->feed(
                 SCAST(qreal, tv.tv_sec) + 1e-6 * SCAST(qreal, tv.tv_usec),
                 mean);
+        }
 
         if (m_datasaver != nullptr) {
           gettimeofday(&currTv, nullptr);

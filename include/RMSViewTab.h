@@ -72,6 +72,11 @@ namespace SigDigger {
       bool userClear(QString const &);
 
     public:
+      void setVerticalLimitsLinear(qreal min, qreal max);
+      void setVerticalLimitsDb(qreal min, qreal max);
+      qreal getMin() const;
+      qreal getMax() const;
+
       bool isLogScale() const;
       bool isAutoFit() const;
       bool isAutoScroll() const;

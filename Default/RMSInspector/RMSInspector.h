@@ -49,7 +49,8 @@ namespace SigDigger {
     bool dBscale = true;
     bool autoFit = true;
     bool autoScroll = true;
-
+    float currScaleMin = -48;
+    float currScaleMax = 0;
     bool logData = false;
     std::string logDir = "";
     std::string logFormat = "csv";
@@ -81,6 +82,7 @@ namespace SigDigger {
     SUSCOUNT              m_lastLen = 0;
     unsigned int          m_spectrumAdjustCounter = 0;
     bool                  m_haveSpectrumLimits = false;
+    bool                  m_firstMeasurement = true;
 
     // Config
     RMSInspectorConfig *m_uiConfig = nullptr;
@@ -119,6 +121,7 @@ namespace SigDigger {
       void setColorConfig(ColorConfig const &) override;
       void inspectorMessage(Suscan::InspectorMessage const &) override;
       void samplesMessage(Suscan::SamplesMessage const &) override;
+      void closeRequested() override;
 
       Suscan::Serializable *allocConfig() override;
       void applyConfig() override;
