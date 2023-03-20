@@ -639,7 +639,8 @@ void
 RMSViewTab::onToolTip(int x, int y, qreal, qreal level)
 {
   qreal levelDb, levelLinear;
-  QString string;
+  QString valueString;
+  QString timeString;
 
   if (ui->dbButton->isChecked()) {
     levelDb = level;
@@ -649,8 +650,13 @@ RMSViewTab::onToolTip(int x, int y, qreal, qreal level)
     levelLinear = level;
   }
 
+  timeString = "t = " + SuWidgetsHelpers::formatQuantityFromDelta(
+        ui->waveform->px2t(x),
+        ui->timeSpinBox->timeValue(),
+        "s");
+
   if (!m_haveMarker) {
-    string = QString::asprintf("%.3f dB (", levelDb) +
+    valueString = QString::asprintf("%.3f dB (", levelDb) +
         SuWidgetsHelpers::formatQuantity(levelLinear, 4, "") + ")";
   } else {
     qreal diffLinear, diffDb;
@@ -659,9 +665,9 @@ RMSViewTab::onToolTip(int x, int y, qreal, qreal level)
     diffDb     = levelDb - m_markerDb;
 
     if (ui->dbButton->isChecked()) {
-      string = QString::asprintf("%.3f dB (R = %+.3f dB)", levelDb, diffDb);
+      valueString = QString::asprintf("%.3f dB (R = %+.3f dB)", levelDb, diffDb);
     } else {
-      string = SuWidgetsHelpers::formatQuantity(levelLinear, 4, "")
+      valueString = SuWidgetsHelpers::formatQuantity(levelLinear, 4, "")
           + " (Δ = "
           + SuWidgetsHelpers::formatQuantity(diffLinear, 4, "", true)
           + ")";
@@ -669,5 +675,5 @@ RMSViewTab::onToolTip(int x, int y, qreal, qreal level)
     }
   }
 
-  QToolTip::showText(QPoint(x, y), string);
+  QToolTip::showText(QPoint(x, y), timeString + ", pwr = " + valueString);
 }
