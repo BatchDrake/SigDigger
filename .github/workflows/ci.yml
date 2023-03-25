@@ -28,6 +28,9 @@ jobs:
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
+    - name: Update apt sources
+      run: sudo apt-get update
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
 
@@ -96,6 +99,9 @@ jobs:
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
+    - name: Update apt sources
+      run: sudo apt-get update
 
     - name: Install Qt
       run: sudo apt-get install qtcreator
