@@ -134,6 +134,7 @@ namespace SigDigger {
         size_t size,
         qreal fs,
         qreal bw);
+    void refresh();
     void setPalette(std::string const &);
     void setPaletteOffset(unsigned int);
     void setPaletteContrast(int);

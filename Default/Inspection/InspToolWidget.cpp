@@ -404,11 +404,7 @@ InspToolWidget::resetRawInspector(qreal fs)
         SIGDIGGER_DEFAULT_UPDATEUI_PERIOD_MS * 1e-3 * this->timeWindowFs);
   this->maxSamples = this->ui->maxMemSpin->value() * (1 << 20) / sizeof(SUCOMPLEX);
   this->ui->hangTimeSpin->setMinimum(std::ceil(1e3 / fs));
-  this->data.resize(0);
-  this->timeWindow->setData(
-        this->data,
-        this->timeWindowFs,
-        this->ui->bandwidthSpin->value());
+
   this->ui->sampleRateLabel->setText(
         SuWidgetsHelpers::formatQuantity(fs, "sp/s"));
   this->ui->durationLabel->setText(
@@ -567,6 +563,7 @@ InspToolWidget::openTimeWindow()
         this->data,
         this->timeWindowFs,
         this->ui->bandwidthSpin->value());
+  this->timeWindow->refresh();
   this->timeWindow->setCenterFreq(this->demodFreq);
   this->timeWindow->show();
   this->timeWindow->raise();
@@ -624,6 +621,12 @@ InspToolWidget::cancelAutoSquelch()
 void
 InspToolWidget::startRawCapture()
 {
+  this->data.resize(0);
+  this->timeWindow->setData(
+        this->data,
+        this->timeWindowFs,
+        this->ui->bandwidthSpin->value());
+
   if (m_analyzer != nullptr && !m_opened) {
     Suscan::Channel ch;
     ch.bw    = this->getBandwidth();

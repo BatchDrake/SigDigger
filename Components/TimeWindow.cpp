@@ -954,6 +954,13 @@ TimeWindow::setCenterFreq(SUFREQ center)
 }
 
 void
+TimeWindow::refresh()
+{
+  this->ui->realWaveform->setData(this->displayDataPtr, this->displayDataLength, true, true, true);
+  this->ui->imagWaveform->setData(this->displayDataPtr, this->displayDataLength, true, true, true);
+}
+
+void
 TimeWindow::setDisplayData(
     const SUCOMPLEX *displayData,
     size_t displayLen,
