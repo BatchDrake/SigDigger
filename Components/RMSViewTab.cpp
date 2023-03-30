@@ -742,10 +742,16 @@ RMSViewTab::onToolTip(int x, int y, qreal t, qreal level)
     levelLinear = level;
   }
 
-  timeString = "t = " + SuWidgetsHelpers::formatQuantityFromDelta(
-        t,
-        ui->timeSpinBox->timeValue(),
-        "s");
+  if (ui->timeScaleCombo->currentIndex() == 0)
+    timeString = "t = " + SuWidgetsHelpers::formatQuantityFromDelta(
+          t,
+          ui->timeSpinBox->timeValue(),
+          "s");
+  else
+    timeString = "t = " + SuWidgetsHelpers::formatQuantity(
+          t,
+          0,
+          "unix");
 
   if (!m_haveMarker) {
     valueString = QString::asprintf("%.3f dB (", levelDb) +

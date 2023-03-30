@@ -44,6 +44,7 @@ RMSInspectorConfig::deserialize(Suscan::Object const &conf)
   LOAD(integrationTime);
   LOAD(dBscale);
   LOAD(autoFit);
+  LOAD(timeAxisType);
   LOAD(autoScroll);
   LOAD(currScaleMin);
   LOAD(currScaleMax);
@@ -63,6 +64,7 @@ RMSInspectorConfig::serialize(void)
   STORE(integrationTime);
   STORE(dBscale);
   STORE(autoFit);
+  STORE(timeAxisType);
   STORE(autoScroll);
   STORE(currScaleMin);
   STORE(currScaleMax);
