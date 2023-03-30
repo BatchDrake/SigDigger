@@ -514,6 +514,7 @@ RMSInspector::applyConfig()
   m_rmsTab->setAutoFit(m_uiConfig->autoFit);
   m_rmsTab->setAutoScroll(m_uiConfig->autoScroll);
   m_rmsTab->setLogScale(m_uiConfig->dBscale);
+  m_rmsTab->setTimeScaleSelection(m_uiConfig->timeAxisType);
   m_rmsTab->blockSignals(blocked);
 
   if (dir == "")
@@ -763,5 +764,6 @@ RMSInspector::onRMSTabViewChanged()
   m_uiConfig->autoFit = m_rmsTab->isAutoFit();
   m_uiConfig->autoScroll = m_rmsTab->isAutoScroll();
   m_uiConfig->dBscale = m_rmsTab->isLogScale();
+  m_uiConfig->timeAxisType = m_rmsTab->getTimeScaleSelection();
 }
 

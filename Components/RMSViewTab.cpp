@@ -45,7 +45,7 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
   this->ui->waveform->setData(&this->data);
   this->ui->waveform->setHorizontalUnits("s");
   this->ui->waveform->setAutoFitToEnvelope(false);
-
+  this->ui->waveform->setHorizontalUnits("unix");
   this->onToggleModes();
 
   this->timer.start(TIMER_INTERVAL_MS);
@@ -108,6 +108,11 @@ RMSViewTab::feed(qreal timeStamp, qreal mag)
 
     if (this->data.size() == 1) {
       this->first = this->last;
+      if (!this->ui->dateTimeEdit->isEnabled())
+        this->ui->dateTimeEdit->setDateTime(
+              QDateTime::fromSecsSinceEpoch(this->first));
+      refreshUi();
+      this->ui->waveform->setTimeStart(this->last);
       this->ui->sinceLabel->setText("Since: " + date.toString());
     }
 
@@ -130,6 +135,47 @@ RMSViewTab::setColorConfig(ColorConfig const &cfg)
   this->ui->waveform->setSelectionColor(cfg.selection);
 }
 // https://stackoverflow.com/questions/12966957/is-there-an-equivalent-in-c-of-phps-explode-function
+
+int
+RMSViewTab::getTimeScaleSelection() const
+{
+  return ui->timeScaleCombo->currentIndex();
+}
+
+void
+RMSViewTab::setTimeScaleSelection(int sel)
+{
+  ui->timeScaleCombo->setCurrentIndex(sel);
+  refreshUi();
+}
+
+void
+RMSViewTab::refreshUi()
+{
+  bool haveCustomDateTime = false;
+  qreal first = this->data.size() > 0 ? this->first : SCAST(qreal, time(nullptr));
+
+  switch (ui->timeScaleCombo->currentIndex()) {
+    case 0:
+      ui->waveform->setTimeStart(0);
+      ui->waveform->setHorizontalUnits("s");
+      break;
+
+    case 1:
+      ui->waveform->setTimeStart(first);
+      ui->waveform->setHorizontalUnits("unix");
+      break;
+
+    case 2:
+      haveCustomDateTime = true;
+      first = ui->dateTimeEdit->dateTime().toSecsSinceEpoch();
+      ui->waveform->setTimeStart(first);
+      ui->waveform->setHorizontalUnits("unix");
+      break;
+  }
+
+  ui->dateTimeEdit->setEnabled(haveCustomDateTime);
+}
 
 bool
 RMSViewTab::saveToMatlab(QString const &path)
@@ -461,6 +507,18 @@ RMSViewTab::connectAll(void)
         SIGNAL(toolTipAt(int, int, qreal, qreal)),
         this,
         SLOT(onToolTip(int,int,qreal,qreal)));
+
+  connect(
+        this->ui->timeScaleCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onTimeScaleChanged()));
+
+  connect(
+        this->ui->dateTimeEdit,
+        SIGNAL(dateTimeChanged(QDateTime)),
+        this,
+        SLOT(onTimeScaleChanged()));
 }
 
 bool
@@ -710,4 +768,12 @@ RMSViewTab::onToolTip(int x, int y, qreal t, qreal level)
   }
 
   QToolTip::showText(QPoint(x, y), timeString + ", pwr = " + valueString);
+}
+
+void
+RMSViewTab::onTimeScaleChanged()
+{
+  refreshUi();
+
+  emit viewTypeChanged();
 }

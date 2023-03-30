@@ -59,14 +59,15 @@ namespace SigDigger {
       int     accum_ctr = 0;
       SUFLOAT energy_accum = 0;
 
+      void refreshUi();
       void refreshSampleRate();
       void connectAll();
       void integrateMeasure(qreal timestamp, SUFLOAT mag);
-      bool parseLine(void);
-      void processSocketData(void);
+      bool parseLine();
+      void processSocketData();
       bool saveToMatlab(QString const &);
-      void disconnectSocket(void);
-      void fitVertical(void);
+      void disconnectSocket();
+      void fitVertical();
       void toggleModes(QObject *sender);
 
       bool userClear(QString const &);
@@ -80,6 +81,9 @@ namespace SigDigger {
       bool isLogScale() const;
       bool isAutoFit() const;
       bool isAutoScroll() const;
+
+      int  getTimeScaleSelection() const;
+      void setTimeScaleSelection(int);
 
       void setLogScale(bool);
       void setAutoFit(bool);
@@ -110,14 +114,15 @@ namespace SigDigger {
     public slots:
       void onTimeChanged(qreal, qreal);
       void onTimeout();
-      void onToggleStartStop(void);
-      void onSave(void);
-      void onToggleModes(void);
-      void onResetZoom(void);
-      void onSocketDisconnected(void);
+      void onToggleStartStop();
+      void onSave();
+      void onToggleModes();
+      void onResetZoom();
+      void onSocketDisconnected();
       void onValueChanged(int);
       void onPointClicked(qreal, qreal, Qt::KeyboardModifiers);
       void onToolTip(int, int, qreal, qreal);
+      void onTimeScaleChanged();
   };
 
 }

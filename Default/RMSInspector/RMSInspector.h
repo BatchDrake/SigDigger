@@ -48,6 +48,7 @@ namespace SigDigger {
     float integrationTime = RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS * 1e-3;
     bool dBscale = true;
     bool autoFit = true;
+    int  timeAxisType = 0;
     bool autoScroll = true;
     float currScaleMin = -48;
     float currScaleMax = 0;
