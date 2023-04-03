@@ -61,61 +61,61 @@ GuiConfigTab::setGuiConfig(GuiConfig const &config)
 }
 
 GuiConfig
-GuiConfigTab::getGuiConfig(void) const
+GuiConfigTab::getGuiConfig() const
 {
   return this->guiConfig;
 }
 
 bool
-GuiConfigTab::hasChanged(void) const
+GuiConfigTab::hasChanged() const
 {
   return this->modified;
 }
 
 void
-GuiConfigTab::connectAll(void)
+GuiConfigTab::connectAll()
 {
   connect(
         this->ui->reverseDragBehaviorCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->noLimitsCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->useGLWaterfallCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->useMaxBlendingCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->useGlWfInWindowsCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->ttlCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->ttlSpin,
         SIGNAL(valueChanged(int)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 }
 
 GuiConfigTab::GuiConfigTab(QWidget *parent) :
@@ -134,7 +134,7 @@ GuiConfigTab::~GuiConfigTab()
 
 ////////////////////////////////// Slots ///////////////////////////////////////
 void
-GuiConfigTab::onConfigChanged(void)
+GuiConfigTab::onConfigChanged()
 {
   this->ui->useMaxBlendingCheck->setEnabled(
         this->ui->useGLWaterfallCheck->isChecked());

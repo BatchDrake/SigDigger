@@ -68,6 +68,7 @@ SOURCES += \
     App/AppConfig.cpp \
     App/Application.cpp \
     App/AppUI.cpp \
+    App/AudioConfig.cpp \
     App/ColorConfig.cpp \
     App/GuiConfig.cpp \
     App/Loader.cpp \
@@ -130,6 +131,7 @@ SOURCES += \
     Misc/Palette.cpp \
     Misc/SNREstimator.cpp \
     Misc/SigDiggerHelpers.cpp \
+    Settings/AudioConfigTab.cpp \
     Settings/ColorConfigTab.cpp \
     Settings/ConfigDialog.cpp \
     Settings/ConfigTab.cpp \
@@ -309,6 +311,8 @@ HEADERS += \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
+    include/AudioConfig.h \
+    include/AudioConfigTab.h \
     include/CarrierDetector.h \
     include/CarrierXlator.h \
     include/ColorConfigTab.h \
@@ -384,6 +388,7 @@ FORMS += \
     ui/AddTLESourceDialog.ui \
     ui/AfcControl.ui \
     ui/AskControl.ui \
+    ui/AudioConfigTab.ui \
     ui/ClockRecovery.ui \
     ui/ColorConfigTab.ui \
     ui/Config.ui \

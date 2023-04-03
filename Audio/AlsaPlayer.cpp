@@ -75,6 +75,78 @@ AlsaPlayer::AlsaPlayer(
 }
 
 bool
+AlsaPlayer::enumerateDevices(std::vector<GenericAudioDevice> &list)
+{
+  GenericAudioDevice dev;
+  char **hints;
+  int    err;
+  char **n;
+  char  *name;
+  char  *desc;
+  char  *ioid;
+  bool   isOutput;
+
+  list.clear();
+
+  /* Enumerate sound devices */
+  err = snd_device_name_hint(-1, "pcm", (void ***) &hints);
+  if (err != 0)
+    return false;
+
+  n = hints;
+
+  while (*n != nullptr) {
+    name = snd_device_name_get_hint(*n, "NAME");
+    desc = snd_device_name_get_hint(*n, "DESC");
+    ioid = snd_device_name_get_hint(*n, "IOID");
+
+    isOutput = ioid == nullptr || strcmp(ioid, "Output") == 0;
+
+    if (isOutput && name != nullptr && desc != nullptr) {
+      size_t lf;
+      dev.devStr = name;
+      dev.description = desc;
+
+      // Sometimes, ALSA returns device names with \n. It sounds silly
+      // and probably it is, but we have to handle it anyways.
+
+      lf = dev.description.rfind('\n');
+      if (lf != std::string::npos) {
+        auto partOne = dev.description.substr(0, lf);
+        auto partTwo = dev.description.substr(lf + 1);
+        std::string newName;
+
+        if (partOne.size() == 0)
+          newName = partTwo;
+        else if (partTwo.size() == 0)
+          newName = partOne;
+        else
+          newName = partOne + ": " + partTwo;
+
+        dev.description = newName;
+      }
+
+      list.push_back(dev);
+    }
+
+    if (name != nullptr && strcmp("null", name) != 0)
+      free(name);
+
+    if (desc != nullptr && strcmp("null", desc) != 0)
+      free(desc);
+
+    if (ioid != nullptr && strcmp("null", ioid) != 0)
+      free(ioid);
+
+    n++;
+  }
+
+  snd_device_name_free_hint((void **) hints);
+
+  return true;
+}
+
+bool
 AlsaPlayer::write(const float *buffer, size_t len)
 {
   long err;

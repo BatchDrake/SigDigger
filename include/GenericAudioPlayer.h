@@ -22,8 +22,14 @@
 
 #include <string>
 #include <stdexcept>
+#include <vector>
 
 namespace SigDigger {
+  struct GenericAudioDevice {
+    std::string devStr;
+    std::string description;
+  };
+
   class GenericAudioPlayer {
     unsigned int sampleRate;
 

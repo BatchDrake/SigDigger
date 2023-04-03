@@ -1,6 +1,6 @@
 //
 //    GuiConfigTab.h: GuiConfigTab.h
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    Copyright (C) 2023 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,41 +16,46 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef GUICONFIGTAB_H
-#define GUICONFIGTAB_H
+
+#ifndef AUDIOCONFIGTAB_H
+#define AUDIOCONFIGTAB_H
 
 #include <ConfigTab.h>
-#include <GuiConfig.h>
+#include <AudioConfig.h>
+#include <GenericAudioPlayer.h>
 
 namespace Ui {
-  class GuiConfigTab;
+  class AudioConfigTab;
 }
 
 namespace SigDigger {
-  class GuiConfigTab : public ConfigTab
+  class AudioConfigTab : public ConfigTab
   {
     Q_OBJECT
 
-    GuiConfig guiConfig;
-    bool modified = false;
+    AudioConfig m_audioConfig;
+    std::vector<GenericAudioDevice> m_devices;
+    bool m_modified = false;
+
     void refreshUi();
-    void connectAll(void);
+    void connectAll();
 
   public:
-    void save(void) override;
-    bool hasChanged(void) const override;
-    void setGuiConfig(const GuiConfig &config);
-    GuiConfig getGuiConfig() const;
+    bool hasChanged() const override;
+    void save() override;
 
-    explicit GuiConfigTab(QWidget *parent = nullptr);
-    ~GuiConfigTab() override;
+    void setAudioConfig(AudioConfig const &);
+    AudioConfig getAudioConfig() const;
+
+    explicit AudioConfigTab(QWidget *parent = nullptr);
+    ~AudioConfigTab();
 
   public slots:
-    void onConfigChanged(void);
+    void onSettingsChanged();
 
   private:
-    Ui::GuiConfigTab *ui;
+    Ui::AudioConfigTab *ui;
   };
 }
 
-#endif // GUICONFIGTAB_H
+#endif // AUDIOCONFIGTAB_H

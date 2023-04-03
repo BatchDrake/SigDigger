@@ -1,6 +1,6 @@
 //
-//    filename: description
-//    Copyright (C) 2018 Gonzalo José Carracedo Carballal
+//    AudioConfig.h: Audio device configuration
+//    Copyright (C) 2023 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU Lesser General Public License as
@@ -16,24 +16,27 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef ALSAPLAYER_H
-#define ALSAPLAYER_H
 
-#include <GenericAudioPlayer.h>
-#include <alsa/asoundlib.h>
+#ifndef AUDIOCONFIG_H
+#define AUDIOCONFIG_H
 
-#define ALSAPLAYER_UNDERRUN_WAIT_PERIOD_MS 150
+#include <Suscan/Serializable.h>
+
+#include <QObject>
 
 namespace SigDigger {
-  class AlsaPlayer : public GenericAudioPlayer {
-    snd_pcm_t *pcm = nullptr;
+  class AudioConfig : public Suscan::Serializable {
+    std::string devStr;
+    std::string description;
 
   public:
-    AlsaPlayer(std::string const &dev, unsigned int rate, size_t bufSiz);
-    static bool enumerateDevices(std::vector<GenericAudioDevice> &);
-    bool write(const float *, size_t) override;
-    ~AlsaPlayer() override;
+    AudioConfig();
+    AudioConfig(Suscan::Object const &);
+
+    // Overriden methods
+    void loadDefaults();
+    void deserialize(Suscan::Object const &conf) override;
+    Suscan::Object &&serialize() override;
   };
 }
-
-#endif // ALSAPLAYER_H
+#endif // AUDIOCONFIG_H

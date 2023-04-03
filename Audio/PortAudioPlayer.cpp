@@ -29,7 +29,7 @@ using namespace SigDigger;
 bool PortAudioPlayer::initialized = false;
 
 bool
-PortAudioPlayer::assertPaInitialization(void)
+PortAudioPlayer::assertPaInitialization()
 {
   if (!initialized) {
     PaError err = Pa_Initialize();
@@ -43,7 +43,7 @@ PortAudioPlayer::assertPaInitialization(void)
 }
 
 void
-PortAudioPlayer::paFinalizer(void)
+PortAudioPlayer::paFinalizer()
 {
   if (initialized)
     Pa_Terminate();
@@ -89,6 +89,35 @@ PortAudioPlayer::PortAudioPlayer(
       throw std::runtime_error(
           std::string("Failed to start PortAudio stream: ")
           + Pa_GetErrorText(pErr));
+}
+
+bool
+PortAudioPlayer::enumerateDevices(std::vector<GenericAudioDevice> &list)
+{
+  GenericAudioDevice   dev;
+  const PaDeviceInfo  *deviceInfo;
+  const PaHostApiInfo *apiInfo;
+
+  int numDevices;
+
+  if (!assertPaInitialization())
+    return false;
+
+  numDevices = Pa_GetDeviceCount();
+
+  list.clear();
+
+  for (i = 0; i < numDevices; ++i) {
+    deviceInfo = Pa_GetDeviceInfo(i);
+    apiInfo    = Pa_GetDeviceInfo(deviceInfo->hostApi);
+
+    dev.devStr      = std::string(apiInfo->name) + ":" + std::string(deviceInfo->name);
+    dev.description = std::string(deviceInfo->name) + " (" + std::string(apiInfo->name) + ")";
+
+    list.push_back(dev);
+  }
+
+  return true;
 }
 
 bool

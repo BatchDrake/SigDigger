@@ -142,6 +142,30 @@ PlaybackWorker::startPlayback()
   }
 }
 
+bool
+AudioPlayback::enumerateDevices(std::vector<GenericAudioDevice> &list)
+{
+#ifdef SIGDIGGER_HAVE_ALSA
+  return AlsaPlayer::enumerateDevices(list);
+#elif defined(SIGDIGGER_HAVE_PORTAUDIO)
+  return PortAudioPlayer::enumerateDevices(list);
+#else
+  return false;
+#endif // SIGDIGER_HAVE_ALSA
+}
+
+const char *
+AudioPlayback::audioLibrary()
+{
+#ifdef SIGDIGGER_HAVE_ALSA
+  return "alsa";
+#elif defined(SIGDIGGER_HAVE_PORTAUDIO)
+  return "portaudio";
+#else
+  return nullptr;
+#endif // SIGDIGER_HAVE_ALSA
+}
+
 void
 PlaybackWorker::stopPlayback()
 {

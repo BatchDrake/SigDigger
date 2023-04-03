@@ -34,21 +34,21 @@ namespace SigDigger {
     ColorConfig colors;
     bool modified = false;
 
-    void refreshUi(void);
-    void connectAll(void);
+    void refreshUi();
+    void connectAll();
 
   public:
-    bool hasChanged(void) const override;
-    void save(void) override;
+    bool hasChanged() const override;
+    void save() override;
 
     void setColorConfig(const ColorConfig &config);
-    ColorConfig getColorConfig(void) const;
+    ColorConfig getColorConfig() const;
 
     explicit ColorConfigTab(QWidget *parent = nullptr);
     ~ColorConfigTab();
 
   public slots:
-    void onColorChanged(void);
+    void onColorChanged();
 
   private:
     Ui::ColorConfigTab *ui;
