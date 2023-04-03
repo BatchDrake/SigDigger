@@ -27,7 +27,7 @@ jobs:
 
     # libvolk2-dev is not available in Ubuntu 18.04
     - name: Install Volk
-      run: sudo apt-get install libvolk1-dev
+      run: sudo apt-get install libvolk2-dev
 
     - name: Install cURL
       run: sudo apt-get install libcurl4-openssl-dev
