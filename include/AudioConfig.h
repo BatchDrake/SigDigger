@@ -26,10 +26,10 @@
 
 namespace SigDigger {
   class AudioConfig : public Suscan::Serializable {
+  public:
     std::string devStr;
     std::string description;
 
-  public:
     AudioConfig();
     AudioConfig(Suscan::Object const &);
 

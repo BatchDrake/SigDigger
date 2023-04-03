@@ -1029,6 +1029,7 @@ UIMediator::applyConfig()
   this->ui->configDialog->setColors(this->appConfig->colors);
   this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
   this->ui->configDialog->setTleSourceConfig(this->appConfig->tleSourceConfig);
+  this->ui->configDialog->setAudioConfig(this->appConfig->audioConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
 
@@ -1091,6 +1092,8 @@ UIMediator::onTriggerSetup(bool)
   this->ui->configDialog->setAnalyzerParams(*this->getAnalyzerParams());
   this->ui->configDialog->setColors(this->appConfig->colors);
   this->ui->configDialog->setTleSourceConfig(this->appConfig->tleSourceConfig);
+  this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
+  this->ui->configDialog->setAudioConfig(this->appConfig->audioConfig);
 
   if (sus->haveQth())
     this->ui->configDialog->setLocation(sus->getQth());
@@ -1115,6 +1118,10 @@ UIMediator::onTriggerSetup(bool)
     if (this->ui->configDialog->guiChanged()) {
       this->appConfig->guiConfig = this->ui->configDialog->getGuiConfig();
       this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
+    }
+
+    if (this->ui->configDialog->audioChanged()) {
+      this->appConfig->audioConfig = this->ui->configDialog->getAudioConfig();
     }
 
     if (this->ui->configDialog->tleSourceConfigChanged()) {

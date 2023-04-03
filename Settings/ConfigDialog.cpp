@@ -152,6 +152,12 @@ ConfigDialog::guiChanged() const
 }
 
 bool
+ConfigDialog::audioChanged() const
+{
+  return this->audioTab->hasChanged();
+}
+
+bool
 ConfigDialog::tleSourceConfigChanged() const
 {
   return this->tleSourceTab->hasChanged();

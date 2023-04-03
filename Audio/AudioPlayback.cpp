@@ -154,6 +154,18 @@ AudioPlayback::enumerateDevices(std::vector<GenericAudioDevice> &list)
 #endif // SIGDIGER_HAVE_ALSA
 }
 
+std::string
+AudioPlayback::getDefaultDevice()
+{
+#ifdef SIGDIGGER_HAVE_ALSA
+  return AlsaPlayer::getDefaultDevice().devStr;
+#elif defined(SIGDIGGER_HAVE_PORTAUDIO)
+  return PortAudioPlayer::getDefaultDevice().devStr;
+#else
+  return "";
+#endif // SIGDIGER_HAVE_ALSA
+}
+
 const char *
 AudioPlayback::audioLibrary()
 {

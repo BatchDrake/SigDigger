@@ -168,6 +168,7 @@ namespace SigDigger {
 
     public:
       static bool enumerateDevices(std::vector<GenericAudioDevice> &);
+      static std::string getDefaultDevice();
       static const char *audioLibrary();
 
       AudioPlayback(

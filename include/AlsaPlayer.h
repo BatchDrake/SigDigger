@@ -31,6 +31,7 @@ namespace SigDigger {
   public:
     AlsaPlayer(std::string const &dev, unsigned int rate, size_t bufSiz);
     static bool enumerateDevices(std::vector<GenericAudioDevice> &);
+    static GenericAudioDevice getDefaultDevice();
     bool write(const float *, size_t) override;
     ~AlsaPlayer() override;
   };

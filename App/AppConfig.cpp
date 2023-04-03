@@ -58,6 +58,7 @@ AppConfig::serialize(void)
   obj.setField("source", profileObj);
   obj.setField("analyzerParams", this->analyzerParams.serialize());
   obj.setField("colors", this->colors.serialize());
+  obj.setField("audio", this->audioConfig.serialize());
   obj.setField("guiConfig", this->guiConfig.serialize());
   obj.setField("tleSourceConfig", this->tleSourceConfig.serialize());
   obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
@@ -121,6 +122,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->profile = Suscan::Source::Config(conf.getField("source")));
     TRYSILENT(this->analyzerParams.deserialize(conf.getField("analyzerParams")));
     TRYSILENT(this->colors.deserialize(conf.getField("colors")));
+    TRYSILENT(this->audioConfig.deserialize(conf.getField("audio")));
     TRYSILENT(this->guiConfig.deserialize(conf.getField("guiConfig")));
     TRYSILENT(this->tleSourceConfig.deserialize(conf.getField("tleSourceConfig")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));

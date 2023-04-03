@@ -27,21 +27,35 @@
 
 using namespace SigDigger;
 
+void
+AudioProcessor::assertAudioDevice()
+{
+  std::string devStr = m_mediator->getAppConfig()->audioConfig.devStr;
+
+  if (m_playBack == nullptr || devStr != m_audioDevice) {
+    if (m_playBack != nullptr)
+      delete m_playBack;
+
+    try {
+      m_audioDevice = devStr;
+      m_playBack = new AudioPlayback(m_audioDevice, m_sampleRate);
+
+    } catch (std::runtime_error &e) {
+      m_audioError = e.what();
+      m_playBack = nullptr;
+    }
+  }
+}
+
 AudioProcessor::AudioProcessor(UIMediator *mediator, QObject *parent)
   : QObject(parent)
 {
   m_mediator = mediator;
 
-  try {
-    m_playBack = new AudioPlayback("default", m_sampleRate);
-    m_tracker = new Suscan::AnalyzerRequestTracker(this);
+  assertAudioDevice();
 
-    // Connects the tracker
-    this->connectAll();
-  } catch (std::runtime_error &e) {
-    m_audioError = e.what();
-    m_playBack = nullptr;
-  }
+  m_tracker = new Suscan::AnalyzerRequestTracker(this);
+  this->connectAll();
 
   m_squelchLevel = 1e-2;
 }
@@ -95,6 +109,8 @@ AudioProcessor::openAudio()
     return true;
 
   if (!m_opened) {
+    assertAudioDevice();
+
     if (m_playBack != nullptr) {
       Suscan::Channel ch;
       unsigned int reqRate = m_requestedRate;
@@ -114,6 +130,14 @@ AudioProcessor::openAudio()
       m_playBack->start();
 
       m_sampleRate = m_playBack->getSampleRate();
+
+      if (m_sampleRate < 1) {
+        emit audioError("Audio device does not support the current sample rate");
+        m_opening = false;
+        m_playBack->stop();
+        m_mediator->setUIBusy(false);
+        return false;
+      }
 
       // Prepare channel
       ch.bw    = m_maxAudioBw;

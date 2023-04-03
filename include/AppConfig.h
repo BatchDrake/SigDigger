@@ -29,6 +29,7 @@
 #include "Version.h"
 #include "ColorConfig.h"
 #include "TLESourceConfig.h"
+#include "AudioConfig.h"
 
 #define SIGDIGGER_FFT_WINDOW_SIZE  4096u
 #define SIGDIGGER_FFT_REFRESH_RATE 25u
@@ -48,6 +49,7 @@ namespace SigDigger {
       ColorConfig colors;
       GuiConfig guiConfig;
       TLESourceConfig tleSourceConfig;
+      AudioConfig audioConfig;
       Suscan::Serializable *panSpectrumConfig = nullptr;
 
       // We cannot keep a pointer to the deserialized object. This is because

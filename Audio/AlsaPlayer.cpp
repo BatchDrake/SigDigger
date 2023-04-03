@@ -74,6 +74,16 @@ AlsaPlayer::AlsaPlayer(
   ATTEMPT(snd_pcm_hw_params(this->pcm, params), "set device params");
 }
 
+GenericAudioDevice
+AlsaPlayer::getDefaultDevice()
+{
+  GenericAudioDevice dev;
+
+  dev.devStr = "default";
+
+  return dev;
+}
+
 bool
 AlsaPlayer::enumerateDevices(std::vector<GenericAudioDevice> &list)
 {
@@ -102,14 +112,16 @@ AlsaPlayer::enumerateDevices(std::vector<GenericAudioDevice> &list)
 
     isOutput = ioid == nullptr || strcmp(ioid, "Output") == 0;
 
-    if (isOutput && name != nullptr && desc != nullptr) {
+    if (isOutput
+        && name != nullptr
+        && desc != nullptr
+        && strcmp(name, "null") != 0) {
       size_t lf;
       dev.devStr = name;
       dev.description = desc;
 
       // Sometimes, ALSA returns device names with \n. It sounds silly
       // and probably it is, but we have to handle it anyways.
-
       lf = dev.description.rfind('\n');
       if (lf != std::string::npos) {
         auto partOne = dev.description.substr(0, lf);

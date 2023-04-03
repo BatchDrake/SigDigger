@@ -33,6 +33,9 @@ namespace SigDigger {
 
   public:
     PortAudioPlayer(std::string const &dev, unsigned int rate, size_t bufSiz);
+    static GenericAudioDevice deviceIndexToDevice(PaDeviceIndex index);
+    static PaDeviceIndex strToDeviceIndex(std::string const &);
+    static GenericAudioDevice getDefaultDevice();
     static bool enumerateDevices(std::vector<GenericAudioDevice> &);
     bool write(const float *samples, size_t size) override;
     ~PortAudioPlayer() override;

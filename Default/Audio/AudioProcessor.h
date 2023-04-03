@@ -60,6 +60,7 @@ namespace SigDigger {
     AudioPlayback  *m_playBack = nullptr;
     Suscan::AnalyzerRequestTracker *m_tracker = nullptr;
     QString         m_audioError;
+    std::string     m_audioDevice;
 
     // Audio inspector state
     bool              m_opened = false;
@@ -86,6 +87,7 @@ namespace SigDigger {
     void setParams();
     void setTrueLoFreq();
     void setTrueBandwidth();
+    void assertAudioDevice();
 
   public:
     explicit AudioProcessor(UIMediator *, QObject *parent = nullptr);
