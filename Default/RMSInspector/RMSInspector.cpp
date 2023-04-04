@@ -51,6 +51,8 @@ RMSInspectorConfig::deserialize(Suscan::Object const &conf)
   LOAD(logData);
   LOAD(logDir);
   LOAD(logFormat);
+  LOAD(host);
+  LOAD(port);
 }
 
 Suscan::Object &&
@@ -71,6 +73,8 @@ RMSInspectorConfig::serialize(void)
   STORE(logData);
   STORE(logDir);
   STORE(logFormat);
+  STORE(host);
+  STORE(port);
 
   return this->persist(obj);
 }
@@ -139,6 +143,18 @@ RMSInspector::connectAll()
         SLOT(onConfigChanged()));
 
   connect(
+        ui->hostEdit,
+        SIGNAL(textEdited(QString)),
+        this,
+        SLOT(onConfigChanged()));
+
+  connect(
+        ui->portSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onConfigChanged()));
+
+  connect(
         m_rmsTab,
         SIGNAL(viewTypeChanged()),
         this,
@@ -190,6 +206,9 @@ RMSInspector::RMSInspector(
   registerDataSaver(
         "Matlab script",
         suscli_datasaver_params_init_matlab);
+  registerDataSaver(
+        "TCP socket forwarding",
+        suscli_datasaver_params_init_tcp);
   connectAll();
 }
 
@@ -261,6 +280,8 @@ RMSInspector::checkMaxSamples()
                 mean);
         }
 
+        ++m_updates;
+
         if (m_datasaver != nullptr) {
           gettimeofday(&currTv, nullptr);
           timersub(&currTv, &m_lastUpdate, &diff);
@@ -269,13 +290,36 @@ RMSInspector::checkMaxSamples()
             struct stat sbuf;
             m_lastUpdate = currTv;
 
-            stat(m_fullPathStd.c_str(), &sbuf);
+            if (stat(m_fullPathStd.c_str(), &sbuf) != -1) {
+              ui->sizeLabel->setText(
+                    SuWidgetsHelpers::formatBinaryQuantity(sbuf.st_size));
+            } else {
+              ui->sizeLabel->setText(QString::number(m_updates) + " points");
+            }
 
-            ui->sizeLabel->setText(
-                  SuWidgetsHelpers::formatBinaryQuantity(sbuf.st_size));
           }
 
-          suscli_datasaver_write_timestamp(m_datasaver, &tv, SU_ASFLOAT(mean));
+          if (!suscli_datasaver_write_timestamp(
+                m_datasaver,
+                &tv,
+                SU_ASFLOAT(mean))) {
+            // Delete datalogger
+            suscli_datasaver_destroy(m_datasaver);
+            m_datasaver = nullptr;
+
+            ui->currentFileLabel->setText("N/A");
+            ui->sizeLabel->setText("0 bytes");
+
+            ui->logCheck->setChecked(false);
+            m_uiConfig->logData = false;
+
+            refreshUi();
+
+            QMessageBox::warning(
+                  this,
+                  "Datasaver closed",
+                  "The current data logger closed unexpectedly. Open the log window for details");
+          }
         }
       }
 
@@ -497,6 +541,33 @@ RMSInspector::samplesMessage(Suscan::SamplesMessage const &samplesMsg)
   }
 }
 
+void
+RMSInspector::refreshUi()
+{
+  bool enabled = ui->logCheck->isChecked();
+  bool haveDataLogger;
+  int page = 0;
+
+  if (m_analyzer == nullptr)
+    enabled = false;
+
+  if (ui->formatCombo->currentIndex() == 3)
+    page = 1;
+
+  ui->stackedWidget->setCurrentIndex(page);
+
+  haveDataLogger = m_datasaver != nullptr;
+
+  ui->tabWidget->setTabText(
+        ui->tabWidget->indexOf(ui->loggingTab),
+        haveDataLogger ? "Data logger [logging]" : "Data logger");
+
+  ui->formatCombo->setEnabled(!enabled);
+  ui->stackedWidget->setEnabled(!enabled);
+  ui->page->setEnabled(!enabled);
+  ui->page_2->setEnabled(!enabled);
+}
+
 Suscan::Serializable *
 RMSInspector::allocConfig()
 {
@@ -522,8 +593,15 @@ RMSInspector::applyConfig()
   if (dir == "")
     dir = QDir::currentPath();
 
+  ui->hostEdit->blockSignals(true);
+  ui->portSpin->blockSignals(true);
+  ui->formatCombo->blockSignals(true);
+  ui->logCheck->blockSignals(true);
+  ui->directoryEdit->blockSignals(true);
+
   ui->logCheck->setChecked(m_uiConfig->logData);
   ui->directoryEdit->setText(dir);
+
 
   if (m_uiConfig->logFormat == "csv")
     ui->formatCombo->setCurrentIndex(0);
@@ -531,7 +609,19 @@ RMSInspector::applyConfig()
     ui->formatCombo->setCurrentIndex(1);
   else if (m_uiConfig->logFormat == "matlab")
     ui->formatCombo->setCurrentIndex(2);
+  else if (m_uiConfig->logFormat == "tcp")
+    ui->formatCombo->setCurrentIndex(3);
 
+  ui->hostEdit->setText(m_uiConfig->host.c_str());
+  ui->portSpin->setValue(m_uiConfig->port);
+
+  ui->hostEdit->blockSignals(false);
+  ui->portSpin->blockSignals(false);
+  ui->formatCombo->blockSignals(false);
+  ui->logCheck->blockSignals(false);
+  ui->directoryEdit->blockSignals(false);
+
+  refreshUi();
   updateMaxSamples();
 
   try {
@@ -587,8 +677,16 @@ RMSInspector::onConfigChanged()
     case 2:
       m_uiConfig->logFormat = "matlab";
       break;
+
+    case 3:
+      m_uiConfig->logFormat = "tcp";
+      break;
   }
 
+  m_uiConfig->host = ui->hostEdit->text().toStdString();
+  m_uiConfig->port = ui->portSpin->value();
+
+  refreshUi();
   updateMaxSamples();
 }
 
@@ -678,10 +776,8 @@ RMSInspector::onToggleDataLogger()
 {
   bool enabled = ui->logCheck->isChecked();
   bool haveDataLogger = m_datasaver != nullptr;
-
-  ui->directoryEdit->setEnabled(!enabled);
-  ui->browseButton->setEnabled(!enabled);
-  ui->formatCombo->setEnabled(!enabled);
+  bool hintFailed = false;
+  bool haveHint = false;
 
   if (m_analyzer == nullptr)
     enabled = false;
@@ -690,23 +786,44 @@ RMSInspector::onToggleDataLogger()
     if (enabled) {
       const suscli_datasaver_params *params = currentDataSaverParams();
       if (params != nullptr) {
-        char *file = suscli_datasaver_get_filename(params);
+        haveHint = true;
+        char *file = nullptr;
+        if (params->fname != nullptr) {
+          file = suscli_datasaver_get_filename(params);
 
-        if (file == nullptr) {
+          if (file != nullptr) {
+            m_dataFile = file;
+            m_fullPathStd = (ui->directoryEdit->text() + "/" + m_dataFile).toStdString();
+            free(file);
+          } else {
+            hintFailed = true;
+          }
+        }
+
+        if (hintFailed) {
           QMessageBox::critical(
                 this,
                 "Internal error",
                 "Selected datasaver failed to provide a filename hint");
         } else {
+          std::string host = ui->hostEdit->text().toStdString();
+          std::string port = std::to_string(ui->portSpin->value());
+          std::string interval = std::to_string(1e3 * m_uiConfig->integrationTime);
+
           m_t0 = m_analyzer->getSourceTimeStamp();
-          m_dataFile = file;
-          free(file);
 
-          m_fullPathStd = (ui->directoryEdit->text() + "/" + m_dataFile).toStdString();
+          if (haveHint) {
+            hashlist_set(m_datasaverParams, "path", const_cast<char *>(m_fullPathStd.c_str()));
+            ui->currentFileLabel->setText(m_dataFile);
+          }
 
-          hashlist_set(m_datasaverParams, "path", const_cast<char *>(m_fullPathStd.data()));
+          hashlist_set(m_datasaverParams, "host", const_cast<char *>(host.c_str()));
+          hashlist_set(m_datasaverParams, "port", const_cast<char *>(port.c_str()));
+          hashlist_set(m_datasaverParams, "interval", const_cast<char *>(interval.c_str()));
+
           hashlist_set(m_datasaverParams, "_t0", &m_t0);
 
+          m_updates   = 0;
           m_datasaver = suscli_datasaver_new(params);
 
           if (m_datasaver == nullptr) {
@@ -716,7 +833,6 @@ RMSInspector::onToggleDataLogger()
                   "Failed to create datasaver object. See log messages for details.");
           }
 
-          ui->currentFileLabel->setText(m_dataFile);
 
           gettimeofday(&m_lastUpdate, NULL);
         }
@@ -734,14 +850,13 @@ RMSInspector::onToggleDataLogger()
 
   haveDataLogger = m_datasaver != nullptr;
 
-  ui->tabWidget->setTabText(
-        ui->tabWidget->indexOf(ui->loggingTab),
-        haveDataLogger ? "Data logger [logging]" : "Data logger");
-
   if (m_analyzer != nullptr)
     ui->logCheck->setChecked(haveDataLogger);
 
-  m_uiConfig->logData = ui->logCheck->isChecked();
+  enabled = ui->logCheck->isChecked();
+  m_uiConfig->logData = enabled;
+
+  refreshUi();
 }
 
 void

@@ -53,6 +53,8 @@ namespace SigDigger {
     float currScaleMin = -48;
     float currScaleMax = 0;
     bool logData = false;
+    std::string host = "127.0.0.1";
+    unsigned port = 9999;
     std::string logDir = "";
     std::string logFormat = "csv";
     void deserialize(Suscan::Object const &conf) override;
@@ -70,6 +72,7 @@ namespace SigDigger {
     qreal m_kahanC = 0;
     quint64 m_count = 0;
     quint64 m_maxSamples = 0;
+    quint64 m_updates = 0;
 
     std::vector<suscli_datasaver_params> m_datasaverList;
     QString               m_dataFile;
@@ -107,6 +110,8 @@ namespace SigDigger {
     void registerDataSaver(
         QString const &desc,
         datasaver_param_init_cb);
+
+    void refreshUi();
 
     const suscli_datasaver_params *currentDataSaverParams();
 
