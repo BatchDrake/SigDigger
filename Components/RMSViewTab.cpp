@@ -111,8 +111,9 @@ RMSViewTab::feed(qreal timeStamp, qreal mag)
       if (!this->ui->dateTimeEdit->isEnabled())
         this->ui->dateTimeEdit->setDateTime(
               QDateTime::fromSecsSinceEpoch(this->first));
+
       refreshUi();
-      this->ui->waveform->setTimeStart(this->last);
+
       this->ui->sinceLabel->setText("Since: " + date.toString());
     }
 
