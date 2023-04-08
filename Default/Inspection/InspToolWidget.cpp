@@ -158,6 +158,11 @@ InspToolWidget::connectAll()
         this,
         SLOT(onInspClassChanged()));
   connect(
+        this->ui->powerRadio,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onInspClassChanged()));
+  connect(
         this->ui->pskRadio,
         SIGNAL(toggled(bool)),
         this,
@@ -371,6 +376,8 @@ InspToolWidget::setInspectorClass(std::string const &cls)
     this->ui->audioRadio->setChecked(true);
   else if (cls == "raw")
     this->ui->rawRadio->setChecked(true);
+  else if (cls == "power")
+    this->ui->powerRadio->setChecked(true);
 }
 
 std::string
@@ -386,6 +393,8 @@ InspToolWidget::getInspectorClass() const
     return "audio";
   else if (this->ui->rawRadio->isChecked())
     return "raw";
+  else if (this->ui->powerRadio->isChecked())
+    return "power";
   return "";
 }
 

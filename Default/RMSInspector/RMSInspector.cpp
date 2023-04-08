@@ -172,6 +172,8 @@ RMSInspector::RMSInspector(
   qreal intTime = RMS_INSPECTOR_DEFAULT_INTEGRATION_TIME_MS * 1e-3;
   ui->setupUi(this);
 
+  m_rawMode = request.inspClass == "raw";
+
   m_rmsTab = new RMSViewTab(nullptr, nullptr);
   m_sampleRate = SCAST(qreal, request.equivRate);
 
@@ -188,8 +190,6 @@ RMSInspector::RMSInspector(
 
   m_rmsTab->setSampleRate(1 / intTime);
   m_rmsTab->setIntegrationTimeHint(intTime);
-
-  updateMaxSamples();
 
   ui->tabWidget->insertTab(0, m_rmsTab, "Power plot");
   ui->tabWidget->setCurrentIndex(0);
@@ -210,6 +210,8 @@ RMSInspector::RMSInspector(
         "TCP socket forwarding",
         suscli_datasaver_params_init_tcp);
   connectAll();
+
+  updateMaxSamples();
 }
 
 void
@@ -250,80 +252,85 @@ RMSInspector::registerDataSaver(
 }
 
 void
+RMSInspector::pushPowerSample(qreal mean)
+{
+  if (m_analyzer != nullptr) {
+    struct timeval currTv, diff;
+    struct timeval tv = m_analyzer->getSourceTimeStamp();
+
+    if (m_rmsTab->running()) {
+      if (m_firstMeasurement) {
+        if (!m_uiConfig->autoFit) {
+          if (m_uiConfig->dBscale)
+            m_rmsTab->setVerticalLimitsDb(
+                  m_uiConfig->currScaleMin,
+                  m_uiConfig->currScaleMax);
+          else
+            m_rmsTab->setVerticalLimitsLinear(
+                  m_uiConfig->currScaleMin,
+                  m_uiConfig->currScaleMax);
+        }
+        m_firstMeasurement = false;
+      }
+
+      m_rmsTab->feed(
+            SCAST(qreal, tv.tv_sec) + 1e-6 * SCAST(qreal, tv.tv_usec),
+            mean);
+    }
+
+    ++m_updates;
+
+    if (m_datasaver != nullptr) {
+      gettimeofday(&currTv, nullptr);
+      timersub(&currTv, &m_lastUpdate, &diff);
+
+      if (diff.tv_sec >= 1) {
+        struct stat sbuf;
+        m_lastUpdate = currTv;
+
+        if (stat(m_fullPathStd.c_str(), &sbuf) != -1) {
+          ui->sizeLabel->setText(
+                SuWidgetsHelpers::formatBinaryQuantity(sbuf.st_size));
+        } else {
+          ui->sizeLabel->setText(QString::number(m_updates) + " points");
+        }
+
+      }
+
+      if (!suscli_datasaver_write_timestamp(
+            m_datasaver,
+            &tv,
+            SU_ASFLOAT(mean))) {
+        // Delete datalogger
+        suscli_datasaver_destroy(m_datasaver);
+        m_datasaver = nullptr;
+
+        ui->currentFileLabel->setText("N/A");
+        ui->sizeLabel->setText("0 bytes");
+
+        ui->logCheck->setChecked(false);
+        m_uiConfig->logData = false;
+
+        refreshUi();
+
+        QMessageBox::warning(
+              this,
+              "Datasaver closed",
+              "The current data logger closed unexpectedly. Open the log window for details");
+      }
+    }
+  }
+}
+
+void
 RMSInspector::checkMaxSamples()
 {
   if (m_count >= m_maxSamples) {
     if (m_count > 0) {
       qreal mean = m_kahanAcc / SCAST(qreal, m_count);
-
-      if (m_analyzer != nullptr) {
-        struct timeval currTv, diff;
-        struct timeval tv = m_analyzer->getSourceTimeStamp();
-
-        if (m_rmsTab->running()) {
-          if (m_firstMeasurement) {
-            if (!m_uiConfig->autoFit) {
-              if (m_uiConfig->dBscale)
-                m_rmsTab->setVerticalLimitsDb(
-                      m_uiConfig->currScaleMin,
-                      m_uiConfig->currScaleMax);
-              else
-                m_rmsTab->setVerticalLimitsLinear(
-                      m_uiConfig->currScaleMin,
-                      m_uiConfig->currScaleMax);
-            }
-            m_firstMeasurement = false;
-          }
-
-          m_rmsTab->feed(
-                SCAST(qreal, tv.tv_sec) + 1e-6 * SCAST(qreal, tv.tv_usec),
-                mean);
-        }
-
-        ++m_updates;
-
-        if (m_datasaver != nullptr) {
-          gettimeofday(&currTv, nullptr);
-          timersub(&currTv, &m_lastUpdate, &diff);
-
-          if (diff.tv_sec >= 1) {
-            struct stat sbuf;
-            m_lastUpdate = currTv;
-
-            if (stat(m_fullPathStd.c_str(), &sbuf) != -1) {
-              ui->sizeLabel->setText(
-                    SuWidgetsHelpers::formatBinaryQuantity(sbuf.st_size));
-            } else {
-              ui->sizeLabel->setText(QString::number(m_updates) + " points");
-            }
-
-          }
-
-          if (!suscli_datasaver_write_timestamp(
-                m_datasaver,
-                &tv,
-                SU_ASFLOAT(mean))) {
-            // Delete datalogger
-            suscli_datasaver_destroy(m_datasaver);
-            m_datasaver = nullptr;
-
-            ui->currentFileLabel->setText("N/A");
-            ui->sizeLabel->setText("0 bytes");
-
-            ui->logCheck->setChecked(false);
-            m_uiConfig->logData = false;
-
-            refreshUi();
-
-            QMessageBox::warning(
-                  this,
-                  "Datasaver closed",
-                  "The current data logger closed unexpectedly. Open the log window for details");
-          }
-        }
-      }
-
+      pushPowerSample(mean);
     }
+
     m_kahanC = m_kahanAcc = 0;
     m_count = 0;
   }
@@ -401,7 +408,12 @@ RMSInspector::updateMaxSamples()
     m_uiConfig->integrationTime = maxTime;
   m_maxSamples = SCAST(quint64, maxTime * m_sampleRate);
 
-  checkMaxSamples();
+  if (m_rawMode)
+    checkMaxSamples();
+  else if (m_analyzer != nullptr) {
+    m_config.set("power.integrate-samples", SCAST(uint64_t, m_maxSamples));
+    m_analyzer->setInspectorConfig(m_request.handle, m_config);
+  }
 }
 
 /////////////////////////// Overriden methods /////////////////////////////////
@@ -420,6 +432,11 @@ RMSInspector::attachAnalyzer(Suscan::Analyzer *analyzer)
         SLOT(onSourceInfoMessage(Suscan::SourceInfoMessage const &)));
 
   onToggleDataLogger();
+
+  if (!m_rawMode) {
+    m_config.set("power.integrate-samples", SCAST(uint64_t, m_maxSamples));
+    m_analyzer->setInspectorConfig(m_request.handle, m_config);
+  }
 }
 
 void
@@ -524,20 +541,25 @@ RMSInspector::samplesMessage(Suscan::SamplesMessage const &samplesMsg)
   const SUCOMPLEX *samples = samplesMsg.getSamples();
   count = samplesMsg.getCount();
 
-  // TODO: We can make this actually a little better. Look for the max
-  // number of samples we can process in a row before calling
-  // checkMaxSamples and then deliver to the rmstab
+  if (m_rawMode) {
+    // TODO: We can make this actually a little better. Look for the max
+    // number of samples we can process in a row before calling
+    // checkMaxSamples and then deliver to the rmstab
 
-  for (i = 0; i < count; ++i) {
-    input = SCAST(qreal, SU_C_REAL(samples[i] * SU_C_CONJ(samples[i])));
-    y = input - m_kahanC;
-    t = m_kahanAcc + y;
+    for (i = 0; i < count; ++i) {
+      input = SCAST(qreal, SU_C_REAL(samples[i] * SU_C_CONJ(samples[i])));
+      y = input - m_kahanC;
+      t = m_kahanAcc + y;
 
-    m_kahanC = (t - m_kahanAcc) - y;
-    m_kahanAcc = t;
+      m_kahanC = (t - m_kahanAcc) - y;
+      m_kahanAcc = t;
 
-    ++m_count;
-    checkMaxSamples();
+      ++m_count;
+      checkMaxSamples();
+    }
+  } else {
+    for (i = 0; i < count; ++i)
+      pushPowerSample(SU_C_REAL(samples[i]));
   }
 }
 

@@ -87,6 +87,7 @@ namespace SigDigger {
     unsigned int          m_spectrumAdjustCounter = 0;
     bool                  m_haveSpectrumLimits = false;
     bool                  m_firstMeasurement = true;
+    bool                  m_rawMode = false;
 
     // Config
     RMSInspectorConfig *m_uiConfig = nullptr;
@@ -100,6 +101,7 @@ namespace SigDigger {
 
     void updateMaxSamples();
     void checkMaxSamples();
+    void pushPowerSample(qreal);
 
     void feedSpectrum(
         const SUFLOAT *data,

@@ -42,7 +42,7 @@ RMSInspectorFactory::description() const
 bool
 RMSInspectorFactory::worksWith(QString inspClass) const
 {
-  return inspClass == "raw";
+  return inspClass == "raw" || inspClass == "power";
 }
 
 
