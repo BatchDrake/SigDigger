@@ -73,6 +73,7 @@ namespace SigDigger {
 
     // UI objects
     Ui::InspectorPanel *ui = nullptr;
+    bool stateSet = false;
 
     // TODO: Allow multiple TimeWindows
     TimeWindow *timeWindow = nullptr;

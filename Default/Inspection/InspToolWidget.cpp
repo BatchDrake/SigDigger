@@ -665,6 +665,11 @@ InspToolWidget::stopRawCapture()
 void
 InspToolWidget::setState(int, Suscan::Analyzer *analyzer)
 {
+  if (!this->stateSet) {
+    this->setBandwidth(this->mediator()->getMainSpectrum()->getBandwidth());
+    this->stateSet = true;
+  }
+
   if (m_analyzer != analyzer) {
     m_mediator->setUIBusy(false);
     m_analyzer = analyzer;
@@ -704,8 +709,6 @@ InspToolWidget::setProfile(Suscan::Source::Config &config)
   this->setBandwidthLimits(
         1,
         config.getDecimatedSampleRate());
-
-  this->setBandwidth(this->mediator()->getMainSpectrum()->getBandwidth());
 }
 
 InspToolWidget::InspToolWidget
