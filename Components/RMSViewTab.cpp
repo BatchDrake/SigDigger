@@ -69,6 +69,21 @@ RMSViewTab::setIntegrationTimeMode(qreal min, qreal max)
   ui->stackedWidget->setCurrentIndex(1);
 }
 
+qreal
+RMSViewTab::getCurrentTimeDelta() const
+{
+  if (intTimeMode())
+    return ui->timeSpinBox->timeValue();
+  else
+    return 1. / rate;
+}
+
+bool
+RMSViewTab::intTimeMode() const
+{
+  return ui->stackedWidget->currentIndex() == 1;
+}
+
 void
 RMSViewTab::setIntegrationTimeHint(qreal hint)
 {
@@ -385,7 +400,7 @@ RMSViewTab::fitVertical(void)
   if (this->ui->waveform->getDataLength() > 0) {
     SUCOMPLEX dataMin = this->ui->waveform->getDataMin();
     SUCOMPLEX dataMax = this->ui->waveform->getDataMax();
-    qreal min, max;
+    qreal min, max, range;
 
     if (this->ui->dbButton->isChecked()) {
       min = SU_C_IMAG(dataMin);
@@ -393,6 +408,11 @@ RMSViewTab::fitVertical(void)
     } else {
       min = SU_C_REAL(dataMin);
       max = SU_C_REAL(dataMax);
+    }
+
+    if (min == max) {
+      min -= 1;
+      max += 1;
     }
 
     this->ui->waveform->zoomVertical(min, max);
@@ -746,7 +766,7 @@ RMSViewTab::onToolTip(int x, int y, qreal t, qreal level)
   if (ui->timeScaleCombo->currentIndex() == 0)
     timeString = "t = " + SuWidgetsHelpers::formatQuantityFromDelta(
           t,
-          ui->timeSpinBox->timeValue(),
+          getCurrentTimeDelta(),
           "s");
   else
     timeString = "t = " + SuWidgetsHelpers::formatQuantity(

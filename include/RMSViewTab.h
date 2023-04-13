@@ -71,6 +71,8 @@ namespace SigDigger {
       void toggleModes(QObject *sender);
 
       bool userClear(QString const &);
+      qreal getCurrentTimeDelta() const;
+      bool  intTimeMode() const;
 
     public:
       void setVerticalLimitsLinear(qreal min, qreal max);
