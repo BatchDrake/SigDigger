@@ -242,10 +242,10 @@ function build()
         export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
         export LD_LIBRARY_PATH="$DEPLOYROOT/usr/lib:$LD_LIBRARY_PATH"
 
-        try "Cloning sigutils..."          git clone -b "$BRANCH" https://github.com/BatchDrake/sigutils
-        try "Cloning suscan..."            git clone -b "$BRANCH" https://github.com/BatchDrake/suscan
-        try "Cloning SuWidgets..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SuWidgets
-        try "Cloning SigDigger..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SigDigger
+	try "Cloning sigutils (${BRANCH})..."          git clone -b "$BRANCH" https://github.com/BatchDrake/sigutils
+	try "Cloning suscan (${BRANCH})..."            git clone -b "$BRANCH" https://github.com/BatchDrake/suscan
+	try "Cloning SuWidgets (${BRANCH})..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SuWidgets
+	try "Cloning SigDigger (${BRANCH})..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SigDigger
         try "Creating builddirs..."        mkdir -p sigutils/build suscan/build
         cd sigutils/build
         try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
