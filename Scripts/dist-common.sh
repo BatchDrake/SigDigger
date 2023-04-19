@@ -225,6 +225,7 @@ function build()
 	notice 'Build with debug symbols is ON!'
 	CMAKE_BUILDTYPE=Debug
 	QMAKE_BUILDTYPE=debug
+	export VERBOSE=1
     else
 	CMAKE_BUILDTYPE=Release
 	QMAKE_BUILDTYPE=release
