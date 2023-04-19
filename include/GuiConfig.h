@@ -22,6 +22,11 @@
 
 #include <Suscan/Serializable.h>
 
+#include <QObject>
+#include <QColor>
+
+#define SIGDIGGER_DEFAULT_INFOTEXT_COLOR QColor("#3e80d1")
+
 namespace SigDigger {
   class GuiConfig : public Suscan::Serializable
   {
@@ -37,6 +42,8 @@ namespace SigDigger {
         bool useGlInWindows;
         bool enableMsgTTL;
         unsigned int msgTTL;
+        std::string infoText;
+        QColor infoTextColor;
 
       GuiConfig();
       GuiConfig(Suscan::Object const &conf);

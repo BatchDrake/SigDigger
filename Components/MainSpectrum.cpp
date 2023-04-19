@@ -25,6 +25,7 @@
 #include "Waterfall.h"
 #include "GLWaterfall.h"
 #include <WFHelpers.h>
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -223,6 +224,11 @@ MainSpectrum::feed(float *data, int size, struct timeval const &tv, bool looped)
 {
   QDateTime dateTime;
 
+  if (size != SCAST(int, cachedFftSize)) {
+    cachedFftSize = SCAST(unsigned, size);
+    refreshInfoText();
+  }
+
   dateTime.setMSecsSinceEpoch(tv.tv_sec * 1000 + tv.tv_usec / 1000);
 
   WATERFALL_CALL(setNewFftData(data, size, dateTime, looped));
@@ -263,6 +269,38 @@ MainSpectrum::updateLimits(void)
 
   this->ui->loLcd->setMinSilent(minLcd);
   this->ui->loLcd->setMaxSilent(maxLcd);
+}
+
+void
+MainSpectrum::refreshInfoText()
+{
+  QString newText = this->infoTextTemplate;
+
+  if (infoTextHasFftSize) {
+    QString sizeStr = this->cachedFftSize > 0
+        ? QString::number(this->cachedFftSize)
+        : "N/A";
+    newText = newText.replace(MS_VAR_FFT_SIZE, sizeStr);
+  }
+
+  if (infoTextHasRBW) {
+    QString rbwStr = this->cachedFftSize > 0 && this->cachedRate > 0
+        ? SuWidgetsHelpers::formatQuantity(SCAST(qreal, this->cachedRate) / this->cachedFftSize, "Hz")
+        : "N/A";
+    newText = newText.replace(MS_VAR_RBW, rbwStr);
+  }
+
+  if (infoTextHasSampRate) {
+    QString sampRateStr = this->cachedRate > 0
+        ? QString::number(this->cachedRate)
+        : "N/A";
+    newText = newText.replace(MS_VAR_SAMP_RATE, sampRateStr);
+  }
+
+  if (newText != infoText) {
+    infoText = newText;
+    WATERFALL_CALL(setInfoText(infoText));
+  }
 }
 
 void
@@ -542,6 +580,17 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
     this->glWf->setMaxBlending(cfg.useMaxBlending);
 
   WATERFALL_CALL(setUseLBMdrag(cfg.useLMBdrag));
+
+  this->infoTextTemplate = QString::fromStdString(cfg.infoText);
+
+  WATERFALL_CALL(setInfoText(this->infoTextTemplate.trimmed()));
+  WATERFALL_CALL(setInfoTextColor(cfg.infoTextColor));
+
+  this->infoTextHasFftSize  = infoTextTemplate.indexOf(MS_VAR_FFT_SIZE) != -1;
+  this->infoTextHasRBW      = infoTextTemplate.indexOf(MS_VAR_RBW) != -1;
+  this->infoTextHasSampRate = infoTextTemplate.indexOf(MS_VAR_SAMP_RATE) != -1;
+
+  refreshInfoText();
 }
 
 void
@@ -642,6 +691,7 @@ MainSpectrum::setSampleRate(unsigned int rate)
 
     this->cachedRate = rate;
     this->resAdjusted = false;
+    refreshInfoText();
   }
 }
 

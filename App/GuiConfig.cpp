@@ -41,11 +41,18 @@ GuiConfig::loadDefaults(void)
   this->useMaxBlending = false;
   this->enableMsgTTL   = true;
   this->msgTTL         = 15; // in milliseconds
+  this->infoTextColor  = SIGDIGGER_DEFAULT_INFOTEXT_COLOR;
 }
 
 #define STRINGFY(x) #x
 #define STORE(field) obj.set(STRINGFY(field), this->field)
 #define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
+#define CCSTORE(field) \
+  obj.set(STRINGFY(field), this->field.name().toStdString())
+#define CCLOAD(field)           \
+  this->field = QColor(         \
+      QString::fromStdString(   \
+        conf.get(STRINGFY(field), this->field.name().toStdString())))
 
 Suscan::Object &&
 GuiConfig::serialize(void)
@@ -61,6 +68,8 @@ GuiConfig::serialize(void)
   STORE(useGlInWindows);
   STORE(enableMsgTTL);
   STORE(msgTTL);
+  STORE(infoText);
+  CCSTORE(infoTextColor);
 
   return this->persist(obj);
 }
@@ -75,4 +84,6 @@ GuiConfig::deserialize(Suscan::Object const &conf)
   LOAD(useGlInWindows);
   LOAD(enableMsgTTL);
   LOAD(msgTTL);
+  LOAD(infoText);
+  CCLOAD(infoTextColor);
 }

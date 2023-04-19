@@ -30,6 +30,10 @@
 
 #define SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS 1000
 
+#define MS_VAR_FFT_SIZE  "%FFT_SIZE%"
+#define MS_VAR_RBW       "%RBW%"
+#define MS_VAR_SAMP_RATE "%SAMP_RATE%"
+
 class QTimeSlider;
 
 namespace Ui {
@@ -67,6 +71,12 @@ namespace SigDigger {
     Waterfall   *wf   = nullptr;
     GLWaterfall *glWf = nullptr;
     ColorConfig  lastColorConfig;
+    QString      infoTextTemplate;
+    QString      infoText;
+
+    bool         infoTextHasFftSize  = false;
+    bool         infoTextHasRBW      = false;
+    bool         infoTextHasSampRate = false;
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
@@ -84,6 +94,7 @@ namespace SigDigger {
     // Cached members (for UI update, etc)
     unsigned int cachedRate = 0;
     unsigned int bandwidth = 0;
+    unsigned int cachedFftSize = 0;
     unsigned int zoom = 1;
 
     // Private methods
@@ -92,6 +103,7 @@ namespace SigDigger {
     void connectGLWf();
     void refreshUi();
     void updateLimits();
+    void refreshInfoText();
 
     // Static members
     static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);

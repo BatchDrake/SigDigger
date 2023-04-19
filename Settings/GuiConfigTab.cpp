@@ -32,6 +32,8 @@ GuiConfigTab::save()
   this->guiConfig.enableMsgTTL   = this->ui->ttlCheck->isChecked();
   this->guiConfig.msgTTL         = static_cast<unsigned>(
         this->ui->ttlSpin->value());
+  this->guiConfig.infoText       = this->ui->infoTextEdit->toPlainText().toStdString();
+  this->guiConfig.infoTextColor  = this->ui->infoTextColor->getColor();
 }
 
 void
@@ -49,7 +51,8 @@ GuiConfigTab::refreshUi()
   this->ui->ttlLabel->setEnabled(this->ui->ttlCheck->isChecked());
   this->ui->ttlSpin->setEnabled(this->ui->ttlCheck->isChecked());
   this->ui->ttlSpin->setValue(static_cast<int>(this->guiConfig.msgTTL));
-
+  this->ui->infoTextEdit->setPlainText(QString::fromStdString(this->guiConfig.infoText));
+  this->ui->infoTextColor->setColor(this->guiConfig.infoTextColor);
 }
 
 void
@@ -114,6 +117,18 @@ GuiConfigTab::connectAll()
   connect(
         this->ui->ttlSpin,
         SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onConfigChanged()));
+
+  connect(
+        this->ui->infoTextEdit,
+        SIGNAL(textChanged()),
+        this,
+        SLOT(onConfigChanged()));
+
+  connect(
+        this->ui->infoTextColor,
+        SIGNAL(colorChanged(QColor)),
         this,
         SLOT(onConfigChanged()));
 }
