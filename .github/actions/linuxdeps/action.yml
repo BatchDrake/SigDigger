@@ -1,6 +1,11 @@
 name: Build
 description: 'Install GNU/Linux specific dependencies'
 
+inputs:
+  shell:
+    required: false
+    default: bash
+
 runs:
   using: 'composite'
   steps:
