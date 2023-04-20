@@ -581,9 +581,10 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
 
   WATERFALL_CALL(setUseLBMdrag(cfg.useLMBdrag));
 
-  this->infoTextTemplate = QString::fromStdString(cfg.infoText);
-
-  WATERFALL_CALL(setInfoText(this->infoTextTemplate.trimmed()));
+  infoTextTemplate = QString::fromStdString(cfg.infoText).trimmed();
+  infoText = infoTextTemplate;
+  
+  WATERFALL_CALL(setInfoText(infoTextTemplate));
   WATERFALL_CALL(setInfoTextColor(cfg.infoTextColor));
 
   this->infoTextHasFftSize  = infoTextTemplate.indexOf(MS_VAR_FFT_SIZE) != -1;
