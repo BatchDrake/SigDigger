@@ -97,8 +97,8 @@ function embed_suscli_deps()
 function build_fixups()
 {
   if [ "$OSTYPE" == "Linux" ]; then
-    cp -f "$BUILDROOT/"sigutils/build/libsigutils.so.* "$DEPLOYROOT/usr/lib"
-    cp -f "$BUILDROOT/"suscan/build/libsuscan.so.*     "$DEPLOYROOT/usr/lib"
+    cp -f "$BUILDROOT/"sigutils/build/src/libsigutils.so.* "$DEPLOYROOT/usr/lib"
+    cp -f "$BUILDROOT/"suscan/build/libsuscan.so.*         "$DEPLOYROOT/usr/lib"
   fi
 
   return 0
