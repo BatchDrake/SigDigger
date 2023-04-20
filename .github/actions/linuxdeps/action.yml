@@ -10,47 +10,61 @@ runs:
   using: 'composite'
   steps:
     - name: Install Qt
+      shell:  ${{inputs.shell}}
       uses: jurplel/install-qt-action@v2
 
     - name: Install sndfile
+      shell:  ${{inputs.shell}}
       run: sudo apt-get install libsndfile1-dev
 
     - name: Install Volk
+      shell:  ${{inputs.shell}}
       run: sudo apt-get install libvolk2-dev
 
     - name: Install cURL
+      shell:  ${{inputs.shell}}
       run: sudo apt-get install libcurl4-openssl-dev
       
     - name: Install FFTW3
+      shell:  ${{inputs.shell}}
       run: sudo apt-get install libfftw3-dev
 
     - name: Install SoapySDR modules
+      shell:  ${{inputs.shell}}
       run: sudo apt-get install soapysdr-module-all
 
     - name: Install SoapySDR development files
+      shell:  ${{inputs.shell}}
       run: sudo apt-get install libsoapysdr-dev
 
     - name: Install libxml2
+      shell:  ${{inputs.shell}}
       run: sudo apt-get install libxml2-dev
 
     - name: Install portaudio
+      shell:  ${{inputs.shell}}
       run: sudo apt-get install portaudio19-dev
 
     - name: Install ALSA libraries
+      shell:  ${{inputs.shell}}
       run: sudo apt-get install libasound2-dev
     
     - name: Download linuxdeployqt AppImage
+      shell:  ${{inputs.shell}}
       run: wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
     
     - name: Install linuxdeployqt system-wide
+      shell:  ${{inputs.shell}}
       run: |
         sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
         sudo chmod a+x /usr/bin/linuxdeployqt
 
     - name: Download appimagetool
+      shell:  ${{inputs.shell}}
       run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
     
     - name: Install appimagetool system-wide
+      shell:  ${{inputs.shell}}
       run: |
         sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
         sudo chmod a+x /usr/bin/appimagetool
