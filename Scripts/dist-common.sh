@@ -242,23 +242,38 @@ function build()
         export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
         export LD_LIBRARY_PATH="$DEPLOYROOT/usr/lib:$LD_LIBRARY_PATH"
 
-        try "Cloning sigutils..."          git clone -b "$BRANCH" https://github.com/BatchDrake/sigutils
-        try "Cloning suscan..."            git clone -b "$BRANCH" https://github.com/BatchDrake/suscan
-        try "Cloning SuWidgets..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SuWidgets
-        try "Cloning SigDigger..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SigDigger
+	try "Cloning sigutils (${BRANCH})..."          git clone -b "$BRANCH" https://github.com/BatchDrake/sigutils
+	try "Cloning suscan (${BRANCH})..."            git clone -b "$BRANCH" https://github.com/BatchDrake/suscan
+	try "Cloning SuWidgets (${BRANCH})..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SuWidgets
+	try "Cloning SigDigger (${BRANCH})..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SigDigger
         try "Creating builddirs..."        mkdir -p sigutils/build suscan/build
         cd sigutils/build
         try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
         cd ../../
         try "Building sigutils..."         $MAKE -j $THREADS -C sigutils/build
         try "Deploying sigutils..."        $MAKE -j $THREADS -C sigutils/build install
-
+	if [ "$BUILDTYPE" == "Debug" ]; then
+	    try "Testing deplyment of sigutils..." pkg-config sigutils
+	    _headers=`pkg-config sigutils --cflags`
+	    _libs=`pkg-config sigutils --libs`
+	    notice "Sigutils headers:   ${_headers}"
+	    notice "Sigutils libraries: ${_libs}"
+	fi
+	
         cd suscan/build
         try "Running CMake (suscan)..."    cmake .. $CMAKE_SUSCAN_EXTRA_ARGS -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
         cd ../../
         try "Building suscan..."           $MAKE -j $THREADS -C suscan/build
         try "Deploying suscan..."          $MAKE -j $THREADS -C suscan/build install
 
+	if [ "$BUILDTYPE" == "Debug" ]; then
+	    try "Testing deplyment of suscan..." pkg-config suscan
+	    _headers=`pkg-config suscan --cflags`
+	    _libs=`pkg-config suscan --libs`
+	    notice "Suscan headers:   ${_headers}"
+	    notice "Suscan libraries: ${_libs}"
+	fi
+	
         cd SuWidgets
         try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += $QMAKE_BUILDTYPE" PREFIX="$DEPLOYROOT/usr"
         try "Building SuWidgets..."        $MAKE -j $THREADS
