@@ -10,7 +10,6 @@ runs:
   using: 'composite'
   steps:
     - name: Install Qt
-      shell:  ${{inputs.shell}}
       uses: jurplel/install-qt-action@v2
 
     - name: Install sndfile
