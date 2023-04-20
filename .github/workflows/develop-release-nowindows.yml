@@ -19,52 +19,8 @@ jobs:
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
-
-    - name: Install sndfile
-      run: sudo apt-get install libsndfile1-dev
-
-    # libvolk2-dev is not available in Ubuntu 18.04
-    - name: Install Volk
-      run: sudo apt-get install libvolk1-dev
-
-    - name: Install cURL
-      run: sudo apt-get install libcurl4-openssl-dev
-      
-    - name: Install FFTW3
-      run: sudo apt-get install libfftw3-dev
-
-    - name: Install SoapySDR modules
-      run: sudo apt-get install soapysdr-module-all
-
-    - name: Install SoapySDR development files
-      run: sudo apt-get install libsoapysdr-dev
-
-    - name: Install libxml2
-      run: sudo apt-get install libxml2-dev
-
-    - name: Install portaudio
-      run: sudo apt-get install portaudio19-dev
-
-    - name: Install ALSA libraries
-      run: sudo apt-get install libasound2-dev
-    
-    - name: Download linuxdeployqt AppImage
-      run: wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-    
-    - name: Install linuxdeployqt system-wide
-      run: |
-        sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
-        sudo chmod a+x /usr/bin/linuxdeployqt
-
-    - name: Download appimagetool
-      run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-    
-    - name: Install appimagetool system-wide
-      run: |
-        sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
-        sudo chmod a+x /usr/bin/appimagetool
+    - name: Install dependencies
+      uses: "./.github/actions/linuxdeps"
     
     - name: Build & Distribute (SigDigger)
       run: |
