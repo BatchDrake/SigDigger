@@ -788,6 +788,9 @@ UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 
   for (auto p : m_components)
     p->setTimeStamp(timestamp);
+
+  // TODO: These things should be a component at some point
+  this->ui->spectrum->setTimeStamp(timestamp);
 }
 
 void

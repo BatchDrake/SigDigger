@@ -33,6 +33,9 @@
 #define MS_VAR_FFT_SIZE  "%FFT_SIZE%"
 #define MS_VAR_RBW       "%RBW%"
 #define MS_VAR_SAMP_RATE "%SAMP_RATE%"
+#define MS_VAR_DATE      "%DATE%"
+#define MS_VAR_TIME      "%TIME%"
+#define MS_VAR_DATETIME  "%DATETIME%"
 
 class QTimeSlider;
 
@@ -77,6 +80,9 @@ namespace SigDigger {
     bool         infoTextHasFftSize  = false;
     bool         infoTextHasRBW      = false;
     bool         infoTextHasSampRate = false;
+    bool         infoTextHasDateTime = false;
+
+    struct timeval lastTimeStamp;
 
     // UI State
     CaptureMode mode = UNAVAILABLE;
@@ -140,6 +146,7 @@ namespace SigDigger {
 
 
     // Setters
+    void setTimeStamp(struct timeval const &);
     void setThrottling(bool);
     void setFrequencyLimits(qint64 min, qint64 max);
     void setCaptureMode(CaptureMode mode);

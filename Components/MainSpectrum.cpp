@@ -21,7 +21,7 @@
 #include "ui_MainSpectrum.h"
 #include <Suscan/Library.h>
 #include <QTimeSlider.h>
-
+#include <QDateTime>
 #include "Waterfall.h"
 #include "GLWaterfall.h"
 #include <WFHelpers.h>
@@ -83,6 +83,8 @@ MainSpectrum::MainSpectrum(QWidget *parent) :
   this->setFreqs(0, 0);
   this->lastFreqUpdate.start();
   this->bookmarkSource = new SuscanBookmarkSource();
+
+  gettimeofday(&this->lastTimeStamp, nullptr);
 }
 
 MainSpectrum::~MainSpectrum()
@@ -272,6 +274,15 @@ MainSpectrum::updateLimits(void)
 }
 
 void
+MainSpectrum::setTimeStamp(const struct timeval &tv)
+{
+  this->lastTimeStamp = tv;
+
+  if (this->infoTextHasDateTime)
+    refreshInfoText();
+}
+
+void
 MainSpectrum::refreshInfoText()
 {
   QString newText = this->infoTextTemplate;
@@ -298,6 +309,21 @@ MainSpectrum::refreshInfoText()
         ? QString::number(this->cachedRate)
         : "N/A";
     newText = newText.replace(MS_VAR_SAMP_RATE, sampRateStr);
+  }
+
+  if (infoTextHasDateTime) {
+    QDateTime dateTime;
+    QString strDate, strTime, strDateTime;
+    dateTime.setSecsSinceEpoch(this->lastTimeStamp.tv_sec);
+    dateTime.setTimeSpec(Qt::OffsetFromUTC);
+
+    strDate = dateTime.toString("yyyy-MM-dd");
+    strTime = dateTime.toString("hh:mm:ss");
+    strDateTime = strDate + "T" + strTime + "Z";
+
+    newText = newText.replace(MS_VAR_DATE,     strDate);
+    newText = newText.replace(MS_VAR_TIME,     strTime);
+    newText = newText.replace(MS_VAR_DATETIME, strDateTime);
   }
 
   if (newText != infoText) {
@@ -593,6 +619,11 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
   this->infoTextHasFftSize  = infoTextTemplate.indexOf(MS_VAR_FFT_SIZE) != -1;
   this->infoTextHasRBW      = infoTextTemplate.indexOf(MS_VAR_RBW) != -1;
   this->infoTextHasSampRate = infoTextTemplate.indexOf(MS_VAR_SAMP_RATE) != -1;
+
+  this->infoTextHasDateTime =
+         infoTextTemplate.indexOf(MS_VAR_DATE) != -1
+      || infoTextTemplate.indexOf(MS_VAR_TIME) != -1
+      || infoTextTemplate.indexOf(MS_VAR_DATETIME) != -1;
 
   refreshInfoText();
 }
