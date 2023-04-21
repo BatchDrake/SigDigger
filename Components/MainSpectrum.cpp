@@ -285,7 +285,10 @@ MainSpectrum::refreshInfoText()
 
   if (infoTextHasRBW) {
     QString rbwStr = this->cachedFftSize > 0 && this->cachedRate > 0
-        ? SuWidgetsHelpers::formatQuantity(SCAST(qreal, this->cachedRate) / this->cachedFftSize, "Hz")
+        ? SuWidgetsHelpers::formatQuantity(
+            SCAST(qreal, this->cachedRate) / this->cachedFftSize,
+            3,
+            "Hz")
         : "N/A";
     newText = newText.replace(MS_VAR_RBW, rbwStr);
   }
