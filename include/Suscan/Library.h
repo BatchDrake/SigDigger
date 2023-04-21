@@ -27,6 +27,7 @@
 #include <Suscan/Logger.h>
 #include <Suscan/Config.h>
 #include <Suscan/Serializable.h>
+#include <SuWidgetsHelpers.h>
 
 #include <analyzer/source.h>
 #include <analyzer/estimator.h>
@@ -84,14 +85,14 @@ namespace Suscan {
     bool userLocation = false;
 
     inline QString
-    getLocationName(void) const
+    getLocationName() const
     {
       return QString::fromStdString(
             this->name + ", " + this->country);
     }
 
     inline xyz_t
-    getQth(void) const
+    getQth() const
     {
       xyz_t qth;
 
@@ -100,6 +101,48 @@ namespace Suscan {
       qth.height = this->site.height;
 
       return qth;
+    }
+
+    inline QString
+    getGridLocator() const
+    {
+      QString locator;
+
+      qreal lat = (this->site.lat + 90) / 10;
+      qreal lon = (this->site.lon + 180) / 20;
+
+      char laField,  loField;
+      char laSquare, loSquare;
+      char laSubsq,  loSubsq;
+
+      lat = qBound(0., lat, 18.);
+      lon = qBound(0., lon, 18.);
+
+      laField = SCAST(char, floor(lat));
+      loField = SCAST(char, floor(lon));
+
+      lat -= laField;
+      lon -= loField;
+
+      laSquare = SCAST(char, floor(lat * 10));
+      loSquare = SCAST(char, floor(lon * 10));
+
+      lat -= laSquare * 1e-1;
+      lon -= loSquare * 1e-1;
+
+      laSubsq  = SCAST(char, floor(lat * 240));
+      loSubsq  = SCAST(char, floor(lon * 240));
+
+      locator += QChar('A' + loField);
+      locator += QChar('A' + laField);
+
+      locator += QChar('0' + loSquare);
+      locator += QChar('0' + laSquare);
+
+      locator += QChar('a' + loSubsq);
+      locator += QChar('a' + laSubsq);
+
+      return locator;
     }
 
     // Overriden methods

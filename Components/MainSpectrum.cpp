@@ -326,6 +326,13 @@ MainSpectrum::refreshInfoText()
     newText = newText.replace(MS_VAR_DATETIME, strDateTime);
   }
 
+  if (infoTextHasQTH) {
+    newText = newText.replace(MS_VAR_CITY,    cachedCity);
+    newText = newText.replace(MS_VAR_LAT,     cachedLat);
+    newText = newText.replace(MS_VAR_LON,     cachedLon);
+    newText = newText.replace(MS_VAR_LOCATOR, cachedLocator);
+  }
+
   if (newText != infoText) {
     infoText = newText;
     WATERFALL_CALL(setInfoText(infoText));
@@ -577,6 +584,8 @@ MainSpectrum::setColorConfig(ColorConfig const &cfg)
 void
 MainSpectrum::setGuiConfig(GuiConfig const &cfg)
 {
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+
   if (this->noLimits != cfg.noLimits) {
     this->noLimits = cfg.noLimits;
     this->updateLimits();
@@ -624,6 +633,29 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
          infoTextTemplate.indexOf(MS_VAR_DATE) != -1
       || infoTextTemplate.indexOf(MS_VAR_TIME) != -1
       || infoTextTemplate.indexOf(MS_VAR_DATETIME) != -1;
+
+  this->infoTextHasQTH =
+         infoTextTemplate.indexOf(MS_VAR_CITY) != -1
+      || infoTextTemplate.indexOf(MS_VAR_LAT) != -1
+      || infoTextTemplate.indexOf(MS_VAR_LON) != -1
+      || infoTextTemplate.indexOf(MS_VAR_LOCATOR) != -1;
+
+  if (sus->haveQth()) {
+    auto loc = sus->getQth();
+    xyz_t qth = loc.getQth();
+    qreal lat = SCAST(qreal, SU_RAD2DEG(qth.lat));
+    qreal lon = SCAST(qreal, SU_RAD2DEG(qth.lon));
+
+    this->cachedCity    = loc.getLocationName();
+    this->cachedLat     = SuWidgetsHelpers::formatQuantity(lat, 0, "deg", true);
+    this->cachedLon     = SuWidgetsHelpers::formatQuantity(lon, 0, "deg", true);
+    this->cachedLocator = loc.getGridLocator();
+  } else {
+    this->cachedCity    = "(no city defined)";
+    this->cachedLat     = "(no latitude defined)";
+    this->cachedLon     = "(no longitude defined)";
+    this->cachedLocator = "(no locator defined)";
+  }
 
   refreshInfoText();
 }

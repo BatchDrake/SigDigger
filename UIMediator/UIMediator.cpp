@@ -1135,6 +1135,9 @@ UIMediator::onTriggerSetup(bool)
       Suscan::Location loc = this->ui->configDialog->getLocation();
       sus->setQth(loc);
 
+      // This triggers the update of the infotext
+      this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
+
       // Set QTH of all UI components
       for (auto p : m_components)
         p->setQth(loc);

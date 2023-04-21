@@ -36,6 +36,11 @@
 #define MS_VAR_DATE      "%DATE%"
 #define MS_VAR_TIME      "%TIME%"
 #define MS_VAR_DATETIME  "%DATETIME%"
+#define MS_VAR_CITY      "%CITY%"
+#define MS_VAR_LAT       "%LAT%"
+#define MS_VAR_LON       "%LON%"
+#define MS_VAR_LOCATOR   "%LOCATOR%"
+
 
 class QTimeSlider;
 
@@ -81,6 +86,12 @@ namespace SigDigger {
     bool         infoTextHasRBW      = false;
     bool         infoTextHasSampRate = false;
     bool         infoTextHasDateTime = false;
+    bool         infoTextHasQTH      = false;
+
+    QString      cachedCity = "(no city defined)";
+    QString      cachedLat  = "(no latitude defined)";
+    QString      cachedLon  = "(no longitude defined)";
+    QString      cachedLocator = "(no locator defined)";
 
     struct timeval lastTimeStamp;
 
