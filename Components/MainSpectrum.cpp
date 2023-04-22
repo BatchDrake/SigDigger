@@ -315,7 +315,7 @@ MainSpectrum::refreshInfoText()
     QDateTime dateTime;
     QString strDate, strTime, strDateTime;
     dateTime.setSecsSinceEpoch(this->lastTimeStamp.tv_sec);
-    dateTime.setTimeSpec(Qt::OffsetFromUTC);
+    dateTime = dateTime.toUTC();
 
     strDate = dateTime.toString("yyyy-MM-dd");
     strTime = dateTime.toString("hh:mm:ss");
