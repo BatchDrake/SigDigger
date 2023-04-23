@@ -210,6 +210,7 @@ INSTALL_HEADERS += \
     include/AppConfig.h \
     include/Application.h \
     include/AppUI.h \
+    include/AudioConfig.h \
     include/AudioFileSaver.h \
     include/AudioPlayback.h \
     include/Averager.h \
