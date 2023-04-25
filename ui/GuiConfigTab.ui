@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>556</width>
-    <height>436</height>
+    <height>394</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -126,8 +126,8 @@
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="ColorChooserButton" name="infoTextColor">
-        <property name="color">
+       <widget class="ColorChooserButton" name="infoTextColor" native="true">
+        <property name="color" stdset="0">
          <color>
           <red>85</red>
           <green>255</green>

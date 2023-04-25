@@ -56,7 +56,7 @@ namespace SigDigger {
     bool rangeLock = true;
     bool timeStamps = false;
     bool bookmarks = true;
-
+    bool utcTimeStamps = true;
     std::string palette = "Magma (Feely)";
 
     std::string unitName;
@@ -160,12 +160,12 @@ namespace SigDigger {
     void setRefreshRate(unsigned int);
     void setTimeSpan(unsigned int);
     void setTimeStamps(bool);
+    void setTimeStampsUTC(bool);
     void setBookmarks(bool);
 
     bool setUnitName(QString);
     void setZeroPoint(float);
     void setGain(float);
-
     void setFilled(bool);
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
@@ -221,6 +221,7 @@ namespace SigDigger {
     void onWindowFunctionChanged();
     void onTimeStampsChanged();
     void onBookmarksChanged();
+    void onUTCChanged();
 
     // Unit handling slots
     void onUnitChanged();

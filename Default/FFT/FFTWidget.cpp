@@ -52,6 +52,7 @@ FFTWidgetConfig::deserialize(Suscan::Object const &conf)
   LOAD(rangeLock);
   LOAD(timeSpan);
   LOAD(timeStamps);
+  LOAD(utcTimeStamps);
   LOAD(bookmarks);
   LOAD(unitName);
   LOAD(zeroPoint);
@@ -80,6 +81,7 @@ FFTWidgetConfig::serialize(void)
   STORE(rangeLock);
   STORE(timeSpan);
   STORE(timeStamps);
+  STORE(utcTimeStamps);
   STORE(bookmarks);
   STORE(unitName);
   STORE(zeroPoint);
@@ -123,6 +125,7 @@ FFTWidget::applyConfig(void)
   this->setRangeLock(savedConfig.rangeLock);
   this->setTimeSpan(savedConfig.timeSpan);
   this->setTimeStamps(savedConfig.timeStamps);
+  this->setTimeStampsUTC(savedConfig.utcTimeStamps);
   this->setBookmarks(savedConfig.bookmarks);
   this->setUnitName(QString::fromStdString(savedConfig.unitName));
   this->setZeroPoint(savedConfig.zeroPoint);
@@ -304,6 +307,12 @@ FFTWidget::connectAll(void)
         SIGNAL(zoomChanged(float)),
         this,
         SLOT(onZoomChanged(float)));
+
+  connect(
+        this->ui->timeZoneCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onUTCChanged()));
 }
 
 FFTWidget::FFTWidget(FFTWidgetFactory *factory, UIMediator *mediator, QWidget *parent) :
@@ -822,6 +831,13 @@ FFTWidget::setTimeStamps(bool value)
 }
 
 void
+FFTWidget::setTimeStampsUTC(bool utc)
+{
+  this->ui->timeZoneCombo->setCurrentIndex(utc ? 1 : 0);
+  this->panelConfig->utcTimeStamps = utc;
+}
+
+void
 FFTWidget::setBookmarks(bool value)
 {
   this->ui->bookmarksButton->setChecked(value);
@@ -1227,3 +1243,9 @@ FFTWidget::onZoomChanged(float level)
   this->ui->freqZoomSlider->blockSignals(oldState);
 }
 
+void
+FFTWidget::onUTCChanged()
+{
+  this->setTimeStampsUTC(this->ui->timeZoneCombo->currentIndex() != 0);
+  m_spectrum->setTimeStampsUTC(this->panelConfig->utcTimeStamps);
+}

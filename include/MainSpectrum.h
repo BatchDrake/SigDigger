@@ -199,6 +199,7 @@ namespace SigDigger {
     void setSidePanelWidth(int);
     void setSidePanelRatio(qreal);
     void setLocked(bool);
+    void setTimeStampsUTC(bool);
 
     // Getters
     bool getThrottling() const;

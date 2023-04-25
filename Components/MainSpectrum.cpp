@@ -457,6 +457,12 @@ MainSpectrum::setLocked(bool locked)
 }
 
 void
+MainSpectrum::setTimeStampsUTC(bool utc)
+{
+  WATERFALL_CALL(setTimeStampsUTC(utc));
+}
+
+void
 MainSpectrum::setGracePeriod(qint64 period)
 {
   this->freqGracePeriod = period;
