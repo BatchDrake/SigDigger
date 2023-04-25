@@ -227,6 +227,7 @@ function build_plugins()
 {
   PLUGINDIR="$BUILDROOT/plugins"
   PLUGINTARGET="$DEPLOYROOT/usr/share/suscan/plugins"
+  try "Creating plugin source dir..." mkdir -p "$PLUGINDIR"
   try "Creating plugin dir..." mkdir -p "$PLUGINTARGET"
 
   for plugin in $PLUGINS; do

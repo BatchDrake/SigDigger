@@ -54,7 +54,7 @@ try "Creating startup script for suscli" make_startup_script suscli
 
 try "Moving files out of /usr..." mv "$DEPLOYROOT"/usr/* "$DEPLOYROOT"
 try "Remove empty /usr..." rmdir "$DEPLOYROOT"/usr
-try "Creating symlinks..." ln -s "$DEPLOYROOT" "$DEPLOYROOT/usr"
+try "Creating symlink to /usr..." ln -s . "$DEPLOYROOT/usr"
 try "Setting permissions to wrapper scripts..." chmod a+x "$DEPLOYROOT"/SigDigger "$DEPLOYROOT"/suscli
 echo
 echo "Done. SigDigger compiled succesfully in $DEPLOYROOT"
