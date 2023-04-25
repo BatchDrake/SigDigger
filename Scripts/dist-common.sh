@@ -227,6 +227,7 @@ function build_plugins()
 {
   PLUGINDIR="$BUILDROOT/plugins"
   PLUGINTARGET="$DEPLOYROOT/usr/share/suscan/plugins"
+  try "Creating plugin source dir..." mkdir -p "$PLUGINDIR"
   try "Creating plugin dir..." mkdir -p "$PLUGINTARGET"
 
   for plugin in $PLUGINS; do
@@ -266,7 +267,8 @@ function build()
 
     if [ "$SIGDIGGER_SKIPBUILD" == "" ]; then
         locate_sdk
-    
+        export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
+        export LD_LIBRARY_PATH="$DEPLOYROOT/usr/lib:$LD_LIBRARY_PATH"
         try "Cleaning deploy directory..." rm -Rfv "$DEPLOYROOT"
         try "Cleaning buildroot..."        rm -Rfv "$BUILDROOT"
         try "Recreating directories..."    mkdir -p "$DEPLOYROOT" "$BUILDROOT"
