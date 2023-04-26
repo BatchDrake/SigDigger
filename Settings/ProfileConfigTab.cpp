@@ -300,7 +300,7 @@ ProfileConfigTab::refreshTrueSampleRate()
   float step = SU_POW(10., SU_FLOOR(SU_LOG(this->profile.getSampleRate())));
   QString rateText;
   qreal trueRate = static_cast<qreal>(this->getSelectedSampleRate())
-      / this->ui->decimationSpin->value();
+      / this->getDecimation();
   if (step >= 10.f)
     step /= 10.f;
 
@@ -341,8 +341,7 @@ ProfileConfigTab::refreshProfileUi()
 
   this->refreshSampRates();
 
-  this->ui->decimationSpin->setValue(
-        static_cast<int>(this->profile.getDecimation()));
+  this->setDecimation(this->profile.getDecimation());
 
   switch (this->profile.getType()) {
     case SUSCAN_SOURCE_TYPE_SDR:
@@ -593,8 +592,8 @@ ProfileConfigTab::connectAll()
         SLOT(onSpinsChanged()));
 
   connect(
-        this->ui->decimationSpin,
-        SIGNAL(valueChanged(int)),
+        this->ui->decimCombo,
+        SIGNAL(activated(int)),
         this,
         SLOT(onSpinsChanged()));
 
@@ -802,6 +801,26 @@ ProfileConfigTab::getProfile() const
   return this->profile;
 }
 
+unsigned
+ProfileConfigTab::getDecimation() const
+{
+  if (this->ui->decimCombo->currentIndex() < 0)
+    return 0;
+
+  return 1u << this->ui->decimCombo->currentIndex();
+}
+
+void
+ProfileConfigTab::setDecimation(unsigned decim)
+{
+  int i = 0;
+
+  while ((1u << i) < decim && i != this->ui->decimCombo->count() - 1)
+    ++i;
+
+  this->ui->decimCombo->setCurrentIndex(i);
+}
+
 void
 ProfileConfigTab::updateRemoteParams()
 {
@@ -942,7 +961,7 @@ ProfileConfigTab::onDeviceChanged(int index)
     this->refreshUi();
 
     unsigned sampRate = this->getSelectedSampleRate();
-    unsigned decimation = static_cast<unsigned>(this->ui->decimationSpin->value());
+    unsigned decimation = this->getDecimation();
     qreal maxBandwidth = static_cast<qreal>(sampRate)
         / static_cast<qreal>(decimation);
 
@@ -1126,7 +1145,7 @@ ProfileConfigTab::onSpinsChanged()
     this->refreshFrequencyLimits();
     freq = this->ui->frequencySpinBox->value();
     sampRate = this->getSelectedSampleRate();
-    decimation = static_cast<unsigned>(this->ui->decimationSpin->value());
+    decimation = this->getDecimation();
     ppm = static_cast<SUFLOAT>(this->ui->ppmSpinBox->value());
     maxBandwidth = static_cast<SUFLOAT>(sampRate)
         / static_cast<SUFLOAT>(decimation) ;

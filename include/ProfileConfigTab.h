@@ -82,6 +82,9 @@ namespace SigDigger {
     void configChanged(bool restart = false);
     bool shouldDisregardTweaks();
 
+    unsigned getDecimation() const;
+    void     setDecimation(unsigned);
+
     int  findRemoteProfileIndex();
     unsigned int getSelectedSampleRate() const;
     void setSelectedSampleRate(unsigned int);
