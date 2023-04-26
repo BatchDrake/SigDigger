@@ -1024,7 +1024,7 @@ FFTWidget::onAveragingChanged(int)
 
   this->setAveraging(avg);
 
-  averager->setAlpha(avg);
+  averager->setAlpha(SU_POW(avg, 4));
 }
 
 void
