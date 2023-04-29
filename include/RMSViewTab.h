@@ -25,6 +25,7 @@
 #include <sigutils/types.h>
 #include <vector>
 #include <ColorConfig.h>
+#include <Waveform.h>
 
 namespace Ui {
   class RMSViewTab;
@@ -47,6 +48,8 @@ namespace SigDigger {
       qreal m_time = 0;
 
       bool m_running = true;
+      bool m_haveCurrSamplePoint = false;
+      QMap<qreal, WavePoint>::iterator m_currSampleIterator;
 
       bool  m_haveMarker = false;
       qreal m_markerLinear = 0;
@@ -55,6 +58,8 @@ namespace SigDigger {
       bool  m_haveDeltaMarker = false;
       qreal m_markerDeltaLinear = 0;
       qreal m_markerDeltaDb = 0;
+
+      int   m_extraIntegration = 0;
 
       int     accum_ctr = 0;
       SUFLOAT energy_accum = 0;
@@ -73,6 +78,8 @@ namespace SigDigger {
       bool userClear(QString const &);
       qreal getCurrentTimeDelta() const;
       bool  intTimeMode() const;
+
+      qreal getEffectiveRate() const;
 
     public:
       void setVerticalLimitsLinear(qreal min, qreal max);
@@ -125,6 +132,7 @@ namespace SigDigger {
       void onPointClicked(qreal, qreal, Qt::KeyboardModifiers);
       void onToolTip(int, int, qreal, qreal);
       void onTimeScaleChanged();
+      void onAverageTimeChanged();
   };
 
 }

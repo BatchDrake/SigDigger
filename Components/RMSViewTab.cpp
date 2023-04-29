@@ -48,6 +48,10 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
   this->ui->waveform->setHorizontalUnits("unix");
   this->onToggleModes();
 
+  this->ui->averageTimeLabel->setVisible(false);
+  this->ui->averageTimeSpinBox->setVisible(false);
+
+
   this->timer.start(TIMER_INTERVAL_MS);
 
   if (socket != nullptr)
@@ -66,6 +70,10 @@ RMSViewTab::setIntegrationTimeMode(qreal min, qreal max)
   this->ui->timeSpinBox->setTimeMin(min);
   this->ui->timeSpinBox->setTimeMax(max);
 
+  this->ui->averageTimeLabel->setVisible(true);
+  this->ui->averageTimeSpinBox->setVisible(true);
+
+  ui->intSpin->setValue(1);
   ui->stackedWidget->setCurrentIndex(1);
 }
 
@@ -73,9 +81,9 @@ qreal
 RMSViewTab::getCurrentTimeDelta() const
 {
   if (intTimeMode())
-    return ui->timeSpinBox->timeValue();
+    return ui->intSpin->value() * ui->timeSpinBox->timeValue();
   else
-    return 1. / rate;
+    return ui->intSpin->value() / rate;
 }
 
 bool
@@ -106,13 +114,36 @@ void
 RMSViewTab::setSampleRate(qreal rate)
 {
   this->rate = rate;
-  this->ui->waveform->setSampleRate(rate);
+  this->ui->waveform->setSampleRate(rate / this->ui->intSpin->value());
+
+  bool blocked = ui->averageTimeSpinBox->blockSignals(true);
+  this->ui->averageTimeSpinBox->setTimeMin(1. / rate);
+  this->ui->averageTimeSpinBox->setTimeMax(3600);
+  this->ui->averageTimeSpinBox->setSampleRate(rate);
+  this->ui->averageTimeSpinBox->setBestUnits(false);
+  ui->averageTimeSpinBox->blockSignals(blocked);
 }
 
 void
 RMSViewTab::feed(qreal timeStamp, qreal mag)
 {
   bool firstTime = this->data.size() == 0;
+
+  if (firstTime) {
+    bool shouldHavePoint = ui->intSpin->value() > 1;
+    if (m_haveCurrSamplePoint != shouldHavePoint) {
+      m_haveCurrSamplePoint = shouldHavePoint;
+
+      if (shouldHavePoint) {
+        m_currSampleIterator = ui->waveform->addPoint(
+              0,
+              1,
+              ui->waveform->getForegroundColor());
+      } else {
+        ui->waveform->removePoint(m_currSampleIterator);
+      }
+    }
+  }
 
   this->integrateMeasure(timeStamp, SCAST(SUFLOAT, mag));
 
@@ -242,6 +273,20 @@ RMSViewTab::integrateMeasure(qreal timestamp, SUFLOAT mag)
     if (this->ui->autoFitButton->isChecked())
       this->fitVertical();
     this->ui->waveform->invalidate();
+  } else {
+    if (m_haveCurrSamplePoint) {
+      if (this->data.size() == 0) {
+        mag = this->energy_accum / this->accum_ctr;
+      } else {
+        SUFLOAT prev = SU_C_REAL(this->data[this->data.size() - 1]);
+        mag = (prev * (intLen - this->accum_ctr) + this->energy_accum) / intLen;
+      }
+
+      SUCOMPLEX curr = mag + SU_I * SU_ASFLOAT(SU_POWER_DB_RAW(mag));
+      m_currSampleIterator->point = curr;
+      m_currSampleIterator->t = this->data.size() * getCurrentTimeDelta();
+      m_currSampleIterator = ui->waveform->refreshPoint(m_currSampleIterator);
+    }
   }
 }
 
@@ -270,8 +315,7 @@ RMSViewTab::parseLine(void)
       if (sscanf(fields[1].c_str(), "%lf", &rate) < 1)
         return false;
 
-      this->rate = rate;
-      this->ui->waveform->setSampleRate(rate);
+      this->setSampleRate(rate);
     } else {
       return false;
     }
@@ -400,7 +444,7 @@ RMSViewTab::fitVertical(void)
   if (this->ui->waveform->getDataLength() > 0) {
     SUCOMPLEX dataMin = this->ui->waveform->getDataMin();
     SUCOMPLEX dataMax = this->ui->waveform->getDataMax();
-    qreal min, max, range;
+    qreal min, max;
 
     if (this->ui->dbButton->isChecked()) {
       min = SU_C_IMAG(dataMin);
@@ -480,6 +524,12 @@ RMSViewTab::connectAll(void)
         SIGNAL(changed(qreal, qreal)),
         this,
         SLOT(onTimeChanged(qreal, qreal)));
+
+  connect(
+        this->ui->averageTimeSpinBox,
+        SIGNAL(changed(qreal, qreal)),
+        this,
+        SLOT(onAverageTimeChanged()));
 
   connect(
         this->ui->saveButton,
@@ -696,6 +746,32 @@ RMSViewTab::onTimeChanged(qreal time, qreal)
 
 done:
   ui->timeSpinBox->blockSignals(blocked);
+}
+
+void
+RMSViewTab::onAverageTimeChanged()
+{
+  // Changing the averaging time means that we are going to keep the current
+  // integration time, but we are going to change the averaging period. This
+  // also implies that the sample rate will change, which means that we
+  // have to ask the user about this change.
+  bool blocked = ui->averageTimeSpinBox->blockSignals(true);
+  int points;
+
+  if (!userClear(
+        "Changing the integration time will clear the data of the current plot. "
+        "Do you want to save the current plot first?"))
+    goto done;
+
+  points = SCAST(int, ui->averageTimeSpinBox->timeValue() * this->rate);
+  if (points < 1)
+    points = 1;
+  ui->averageTimeSpinBox->setTimeValue(points / this->rate);
+  ui->intSpin->setValue(points);
+  onValueChanged(0);
+
+done:
+  ui->averageTimeSpinBox->blockSignals(blocked);
 }
 
 void
