@@ -25,6 +25,7 @@
 #include <QMessageBox>
 #include <FileDataSaver.h>
 #include <fcntl.h>
+#include <UIMediator.h>
 
 using namespace SigDigger;
 
@@ -1010,7 +1011,7 @@ SourceWidget::openCaptureFile(void)
         "sigdigger_%s_%d_%.0lf_float32_iq.raw",
         datetime,
         this->profile->getDecimatedSampleRate(),
-        this->profile->getFreq());
+        m_mediator->getCurrentCenterFreq());
 
   std::string fullPath =
       this->saverUI->getRecordSavePath() + "/" + baseName;

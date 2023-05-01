@@ -172,7 +172,8 @@ UIMediator::onFrequencyChanged(qint64)
 {
   qint64 freq = this->ui->spectrum->getCenterFreq();
 
-  this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
+  if (this->isLive())
+    this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
 
   emit frequencyChanged(
         this->ui->spectrum->getCenterFreq(),

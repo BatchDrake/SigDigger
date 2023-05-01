@@ -148,6 +148,7 @@ namespace SigDigger {
 
     // Shortcut methods
     SUFREQ        getCurrentCenterFreq() const;
+    bool          isLive() const;
 
     // Request the opening an inspector tab
     bool          openInspectorTab(

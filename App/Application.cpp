@@ -599,8 +599,10 @@ Application::onProfileChanged(bool needsRestart)
 void
 Application::onFrequencyChanged(qint64 freq, qint64 lnb)
 {
-  this->mediator->getProfile()->setFreq(freq);
-  this->mediator->getProfile()->setLnbFreq(lnb);
+  if (this->mediator->isLive()) {
+    this->mediator->getProfile()->setFreq(freq);
+    this->mediator->getProfile()->setLnbFreq(lnb);
+  }
 
   if (this->mediator->getState() == UIMediator::RUNNING)
     this->analyzer->setFrequency(freq, lnb);

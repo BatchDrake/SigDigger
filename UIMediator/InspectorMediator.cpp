@@ -133,6 +133,12 @@ UIMediator::getCurrentCenterFreq() const
   return this->ui->spectrum->getCenterFreq();
 }
 
+bool
+UIMediator::isLive() const
+{
+  return this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR;
+}
+
 void
 UIMediator::onInspectorMessage(Suscan::InspectorMessage const &msg)
 {
