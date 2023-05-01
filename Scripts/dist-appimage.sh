@@ -158,7 +158,7 @@ if [ -f "$DEPLOYROOT"/usr/bin/SigDigger.app ]; then
 fi
 
 if [ "$BRANCH" == "develop" ]; then
-    SUFFIX=-`date -u '+%Y%m%d-%Y%M%SZ'`
+    SUFFIX=-`date -u '+%Y%m%d-%H%M%SZ'`
 fi
 
 if [ "$SIGDIGGER_EMBED_SOAPYSDR" != "" ]; then
