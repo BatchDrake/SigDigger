@@ -21,7 +21,7 @@
 
 #include <string>
 #include <stdint.h>
-#include <util/util.h>
+#include <sigutils/util/util.h>
 #include <sigutils/version.h>
 
 #include <QSet>
