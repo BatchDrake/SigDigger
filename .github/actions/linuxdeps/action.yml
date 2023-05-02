@@ -40,9 +40,9 @@ runs:
       shell:  ${{inputs.shell}}
       run: sudo apt-get install libxml2-dev
 
-    - name: Install cppzmq-dev
+    - name: Install ZeroMQ development files
       shell:  ${{inputs.shell}}
-      run: sudo apt-get install cppzmq-dev
+      run: sudo apt-get install libzmq3-dev
 
     - name: Install portaudio
       shell:  ${{inputs.shell}}
