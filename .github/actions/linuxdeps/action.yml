@@ -40,6 +40,10 @@ runs:
       shell:  ${{inputs.shell}}
       run: sudo apt-get install libxml2-dev
 
+    - name: Install cppzmq-dev
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install cppzmq-dev
+
     - name: Install portaudio
       shell:  ${{inputs.shell}}
       run: sudo apt-get install portaudio19-dev
