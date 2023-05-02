@@ -44,6 +44,10 @@ runs:
       shell:  ${{inputs.shell}}
       run: sudo apt-get install libzmq3-dev
 
+    - name: Install KFWidgets Addons
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libkf5widgetsaddons-dev
+
     - name: Install portaudio
       shell:  ${{inputs.shell}}
       run: sudo apt-get install portaudio19-dev
