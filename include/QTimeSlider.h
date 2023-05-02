@@ -21,7 +21,7 @@
 
 #include <QSlider>
 #include <QDateTime>
-#include <util/compat-time.h>
+#include <sigutils/util/compat-time.h>
 
 namespace SigDigger {
   class QTimeSlider : public QSlider

@@ -18,7 +18,7 @@
 //
 
 #include <GenericDataSaverUI.h>
-#include <util/compat-statvfs.h>
+#include <sigutils/util/compat-statvfs.h>
 #include <cmath>
 
 using namespace SigDigger;
