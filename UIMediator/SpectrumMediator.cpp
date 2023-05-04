@@ -19,6 +19,7 @@
 
 #include "UIMediator.h"
 #include "MainWindow.h"
+#include "GlobalProperty.h"
 #include "MainSpectrum.h"
 #include <InspectionWidgetFactory.h>
 #include <SuWidgetsHelpers.h>
@@ -171,9 +172,13 @@ void
 UIMediator::onFrequencyChanged(qint64)
 {
   qint64 freq = this->ui->spectrum->getCenterFreq();
+  qint64 lnb  = this->ui->spectrum->getLnbFreq();
 
   if (this->isLive())
     this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
+
+  m_propFrequency->setValue(freq);
+  m_propLNB->setValue(lnb);
 
   emit frequencyChanged(
         this->ui->spectrum->getCenterFreq(),

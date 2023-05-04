@@ -35,6 +35,10 @@
   "custom build on " __DATE__ " at " __TIME__ " (" __VERSION__ ")"
 #endif /* SUSCAN_BUILD_STRING */
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+#  define sliced(a, b) mid(a, b)
+#endif
+
 using namespace SigDigger;
 
 SigDiggerHelpers *SigDiggerHelpers::currInstance = nullptr;

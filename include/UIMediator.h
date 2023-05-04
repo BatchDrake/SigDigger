@@ -76,16 +76,18 @@ namespace SigDigger {
     struct timeval profileEnd;
     Suscan::Source::Device remoteDevice;
 
-    GlobalProperty *m_propSampRate = nullptr;
-    GlobalProperty *m_propFftSize  = nullptr;
-    GlobalProperty *m_propRBW      = nullptr;
-    GlobalProperty *m_propDate     = nullptr;
-    GlobalProperty *m_propTime     = nullptr;
-    GlobalProperty *m_propDateTime = nullptr;
-    GlobalProperty *m_propLat      = nullptr;
-    GlobalProperty *m_propLon      = nullptr;
-    GlobalProperty *m_propCity     = nullptr;
-    GlobalProperty *m_propLocator  = nullptr;
+    GlobalProperty *m_propSampRate  = nullptr;
+    GlobalProperty *m_propFftSize   = nullptr;
+    GlobalProperty *m_propRBW       = nullptr;
+    GlobalProperty *m_propDate      = nullptr;
+    GlobalProperty *m_propTime      = nullptr;
+    GlobalProperty *m_propDateTime  = nullptr;
+    GlobalProperty *m_propLat       = nullptr;
+    GlobalProperty *m_propLon       = nullptr;
+    GlobalProperty *m_propCity      = nullptr;
+    GlobalProperty *m_propLocator   = nullptr;
+    GlobalProperty *m_propFrequency = nullptr;
+    GlobalProperty *m_propLNB       = nullptr;
 
     // UI Data
     Averager averager;

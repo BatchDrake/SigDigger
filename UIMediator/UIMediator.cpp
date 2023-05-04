@@ -683,6 +683,8 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->connectPanoramicDialog();
   this->connectTimeSlider();
 
+  m_propFrequency = GlobalProperty::registerProperty("frequency", "Spectrum frequency", 0);
+  m_propLNB       = GlobalProperty::registerProperty("lnb", "LNB frequency", 0);
   m_propSampRate  = GlobalProperty::registerProperty("samp_rate", "Sample rate", "N/A");
   m_propFftSize   = GlobalProperty::registerProperty("fft_size", "Size of the FFT", 0);
   m_propRBW       = GlobalProperty::registerProperty("rbw", "Resolution bandwidth", "N/A");
@@ -693,6 +695,9 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   m_propLat       = GlobalProperty::registerProperty("lat", "Receiver latitude", 0.0);
   m_propLon       = GlobalProperty::registerProperty("lon", "Receiver longitude", 0.0);
   m_propLocator   = GlobalProperty::registerProperty("locator", "Grid locator", "");
+
+  m_propFrequency->setAdjustable(true);
+  m_propLNB->setAdjustable(true);
 }
 
 void
