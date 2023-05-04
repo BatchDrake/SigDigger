@@ -49,6 +49,7 @@
 #include "DeviceDialog.h"
 #include "AboutDialog.h"
 #include "QuickConnectDialog.h"
+#include "GlobalProperty.h"
 
 // Tool widget controls
 #include <ToolWidgetFactory.h>
@@ -681,6 +682,17 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   this->connectDeviceDialog();
   this->connectPanoramicDialog();
   this->connectTimeSlider();
+
+  m_propSampRate  = GlobalProperty::registerProperty("samp_rate", "Sample rate", "N/A");
+  m_propFftSize   = GlobalProperty::registerProperty("fft_size", "Size of the FFT", 0);
+  m_propRBW       = GlobalProperty::registerProperty("rbw", "Resolution bandwidth", "N/A");
+  m_propDate      = GlobalProperty::registerProperty("date", "Source date (UTC)", "N/A");
+  m_propTime      = GlobalProperty::registerProperty("time", "Source time (UTC)", "N/A");
+  m_propDateTime  = GlobalProperty::registerProperty("datetime", "Source date and time (UTC)", "N/A");
+  m_propCity      = GlobalProperty::registerProperty("city", "City", "None");
+  m_propLat       = GlobalProperty::registerProperty("lat", "Receiver latitude", 0.0);
+  m_propLon       = GlobalProperty::registerProperty("lon", "Receiver longitude", 0.0);
+  m_propLocator   = GlobalProperty::registerProperty("locator", "Grid locator", "");
 }
 
 void
@@ -694,6 +706,11 @@ UIMediator::setSampleRate(unsigned int rate)
 {
   if (this->rate != rate) {
     unsigned int bw = rate / 30;
+
+    m_propSampRate->setValue<QString>(
+          rate > 0
+          ? QString::number(rate)
+          : "N/A");
 
     this->ui->spectrum->setSampleRate(rate);
     this->setBandwidth(bw);
@@ -784,13 +801,24 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 void
 UIMediator::notifyTimeStamp(struct timeval const &timestamp)
 {
+  QDateTime dateTime;
+  dateTime.setSecsSinceEpoch(timestamp.tv_sec);
+  dateTime = dateTime.toUTC();
+  QString strDate, strTime;
+
+  strDate = dateTime.toString("yyyy-MM-dd");
+  strTime = dateTime.toString("hh:mm:ss");
+  m_propDate->setValue(strDate);
+  m_propTime->setValue(strTime);
+  m_propDateTime->setValue(strDate + "T" + strTime + "Z");
+
   this->setTimeStamp(timestamp);
 
   for (auto p : m_components)
     p->setTimeStamp(timestamp);
 
   // TODO: These things should be a component at some point
-  this->ui->spectrum->setTimeStamp(timestamp);
+  this->ui->spectrum->setTimeStamp(timestamp); 
 }
 
 void
@@ -1001,6 +1029,35 @@ UIMediator::saveUIConfig()
 }
 
 void
+UIMediator::refreshQthProperties()
+{
+  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
+  QString cachedCity, cachedLat, cachedLon, cachedLocator;
+
+  if (sus->haveQth()) {
+    auto loc = sus->getQth();
+    xyz_t qth = loc.getQth();
+    qreal lat = SCAST(qreal, SU_RAD2DEG(qth.lat));
+    qreal lon = SCAST(qreal, SU_RAD2DEG(qth.lon));
+
+    cachedCity    = loc.getLocationName();
+    cachedLat     = SuWidgetsHelpers::formatQuantity(lat, 0, "deg", true);
+    cachedLon     = SuWidgetsHelpers::formatQuantity(lon, 0, "deg", true);
+    cachedLocator = loc.getGridLocator();
+  } else {
+    cachedCity    = "(no city defined)";
+    cachedLat     = "(no latitude defined)";
+    cachedLon     = "(no longitude defined)";
+    cachedLocator = "(no locator defined)";
+  }
+
+  m_propCity->setValue(cachedCity);
+  m_propLat->setValue(cachedLat);
+  m_propLon->setValue(cachedLon);
+  m_propLocator->setValue(cachedLocator);
+}
+
+void
 UIMediator::applyConfig()
 {
   // Apply window config
@@ -1045,6 +1102,7 @@ UIMediator::applyConfig()
     for (auto p : m_components)
       p->setQth(sus->getQth());
 
+  this->refreshQthProperties();
   this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);
 
   this->setAnalyzerParams(this->appConfig->analyzerParams);
@@ -1134,6 +1192,8 @@ UIMediator::onTriggerSetup(bool)
     if (this->ui->configDialog->locationChanged()) {
       Suscan::Location loc = this->ui->configDialog->getLocation();
       sus->setQth(loc);
+
+      this->refreshQthProperties();
 
       // This triggers the update of the infotext
       this->ui->spectrum->setGuiConfig(this->appConfig->guiConfig);

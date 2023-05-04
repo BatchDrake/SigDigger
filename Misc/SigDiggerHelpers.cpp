@@ -20,6 +20,7 @@
 #include "SigDiggerHelpers.h"
 #include "DefaultGradient.h"
 #include "Version.h"
+#include "GlobalProperty.h"
 #include <QComboBox>
 #include <fstream>
 #include <QMessageBox>
@@ -497,4 +498,40 @@ void
 SigDiggerHelpers::pushUTCTZ(void)
 {
   this->pushTZ("");
+}
+
+QString
+SigDiggerHelpers::expandGlobalProperties(QString const &original)
+{
+  QString result = "";
+  qsizetype p = 0, len = original.size();
+  qsizetype propStart, propEnd;
+
+  while (p < len) {
+    QString propName;
+    GlobalProperty *prop;
+
+    propStart = original.indexOf('%', p);
+    if (propStart == -1)
+      break;
+    propEnd = original.indexOf('%', propStart + 1);
+    if (propEnd == -1)
+      break;
+
+    result += original.sliced(p, propStart - p);
+
+    propName = original.sliced(propStart + 1, propEnd - propStart - 1);
+
+    prop = GlobalProperty::lookupProperty(propName.toLower());
+    if (prop != nullptr)
+      result += prop->toString();
+    else
+      result += "N/A";
+    p = propEnd + 1;
+  }
+
+  if (p < len)
+    result += original.sliced(p);
+
+  return result;
 }

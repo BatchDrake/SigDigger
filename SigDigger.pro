@@ -128,6 +128,7 @@ SOURCES += \
     Misc/AutoGain.cpp \
     Misc/Averager.cpp \
     Misc/FileViewer.cpp \
+    Misc/GlobalProperty.cpp \
     Misc/Palette.cpp \
     Misc/SNREstimator.cpp \
     Misc/SigDiggerHelpers.cpp \
@@ -327,6 +328,7 @@ HEADERS += \
     include/FrequencyCorrectionDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
+    include/GlobalProperty.h \
     include/GuiConfigTab.h \
     include/HistogramDialog.h \
     include/HistogramFeeder.h \

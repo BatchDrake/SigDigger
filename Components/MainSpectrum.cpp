@@ -26,6 +26,8 @@
 #include "GLWaterfall.h"
 #include <WFHelpers.h>
 #include <SuWidgetsHelpers.h>
+#include <GlobalProperty.h>
+#include <SigDiggerHelpers.h>
 
 using namespace SigDigger;
 
@@ -222,12 +224,26 @@ MainSpectrum::addToolWidget(QWidget *widget, QString const &title)
 }
 
 void
+MainSpectrum::refreshFFTProperties()
+{
+  GlobalProperty::lookupProperty("fft_size")->setValue(this->cachedFftSize);
+  QString rbwStr = this->cachedFftSize > 0 && this->cachedRate > 0
+      ? SuWidgetsHelpers::formatQuantity(
+          SCAST(qreal, this->cachedRate) / this->cachedFftSize,
+          3,
+          "Hz")
+      : "N/A";
+  GlobalProperty::lookupProperty("rbw")->setValue(rbwStr);
+}
+
+void
 MainSpectrum::feed(float *data, int size, struct timeval const &tv, bool looped)
 {
   QDateTime dateTime;
 
   if (size != SCAST(int, cachedFftSize)) {
     cachedFftSize = SCAST(unsigned, size);
+    refreshFFTProperties();
     refreshInfoText();
   }
 
@@ -278,60 +294,15 @@ MainSpectrum::setTimeStamp(const struct timeval &tv)
 {
   this->lastTimeStamp = tv;
 
-  if (this->infoTextHasDateTime)
-    refreshInfoText();
+  refreshInfoText();
 }
 
 void
 MainSpectrum::refreshInfoText()
 {
-  QString newText = this->infoTextTemplate;
+  QString newText;
 
-  if (infoTextHasFftSize) {
-    QString sizeStr = this->cachedFftSize > 0
-        ? QString::number(this->cachedFftSize)
-        : "N/A";
-    newText = newText.replace(MS_VAR_FFT_SIZE, sizeStr);
-  }
-
-  if (infoTextHasRBW) {
-    QString rbwStr = this->cachedFftSize > 0 && this->cachedRate > 0
-        ? SuWidgetsHelpers::formatQuantity(
-            SCAST(qreal, this->cachedRate) / this->cachedFftSize,
-            3,
-            "Hz")
-        : "N/A";
-    newText = newText.replace(MS_VAR_RBW, rbwStr);
-  }
-
-  if (infoTextHasSampRate) {
-    QString sampRateStr = this->cachedRate > 0
-        ? QString::number(this->cachedRate)
-        : "N/A";
-    newText = newText.replace(MS_VAR_SAMP_RATE, sampRateStr);
-  }
-
-  if (infoTextHasDateTime) {
-    QDateTime dateTime;
-    QString strDate, strTime, strDateTime;
-    dateTime.setSecsSinceEpoch(this->lastTimeStamp.tv_sec);
-    dateTime = dateTime.toUTC();
-
-    strDate = dateTime.toString("yyyy-MM-dd");
-    strTime = dateTime.toString("hh:mm:ss");
-    strDateTime = strDate + "T" + strTime + "Z";
-
-    newText = newText.replace(MS_VAR_DATE,     strDate);
-    newText = newText.replace(MS_VAR_TIME,     strTime);
-    newText = newText.replace(MS_VAR_DATETIME, strDateTime);
-  }
-
-  if (infoTextHasQTH) {
-    newText = newText.replace(MS_VAR_CITY,    cachedCity);
-    newText = newText.replace(MS_VAR_LAT,     cachedLat);
-    newText = newText.replace(MS_VAR_LON,     cachedLon);
-    newText = newText.replace(MS_VAR_LOCATOR, cachedLocator);
-  }
+  newText = SigDiggerHelpers::expandGlobalProperties(this->infoTextTemplate);
 
   if (newText != infoText) {
     infoText = newText;
@@ -590,8 +561,6 @@ MainSpectrum::setColorConfig(ColorConfig const &cfg)
 void
 MainSpectrum::setGuiConfig(GuiConfig const &cfg)
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
   if (this->noLimits != cfg.noLimits) {
     this->noLimits = cfg.noLimits;
     this->updateLimits();
@@ -630,38 +599,6 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
   
   WATERFALL_CALL(setInfoText(infoTextTemplate));
   WATERFALL_CALL(setInfoTextColor(cfg.infoTextColor));
-
-  this->infoTextHasFftSize  = infoTextTemplate.indexOf(MS_VAR_FFT_SIZE) != -1;
-  this->infoTextHasRBW      = infoTextTemplate.indexOf(MS_VAR_RBW) != -1;
-  this->infoTextHasSampRate = infoTextTemplate.indexOf(MS_VAR_SAMP_RATE) != -1;
-
-  this->infoTextHasDateTime =
-         infoTextTemplate.indexOf(MS_VAR_DATE) != -1
-      || infoTextTemplate.indexOf(MS_VAR_TIME) != -1
-      || infoTextTemplate.indexOf(MS_VAR_DATETIME) != -1;
-
-  this->infoTextHasQTH =
-         infoTextTemplate.indexOf(MS_VAR_CITY) != -1
-      || infoTextTemplate.indexOf(MS_VAR_LAT) != -1
-      || infoTextTemplate.indexOf(MS_VAR_LON) != -1
-      || infoTextTemplate.indexOf(MS_VAR_LOCATOR) != -1;
-
-  if (sus->haveQth()) {
-    auto loc = sus->getQth();
-    xyz_t qth = loc.getQth();
-    qreal lat = SCAST(qreal, SU_RAD2DEG(qth.lat));
-    qreal lon = SCAST(qreal, SU_RAD2DEG(qth.lon));
-
-    this->cachedCity    = loc.getLocationName();
-    this->cachedLat     = SuWidgetsHelpers::formatQuantity(lat, 0, "deg", true);
-    this->cachedLon     = SuWidgetsHelpers::formatQuantity(lon, 0, "deg", true);
-    this->cachedLocator = loc.getGridLocator();
-  } else {
-    this->cachedCity    = "(no city defined)";
-    this->cachedLat     = "(no latitude defined)";
-    this->cachedLon     = "(no longitude defined)";
-    this->cachedLocator = "(no locator defined)";
-  }
 
   refreshInfoText();
 }
@@ -764,6 +701,7 @@ MainSpectrum::setSampleRate(unsigned int rate)
 
     this->cachedRate = rate;
     this->resAdjusted = false;
+    refreshFFTProperties();
     refreshInfoText();
   }
 }

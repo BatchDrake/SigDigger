@@ -109,6 +109,8 @@ namespace SigDigger {
 
     void pushTZ(const char *);
     bool popTZ(void);
+
+    static QString expandGlobalProperties(QString const &);
   };
 }
 

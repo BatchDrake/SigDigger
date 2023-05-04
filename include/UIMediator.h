@@ -46,6 +46,8 @@ namespace SigDigger {
   class UIListener;
   class FloatingTabWindow;
 
+  class GlobalProperty;
+
   class UIMediator : public PersistentWidget {
     Q_OBJECT
 
@@ -74,6 +76,17 @@ namespace SigDigger {
     struct timeval profileEnd;
     Suscan::Source::Device remoteDevice;
 
+    GlobalProperty *m_propSampRate = nullptr;
+    GlobalProperty *m_propFftSize  = nullptr;
+    GlobalProperty *m_propRBW      = nullptr;
+    GlobalProperty *m_propDate     = nullptr;
+    GlobalProperty *m_propTime     = nullptr;
+    GlobalProperty *m_propDateTime = nullptr;
+    GlobalProperty *m_propLat      = nullptr;
+    GlobalProperty *m_propLon      = nullptr;
+    GlobalProperty *m_propCity     = nullptr;
+    GlobalProperty *m_propLocator  = nullptr;
+
     // UI Data
     Averager averager;
     unsigned int rate = 0;
@@ -101,6 +114,7 @@ namespace SigDigger {
     // Behavioral methods
     void setSampleRate(unsigned int rate);
     void setBandwidth(unsigned int bandwidth);
+    void refreshQthProperties();
     void refreshProfile(bool updateFreqs = true);
     void setCurrentAutoGain();
 

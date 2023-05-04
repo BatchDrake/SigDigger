@@ -82,17 +82,6 @@ namespace SigDigger {
     QString      infoTextTemplate;
     QString      infoText;
 
-    bool         infoTextHasFftSize  = false;
-    bool         infoTextHasRBW      = false;
-    bool         infoTextHasSampRate = false;
-    bool         infoTextHasDateTime = false;
-    bool         infoTextHasQTH      = false;
-
-    QString      cachedCity = "(no city defined)";
-    QString      cachedLat  = "(no latitude defined)";
-    QString      cachedLon  = "(no longitude defined)";
-    QString      cachedLocator = "(no locator defined)";
-
     struct timeval lastTimeStamp;
 
     // UI State
@@ -120,6 +109,7 @@ namespace SigDigger {
     void connectGLWf();
     void refreshUi();
     void updateLimits();
+    void refreshFFTProperties();
     void refreshInfoText();
 
     // Static members
