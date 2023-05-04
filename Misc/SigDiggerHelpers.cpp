@@ -36,7 +36,7 @@
 #endif /* SUSCAN_BUILD_STRING */
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
-#  define sliced(a, b) mid(a, b)
+#  define sliced(...) mid(__VA_ARGS__)
 #endif
 
 using namespace SigDigger;
