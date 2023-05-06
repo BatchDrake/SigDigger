@@ -343,7 +343,6 @@ HEADERS += \
     include/QTimeSlider.h \
     include/QuadDemodTask.h \
     include/QuickConnectDialog.h \
-    include/RemoteControlConfig.h \
     include/RemoteControlServer.h \
     include/RemoteControlTab.h \
     include/SamplerDialog.h \
@@ -371,6 +370,7 @@ HEADERS += \
     include/RMSViewer.h \
     include/RMSViewTab.h \
     include/RMSViewerSettingsDialog.h \
+    include/RemoteControlConfig.h \
     include/LogDialog.h \
     include/MultitaskControllerModel.h \
     include/BackgroundTasksDialog.h \
