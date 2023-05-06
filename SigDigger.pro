@@ -219,6 +219,7 @@ INSTALL_HEADERS += \
     include/ConfigTab.h \
     include/FeatureFactory.h \
     include/GuiConfig.h \
+    include/GlobalProperty.h \
     include/InspectionWidgetFactory.h \
     include/SigDiggerHelpers.h \
     include/MainSpectrum.h \
@@ -328,7 +329,6 @@ HEADERS += \
     include/FrequencyCorrectionDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
-    include/GlobalProperty.h \
     include/GuiConfigTab.h \
     include/HistogramDialog.h \
     include/HistogramFeeder.h \

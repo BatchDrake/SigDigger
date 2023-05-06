@@ -63,6 +63,27 @@ namespace SigDigger{
       emit changed();
     }
 
+    template<typename T>
+    void
+    setValueSilent(T &&avalue)
+    {
+      QVariant::setValue(avalue);
+    }
+
+    void
+    setValueSilent(const QVariant &value)
+    {
+      QVariant::setValue(value);
+    }
+
+    void
+    setValueSilent(QVariant &&value)
+    {
+      QVariant::setValue(value);
+    }
+
+
+
     void setAdjustable(bool);
     bool adjustable() const;
 

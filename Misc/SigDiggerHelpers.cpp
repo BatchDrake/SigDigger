@@ -530,7 +530,7 @@ SigDiggerHelpers::expandGlobalProperties(QString const &original)
     if (prop != nullptr)
       result += prop->toString();
     else
-      result += "N/A";
+      result += "<unknown prop " + propName + ">";
     p = propEnd + 1;
   }
 
