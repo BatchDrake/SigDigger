@@ -214,7 +214,7 @@ UIMediator::onPropFrequencyChanged()
         this->ui->spectrum->getLnbFreq());
   } else {
     int64_t currFreq = this->ui->spectrum->getCenterFreq();
-    m_propFrequency->setValue(currFreq);
+    m_propFrequency->setValueSilent(currFreq);
   }
 }
 
