@@ -229,6 +229,7 @@ INSTALL_HEADERS += \
     include/MainWindow.h \
     include/Palette.h \
     include/PersistentWidget.h \
+    include/RemoteControlConfig.h \
     include/TabWidgetFactory.h \
     include/TLESourceConfig.h \
     include/ToolWidgetFactory.h \
@@ -370,7 +371,6 @@ HEADERS += \
     include/RMSViewer.h \
     include/RMSViewTab.h \
     include/RMSViewerSettingsDialog.h \
-    include/RemoteControlConfig.h \
     include/LogDialog.h \
     include/MultitaskControllerModel.h \
     include/BackgroundTasksDialog.h \
