@@ -24,6 +24,7 @@
 #include <GuiConfigTab.h>
 #include <TLESourceTab.h>
 #include <LocationConfigTab.h>
+#include <RemoteControlTab.h>
 #include <time.h>
 #include "ConfigDialog.h"
 
@@ -158,6 +159,12 @@ ConfigDialog::audioChanged() const
 }
 
 bool
+ConfigDialog::remoteControlChanged() const
+{
+  return this->remCtlTab->hasChanged();
+}
+
+bool
 ConfigDialog::tleSourceConfigChanged() const
 {
   return this->tleSourceTab->hasChanged();
@@ -191,6 +198,18 @@ AudioConfig
 ConfigDialog::getAudioConfig() const
 {
   return this->audioTab->getAudioConfig();
+}
+
+void
+ConfigDialog::setRemoteControlConfig(RemoteControlConfig const &config)
+{
+  this->remCtlTab->setRemoteControlConfig(config);
+}
+
+RemoteControlConfig
+ConfigDialog::getRemoteControlConfig() const
+{
+  return this->remCtlTab->getRemoteControlConfig();
 }
 
 bool
@@ -237,6 +256,7 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
   this->guiTab       = new GuiConfigTab(this);
   this->locationTab  = new LocationConfigTab(this);
   this->tleSourceTab = new TLESourceTab(this);
+  this->remCtlTab    = new RemoteControlTab(this);
 
   this->appendConfigTab(this->profileTab);
   this->appendConfigTab(this->colorTab);
@@ -244,6 +264,7 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
   this->appendConfigTab(this->guiTab);
   this->appendConfigTab(this->tleSourceTab);
   this->appendConfigTab(this->locationTab);
+  this->appendConfigTab(this->remCtlTab);
 
   this->connectAll();
 }

@@ -72,6 +72,8 @@ SOURCES += \
     App/ColorConfig.cpp \
     App/GuiConfig.cpp \
     App/Loader.cpp \
+    App/RemoteControlConfig.cpp \
+    App/RemoteControlServer.cpp \
     App/TLESourceConfig.cpp \
     Audio/AudioFileSaver.cpp \
     Audio/AudioPlayback.cpp \
@@ -139,6 +141,7 @@ SOURCES += \
     Settings/GuiConfigTab.cpp \
     Settings/LocationConfigTab.cpp \
     Settings/ProfileConfigTab.cpp \
+    Settings/RemoteControlTab.cpp \
     Settings/TLESourceTab.cpp \
     Suscan/AnalyzerRequestTracker.cpp \
     Suscan/CancellableTask.cpp \
@@ -340,6 +343,9 @@ HEADERS += \
     include/QTimeSlider.h \
     include/QuadDemodTask.h \
     include/QuickConnectDialog.h \
+    include/RemoteControlConfig.h \
+    include/RemoteControlServer.h \
+    include/RemoteControlTab.h \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
     include/AboutDialog.h \
@@ -412,6 +418,7 @@ FORMS += \
     ui/MfControl.ui \
     ui/ProfileConfigTab.ui \
     ui/QuickConnectDialog.ui \
+    ui/RemoteControlTab.ui \
     ui/SamplerDialog.ui \
     ui/TLESourceTab.ui \
     ui/TimeWindow.ui \

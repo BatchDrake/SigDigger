@@ -45,7 +45,7 @@ namespace SigDigger {
   class InspectionWidget;
   class UIListener;
   class FloatingTabWindow;
-
+  class RemoteControlServer;
   class GlobalProperty;
 
   class UIMediator : public PersistentWidget {
@@ -67,6 +67,7 @@ namespace SigDigger {
     // Static part of UI
     QMainWindow *owner = nullptr;
     AppUI *ui = nullptr;
+    RemoteControlServer *m_remoteControl = nullptr;
 
     QMessageBox *laggedMsgBox = nullptr;
     std::map<std::string, QAction *> bandPlanMap;
@@ -316,6 +317,10 @@ namespace SigDigger {
     void onOpened(Suscan::AnalyzerRequest const &);
     void onCancelled(Suscan::AnalyzerRequest const &);
     void onError(Suscan::AnalyzerRequest const &, std::string const &);
+
+    // Property listenets
+    void onPropFrequencyChanged();
+    void onPropLNBChanged();
   };
 };
 

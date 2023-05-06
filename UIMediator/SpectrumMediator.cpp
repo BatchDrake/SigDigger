@@ -203,3 +203,25 @@ UIMediator::onBookmarkChanged(void)
   this->ui->spectrum->updateOverlay();
 }
 
+void
+UIMediator::onPropFrequencyChanged()
+{
+  int64_t newFreq = SCAST(qint64, m_propFrequency->toDouble());
+
+  if (this->ui->spectrum->canChangeFrequency(newFreq)) {
+    this->ui->spectrum->setFreqs(
+        newFreq,
+        this->ui->spectrum->getLnbFreq());
+  } else {
+    int64_t currFreq = this->ui->spectrum->getCenterFreq();
+    m_propFrequency->setValue(currFreq);
+  }
+}
+
+void
+UIMediator::onPropLNBChanged()
+{
+  this->ui->spectrum->setFreqs(
+        this->ui->spectrum->getCenterFreq(),
+        SCAST(qint64, m_propLNB->toDouble()));
+}

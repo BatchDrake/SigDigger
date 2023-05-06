@@ -942,6 +942,12 @@ MainSpectrum::getBandwidth(void) const
   return this->bandwidth;
 }
 
+bool
+MainSpectrum::canChangeFrequency(qint64 freq) const
+{
+  return this->minFreq <= freq && freq <= this->maxFreq;
+}
+
 //////////////////////////////// Slots /////////////////////////////////////////
 void
 MainSpectrum::onWfBandwidthChanged(int min, int max)

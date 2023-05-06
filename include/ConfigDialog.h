@@ -26,6 +26,7 @@
 #include <ColorConfig.h>
 #include <GuiConfig.h>
 #include <AudioConfig.h>
+#include <RemoteControlConfig.h>
 #include <TLESourceConfig.h>
 #include <SaveProfileDialog.h>
 #include <Suscan/Library.h>
@@ -38,6 +39,7 @@ namespace SigDigger {
   class GuiConfigTab;
   class LocationConfigTab;
   class TLESourceTab;
+  class RemoteControlTab;
 
   class ConfigDialog : public QDialog
   {
@@ -54,6 +56,7 @@ namespace SigDigger {
     GuiConfigTab      *guiTab       = nullptr;
     LocationConfigTab *locationTab  = nullptr;
     TLESourceTab      *tleSourceTab = nullptr;
+    RemoteControlTab  *remCtlTab    = nullptr;
     bool accepted = false;
 
     Ui_Config *ui = nullptr;
@@ -70,6 +73,7 @@ namespace SigDigger {
     void setGuiConfig(const GuiConfig &config);
     void setGain(std::string const &name, float value);
     void setAudioConfig(const AudioConfig &);
+    void setRemoteControlConfig(const RemoteControlConfig &);
     void setFrequency(qint64 freq);
     void notifySingletonChanges();
 
@@ -79,6 +83,7 @@ namespace SigDigger {
     bool tleSourceConfigChanged() const;
     bool guiChanged() const;
     bool audioChanged() const;
+    bool remoteControlChanged() const;
 
     Suscan::Location getLocation() const;
     void setLocation(Suscan::Location const &);
@@ -92,6 +97,7 @@ namespace SigDigger {
     AudioConfig getAudioConfig() const;
     TLESourceConfig getTleSourceConfig() const;
     Suscan::AnalyzerParams getAnalyzerParams() const;
+    RemoteControlConfig getRemoteControlConfig() const;
 
     bool run();
 

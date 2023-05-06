@@ -50,6 +50,7 @@
 #include "AboutDialog.h"
 #include "QuickConnectDialog.h"
 #include "GlobalProperty.h"
+#include "RemoteControlServer.h"
 
 // Tool widget controls
 #include <ToolWidgetFactory.h>
@@ -697,7 +698,21 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   m_propLocator   = GlobalProperty::registerProperty("locator", "Grid locator", "");
 
   m_propFrequency->setAdjustable(true);
+  connect(
+        m_propFrequency,
+        SIGNAL(changed()),
+        this,
+        SLOT(onPropFrequencyChanged()));
+
   m_propLNB->setAdjustable(true);
+  connect(
+        m_propLNB,
+        SIGNAL(changed()),
+        this,
+        SLOT(onPropLNBChanged()));
+
+  m_remoteControl = new RemoteControlServer(this);
+  m_remoteControl->setEnabled(true);
 }
 
 void
@@ -1095,6 +1110,7 @@ UIMediator::applyConfig()
   this->ui->configDialog->setGuiConfig(this->appConfig->guiConfig);
   this->ui->configDialog->setTleSourceConfig(this->appConfig->tleSourceConfig);
   this->ui->configDialog->setAudioConfig(this->appConfig->audioConfig);
+  this->ui->configDialog->setRemoteControlConfig(this->appConfig->rcConfig);
   this->ui->panoramicDialog->setColors(this->appConfig->colors);
   this->ui->spectrum->setColorConfig(this->appConfig->colors);
 
@@ -1139,6 +1155,11 @@ UIMediator::applyConfig()
   this->ui->spectrum->setLoFreq(savedLoFreq);
   if (savedBw > 0)
     this->setBandwidth(savedBw);
+
+  // Enable remote control
+  m_remoteControl->setHost(QString::fromStdString(this->appConfig->rcConfig.host));
+  m_remoteControl->setPort(SCAST(uint16_t, this->appConfig->rcConfig.port));
+  m_remoteControl->setEnabled(this->appConfig->rcConfig.enabled);
 }
 
 UIMediator::~UIMediator()
@@ -1188,6 +1209,18 @@ UIMediator::onTriggerSetup(bool)
 
     if (this->ui->configDialog->audioChanged()) {
       this->appConfig->audioConfig = this->ui->configDialog->getAudioConfig();
+    }
+
+    if (this->ui->configDialog->remoteControlChanged()) {
+      this->appConfig->rcConfig = this->ui->configDialog->getRemoteControlConfig();
+
+      m_remoteControl->setHost(QString::fromStdString(this->appConfig->rcConfig.host));
+      m_remoteControl->setPort(SCAST(uint16_t, this->appConfig->rcConfig.port));
+
+      if (m_remoteControl->isEnabled())
+        m_remoteControl->setEnabled(false);
+
+      m_remoteControl->setEnabled(this->appConfig->rcConfig.enabled);
     }
 
     if (this->ui->configDialog->tleSourceConfigChanged()) {
