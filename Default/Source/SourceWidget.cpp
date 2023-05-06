@@ -1070,8 +1070,9 @@ SUBOOL
 SigDigger::onBaseBandData(
     void *privdata,
     suscan_analyzer_t *,
-    const SUCOMPLEX *samples,
-    SUSCOUNT length)
+    SUCOMPLEX *samples,
+    SUSCOUNT length,
+    SUSCOUNT)
 {
   SourceWidget *widget = static_cast<SourceWidget *>(privdata);
   FileDataSaver *saver;

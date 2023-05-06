@@ -35,8 +35,9 @@ namespace SigDigger {
   SUBOOL onBaseBandData(
       void *privdata,
       suscan_analyzer_t *,
-      const SUCOMPLEX *samples,
-      SUSCOUNT length);
+      SUCOMPLEX *samples,
+      SUSCOUNT length,
+      SUSCOUNT offset);
 
   struct GainPresetSetting : public Suscan::Serializable {
     std::string driver;
@@ -160,8 +161,9 @@ namespace SigDigger {
     onBaseBandData(
         void *privdata,
         suscan_analyzer_t *,
-        const SUCOMPLEX *samples,
-        SUSCOUNT length);
+        SUCOMPLEX *samples,
+        SUSCOUNT length,
+        SUSCOUNT offset);
 
   public slots:
     void onSourceInfoMessage(Suscan::SourceInfoMessage const &msg);

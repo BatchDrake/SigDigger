@@ -130,6 +130,19 @@ Analyzer::registerBaseBandFilter(suscan_analyzer_baseband_filter_func_t func, vo
 }
 
 void
+Analyzer::registerBaseBandFilter(
+    suscan_analyzer_baseband_filter_func_t func,
+    void *privdata,
+    int64_t prio)
+{
+  SU_ATTEMPT(suscan_analyzer_register_baseband_filter_with_prio(
+               this->instance,
+               func,
+               privdata,
+               prio));
+}
+
+void
 Analyzer::setGain(std::string const &name, SUFLOAT value)
 {
   SU_ATTEMPT(suscan_analyzer_set_gain(this->instance, name.c_str(), value));
