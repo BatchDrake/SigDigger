@@ -24,6 +24,7 @@
 #include <GlobalProperty.h>
 #include <Suscan/Logger.h>
 #include <Version.h>
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -53,12 +54,12 @@ bool
 RemoteControlClient::tokenize(QString const &command, QStringList &out)
 {
   QStringList result;
-  qsizetype len = command.size();
+  int len = SCAST(int, command.size());
   bool qot = false, sqot = false;
   qsizetype argLen;
 
-  for (qsizetype i = 0; i < len; i++) {
-    qsizetype start = i;
+  for (int i = 0; i < len; i++) {
+    int start = i;
 
     if (command[i] == '\"')
       qot = true;
