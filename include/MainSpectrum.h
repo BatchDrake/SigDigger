@@ -101,7 +101,7 @@ namespace SigDigger {
     unsigned int cachedRate = 0;
     unsigned int bandwidth = 0;
     unsigned int cachedFftSize = 0;
-    unsigned int zoom = 1;
+    float zoom = 1;
 
     // Private methods
     void connectAll();
@@ -169,7 +169,7 @@ namespace SigDigger {
     void setFilled(bool);
     void setTimeStamps(bool);
     void setBookmarks(bool);
-    void setZoom(unsigned int zoom);
+    void setZoom(float zoom);
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
     void setGracePeriod(qint64 ms);

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>299</width>
-    <height>408</height>
+    <height>421</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -292,13 +292,13 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <property name="minimumValue" stdset="0">
+     <property name="minimumValue">
       <number>-70</number>
      </property>
-     <property name="minimumPosition" stdset="0">
+     <property name="minimumPosition">
       <number>-70</number>
      </property>
-     <property name="maximumPosition" stdset="0">
+     <property name="maximumPosition">
       <number>-10</number>
      </property>
     </widget>
@@ -612,10 +612,13 @@
    <item row="17" column="1">
     <widget class="QSlider" name="freqZoomSlider">
      <property name="minimum">
-      <number>1</number>
+      <number>-900</number>
      </property>
      <property name="maximum">
-      <number>500</number>
+      <number>900</number>
+     </property>
+     <property name="value">
+      <number>0</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -666,10 +669,10 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <property name="minimumValue" stdset="0">
+     <property name="minimumValue">
       <number>-70</number>
      </property>
-     <property name="maximumPosition" stdset="0">
+     <property name="maximumPosition">
       <number>-10</number>
      </property>
     </widget>

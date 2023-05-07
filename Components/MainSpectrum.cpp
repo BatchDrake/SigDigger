@@ -668,7 +668,7 @@ MainSpectrum::setFilterSkewness(Skewness skw)
 }
 
 void
-MainSpectrum::setZoom(unsigned int zoom)
+MainSpectrum::setZoom(float zoom)
 {
   if (zoom > 0) {
     this->zoom = zoom;

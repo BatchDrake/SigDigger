@@ -63,7 +63,7 @@ namespace SigDigger {
     float zeroPoint;
     float gain = 50;
 
-    int zoom = 1;
+    float zoom = 1;
 
     // Overriden methods·
     void deserialize(Suscan::Object const &conf) override;
@@ -121,7 +121,7 @@ namespace SigDigger {
     float getWfRangeMax() const;
     float getAveraging() const;
     float getPanWfRatio() const;
-    unsigned int getFreqZoom() const;
+    float getFreqZoom() const;
     unsigned int getFftSize() const;
     unsigned int getTimeSpan() const;
     unsigned int getRefreshRate() const;
@@ -153,7 +153,7 @@ namespace SigDigger {
     void setWfRangeMax(float);
     void setAveraging(float);
     void setPanWfRatio(float);
-    void setFreqZoom(int);
+    void setFreqZoom(float);
     void setDefaultFftSize(unsigned int);
     void setFftSize(unsigned int);
     void setDefaultRefreshRate(unsigned int);

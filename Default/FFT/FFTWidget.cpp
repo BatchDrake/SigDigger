@@ -565,10 +565,10 @@ FFTWidget::getPaletteGradient(void) const
   return SigDiggerHelpers::instance()->getPalette(0)->getGradient();
 }
 
-unsigned int
+float
 FFTWidget::getFreqZoom(void) const
 {
-  return static_cast<unsigned int>(this->ui->freqZoomSlider->value());
+  return this->panelConfig->zoom;
 }
 
 unsigned int
@@ -707,11 +707,14 @@ FFTWidget::setPalette(std::string const &str)
 }
 
 void
-FFTWidget::setFreqZoom(int zoom)
+FFTWidget::setFreqZoom(float zoom)
 {
-  this->ui->freqZoomSlider->setValue(zoom);
+  float logZoom = SU_LOG(zoom) / SU_LOG(2);
+  int sliderPos = SCAST(int, 100 * logZoom);
+
+  this->ui->freqZoomSlider->setValue(sliderPos);
   this->ui->freqZoomLabel->setText(
-        zoom < 1 ? "<1x" : QString::number(zoom) + "x");
+        QString::number(SCAST(qreal, zoom), 'g', 2) + "x");
   this->panelConfig->zoom = zoom;
 }
 
@@ -1038,9 +1041,14 @@ FFTWidget::onAspectRatioChanged(int)
 void
 FFTWidget::onFreqZoomChanged(int)
 {
-  this->setFreqZoom(this->getFreqZoom());
+  float newLogZoom =
+      SCAST(float, this->ui->freqZoomSlider->value()) / 100.f;
+  float newZoom = SU_POW(2.f, newLogZoom);
 
-  this->refreshSpectrumScaleSettings();
+  if (!sufreleq(this->panelConfig->zoom, newZoom, 1e-4f)) {
+    this->setFreqZoom(newZoom);
+    this->refreshSpectrumScaleSettings();
+  }
 }
 
 void
@@ -1239,7 +1247,7 @@ void
 FFTWidget::onZoomChanged(float level)
 {
   bool oldState = this->ui->freqZoomSlider->blockSignals(true);
-  this->setFreqZoom(SCAST(int, level));
+  this->setFreqZoom(level);
   this->ui->freqZoomSlider->blockSignals(oldState);
 }
 
