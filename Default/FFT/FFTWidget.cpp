@@ -713,8 +713,18 @@ FFTWidget::setFreqZoom(float zoom)
   int sliderPos = SCAST(int, 100 * logZoom);
 
   this->ui->freqZoomSlider->setValue(sliderPos);
-  this->ui->freqZoomLabel->setText(
-        QString::number(SCAST(qreal, zoom), 'g', 2) + "x");
+  if (zoom > 0.5f && zoom < 2) {
+    this->ui->freqZoomLabel->setText(
+          zoom <= 0.5f
+          ? "/" + QString::number(SCAST(qreal, 1 / zoom), 'g', 2)
+          : QString::number(SCAST(qreal, zoom), 'g', 2) + "x");
+  } else {
+    this->ui->freqZoomLabel->setText(
+          zoom <= 0.5f
+          ? "/" + QString::number(SCAST(int, 1 / zoom))
+          : QString::number(SCAST(int, zoom)) + "x");
+  }
+
   this->panelConfig->zoom = zoom;
 }
 
