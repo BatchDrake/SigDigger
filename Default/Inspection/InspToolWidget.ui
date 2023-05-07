@@ -257,6 +257,9 @@ font-weight: bold;</string>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string> MiB</string>
         </property>
@@ -433,6 +436,9 @@ font-weight: bold;</string>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string> ms</string>
         </property>
@@ -458,6 +464,9 @@ font-weight: bold;</string>
        <widget class="QDoubleSpinBox" name="triggerSpin">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
         </property>
         <property name="suffix">
          <string> dB</string>

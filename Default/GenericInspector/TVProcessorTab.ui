@@ -77,7 +77,7 @@
             <x>0</x>
             <y>0</y>
             <width>1078</width>
-            <height>174</height>
+            <height>144</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
@@ -309,6 +309,9 @@
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                   <property name="keyboardTracking">
+                    <bool>false</bool>
                    </property>
                    <property name="minimum">
                     <number>1</number>
@@ -687,6 +690,9 @@
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
+                   <property name="keyboardTracking">
+                    <bool>false</bool>
+                   </property>
                    <property name="suffix">
                     <string>%</string>
                    </property>
@@ -830,7 +836,7 @@
             <x>0</x>
             <y>0</y>
             <width>1078</width>
-            <height>174</height>
+            <height>144</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_7">
@@ -859,6 +865,9 @@
                <widget class="QSpinBox" name="vsyncTrainLengthSpin">
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="keyboardTracking">
+                 <bool>false</bool>
                 </property>
                 <property name="suffix">
                  <string> pulses</string>
@@ -948,6 +957,9 @@
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
                 <property name="suffix">
                  <string> lines</string>
                 </property>
@@ -975,6 +987,9 @@
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
                 <property name="suffix">
                  <string> lines</string>
                 </property>
@@ -987,6 +1002,9 @@
                <widget class="QDoubleSpinBox" name="lineLenTauSpin">
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="keyboardTracking">
+                 <bool>false</bool>
                 </property>
                 <property name="prefix">
                  <string/>
@@ -1017,6 +1035,9 @@
                <widget class="QDoubleSpinBox" name="agcTauSpin">
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="keyboardTracking">
+                 <bool>false</bool>
                 </property>
                 <property name="suffix">
                  <string> frames</string>
@@ -1261,7 +1282,6 @@
      </property>
      <property name="font">
       <font>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>

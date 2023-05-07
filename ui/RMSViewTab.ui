@@ -46,6 +46,9 @@
           <height>0</height>
          </size>
         </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
         <property name="displayFormat">
          <string>yyyy/MM/dd hh:mm:ss</string>
         </property>
@@ -189,6 +192,9 @@
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
             </property>
             <property name="suffix">
              <string> points</string>

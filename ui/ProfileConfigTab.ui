@@ -548,6 +548,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
+            </property>
            </widget>
           </item>
           <item row="1" column="3">
@@ -855,6 +858,9 @@
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
+     <property name="keyboardTracking">
+      <bool>false</bool>
+     </property>
      <property name="suffix">
       <string> ppm</string>
      </property>
@@ -883,6 +889,9 @@
        <width>173</width>
        <height>0</height>
       </size>
+     </property>
+     <property name="keyboardTracking">
+      <bool>false</bool>
      </property>
      <property name="time">
       <time>
