@@ -470,13 +470,10 @@ SourceWidget::applyCurrentProfileGains()
 
       DeviceGain *gain = this->lookupGain(name);
       if (gain != nullptr) {
-        printf("Set gain %s to %g\n", name.c_str(), value);
         gain->setGain(static_cast<float>(this->profile->getGain(name)));
         this->onGainChanged(
               QString::fromStdString(name),
               static_cast<float>(value));
-      } else {
-        printf("Unknown gain %s\n", name.c_str());
       }
     }
   }
