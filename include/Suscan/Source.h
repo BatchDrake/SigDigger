@@ -366,6 +366,8 @@ namespace Suscan {
     void setParam(std::string const &key, std::string const &param);
     void clearParams(void);
 
+    void debugGains(std::string const &) const;
+
     void setPPM(SUFLOAT);
 
     Config& operator=(const Config &);

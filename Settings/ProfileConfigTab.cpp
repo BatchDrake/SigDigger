@@ -1180,8 +1180,9 @@ ProfileConfigTab::onSpinsChanged()
       this->configChanged();
     }
 
-    if (this->profile.getStartTime().tv_sec != timeStamp
-        || this->profile.getStartTime().tv_usec != timeStampUsec) {
+    if (this->ui->sourceTimeEdit->isEnabled()
+        && (this->profile.getStartTime().tv_sec != timeStamp
+        || this->profile.getStartTime().tv_usec != timeStampUsec)) {
       struct timeval tv;
       tv.tv_sec  = timeStamp;
       tv.tv_usec = timeStampUsec;

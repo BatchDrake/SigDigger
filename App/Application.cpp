@@ -608,13 +608,29 @@ Application::onFrequencyChanged(qint64 freq, qint64 lnb)
     this->analyzer->setFrequency(freq, lnb);
 }
 
+#define TRYSILENT(x) \
+  try { x; } catch (Suscan::Exception const &) { errorsOccurred = true; }
+
 void
 Application::hotApplyProfile(Suscan::Source::Config const *profile)
 {
-  this->analyzer->setFrequency(profile->getFreq(), profile->getLnbFreq());
-  this->analyzer->setBandwidth(profile->getBandwidth());
-  this->analyzer->setDCRemove(profile->getDCRemove());
-  this->analyzer->setAntenna(profile->getAntenna());
+  bool errorsOccurred = false;
+
+  if (profile->getType() == SUSCAN_SOURCE_TYPE_SDR) {
+    TRYSILENT(this->analyzer->setAntenna(profile->getAntenna()));
+    TRYSILENT(this->analyzer->setBandwidth(profile->getBandwidth()));
+  }
+
+  TRYSILENT(this->analyzer->setFrequency(profile->getFreq(), profile->getLnbFreq()));
+  TRYSILENT(this->analyzer->setDCRemove(profile->getDCRemove()));
+
+  if (errorsOccurred) {
+    (void)  QMessageBox::warning(
+          this,
+          "Update analyzer configuration",
+          "Some of the settings in the profile could not be applied. See log window for details.",
+          QMessageBox::Ok);
+  }
 }
 
 void

@@ -112,6 +112,7 @@ namespace SigDigger {
     void refreshAutoGains(Suscan::Source::Config &config);
     void refreshCurrentAutoGain(std::string const &);
     void applyCurrentAutogain();
+    void applyCurrentProfileGains();
     void selectAntenna(std::string const &name);
     void setBandwidth(float bw);
     void setPPM(float ppm);

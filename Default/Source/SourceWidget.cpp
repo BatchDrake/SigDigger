@@ -458,6 +458,31 @@ SourceWidget::applyCurrentAutogain(void)
 }
 
 void
+SourceWidget::applyCurrentProfileGains()
+{
+  if (this->profile != nullptr) {
+    Suscan::Source::Device const &dev = this->profile->getDevice();
+    for (auto p = dev.getFirstGain();
+         p != dev.getLastGain();
+         ++p) {
+      auto name = p->getName();
+      auto value = this->profile->getGain(name);
+
+      DeviceGain *gain = this->lookupGain(name);
+      if (gain != nullptr) {
+        printf("Set gain %s to %g\n", name.c_str(), value);
+        gain->setGain(static_cast<float>(this->profile->getGain(name)));
+        this->onGainChanged(
+              QString::fromStdString(name),
+              static_cast<float>(value));
+      } else {
+        printf("Unknown gain %s\n", name.c_str());
+      }
+    }
+  }
+}
+
+void
 SourceWidget::refreshCurrentAutoGain(std::string const &driver)
 {
   bool enableGains = true;
@@ -876,9 +901,12 @@ SourceWidget::setBlockingSignals(bool blocking)
 void
 SourceWidget::setDelayedAnalyzerOptions()
 {
-  if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN))
+  if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN)) {
     if (this->panelConfig->gainPresetEnabled)
       this->applyCurrentAutogain();
+    else
+      this->applyCurrentProfileGains();
+  }
 
   if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE))
     this->onThrottleChanged();

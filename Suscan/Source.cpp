@@ -596,6 +596,21 @@ Source::Config::clearParams(void)
 }
 
 void
+Source::Config::debugGains(std::string const &prefix) const
+{
+  SU_INFO("%s: Debug gains\n", prefix.c_str());
+  Suscan::Source::Device const &dev = const_cast<Suscan::Source::Config *>(this)->getDevice();
+  for (auto p = dev.getFirstGain();
+       p != dev.getLastGain();
+       ++p) {
+    auto name = p->getName();
+    auto value = this->getGain(name);
+
+    SU_INFO("%s:   %s = %g dB\n", prefix.c_str(), name.c_str(), value);
+  }
+}
+
+void
 Source::Config::setPPM(SUFLOAT ppm)
 {
   if (this->instance == nullptr)
