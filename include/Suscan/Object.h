@@ -22,7 +22,7 @@
 
 #include <Suscan/Compat.h>
 
-#include <sigutils/util/object.h>
+#include <suscan/util/object.h>
 #include <vector>
 
 namespace Suscan {
