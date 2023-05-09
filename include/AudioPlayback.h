@@ -26,7 +26,7 @@
 #include <string>
 #include <Suscan/Library.h>
 #include <GenericAudioPlayer.h>
-#include <util/compat-unistd.h>
+#include <sigutils/util/compat-unistd.h>
 
 #define SIGDIGGER_AUDIO_BUFFER_ALLOC static_cast<size_t>(1 << 14)
 #define SIGDIGGER_AUDIO_BUFFER_SIZE (SIGDIGGER_AUDIO_BUFFER_ALLOC / sizeof (float))

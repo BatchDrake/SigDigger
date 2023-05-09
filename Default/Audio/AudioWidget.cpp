@@ -22,7 +22,7 @@
 #include <QVariant>
 #include <FrequencyCorrectionDialog.h>
 #include <QDynamicPropertyChangeEvent>
-#include <util/compat-statvfs.h>
+#include <sigutils/util/compat-statvfs.h>
 #include "ui_AudioWidget.h"
 #include <QDir>
 #include <QFileDialog>

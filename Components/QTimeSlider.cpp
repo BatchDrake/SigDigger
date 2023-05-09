@@ -17,7 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include <QTimeSlider.h>
-#include <util/compat-time.h>
+#include <sigutils/util/compat-time.h>
 #include <QPainter>
 #include <stdlib.h>
 #include <cmath>

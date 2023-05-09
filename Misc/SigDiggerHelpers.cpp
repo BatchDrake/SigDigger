@@ -28,7 +28,7 @@
 #include <SuWidgetsHelpers.h>
 #include <Suscan/MultitaskController.h>
 #include <ExportSamplesTask.h>
-#include <util/compat-stdlib.h>
+#include <sigutils/util/compat-stdlib.h>
 
 #ifndef SIGDIGGER_PKGVERSION
 #  define SIGDIGGER_PKGVERSION \

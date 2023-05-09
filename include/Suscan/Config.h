@@ -23,7 +23,7 @@
 #include <Suscan/Compat.h>
 #include <Suscan/Object.h>
 #include <vector>
-#include <util/confdb.h>
+#include <suscan/util/confdb.h>
 #include <cfg.h>
 
 namespace Suscan {

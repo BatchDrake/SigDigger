@@ -19,7 +19,7 @@
 
 #include <Suscan/Library.h>
 #include <QFileDialog>
-#include <util/compat-statvfs.h>
+#include <sigutils/util/compat-statvfs.h>
 #include <SuWidgetsHelpers.h>
 #include <cassert>
 
