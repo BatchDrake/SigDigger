@@ -20,7 +20,7 @@
 #define FACTAB_H
 
 #include <QWidget>
-#include <util/compat-time.h>
+#include <sigutils/util/compat-time.h>
 
 class ThrottleControl;
 #include <sigutils/types.h>

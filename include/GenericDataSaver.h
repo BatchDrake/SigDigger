@@ -26,7 +26,7 @@
 #include <QMutex>
 #include <vector>
 #include <sigutils/types.h>
-#include <util/compat-time.h>
+#include <sigutils/util/compat-time.h>
 #include <stdint.h>
 
 namespace SigDigger {

@@ -20,7 +20,7 @@
 #include <iostream>
 #include "AudioPlayback.h"
 #include <stdexcept>
-#include <util/compat-mman.h>
+#include <sigutils/util/compat-mman.h>
 #include <QCoreApplication>
 #include <GenericAudioPlayer.h>
 

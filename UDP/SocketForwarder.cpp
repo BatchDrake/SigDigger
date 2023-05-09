@@ -19,9 +19,9 @@
 
 #include <SocketForwarder.h>
 #include <sys/types.h>
-#include <util/compat-socket.h>
-#include <util/compat-in.h>
-#include <util/compat-netdb.h>
+#include <sigutils/util/compat-socket.h>
+#include <sigutils/util/compat-in.h>
+#include <sigutils/util/compat-netdb.h>
 #include <stdexcept>
 
 #ifndef MSG_NOSIGNAL
