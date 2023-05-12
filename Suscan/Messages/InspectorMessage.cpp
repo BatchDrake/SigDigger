@@ -225,3 +225,22 @@ InspectorMessage::isTLEEnabled(void) const
 
   return false;
 }
+
+std::string
+InspectorMessage::getSignalName() const
+{
+  if (this->message != nullptr)
+    return this->message->signal_name;
+
+  return "";
+}
+
+SUDOUBLE
+InspectorMessage::getSignalValue() const
+{
+  if (this->message != nullptr)
+    return this->message->signal_value;
+
+  return std::nan("");
+}
+

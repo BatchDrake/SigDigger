@@ -53,25 +53,25 @@ namespace Suscan {
     }
 
     struct timeval const &
-    getRxTime(void) const
+    getRxTime() const
     {
       return this->c_info->rx_time;
     }
 
     xyz_t const &
-    getAzel(void) const
+    getAzel() const
     {
       return this->c_info->satpos;
     }
 
     SUFLOAT
-    getFrequencyCorrection(void) const
+    getFrequencyCorrection() const
     {
       return this->c_info->freq_corr;
     }
 
     SUDOUBLE
-    getVlosVelocity(void) const
+    getVlosVelocity() const
     {
       return this->c_info->vlos_vel;
     }
@@ -87,27 +87,29 @@ namespace Suscan {
     Config config;
 
   public:
-    enum suscan_analyzer_inspector_msgkind getKind(void) const;
-    suscan_config_t const *getCConfig(void) const;
-    RequestId getRequestId(void) const;
-    InspectorId getInspectorId(void) const;
-    uint32_t getSpectrumSourceId(void) const;
-    Handle getHandle(void) const;
-    SUFLOAT *getSpectrumData(void) const;
-    SUSCOUNT getSpectrumLength(void) const;
-    SUSCOUNT getSpectrumRate(void) const;
-    unsigned int getBasebandRate(void) const;
-    SUFLOAT  getEquivSampleRate(void) const;
-    SUFLOAT  getBandwidth(void) const;
-    SUFLOAT  getLo(void) const;
-    SUFLOAT  getEstimation(void) const;
-    EstimatorId getEstimatorId(void) const;
-    std::string getClass(void) const;
-    std::vector<SpectrumSource> const &getSpectrumSources(void) const;
-    std::vector<Estimator> const &getEstimators(void) const;
-    Channel getChannel(void) const;
-    OrbitReport const &getOrbitReport(void) const;
-    bool isTLEEnabled(void) const;
+    enum suscan_analyzer_inspector_msgkind getKind() const;
+    suscan_config_t const *getCConfig() const;
+    RequestId getRequestId() const;
+    InspectorId getInspectorId() const;
+    uint32_t getSpectrumSourceId() const;
+    Handle getHandle() const;
+    SUFLOAT *getSpectrumData() const;
+    SUSCOUNT getSpectrumLength() const;
+    SUSCOUNT getSpectrumRate() const;
+    unsigned int getBasebandRate() const;
+    SUFLOAT  getEquivSampleRate() const;
+    SUFLOAT  getBandwidth() const;
+    SUFLOAT  getLo() const;
+    SUFLOAT  getEstimation() const;
+    EstimatorId getEstimatorId() const;
+    std::string getClass() const;
+    std::vector<SpectrumSource> const &getSpectrumSources() const;
+    std::vector<Estimator> const &getEstimators() const;
+    Channel getChannel() const;
+    OrbitReport const &getOrbitReport() const;
+    bool isTLEEnabled() const;
+    std::string getSignalName() const;
+    SUDOUBLE    getSignalValue() const;
 
     InspectorMessage();
     InspectorMessage(struct suscan_analyzer_inspector_msg *msg);
