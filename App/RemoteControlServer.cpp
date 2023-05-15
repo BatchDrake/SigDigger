@@ -25,6 +25,7 @@
 #include <Suscan/Logger.h>
 #include <Version.h>
 #include <SuWidgetsHelpers.h>
+#include <SigDiggerHelpers.h>
 
 using namespace SigDigger;
 
@@ -50,63 +51,6 @@ RemoteControlClient::write(QString const &data)
   socket->write(data.toUtf8());
 }
 
-bool
-RemoteControlClient::tokenize(QString const &command, QStringList &out)
-{
-  QStringList result;
-  int len = SCAST(int, command.size());
-  bool qot = false, sqot = false;
-  qsizetype argLen;
-
-  for (int i = 0; i < len; i++) {
-    int start = i;
-
-    if (command[i] == '\"')
-      qot = true;
-    else if (command[i] == '\'')
-      sqot = true;
-
-    if (qot) {
-      ++i;
-      ++start;
-
-      while (i < len && command[i] != '\"')
-        ++i;
-
-      if (i < len)
-        qot = false;
-
-      argLen = i - start;
-      ++i;
-    } else if (sqot) {
-      ++i;
-      ++start;
-
-      while (i < len && command[i] != '\'')
-        ++i;
-
-      if (i < len)
-        sqot = false;
-      argLen = i - start;
-      ++i;
-    } else {
-      while(i<len && command[i] != ' ')
-        i++;
-      argLen = i - start;
-    }
-
-    result.append(command.sliced(start, argLen));
-  }
-
-  if (qot || sqot)
-    return false;
-
-  out.clear();
-  out.append(result);
-
-  return true;
-}
-
 void
 RemoteControlClient::process()
 {
@@ -116,7 +60,7 @@ RemoteControlClient::process()
     if (line.size() > 0 && line[line.size() - 1] == '\n') {
       QStringList args;
 
-      if (!tokenize(line.trimmed(), args)) {
+      if (!SigDiggerHelpers::tokenize(line.trimmed(), args)) {
         write("Syntax error\n");
       } else if (args.size() > 0) {
         QString command = args[0].toLower();

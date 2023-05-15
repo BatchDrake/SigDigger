@@ -75,6 +75,63 @@ SigDiggerHelpers::timerdup(struct timeval *tv)
   }
 }
 
+bool
+SigDiggerHelpers::tokenize(QString const &command, QStringList &out)
+{
+  QStringList result;
+  int len = SCAST(int, command.size());
+  bool qot = false, sqot = false;
+  qsizetype argLen;
+
+  for (int i = 0; i < len; i++) {
+    int start = i;
+
+    if (command[i] == '\"')
+      qot = true;
+    else if (command[i] == '\'')
+      sqot = true;
+
+    if (qot) {
+      ++i;
+      ++start;
+
+      while (i < len && command[i] != '\"')
+        ++i;
+
+      if (i < len)
+        qot = false;
+
+      argLen = i - start;
+      ++i;
+    } else if (sqot) {
+      ++i;
+      ++start;
+
+      while (i < len && command[i] != '\'')
+        ++i;
+
+      if (i < len)
+        sqot = false;
+      argLen = i - start;
+      ++i;
+    } else {
+      while(i<len && command[i] != ' ')
+        i++;
+      argLen = i - start;
+    }
+
+    result.append(command.sliced(start, argLen));
+  }
+
+  if (qot || sqot)
+    return false;
+
+  out.clear();
+  out.append(result);
+
+  return true;
+}
+
 AudioDemod
 SigDiggerHelpers::strToDemod(std::string const &str)
 {

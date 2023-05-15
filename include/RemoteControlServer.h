@@ -35,7 +35,6 @@ namespace SigDigger{
     RemoteControlClient(QTcpSocket *);
     ~RemoteControlClient();
     void process();
-    bool tokenize(QString const &command, QStringList &out);
     void write(QString const &);
   };
 

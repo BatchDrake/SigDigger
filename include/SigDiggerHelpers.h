@@ -81,6 +81,7 @@ namespace SigDigger {
     static void timerdup(struct timeval *);
 
     // Demod helpers
+    static bool tokenize(QString const &command, QStringList &out);
     static AudioDemod strToDemod(std::string const &str);
     static std::string demodToStr(AudioDemod);
 
