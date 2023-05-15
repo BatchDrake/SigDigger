@@ -945,8 +945,21 @@ MainSpectrum::getBandwidth(void) const
 bool
 MainSpectrum::canChangeFrequency(qint64 freq) const
 {
-  return this->minFreq <= freq && freq <= this->maxFreq;
+  return canChangeFrequency(freq, getLnbFreq());
 }
+
+bool
+MainSpectrum::canChangeFrequency(qint64 freq, qint64 lnb) const
+{
+  qint64 minFreq = this->noLimits ? 0            : this->minFreq;
+  qint64 maxFreq = this->noLimits ? 300000000000 : this->maxFreq;
+
+  qint64 minLcd = minFreq + lnb;
+  qint64 maxLcd = maxFreq + lnb;
+
+  return (minLcd <= freq) && (freq <= maxLcd);
+}
+
 
 //////////////////////////////// Slots /////////////////////////////////////////
 void

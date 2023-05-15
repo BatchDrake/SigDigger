@@ -206,6 +206,7 @@ namespace SigDigger {
     qreal sidePanelRatio() const;
 
     bool canChangeFrequency(qint64) const;
+    bool canChangeFrequency(qint64, qint64) const;
     static int getFrequencyUnits(qint64 frew);
 
     qint32 computeLowCutFreq(int bw) const;

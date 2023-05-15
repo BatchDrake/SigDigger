@@ -208,7 +208,9 @@ UIMediator::onPropFrequencyChanged()
 {
   int64_t newFreq = SCAST(qint64, m_propFrequency->toDouble());
 
-  if (this->ui->spectrum->canChangeFrequency(newFreq)) {
+  if (this->ui->spectrum->canChangeFrequency(
+        newFreq,
+        this->ui->spectrum->getLnbFreq())) {
     this->ui->spectrum->setFreqs(
         newFreq,
         this->ui->spectrum->getLnbFreq());
