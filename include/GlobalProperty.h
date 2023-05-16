@@ -21,7 +21,7 @@
 
 #include <QObject>
 #include <QVariant>
-
+#include <QStringList>
 namespace SigDigger{
   class GlobalProperty: public QObject, public QVariant
   {
@@ -37,6 +37,7 @@ namespace SigDigger{
 
     static GlobalProperty *registerProperty(QString const &, QString const &, QVariant const &);
     static GlobalProperty *lookupProperty(QString const &);
+    static QStringList     getProperties();
 
     QString name() const;
     QString desc() const;

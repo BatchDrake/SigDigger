@@ -83,3 +83,14 @@ GlobalProperty::lookupProperty(QString const &name)
 
   return nullptr;
 }
+
+QStringList
+GlobalProperty::getProperties()
+{
+  QStringList list;
+
+  for (auto p: g_propertyHash.keys())
+    list.append(p);
+
+  return list;
+}

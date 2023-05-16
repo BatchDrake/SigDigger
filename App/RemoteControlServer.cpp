@@ -90,6 +90,18 @@ RemoteControlClient::process()
               write(args[1] + " = " + prop->toString() + "\n");
             }
           }
+        } else if (command == "list") {
+          if (args.size() != 1) {
+            write(command + ": invalid number of arguments\n");
+          } else {
+            QStringList props = GlobalProperty::getProperties();
+
+            for (auto pName: props) {
+              auto prop = GlobalProperty::lookupProperty(pName);
+              write("# " + prop->desc() + "\n");
+              write(prop->name() + " = " + prop->toString() + "\n\n");
+            }
+          }
         } else {
           write(command + ": Unrecognized command\n");
         }
