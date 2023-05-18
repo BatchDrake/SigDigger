@@ -307,10 +307,11 @@ Application::connectDeviceDetect(void)
 }
 
 QString
-Application::getLogText(void)
+Application::getLogText(int howMany)
 {
   QString text = "";
   std::lock_guard<Suscan::Logger> guard(*Suscan::Logger::getInstance());
+  QStringList msgList;
 
   for (const auto &p : *Suscan::Logger::getInstance()) {
     switch (p.severity) {
@@ -335,7 +336,19 @@ Application::getLogText(void)
         break;
     }
 
-    text += p.message.c_str();
+    msgList.append(p.message.c_str());
+  }
+
+  if (howMany < 0) {
+    text = msgList.join("");
+  } else {
+    int first = msgList.size() - howMany;
+
+    if (first < 0)
+      first = 0;
+
+    for (int i = first; i < msgList.size(); ++i)
+      text += msgList[i];
   }
 
   return text;
@@ -430,7 +443,7 @@ Application::startCapture(void)
           this,
           "SigDigger error",
           "Failed to start capture due to errors:<p /><pre>"
-          + getLogText().toHtmlEscaped()
+          + getLogText(10).toHtmlEscaped()
           + "</pre>",
           QMessageBox::Ok);
     this->mediator->setState(UIMediator::HALTED);

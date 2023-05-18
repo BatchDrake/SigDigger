@@ -76,7 +76,7 @@ namespace SigDigger {
     DeviceDetectWorker *deviceDetectWorker;
 
     // Private methods
-    QString getLogText(void);
+    QString getLogText(int howMany = -1);
     void connectUI(void);
     void connectAnalyzer(void);
     void connectDeviceDetect(void);
