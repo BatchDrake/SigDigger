@@ -1653,7 +1653,7 @@
                  </widget>
                 </item>
                 <item row="2" column="1" colspan="2">
-                 <widget class="QDoubleSpinBox" name="syncPhaseSpin">
+                 <widget class="ContextAwareSpinBox" name="syncPhaseSpin">
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -2107,7 +2107,7 @@
                     <number>1</number>
                    </property>
                    <item row="0" column="1">
-                    <widget class="QDoubleSpinBox" name="clkGardnerLoopGain">
+                    <widget class="ContextAwareSpinBox" name="clkGardnerLoopGain">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -2307,7 +2307,7 @@
                     </widget>
                    </item>
                    <item row="1" column="1">
-                    <widget class="QDoubleSpinBox" name="zeroPointSpin">
+                    <widget class="ContextAwareSpinBox" name="zeroPointSpin">
                      <property name="alignment">
                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                      </property>
@@ -2601,6 +2601,11 @@
    <header>MultiToolBox.h</header>
    <addpagemethod>addPage</addpagemethod>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ContextAwareSpinBox</class>
+   <extends>QDouble</extends>
+   <header>ContextAwareSpinBox.h</header>
   </customwidget>
  </customwidgets>
  <resources>

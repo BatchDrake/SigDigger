@@ -81,7 +81,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QDoubleSpinBox" name="gainSpin"/>
+       <widget class="ContextAwareSpinBox" name="gainSpin"/>
       </item>
       <item row="0" column="0" colspan="4">
        <widget class="QLabel" name="label_3">
@@ -98,6 +98,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDouble</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
+  </customwidgets>
+
  <resources/>
  <connections/>
 </ui>

@@ -854,7 +854,7 @@
     </widget>
    </item>
    <item row="5" column="5" colspan="2">
-    <widget class="QDoubleSpinBox" name="ppmSpinBox">
+    <widget class="ContextAwareSpinBox" name="ppmSpinBox">
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
@@ -972,7 +972,12 @@
    <extends>QWidget</extends>
    <header>FrequencySpinBox.h</header>
   </customwidget>
- </customwidgets>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDouble</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
+  </customwidgets>
  <resources/>
  <connections/>
 </ui>
