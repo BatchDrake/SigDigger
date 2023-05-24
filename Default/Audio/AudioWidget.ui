@@ -126,7 +126,7 @@
        </widget>
       </item>
       <item row="1" column="2" colspan="3">
-       <widget class="QDoubleSpinBox" name="sqlLevelSpin">
+       <widget class="ContextAwareSpinBox" name="sqlLevelSpin">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
@@ -419,7 +419,14 @@
     </widget>
    </item>
   </layout>
- </widget>
+</widget>
+<customwidgets>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDouble</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
+  </customwidgets>
  <resources>
   <include location="../../icons/Icons.qrc"/>
  </resources>

@@ -339,7 +339,7 @@
                   </widget>
                  </item>
                  <item row="0" column="2" colspan="2">
-                  <widget class="QDoubleSpinBox" name="frameRateSpin">
+                  <widget class="ContextAwareSpinBox" name="frameRateSpin">
                    <property name="enabled">
                     <bool>true</bool>
                    </property>
@@ -686,7 +686,7 @@
                   <number>3</number>
                  </property>
                  <item row="0" column="1">
-                  <widget class="QDoubleSpinBox" name="dcSpin">
+                  <widget class="ContextAwareSpinBox" name="dcSpin">
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
@@ -953,7 +953,7 @@
                <number>3</number>
               </property>
               <item row="3" column="3">
-               <widget class="QDoubleSpinBox" name="fastTrackTauSpin">
+               <widget class="ContextAwareSpinBox" name="fastTrackTauSpin">
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
@@ -983,7 +983,7 @@
                </widget>
               </item>
               <item row="4" column="3">
-               <widget class="QDoubleSpinBox" name="slowTrackTauSpin">
+               <widget class="ContextAwareSpinBox" name="slowTrackTauSpin">
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
@@ -999,7 +999,7 @@
                </widget>
               </item>
               <item row="4" column="1">
-               <widget class="QDoubleSpinBox" name="lineLenTauSpin">
+               <widget class="ContextAwareSpinBox" name="lineLenTauSpin">
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
@@ -1032,7 +1032,7 @@
                </widget>
               </item>
               <item row="3" column="1">
-               <widget class="QDoubleSpinBox" name="agcTauSpin">
+               <widget class="ContextAwareSpinBox" name="agcTauSpin">
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
@@ -1367,6 +1367,11 @@ color: white;</string>
    <extends>QWidget</extends>
    <header>TimeSpinBox.h</header>
   </customwidget>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDouble</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
  </customwidgets>
  <resources/>
  <connections/>

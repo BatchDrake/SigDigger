@@ -253,7 +253,7 @@ font-weight: bold;</string>
        </widget>
       </item>
       <item row="9" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="maxMemSpin">
+       <widget class="ContextAwareSpinBox" name="maxMemSpin">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
@@ -461,7 +461,7 @@ font-weight: bold;</string>
        </widget>
       </item>
       <item row="7" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="triggerSpin">
+       <widget class="ContextAwareSpinBox" name="triggerSpin">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
@@ -493,6 +493,11 @@ font-weight: bold;</string>
    <extends>QWidget</extends>
    <header>FrequencySpinBox.h</header>
   </customwidget>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDouble</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
  </customwidgets>
  <resources/>
  <connections/>
