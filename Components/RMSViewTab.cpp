@@ -400,6 +400,7 @@ RMSViewTab::toggleModes(QObject *sender)
 
   if (sender == nullptr || sender == this->ui->autoFitButton) {
     this->ui->waveform->refreshData();
+    this->ui->waveform->setAutoFitToEnvelope(this->ui->autoFitButton->isChecked());
     if (this->ui->autoFitButton->isChecked())
       this->fitVertical();
   }
