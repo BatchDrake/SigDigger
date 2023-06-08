@@ -1375,14 +1375,19 @@ SourceWidget::onSaveSwamped(void)
 {
   if (m_dataSaver != nullptr) {
     this->uninstallDataSaver();
-
-    QMessageBox::warning(
-          this,
-          "SigDigger error",
-          "Capture thread swamped. Maybe the selected storage device is too slow",
-          QMessageBox::Ok);
-
-    this->setRecordState(false);
+    SU_WARNING("Capture thread swamped. Maybe the selected storage device is too slow.\n");
+    int fd = this->openCaptureFile();
+    if (fd != -1) {
+      SU_WARNING("Capture restarted.\n");
+      this->installDataSaver(fd);
+    } else {
+      QMessageBox::warning(
+            this,
+            "SigDigger error",
+            "Capture swamped, but failed to reopen the capture file.",
+            QMessageBox::Ok);
+      this->setRecordState(false);
+    }
   }
 }
 

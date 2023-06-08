@@ -85,6 +85,7 @@ FACTab::FACTab(QWidget *parent) :
 
   this->ui->facWaveform->setRealComponent(true);
   this->ui->facWaveform->setEnableFeedback(false);
+  this->ui->facWaveform->setAutoFitToEnvelope(false);
   this->onUnitsChanged();
 
   this->onChangeFACSize();
@@ -309,9 +310,11 @@ FACTab::onUnitsChanged(void)
   if (this->ui->unitCheck->isChecked()) {
     this->ui->facWaveform->setSampleRate(1);
     this->ui->facWaveform->setHorizontalUnits("sp");
+    this->ui->facWaveform->setHorizontalAxis("L");
   } else {
     this->ui->facWaveform->setSampleRate(this->fs);
     this->ui->facWaveform->setHorizontalUnits("s");
+    this->ui->facWaveform->setHorizontalAxis("t");
   }
 }
 

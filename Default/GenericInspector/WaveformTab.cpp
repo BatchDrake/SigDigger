@@ -31,6 +31,8 @@ WaveformTab::WaveformTab(QWidget *parent) :
   this->ui->realWaveform->setRealComponent(true);
   this->ui->imagWaveform->setRealComponent(false);
   this->ui->imagWaveform->reuseDisplayData(this->ui->realWaveform);
+  this->ui->realWaveform->setAutoFitToEnvelope(false);
+  this->ui->imagWaveform->setAutoFitToEnvelope(false);
 
   QFontMetrics m(this->ui->selStartButtonsWidget->font());
 
