@@ -624,7 +624,6 @@ InspToolWidget::cancelAutoSquelch()
   this->ui->autoSquelchButton->setText("Autosquelch");
 
   this->stopRawCapture();
-  this->resetRawInspector(1);
 }
 
 void
