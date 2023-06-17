@@ -639,6 +639,7 @@ MainSpectrum::setFilterBandwidth(unsigned int bw)
           computeLowCutFreq(freq),
           computeHighCutFreq(freq)));
     this->bandwidth = bw;
+   emit bandwidthChanged();
   }
 }
 
