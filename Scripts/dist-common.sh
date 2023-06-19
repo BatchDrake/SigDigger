@@ -147,7 +147,12 @@ function try()
 	    echo ''
 	    echo 'Deploy root filelist: '
 	    echo '--------------8<----------------------------------------'
-	    find "$DEPLOYROOT"
+	    ls -lR "$DEPLOYROOT"
+	    echo '--------------8<----------------------------------------'
+
+   	    echo 'Build root filelist: '
+	    echo '--------------8<----------------------------------------'
+	    find "$BUILDROOT"
 	    echo '--------------8<----------------------------------------'
 	    echo ''
 	fi
