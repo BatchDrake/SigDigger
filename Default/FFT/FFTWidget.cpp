@@ -50,6 +50,7 @@ FFTWidgetConfig::deserialize(Suscan::Object const &conf)
   LOAD(palette);
   LOAD(zoom);
   LOAD(rangeLock);
+  LOAD(channels);
   LOAD(timeSpan);
   LOAD(timeStamps);
   LOAD(utcTimeStamps);
@@ -79,6 +80,7 @@ FFTWidgetConfig::serialize(void)
   STORE(palette);
   STORE(zoom);
   STORE(rangeLock);
+  STORE(channels);
   STORE(timeSpan);
   STORE(timeStamps);
   STORE(utcTimeStamps);
@@ -123,6 +125,7 @@ FFTWidget::applyConfig(void)
   this->setPeakDetect(savedConfig.peakDetect);
   this->setFilled(savedConfig.filled);
   this->setRangeLock(savedConfig.rangeLock);
+  this->setShowChannels(savedConfig.channels);
   this->setTimeSpan(savedConfig.timeSpan);
   this->setTimeStamps(savedConfig.timeStamps);
   this->setTimeStampsUTC(savedConfig.utcTimeStamps);
@@ -238,9 +241,15 @@ FFTWidget::connectAll(void)
 
   connect(
         this->ui->lockButton,
-        SIGNAL(clicked(bool)),
+        SIGNAL(toggled(bool)),
         this,
         SLOT(onRangeLockChanged(void)));
+
+  connect(
+        this->ui->channelButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onChannelsChanged(void)));
 
   connect(
         this->ui->detectPeakButton,
@@ -608,6 +617,12 @@ FFTWidget::getRangeLock(void) const
 }
 
 bool
+FFTWidget::getShowChannels(void) const
+{
+  return this->ui->channelButton->isChecked();
+}
+
+bool
 FFTWidget::getTimeStamps(void) const
 {
   return this->ui->timeStampsButton->isChecked();
@@ -869,6 +884,14 @@ FFTWidget::setRangeLock(bool lock)
   this->panelConfig->rangeLock = lock;
 }
 
+void
+FFTWidget::setShowChannels(bool show)
+{
+  this->ui->channelButton->setChecked(show);
+  this->panelConfig->channels = show;
+}
+
+
 bool
 FFTWidget::setUnitName(QString name)
 {
@@ -946,6 +969,7 @@ FFTWidget::refreshSpectrumRepresentationSettings()
   m_spectrum->setFilled(this->getFilled());
 
   m_spectrum->setBookmarks(this->getBookmarks());
+  m_spectrum->setShowChannels(this->getShowChannels());
   m_spectrum->blockSignals(blocking);
 }
 
@@ -1122,6 +1146,13 @@ void
 FFTWidget::onRangeLockChanged(void)
 {
   this->setRangeLock(this->getRangeLock());
+}
+
+void
+FFTWidget::onChannelsChanged(void)
+{
+  this->setShowChannels(this->getShowChannels());
+  this->refreshSpectrumRepresentationSettings();
 }
 
 void

@@ -54,6 +54,7 @@ namespace SigDigger {
     unsigned int timeSpan = 0;
 
     bool rangeLock = true;
+    bool channels = true;
     bool timeStamps = false;
     bool bookmarks = true;
     bool utcTimeStamps = true;
@@ -128,6 +129,7 @@ namespace SigDigger {
     bool getPeakHold() const;
     bool getPeakDetect() const;
     bool getRangeLock() const;
+    bool getShowChannels() const;
     bool getTimeStamps() const;
     bool getBookmarks() const;
     bool getFilled() const;
@@ -146,6 +148,7 @@ namespace SigDigger {
     void setPeakHold(bool);
     void setPeakDetect(bool);
     void setRangeLock(bool);
+    void setShowChannels(bool);
     bool setPalette(std::string const &);
     void setPandRangeMin(float);
     void setPandRangeMax(float);
@@ -222,6 +225,7 @@ namespace SigDigger {
     void onTimeStampsChanged();
     void onBookmarksChanged();
     void onUTCChanged();
+    void onChannelsChanged();
 
     // Unit handling slots
     void onUnitChanged();

@@ -88,7 +88,6 @@ namespace SigDigger {
     CaptureMode mode = UNAVAILABLE;
     Skewness filterSkewness = SYMMETRIC;
     bool throttling = false;
-    bool resAdjusted = false;
     bool noLimits = false;
     qint64 minFreq = 0;
     qint64 maxFreq = 6000000000;
@@ -174,6 +173,7 @@ namespace SigDigger {
     void setTimeSpan(quint64 ms);
     void setGracePeriod(qint64 ms);
 
+    void setShowChannels(bool);
     void setShowFATs(bool);
     void pushFAT(FrequencyAllocationTable *);
     void removeFAT(QString const &name);

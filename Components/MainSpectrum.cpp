@@ -250,16 +250,6 @@ MainSpectrum::feed(float *data, int size, struct timeval const &tv, bool looped)
   dateTime.setMSecsSinceEpoch(tv.tv_sec * 1000 + tv.tv_usec / 1000);
 
   WATERFALL_CALL(setNewFftData(data, size, dateTime, looped));
-
-  if (!this->resAdjusted) {
-    this->resAdjusted = true;
-    int res = static_cast<int>(
-          round(static_cast<qreal>(this->cachedRate) / size));
-    if (res < 1)
-      res = 1;
-    WATERFALL_CALL(setClickResolution(res));
-    WATERFALL_CALL(setFilterClickResolution(res));
-  }
 }
 
 void
@@ -390,7 +380,6 @@ MainSpectrum::notifyHalt(void)
   WATERFALL_CALL(setRunningState(false));
   WATERFALL_CALL(setClickResolution(1));
   WATERFALL_CALL(setFilterClickResolution(1));
-  this->resAdjusted = false;
 }
 
 void
@@ -701,7 +690,6 @@ MainSpectrum::setSampleRate(unsigned int rate)
     this->ui->loLcd->setMax(freq / 2 + this->getCenterFreq());
 
     this->cachedRate = rate;
-    this->resAdjusted = false;
     refreshFFTProperties();
     refreshInfoText();
   }
@@ -725,6 +713,12 @@ void
 MainSpectrum::setShowFATs(bool show)
 {
   WATERFALL_CALL(setFATsVisible(show));
+}
+
+void
+MainSpectrum::setShowChannels(bool show)
+{
+  WATERFALL_CALL(setChannelsEnabled(show));
 }
 
 void
