@@ -99,6 +99,14 @@ function build_fixups()
   if [ "$OSTYPE" == "Linux" ]; then
     cp -f "$BUILDROOT/"sigutils/build/src/libsigutils.so.* "$DEPLOYROOT/usr/lib"
     cp -f "$BUILDROOT/"suscan/build/libsuscan.so.*         "$DEPLOYROOT/usr/lib"
+
+    if [ ! -f "$DEPLOYROOT/usr/lib/libsigutils.so.1" ]; then
+	ln -s "$DEPLOYROOT/usr/lib/libsigutils.so" "$DEPLOYROOT/usr/lib/libsigutils.so.1"
+    fi
+
+    if [ ! -f "$DEPLOYROOT/usr/lib/libsuscan.so.1" ]; then
+	ln -s "$DEPLOYROOT/usr/lib/libsuscan.so" "$DEPLOYROOT/usr/lib/libsuscan.so.1"
+    fi
   fi
 
   return 0
