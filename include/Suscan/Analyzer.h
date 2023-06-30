@@ -45,30 +45,30 @@ namespace Suscan {
 
   struct AnalyzerSourceInfo {
     bool loan = false;
-    struct suscan_analyzer_source_info local_info;
-    struct suscan_analyzer_source_info *c_info = nullptr;
+    struct suscan_source_info local_info;
+    struct suscan_source_info *c_info = nullptr;
 
     AnalyzerSourceInfo() : AnalyzerSourceInfo(&this->local_info)
     {
-      suscan_analyzer_source_info_init(&this->local_info);
+      suscan_source_info_init(&this->local_info);
     }
 
     ~AnalyzerSourceInfo()
     {
       if (!this->loan)
-        suscan_analyzer_source_info_finalize(&this->local_info);
+        suscan_source_info_finalize(&this->local_info);
     }
 
-    AnalyzerSourceInfo(struct suscan_analyzer_source_info *ptr, bool loan = false)
+    AnalyzerSourceInfo(struct suscan_source_info *ptr, bool loan = false)
     {
       this->loan = loan;
 
       if (loan) {
-        suscan_analyzer_source_info_init(&this->local_info);
+        suscan_source_info_init(&this->local_info);
         this->c_info = ptr;
       } else {
         SU_ATTEMPT(
-              suscan_analyzer_source_info_init_copy(&this->local_info, ptr));
+              suscan_source_info_init_copy(&this->local_info, ptr));
         this->c_info = &this->local_info;
       }
     }
@@ -97,10 +97,10 @@ namespace Suscan {
     operator=(const AnalyzerSourceInfo &rv)
     {
       if (!this->loan)
-        suscan_analyzer_source_info_finalize(&this->local_info);
+        suscan_source_info_finalize(&this->local_info);
 
       SU_ATTEMPT(
-            suscan_analyzer_source_info_init_copy(
+            suscan_source_info_init_copy(
               &this->local_info,
               rv.c_info));
       this->loan   = false;

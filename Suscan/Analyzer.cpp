@@ -305,7 +305,7 @@ Analyzer::halt()
 void
 Analyzer::captureMessage(quint32 type, void *data)
 {
-  auto asSrcInfo = static_cast<struct suscan_analyzer_source_info *>(data);
+  auto asSrcInfo = static_cast<struct suscan_source_info *>(data);
 
   switch (type) {
     // Data messages

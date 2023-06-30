@@ -27,7 +27,7 @@ SourceInfoMessage::SourceInfoMessage() : Message()
   this->message = nullptr;
 }
 
-SourceInfoMessage::SourceInfoMessage(struct suscan_analyzer_source_info *msg) :
+SourceInfoMessage::SourceInfoMessage(struct suscan_source_info *msg) :
   Message(SUSCAN_ANALYZER_MESSAGE_TYPE_SOURCE_INFO, msg)
 {
   this->message = msg;

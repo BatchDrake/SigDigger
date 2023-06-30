@@ -23,20 +23,20 @@
 #include <Suscan/Compat.h>
 #include <Suscan/Message.h>
 
-#include <analyzer/analyzer.h>
+#include <analyzer/source/info.h>
 
 namespace Suscan {
   struct AnalyzerSourceInfo;
   class SourceInfoMessage: public Message {
   private:
-    struct suscan_analyzer_source_info *message = nullptr;
+    struct suscan_source_info *message = nullptr;
     AnalyzerSourceInfo *asInfo = nullptr;
 
   public:
     const AnalyzerSourceInfo *info(void) const;
 
     SourceInfoMessage();
-    SourceInfoMessage(struct suscan_analyzer_source_info *info);
+    SourceInfoMessage(struct suscan_source_info *info);
     ~SourceInfoMessage();
   };
 }

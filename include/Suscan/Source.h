@@ -27,8 +27,6 @@
 #include <QPair>
 #include <analyzer/source.h>
 
-struct suscan_analyzer_gain_info;
-
 namespace Suscan {
   class Source
   {
@@ -55,7 +53,7 @@ namespace Suscan {
 
   public:
     GainDescription(const struct suscan_source_gain_desc *desc);
-    GainDescription(const struct suscan_analyzer_gain_info *info);
+    GainDescription(const struct suscan_source_gain_info *info);
 
     std::string
     getName(void) const

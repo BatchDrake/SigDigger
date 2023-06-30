@@ -18,7 +18,7 @@
 //
 
 #include <Suscan/Source.h>
-#include <Suscan/Analyzer.h>
+#include <QList>
 
 using namespace Suscan;
 
@@ -32,7 +32,7 @@ Source::GainDescription::GainDescription(const struct suscan_source_gain_desc *d
   this->name = std::string(desc->name);
 }
 
-Source::GainDescription::GainDescription(const struct suscan_analyzer_gain_info *desc)
+Source::GainDescription::GainDescription(const struct suscan_source_gain_info *desc)
 {
   this->def  = desc->value;
   this->max  = desc->max;
