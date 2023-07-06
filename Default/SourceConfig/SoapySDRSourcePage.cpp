@@ -71,6 +71,12 @@ SoapySDRSourcePage::connectAll()
         SIGNAL(accepted()),
         this,
         SLOT(onDeviceTweaksAccepted()));
+
+  connect(
+        ui->deviceTweaksButton,
+        SIGNAL(clicked()),
+        this,
+        SLOT(onDeviceTweaksClicked()));
 }
 
 void
@@ -135,7 +141,6 @@ SoapySDRSourcePage::selectDeviceByIndex(int index)
           static_cast<unsigned int>(
           ui->deviceCombo->itemData(index).value<long>())));
 
-  printf("We got a device! %s\n", device->getDesc().c_str());
   m_savedLocalDeviceIndex = index;
   m_config->setDevice(*device);
   m_hasTweaks = false;

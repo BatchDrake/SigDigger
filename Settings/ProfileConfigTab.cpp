@@ -212,11 +212,8 @@ ProfileConfigTab::refreshSampRates()
 
   ui->sampleRateCombo->clear();
 
-  printf("Current config widget: %p\n", m_currentConfigWidget);
   if (m_currentConfigWidget != nullptr) {
     m_currentConfigWidget->getPreferredRates(rates);
-
-    printf("Number of rates: %d\n", rates.size());
 
     for (auto p : rates)
       ui->sampleRateCombo->addItem(
@@ -789,10 +786,8 @@ ProfileConfigTab::onChangeSourceType(int)
   QVariant data = ui->sourceTypeCombo->currentData();
   const char *name = data.value<const char *>();
 
-  if (name == nullptr) {
-    printf("NO NAME IN CURRENT DATA!\n");
+  if (name == nullptr)
     return;
-  }
 
   if (selectSourceType(name)) {
     m_profile.setType(name);
@@ -814,7 +809,6 @@ ProfileConfigTab::onSourceConfigWidgetChanged()
     // Changes from the current config widget. Maybe the preferred list of
     // rates has changed?
 
-    printf("Source Config widget changed!\n");
     configChanged(true);
     refreshSampRates();
   }
