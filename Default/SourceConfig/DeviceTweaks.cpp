@@ -24,29 +24,29 @@ using namespace SigDigger;
 void
 DeviceTweaks::connectAll(void)
 {
-  QPushButton *resetButton = this->ui->buttonBox->button(
+  QPushButton *resetButton = ui->buttonBox->button(
         QDialogButtonBox::Reset);
 
   connect(
-        this->ui->addButton,
+        ui->addButton,
         SIGNAL(clicked(void)),
         this,
         SLOT(onAddEntry(void)));
 
   connect(
-        this->ui->removeButton,
+        ui->removeButton,
         SIGNAL(clicked(void)),
         this,
         SLOT(onRemoveEntry(void)));
 
   connect(
-        this->ui->tableWidget->selectionModel(),
+        ui->tableWidget->selectionModel(),
         SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
         this,
         SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
   connect(
-        this->ui->tableWidget,
+        ui->tableWidget,
         SIGNAL(itemChanged(QTableWidgetItem *)),
         this,
         SLOT(onChanged()));
@@ -62,22 +62,22 @@ DeviceTweaks::connectAll(void)
 void
 DeviceTweaks::refreshUi(void)
 {
-  this->ui->tableWidget->model()->removeRows(
+  ui->tableWidget->model()->removeRows(
         0,
-        this->ui->tableWidget->model()->rowCount());
+        ui->tableWidget->model()->rowCount());
 
   // Insert current data
-  if (this->profile != nullptr) {
+  if (m_profile != nullptr) {
     int i = 0;
-    auto list = this->profile->getParamList();
+    auto list = m_profile->getParamList();
 
     for (auto p : list) {
-      this->ui->tableWidget->insertRow(i);
-      this->ui->tableWidget->setItem(
+      ui->tableWidget->insertRow(i);
+      ui->tableWidget->setItem(
             i,
             0,
             new QTableWidgetItem(p.first.c_str()));
-      this->ui->tableWidget->setItem(
+      ui->tableWidget->setItem(
             i,
             1,
             new QTableWidgetItem(p.second.c_str()));
@@ -85,48 +85,48 @@ DeviceTweaks::refreshUi(void)
     }
   }
 
-  this->ui->removeButton->setEnabled(false);
-  this->setChanged(false);
+  ui->removeButton->setEnabled(false);
+  setChanged(false);
 }
 
 void
 DeviceTweaks::setChanged(bool changed)
 {
-  this->changed = changed;
+  m_changed = changed;
 
-  if (this->profile != nullptr) {
-    std::string desc = this->profile->getDevice().getDesc();
+  if (m_profile != nullptr) {
+    std::string desc = m_profile->getDevice().getDesc();
 
     if (desc.size() == 0)
       desc = "(No device description)";
 
     if (changed)
-      this->setWindowTitle(QString::fromStdString(desc) + " [changed]");
+      setWindowTitle(QString::fromStdString(desc) + " [changed]");
     else
-      this->setWindowTitle(QString::fromStdString(desc));
+      setWindowTitle(QString::fromStdString(desc));
   }
 }
 
 void
 DeviceTweaks::commitConfig(void)
 {
-  if (this->profile != nullptr) {
-    auto model = this->ui->tableWidget->model();
+  if (m_profile != nullptr) {
+    auto model = ui->tableWidget->model();
     int rows = model->rowCount();
 
-    this->profile->clearParams();
+    m_profile->clearParams();
 
     for (int i = 0; i < rows; ++i) {
-      auto keyItem = this->ui->tableWidget->item(i, 0);
-      auto valItem = this->ui->tableWidget->item(i, 1);
+      auto keyItem = ui->tableWidget->item(i, 0);
+      auto valItem = ui->tableWidget->item(i, 1);
       if (keyItem != nullptr) { 
         auto key = keyItem->text().toStdString();
 
         if (valItem != nullptr) {
           auto val = valItem->text().toStdString();
-          this->profile->setParam(key, val);
+          m_profile->setParam(key, val);
         } else {
-          this->profile->setParam(key, "");
+          m_profile->setParam(key, "");
         }
       }
     }
@@ -136,14 +136,14 @@ DeviceTweaks::commitConfig(void)
 void
 DeviceTweaks::setProfile(Suscan::Source::Config *profile)
 {
-  this->profile = profile;
-  this->refreshUi();
+  m_profile = profile;
+  refreshUi();
 }
 
 bool
 DeviceTweaks::hasChanged(void) const
 {
-  return this->changed;
+  return m_changed;
 }
 
 DeviceTweaks::DeviceTweaks(QWidget *parent) :
@@ -151,7 +151,7 @@ DeviceTweaks::DeviceTweaks(QWidget *parent) :
   ui(new Ui::DeviceTweaks)
 {
   ui->setupUi(this);
-  this->connectAll();
+  connectAll();
 }
 
 DeviceTweaks::~DeviceTweaks()
@@ -163,43 +163,43 @@ DeviceTweaks::~DeviceTweaks()
 void
 DeviceTweaks::onAddEntry(void)
 {
-  this->ui->tableWidget->insertRow(this->ui->tableWidget->rowCount());
-  this->changed = true;
+  ui->tableWidget->insertRow(ui->tableWidget->rowCount());
+  m_changed = true;
 }
 
 void
 DeviceTweaks::onRemoveEntry(void)
 {
   QList<QTableWidgetSelectionRange> ranges =
-      this->ui->tableWidget->selectedRanges();
+      ui->tableWidget->selectedRanges();
 
   if (!ranges.isEmpty()) {
     int begin = ranges.at(0).topRow();
     int count = ranges.at(0).rowCount();
 
     do
-      this->ui->tableWidget->removeRow(begin);
+      ui->tableWidget->removeRow(begin);
     while (--count);
 
-    this->setChanged(true);
+    setChanged(true);
   }
 }
 
 void
 DeviceTweaks::onReset(void)
 {
-  this->refreshUi();
+  refreshUi();
 }
 
 void
 DeviceTweaks::onSelectionChanged(const QItemSelection &, const QItemSelection &)
 {
-  this->ui->removeButton->setEnabled(
-        !this->ui->tableWidget->selectedItems().isEmpty());
+  ui->removeButton->setEnabled(
+        !ui->tableWidget->selectedItems().isEmpty());
 }
 
 void
 DeviceTweaks::onChanged(void)
 {
-  this->setChanged(true);
+  setChanged(true);
 }

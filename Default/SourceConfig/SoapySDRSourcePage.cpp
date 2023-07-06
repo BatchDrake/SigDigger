@@ -289,12 +289,13 @@ SoapySDRSourcePage::onDeviceTweaksAccepted()
 void
 SoapySDRSourcePage::onDeviceChanged(int index)
 {
-  if (shouldDisregardTweaks())
+  if (shouldDisregardTweaks()) {
     selectDeviceByIndex(index);
-
-  refreshUi();
-
-  emit changed();
+    refreshUi();
+    emit changed();
+  } else if (m_savedLocalDeviceIndex >= 0) {
+    BLOCKSIG(ui->deviceCombo, setCurrentIndex(m_savedLocalDeviceIndex));
+  }
 }
 
 void

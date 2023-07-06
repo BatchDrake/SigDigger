@@ -450,7 +450,9 @@ SigDiggerHelpers::populateAntennaCombo(
             i - profile.getDevice().getFirstAntenna());
   }
 
-  combo->setCurrentIndex(index);
+  combo->setEnabled(combo->count() > 0);
+  if (combo->count() > 0)
+    combo->setCurrentIndex(index);
 }
 
 const Palette *

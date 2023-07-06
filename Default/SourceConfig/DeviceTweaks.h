@@ -32,9 +32,9 @@ namespace SigDigger {
   class DeviceTweaks : public QDialog
   {
     Q_OBJECT
-    Suscan::Source::Config *profile = nullptr; // borrowed
+    Suscan::Source::Config *m_profile = nullptr; // borrowed
 
-    bool changed = false;
+    bool m_changed = false;
     void connectAll(void);
     void refreshUi(void);
     void setChanged(bool changed);
@@ -44,7 +44,7 @@ namespace SigDigger {
     void setProfile(Suscan::Source::Config *profile);
     bool hasChanged(void) const;
     void commitConfig(void);
-    ~DeviceTweaks();
+    virtual ~DeviceTweaks() override;
 
   private:
     Ui::DeviceTweaks *ui;
