@@ -47,6 +47,7 @@ namespace SigDigger {
   class ToolWidgetFactory;
   class TabWidgetFactory;
   class InspectionWidgetFactory;
+  class SourceConfigWidgetFactory;
   class UIListenerFactory;
 };
 
@@ -271,14 +272,16 @@ namespace Suscan {
     QHash<QString, Source::Config>  networkProfiles;
 
     // Feature object factories
-    QList<SigDigger::ToolWidgetFactory *>       toolWidgetFactories;
-    QList<SigDigger::TabWidgetFactory *>        tabWidgetFactories;
-    QList<SigDigger::InspectionWidgetFactory *> inspectionWidgetFactories;
-    QList<SigDigger::UIListenerFactory *>       uiListenerFactories;
+    QList<SigDigger::ToolWidgetFactory *>         toolWidgetFactories;
+    QList<SigDigger::TabWidgetFactory *>          tabWidgetFactories;
+    QList<SigDigger::InspectionWidgetFactory *>   inspectionWidgetFactories;
+    QList<SigDigger::UIListenerFactory *>         uiListenerFactories;
+    QList<SigDigger::SourceConfigWidgetFactory *> sourceConfigWidgetFactories;
 
     // Used for search only
-    QHash<QString, SigDigger::TabWidgetFactory *>        tabWidgetFactoryTable;
-    QHash<QString, SigDigger::InspectionWidgetFactory *> inspectionWidgetFactoryTable;
+    QHash<QString, SigDigger::TabWidgetFactory *>          tabWidgetFactoryTable;
+    QHash<QString, SigDigger::InspectionWidgetFactory *>   inspectionWidgetFactoryTable;
+    QHash<QString, SigDigger::SourceConfigWidgetFactory *> sourceConfigWidgetFactoryTable;
 
     std::list<std::string> recentProfiles;
 
@@ -418,6 +421,12 @@ namespace Suscan {
     QList<SigDigger::InspectionWidgetFactory *>::const_iterator getFirstInspectionWidgetFactory() const;
     QList<SigDigger::InspectionWidgetFactory *>::const_iterator getLastInspectionWidgetFactory() const;
     SigDigger::InspectionWidgetFactory *findInspectionWidgetFactory(QString const &) const;
+
+    bool registerSourceConfigWidgetFactory(SigDigger::SourceConfigWidgetFactory *);
+    bool unregisterSourceConfigWidgetFactory(SigDigger::SourceConfigWidgetFactory *);
+    QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator getFirstSourceConfigWidgetFactory() const;
+    QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator getLastSourceConfigWidgetFactory() const;
+    SigDigger::SourceConfigWidgetFactory *findSourceConfigWidgetFactory(QString const &) const;
 
     bool registerUIListenerFactory(SigDigger::UIListenerFactory *);
     bool unregisterUIListenerFactory(SigDigger::UIListenerFactory *);

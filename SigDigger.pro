@@ -82,7 +82,6 @@ SOURCES += \
     Components/AddTLESourceDialog.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
-    Components/DeviceTweaks.cpp \
     Components/DopplerDialog.cpp \
     Components/FrequencyCorrectionDialog.cpp \
     Components/GainSlider.cpp \
@@ -127,6 +126,11 @@ SOURCES += \
     Default/Registration.cpp \
     Default/Source/SourceWidget.cpp \
     Default/Source/SourceWidgetFactory.cpp \
+    Default/SourceConfig/DeviceTweaks.cpp \
+    Default/SourceConfig/FileSourcePage.cpp \
+    Default/SourceConfig/FileSourcePageFactory.cpp \
+    Default/SourceConfig/SoapySDRSourcePage.cpp  \
+    Default/SourceConfig/SoapySDRSourcePageFactory.cpp \
     Misc/AutoGain.cpp \
     Misc/Averager.cpp \
     Misc/FileViewer.cpp \
@@ -178,6 +182,7 @@ SOURCES += \
     Tasks/QuadDemodTask.cpp \
     Tasks/WaveSampler.cpp \
     UIComponent/InspectionWidgetFactory.cpp \
+    UIComponent/SourceConfigWidgetFactory.cpp \
     UIComponent/TabWidgetFactory.cpp \
     UIComponent/ToolWidgetFactory.cpp \
     UIComponent/UIComponentFactory.cpp \
@@ -315,6 +320,11 @@ HEADERS += \
     Default/Registration.h \
     Default/Source/SourceWidget.h \
     Default/Source/SourceWidgetFactory.h \
+    Default/SourceConfig/DeviceTweaks.h \
+    Default/SourceConfig/FileSourcePage.h \
+    Default/SourceConfig/FileSourcePageFactory.h \
+    Default/SourceConfig/SoapySDRSourcePage.h \
+    Default/SourceConfig/SoapySDRSourcePageFactory.h \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
@@ -325,7 +335,6 @@ HEADERS += \
     include/ColorConfigTab.h \
     include/CostasRecoveryTask.h \
     include/DelayedConjTask.h \
-    include/DeviceTweaks.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
     include/FileViewer.h \
@@ -358,6 +367,7 @@ HEADERS += \
     include/Loader.h \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
+    include/SourceConfigWidgetFactory.h \
     include/TLESourceTab.h \
     include/TimeWindow.h \
     include/FileDataSaver.h \
@@ -393,6 +403,9 @@ FORMS += \
     Default/Inspection/InspToolWidget.ui \
     Default/RMSInspector/RMSInspector.ui \
     Default/Source/SourceWidget.ui \
+    Default/SourceConfig/DeviceTweaks.ui \
+    Default/SourceConfig/FileSourcePage.ui \
+    Default/SourceConfig/SoapySDRSourcePage.ui \
     ui/AboutDialog.ui \
     ui/AddTLESourceDialog.ui \
     ui/AfcControl.ui \
@@ -403,7 +416,6 @@ FORMS += \
     ui/Config.ui \
     ui/DataSaverUI.ui \
     ui/DeviceGain.ui \
-    ui/DeviceTweaks.ui \
     ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
     ui/FloatingTabWindow.ui \

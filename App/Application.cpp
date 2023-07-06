@@ -47,7 +47,6 @@ DeviceDetectWorker::process()
   emit finished();
 }
 
-
 Application::Application(QWidget *parent) : QMainWindow(parent), ui(this)
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
@@ -88,7 +87,7 @@ void
 Application::run(Suscan::Object const &config)
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
-  this->ui.postLoadInit(this);
+  this->ui.postLoadInit(this->mediator, this);
 
   this->mediator->loadSerializedConfig(config);
 
@@ -386,7 +385,7 @@ Application::startCapture(void)
       std::unique_ptr<Suscan::Analyzer> analyzer;
       Suscan::Source::Config profile = *this->mediator->getProfile();
 
-      if (profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+      if (profile.isRealTime()) {
         if (profile.getDecimatedSampleRate() > SIGDIGGER_MAX_SAMPLE_RATE) {
           unsigned decimate =
               static_cast<unsigned>(
@@ -628,14 +627,19 @@ void
 Application::hotApplyProfile(Suscan::Source::Config const *profile)
 {
   bool errorsOccurred = false;
+  auto sourceInfo = this->analyzer->getSourceInfo();
 
-  if (profile->getType() == SUSCAN_SOURCE_TYPE_SDR) {
+  if (sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA))
     TRYSILENT(this->analyzer->setAntenna(profile->getAntenna()));
-    TRYSILENT(this->analyzer->setBandwidth(profile->getBandwidth()));
-  }
 
-  TRYSILENT(this->analyzer->setFrequency(profile->getFreq(), profile->getLnbFreq()));
-  TRYSILENT(this->analyzer->setDCRemove(profile->getDCRemove()));
+  if (sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_BW))
+    TRYSILENT(this->analyzer->setBandwidth(profile->getBandwidth()));
+
+  if (sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_FREQ))
+    TRYSILENT(this->analyzer->setFrequency(profile->getFreq(), profile->getLnbFreq()));
+
+  if (sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE))
+    TRYSILENT(this->analyzer->setDCRemove(profile->getDCRemove()));
 
   if (errorsOccurred) {
     (void)  QMessageBox::warning(
@@ -715,7 +719,7 @@ Application::onPanSpectrumStart(void)
     if (this->mediator->getPanSpectrumRange(freqMin, freqMax)
         && this->mediator->getPanSpectrumDevice(device)) {
       Suscan::Source::Config config(
-            SUSCAN_SOURCE_TYPE_SDR,
+            "soapysdr",
             SUSCAN_SOURCE_FORMAT_AUTO);
 
       this->scanMinFreq = static_cast<SUFREQ>(freqMin);

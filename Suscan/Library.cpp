@@ -30,6 +30,7 @@
 #include <TabWidgetFactory.h>
 #include <UIListenerFactory.h>
 #include <InspectionWidgetFactory.h>
+#include <SourceConfigWidgetFactory.h>
 
 using namespace Suscan;
 
@@ -1320,6 +1321,55 @@ Singleton::getLastInspectionWidgetFactory() const
 {
   return this->inspectionWidgetFactories.end();
 }
+
+bool
+Singleton::registerSourceConfigWidgetFactory(SigDigger::SourceConfigWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->sourceConfigWidgetFactories.contains(factory))
+    return true;
+
+  this->sourceConfigWidgetFactories.push_back(factory);
+  this->sourceConfigWidgetFactoryTable[factory->name()] = factory;
+
+  return true;
+}
+
+bool
+Singleton::unregisterSourceConfigWidgetFactory(SigDigger::SourceConfigWidgetFactory *factory)
+{
+  int index = this->sourceConfigWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->sourceConfigWidgetFactories.removeAt(index);
+  this->sourceConfigWidgetFactoryTable.remove(factory->name());
+
+  return true;
+}
+
+SigDigger::SourceConfigWidgetFactory *
+Singleton::findSourceConfigWidgetFactory(QString const &name) const
+{
+  if (!this->sourceConfigWidgetFactoryTable.contains(name))
+    return nullptr;
+
+  return this->sourceConfigWidgetFactoryTable[name];
+}
+
+QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator
+Singleton::getFirstSourceConfigWidgetFactory() const
+{
+  return this->sourceConfigWidgetFactories.begin();
+}
+
+QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator
+Singleton::getLastSourceConfigWidgetFactory() const
+{
+  return this->sourceConfigWidgetFactories.end();
+}
+
 
 bool
 Singleton::registerUIListenerFactory(SigDigger::UIListenerFactory *factory)

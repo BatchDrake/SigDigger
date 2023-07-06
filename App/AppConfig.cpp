@@ -87,9 +87,7 @@ AppConfig::loadDefaults(void)
   if ((config = sus->getProfile(SUSCAN_SOURCE_DEFAULT_NAME)) != nullptr) {
     this->profile = *config;
   } else {
-    this->profile = Suscan::Source::Config(
-          SUSCAN_SOURCE_TYPE_SDR,
-          SUSCAN_SOURCE_FORMAT_AUTO);
+    this->profile = Suscan::Source::Config("soapysdr", SUSCAN_SOURCE_FORMAT_AUTO);
     this->profile.setFreq(SUSCAN_SOURCE_DEFAULT_FREQ);
     this->profile.setSampleRate(SUSCAN_SOURCE_DEFAULT_SAMP_RATE);
     this->profile.setBandwidth(SUSCAN_SOURCE_DEFAULT_BANDWIDTH);

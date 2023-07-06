@@ -838,14 +838,11 @@ void
 AudioWidget::setProfile(Suscan::Source::Config &profile)
 {
   struct timeval tv, start, end;
-  bool isRealTime = false;
+  bool isRealTime = profile.isRealTime();
 
   if (!profile.isRemote()) {
-    if (profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
-      isRealTime = true;
-    } else {
+    if (!isRealTime)
       this->setTimeStamp(profile.getStartTime());
-    }
   } else {
     struct timeval tv;
     gettimeofday(&tv, nullptr);

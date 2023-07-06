@@ -178,9 +178,7 @@ GenericInspector::setProfile(Suscan::Source::Config &profile)
   bool isRealTime = false;
   struct timeval tv, start, end;
 
-  isRealTime = !profile.isRemote()
-      && profile.getType() == SUSCAN_SOURCE_TYPE_SDR;
-
+  isRealTime = !profile.isRemote() && profile.isRealTime();
 
   if (isRealTime) {
     gettimeofday(&tv, nullptr);

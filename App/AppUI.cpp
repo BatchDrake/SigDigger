@@ -47,7 +47,6 @@ using namespace SigDigger;
 AppUI::AppUI(QMainWindow *owner)
 {
   this->main = new Ui_MainWindow();
-
   this->main->setupUi(owner);
 
   this->timeToolbar = new QToolBar("Time controls");
@@ -80,8 +79,10 @@ AppUI::AppUI(QMainWindow *owner)
 }
 
 void
-AppUI::postLoadInit(QMainWindow *owner)
+AppUI::postLoadInit(UIMediator *mediator, QMainWindow *owner)
 {
+  this->uiMediator = mediator;
+
   // Singleton config has been deserialized. Refresh UI with these changes.
   SigDiggerHelpers::instance()->deserializePalettes();
 

@@ -413,7 +413,7 @@ UIMediator::refreshUI()
 
       stateString = QString("Running");
 
-      if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR)
+      if (this->appConfig->profile.isRealTime())
         this->ui->spectrum->setCaptureMode(MainSpectrum::CAPTURE);
       else
         this->ui->spectrum->setCaptureMode(MainSpectrum::REPLAY);
@@ -447,7 +447,7 @@ UIMediator::refreshUI()
     this->ui->spectrum->setGracePeriod(
           SIGDIGGER_UI_MEDIATOR_REMOTE_GRACE_PERIOD_MS);
   } else {
-    if (config->getType() == SUSCAN_SOURCE_TYPE_SDR) {
+    if (config->isRealTime()) {
       sourceDesc = QString::fromStdString(dev.getDesc());
     } else {
       QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
@@ -938,7 +938,7 @@ UIMediator::refreshProfile(bool updateFreqs)
   this->ui->configDialog->setProfile(this->appConfig->profile);
 
   if (!this->appConfig->profile.isRemote()) {
-    if (this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+    if (this->appConfig->profile.isRealTime()) {
       min = static_cast<qint64>(
             this->appConfig->profile.getDevice().getMinFreq());
       max = static_cast<qint64>(

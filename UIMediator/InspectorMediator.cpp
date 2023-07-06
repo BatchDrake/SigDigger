@@ -136,7 +136,7 @@ UIMediator::getCurrentCenterFreq() const
 bool
 UIMediator::isLive() const
 {
-  return this->appConfig->profile.getType() == SUSCAN_SOURCE_TYPE_SDR;
+  return this->appConfig->profile.isRealTime();
 }
 
 void

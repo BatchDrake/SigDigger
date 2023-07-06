@@ -25,6 +25,7 @@
 
 #include <QComboBox>
 #include <SaveProfileDialog.h>
+#include <QHash>
 
 #define SIGDIGGER_MIN_RADIO_FREQ  -3e11
 #define SIGDIGGER_MAX_RADIO_FREQ   3e11
@@ -34,7 +35,8 @@ namespace Ui {
 }
 
 namespace SigDigger {
-  class DeviceTweaks;
+  class SourceConfigWidget;
+
   enum SampleRateCtlHint {
     SAMPLE_RATE_CTL_HINT_LIST,
     SAMPLE_RATE_CTL_HINT_MANUAL
@@ -44,31 +46,28 @@ namespace SigDigger {
   {
     Q_OBJECT
 
-    Ui::ProfileConfigTab *ui;
-    DeviceTweaks         *tweaks = nullptr;
-    bool modified      = false;
-    bool needsRestart  = false;
-    bool refreshing    = true;
-    bool hasTweaks     = false;
-    SampleRateCtlHint m_rateHint = SAMPLE_RATE_CTL_HINT_LIST;
+    Ui::ProfileConfigTab  *ui;
+    bool                   m_modified      = false;
+    bool                   m_needsRestart  = false;
+    SampleRateCtlHint      m_rateHint = SAMPLE_RATE_CTL_HINT_LIST;
 
-    Suscan::Source::Config profile;
-    Suscan::Source::Device remoteDevice;
+    QHash<QString, SourceConfigWidget *> m_configWidgets;
+    SourceConfigWidget    *m_currentConfigWidget = nullptr;
+    int                    m_currentConfigIndex  = -1;
 
-    int savedLocalDeviceIndex = 0;
+    Suscan::Source::Config m_profile;
+    Suscan::Source::Device m_remoteDevice;
 
-    SaveProfileDialog saveProfileDialog;
+    SaveProfileDialog     *m_saveProfileDialog;
 
     void connectAll();
 
+    void makeConfigWidgets();
     void populateProfileCombo();
-    void populateDeviceCombo();
     void populateRemoteDeviceCombo();
 
     void populateCombos();
-    void refreshAntennas();
     void refreshSampRates();
-    void refreshProfileUi();
     void refreshFrequencyLimits();
     void refreshUi();
     void refreshAnalyzerTypeUi();
@@ -76,11 +75,11 @@ namespace SigDigger {
     void refreshSampRateCtl();
     void sampRateCtlHint(SampleRateCtlHint);
     void refreshTrueSampleRate();
-    void loadProfile(Suscan::Source::Config &config);
-    void guessParamsFromFileName();
+    void loadProfile(Suscan::Source::Config const &config);
+    bool tryLeaveCurrentConfigWidget();
     void updateRemoteParams();
     void configChanged(bool restart = false);
-    bool shouldDisregardTweaks();
+    bool selectSourceType(std::string const &);
 
     unsigned getDecimation() const;
     void     setDecimation(unsigned);
@@ -116,23 +115,17 @@ namespace SigDigger {
 
   public slots:
     void onLoadProfileClicked();
-    void onToggleSourceType(bool);
-    void onDeviceChanged(int);
-    void onFormatChanged(int);
-    void onAntennaChanged(int);
+    void onChangeSourceType(int);
+    void onSourceConfigWidgetChanged();
     void onAnalyzerTypeChanged(int);
     void onCheckButtonsToggled(bool);
     void onSpinsChanged();
-    void onBandwidthChanged(double);
-    void onBrowseCaptureFile();
     void onSaveProfile();
     void onChangeConnectionType();
     void onRemoteParamsChanged();
     void onRefreshRemoteDevices();
     void onRemoteProfileSelected();
     void onChangeSourceTimeUTC();
-    void onDeviceTweaksClicked();
-    void onDeviceTweaksAccepted();
     void onOverrideSampleRate();
   };
 }

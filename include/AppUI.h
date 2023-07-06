@@ -41,8 +41,11 @@ namespace SigDigger {
   class Inspector;
   class QuickConnectDialog;
 
+  class UIMediator;
+
   struct AppUI {
     Ui_MainWindow *main = nullptr;
+    UIMediator *uiMediator = nullptr;
     ConfigDialog *configDialog = nullptr;
     DeviceDialog *deviceDialog = nullptr;
     PanoramicDialog *panoramicDialog = nullptr;
@@ -58,7 +61,7 @@ namespace SigDigger {
     QTimeSlider *timeSlider = nullptr;
 
     AppUI(QMainWindow *);
-    void postLoadInit(QMainWindow *owner);
+    void postLoadInit(UIMediator *, QMainWindow *owner);
     ~AppUI();
   };
 }

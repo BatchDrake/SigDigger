@@ -41,6 +41,8 @@ namespace SigDigger {
   class TLESourceTab;
   class RemoteControlTab;
 
+  class UIMediator;
+
   class ConfigDialog : public QDialog
   {
     Q_OBJECT

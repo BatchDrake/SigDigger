@@ -25,6 +25,8 @@
 #include "DefaultTab/DefaultTabWidgetFactory.h"
 #include "GenericInspector/GenericInspectorFactory.h"
 #include "RMSInspector/RMSInspectorFactory.h"
+#include "SourceConfig/FileSourcePageFactory.h"
+#include "SourceConfig/SoapySDRSourcePageFactory.h"
 
 #include <Suscan/Library.h>
 
@@ -51,6 +53,9 @@ SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
 
   sus->registerInspectionWidgetFactory(new GenericInspectorFactory(plugin));
   sus->registerInspectionWidgetFactory(new RMSInspectorFactory(plugin));
+
+  sus->registerSourceConfigWidgetFactory(new FileSourcePageFactory(plugin));
+  sus->registerSourceConfigWidgetFactory(new SoapySDRSourcePageFactory(plugin));
 
   return true;
 }

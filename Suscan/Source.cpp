@@ -152,10 +152,10 @@ Source::Config::Config()
 }
 
 Source::Config::Config(
-    enum suscan_source_type type,
+    const std::string &type,
     enum suscan_source_format fmt)
 {
-  SU_ATTEMPT(this->instance = suscan_source_config_new(type, fmt));
+  SU_ATTEMPT(this->instance = suscan_source_config_new(type.c_str(), fmt));
 
   this->borrowed = false;
 }
@@ -409,11 +409,11 @@ Source::Config::getFormat(void) const
   return suscan_source_config_get_format(this->instance);
 }
 
-enum suscan_source_type
+std::string
 Source::Config::getType(void) const
 {
   if (this->instance == nullptr)
-    return SUSCAN_SOURCE_TYPE_SDR;
+    return "soapysdr";
 
   return suscan_source_config_get_type(this->instance);
 }
@@ -490,6 +490,17 @@ Source::Config::getParamList(void) const
           &list));
 
   return list;
+}
+
+bool
+Source::Config::isRealTime() const
+{
+  auto *iface = suscan_source_interface_lookup_by_name(getType().c_str());
+
+  if (iface == nullptr)
+    return false;
+
+  return iface->realtime;
 }
 
 bool
@@ -672,14 +683,14 @@ Source::Config::setIQBalance(bool value)
 }
 
 void
-Source::Config::setType(enum suscan_source_type type)
+Source::Config::setType(const std::string &type)
 {
   if (this->instance == nullptr)
     return;
 
   suscan_source_config_set_type_format(
         this->instance,
-        type,
+        type.c_str(),
         suscan_source_config_get_format(this->instance));
 }
 

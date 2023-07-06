@@ -300,8 +300,7 @@ SourceWidget::refreshGains(Suscan::Source::Config &config)
     gain->setGain(config.getGain(p->getName()));
   }
 
-  if (this->gainControls.size() == 0
-      || config.getType() != SUSCAN_SOURCE_TYPE_SDR)
+  if (this->gainControls.size() == 0 || !config.isRealTime())
     this->ui->gainsFrame->hide();
   else
     this->ui->gainsFrame->show();
@@ -522,20 +521,10 @@ SourceWidget::refreshUi()
   if (this->profile != nullptr) {
     bool isRemote = this->profile->isRemote();
 
-    this->setThrottleable(
-          this->profile->getType() != SUSCAN_SOURCE_TYPE_SDR
-          || isRemote);
-
-    this->ui->antennaCombo->setEnabled(
-          this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
-
-    this->ui->bwSpin->setEnabled(
-          this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR);
-
-    this->ui->ppmSpinBox->setEnabled(
-          this->profile->getType() == SUSCAN_SOURCE_TYPE_SDR
-          || isRemote);
-
+    this->setThrottleable(!this->profile->isRealTime() || isRemote);
+    this->ui->antennaCombo->setEnabled(this->profile->isRealTime());
+    this->ui->bwSpin->setEnabled(this->profile->isRealTime());
+    this->ui->ppmSpinBox->setEnabled(this->profile->isRealTime() || isRemote);
     this->saverUI->setEnabled(!isRemote);
   }
 
@@ -715,8 +704,7 @@ SourceWidget::refreshAutoGains(Suscan::Source::Config &config)
     this->currAutoGainSet = &this->autoGains[driver];
     this->currentAutoGain = nullptr;
 
-    if (this->currAutoGainSet->size() > 0
-        && config.getType() == SUSCAN_SOURCE_TYPE_SDR) {
+    if (this->currAutoGainSet->size() > 0 && config.isRealTime()) {
       for (auto p = this->currAutoGainSet->begin();
            p != this->currAutoGainSet->end(); ++p)
         this->ui->autoGainCombo->addItem(
@@ -981,7 +969,7 @@ SourceWidget::setProfile(Suscan::Source::Config &profile)
         this->ui->antennaCombo);
 
   if (this->ui->antennaCombo->count() == 0
-      || profile.getType() != SUSCAN_SOURCE_TYPE_SDR
+      || !profile.isRealTime()
       || profile.getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
     this->ui->antennaCombo->hide();
     this->ui->antennaLabel->hide();
