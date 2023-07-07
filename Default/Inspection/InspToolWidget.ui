@@ -495,7 +495,7 @@ font-weight: bold;</string>
   </customwidget>
    <customwidget>
      <class>ContextAwareSpinBox</class>
-     <extends>QDouble</extends>
+     <extends>QDoubleSpinBox</extends>
      <header>ContextAwareSpinBox.h</header>
    </customwidget>
  </customwidgets>

@@ -34,6 +34,9 @@
      <property name="text">
       <string>Signal power</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
     </widget>
    </item>
    <item row="0" column="2">
@@ -50,7 +53,10 @@
     </spacer>
    </item>
    <item row="1" column="1">
-    <widget class="QDoubleSpinBox" name="noiseSpinBox">
+    <widget class="ContextAwareSpinBox" name="noiseSpinBox">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
      <property name="suffix">
       <string> dBFS/Hz</string>
      </property>
@@ -63,7 +69,10 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QDoubleSpinBox" name="signalSpinBox">
+    <widget class="ContextAwareSpinBox" name="signalSpinBox">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
      <property name="suffix">
       <string> dBFS</string>
      </property>
@@ -79,6 +88,9 @@
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>Noise floor density</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -97,6 +109,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDoubleSpinBox</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
