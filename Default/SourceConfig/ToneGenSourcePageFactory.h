@@ -1,5 +1,5 @@
 //
-//    SoapySDRSourcePageFactory.h: description
+//    ToneGenSourcePageFactory.h: description
 //    Copyright (C) 2023 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,14 +16,13 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-
-#ifndef SOAPYSDRSOURCEPAGEFACTORY_H
-#define SOAPYSDRSOURCEPAGEFACTORY_H
+#ifndef TONEGENSOURCEPAGEFACTORY_H
+#define TONEGENSOURCEPAGEFACTORY_H
 
 #include "SourceConfigWidgetFactory.h"
 
 namespace SigDigger {
-  class SoapySDRSourcePageFactory : public SourceConfigWidgetFactory
+  class ToneGenSourcePageFactory : public SourceConfigWidgetFactory
   {
     using SourceConfigWidgetFactory::SourceConfigWidgetFactory;
 
@@ -33,4 +32,4 @@ namespace SigDigger {
   };
 }
 
-#endif // SOAPYSDRSOURCEPAGEFACTORY_H
+#endif // TONEGENSOURCEPAGEFACTORY_H
