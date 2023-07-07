@@ -119,6 +119,7 @@ namespace SigDigger {
     void setBandwidth(unsigned int bandwidth);
     void refreshQthProperties();
     void refreshProfile(bool updateFreqs = true);
+    void refreshTimeToolbarState();
     void setCurrentAutoGain();
 
     // Other setters

@@ -835,6 +835,7 @@ ProfileConfigTab::onAnalyzerTypeChanged(int index)
       break;
   }
 
+  configChanged(true);
   refreshUiState();
 }
 

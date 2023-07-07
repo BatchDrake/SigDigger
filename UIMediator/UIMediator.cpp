@@ -374,12 +374,38 @@ UIMediator::setUIBusy(bool busy)
   this->owner->setCursor(busy ? Qt::WaitCursor : Qt::ArrowCursor);
 }
 
+//
+// The toolbar is visible only under the following conditions:
+// If RUNNING:
+//   if the analyzer has exposed a SEEK permission
+// If NOT RUNNING:
+//    if the source is local and it is not realtime
+//
+// Additionally, the toolbar is only enabled in RUNNING state
+//
+
+void
+UIMediator::refreshTimeToolbarState()
+{
+  bool haveToolbar = false;
+
+  if (m_state == RUNNING) {
+    haveToolbar =
+        m_analyzer->getSourceInfo().testPermission(SUSCAN_ANALYZER_PERM_SEEK);
+  } else {
+    Suscan::Source::Config *config = this->getProfile();
+    haveToolbar = !config->isRemote() && !config->isRealTime();
+  }
+
+  this->ui->timeToolbar->setVisible(haveToolbar);
+  this->ui->timeSlider->setEnabled(m_state == RUNNING);
+}
+
 void
 UIMediator::refreshUI()
 {
   QString stateString;
   QString sourceDesc;
-  bool    enableTimeSlider = false;
 
   Suscan::Source::Config *config = this->getProfile();
   const Suscan::Source::Device &dev = config->getDevice();
@@ -425,9 +451,6 @@ UIMediator::refreshUI()
       this->ui->panoramicDialog->setBannedDevice(
             QString::fromStdString(
               this->appConfig->profile.getDevice().getDesc()));
-
-      enableTimeSlider =
-          this->ui->spectrum->getCaptureMode() == MainSpectrum::REPLAY;
       break;
 
     case RESTARTING:
@@ -457,7 +480,8 @@ UIMediator::refreshUI()
           SIGDIGGER_UI_MEDIATOR_LOCAL_GRACE_PERIOD_MS);
   }
 
-  this->ui->timeSlider->setEnabled(enableTimeSlider);
+  // Time toolbar is visible always, only if a file is selected
+  refreshTimeToolbarState();
 
   this->owner->setWindowTitle(
         "SigDigger - "
@@ -809,12 +833,9 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   if (info.isSeekable()) {
     this->setSourceTimeStart(info.getSourceStartTime());
     this->setSourceTimeEnd(info.getSourceEndTime());
-
-    this->ui->timeSlider->setEnabled(
-          info.testPermission(
-            SUSCAN_ANALYZER_PERM_SEEK));
   }
 
+  this->refreshTimeToolbarState();
   this->setSampleRate(static_cast<unsigned>(info.getSampleRate()));
 }
 
@@ -992,7 +1013,7 @@ UIMediator::refreshProfile(bool updateFreqs)
   this->ui->timeSlider->setStartTime(start);
   this->ui->timeSlider->setEndTime(end);
   this->ui->timeSlider->setTimeStamp(tv);
-  this->ui->timeToolbar->setVisible(!isRealTime);
+  refreshTimeToolbarState();
 
   // Configure spectrum
   this->ui->spectrum->setFrequencyLimits(min, max);
