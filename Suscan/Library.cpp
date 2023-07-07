@@ -115,7 +115,7 @@ Singleton::Singleton()
   // Define some read-only units. We may let the user add customized
   // units too.
 
-  this->registerSpectrumUnit("dBFS",     1.0, 0.0f);
+  this->registerSpectrumUnit("dBFS/Hz",  1.0, 0.0f);
   this->registerSpectrumUnit("dBK",      1.0, -228.60f);
   this->registerSpectrumUnit("dBW/Hz",   1.0, 0.0f);
   this->registerSpectrumUnit("dBm/Hz",   1.0, -30.0f);

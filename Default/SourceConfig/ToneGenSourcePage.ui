@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>312</width>
-    <height>61</height>
+    <height>64</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Signal level</string>
+      <string>Signal power</string>
      </property>
     </widget>
    </item>
@@ -52,7 +52,7 @@
    <item row="1" column="1">
     <widget class="QDoubleSpinBox" name="noiseSpinBox">
      <property name="suffix">
-      <string> dBFS</string>
+      <string> dBFS/Hz</string>
      </property>
      <property name="minimum">
       <double>-120.000000000000000</double>
@@ -78,7 +78,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Noise level</string>
+      <string>Noise floor density</string>
      </property>
     </widget>
    </item>

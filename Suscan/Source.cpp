@@ -504,6 +504,13 @@ Source::Config::isRealTime() const
 }
 
 bool
+Source::Config::getFreqLimits(SUFREQ &min, SUFREQ &max) const
+{
+  return
+     suscan_source_config_get_freq_limits(this->instance, &min, &max) == SU_TRUE;
+}
+
+bool
 Source::Config::isRemote(void) const
 {
   return this->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE;

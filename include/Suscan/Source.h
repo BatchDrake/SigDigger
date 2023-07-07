@@ -341,6 +341,7 @@ namespace Suscan {
     bool isRemote() const;
     SUFLOAT getPPM() const;
     bool isRealTime() const;
+    bool getFreqLimits(SUFREQ &, SUFREQ &) const;
 
     const Source::Device &getDevice();
     enum suscan_source_format getFormat() const;

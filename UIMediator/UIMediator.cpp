@@ -946,7 +946,7 @@ UIMediator::setStatusMessage(QString const &message)
 void
 UIMediator::refreshProfile(bool updateFreqs)
 {
-  qint64 min = 0, max = 0;
+  qint64 min = SIGDIGGER_MIN_RADIO_FREQ, max = SIGDIGGER_MAX_RADIO_FREQ;
   bool isRealTime = false;
   struct timeval tv, start, end;
 
@@ -958,21 +958,14 @@ UIMediator::refreshProfile(bool updateFreqs)
 
   this->ui->configDialog->setProfile(this->appConfig->profile);
 
+  // Local sources, we may know the limits beforehand
   if (!this->appConfig->profile.isRemote()) {
-    if (this->appConfig->profile.isRealTime()) {
-      min = static_cast<qint64>(
-            this->appConfig->profile.getDevice().getMinFreq());
-      max = static_cast<qint64>(
-            this->appConfig->profile.getDevice().getMaxFreq());
-      isRealTime = true;
-    } else {
-      min = SIGDIGGER_MIN_RADIO_FREQ;
-      max = SIGDIGGER_MAX_RADIO_FREQ;
+    SUFREQ fMin, fMax;
+    isRealTime = this->appConfig->profile.isRealTime();
+    if (this->appConfig->profile.getFreqLimits(fMin, fMax)) {
+      min = SCAST(qint64, fMin);
+      max = SCAST(qint64, fMax);
     }
-  } else {
-    // Remote sources receive time from the server
-    min = SIGDIGGER_MIN_RADIO_FREQ;
-    max = SIGDIGGER_MAX_RADIO_FREQ;
   }
 
   // Dummy device should not accept modifications if we don't accept
