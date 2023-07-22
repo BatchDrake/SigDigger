@@ -109,9 +109,7 @@ ProfileConfigTab::makeConfigWidgets()
       auto widget = factory->make();
 
       m_configWidgets.insert(iface->name, widget);
-      ui->sourceTypeCombo->addItem(
-            iface->desc,
-            QVariant::fromValue<const char *>(iface->name));
+      ui->sourceTypeCombo->addItem(iface->desc, QString(iface->name));
       ui->sourceConfigStack->insertWidget(index++, widget);
 
       connect(
@@ -784,13 +782,13 @@ void
 ProfileConfigTab::onChangeSourceType(int)
 {
   QVariant data = ui->sourceTypeCombo->currentData();
-  const char *name = data.value<const char *>();
+  QString name = data.value<QString>();
 
   if (name == nullptr)
     return;
 
-  if (selectSourceType(name)) {
-    m_profile.setType(name);
+  if (selectSourceType(name.toStdString())) {
+    m_profile.setType(name.toStdString());
     configChanged(true);
     refreshUiState();
     refreshFrequencyLimits();
