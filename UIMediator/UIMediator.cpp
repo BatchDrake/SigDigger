@@ -394,7 +394,7 @@ UIMediator::refreshTimeToolbarState()
         m_analyzer->getSourceInfo().testPermission(SUSCAN_ANALYZER_PERM_SEEK);
   } else {
     Suscan::Source::Config *config = this->getProfile();
-    haveToolbar = !config->isRemote() && !config->isRealTime();
+    haveToolbar = !config->isRemote() && config->isSeekable();
   }
 
   this->ui->timeToolbar->setVisible(haveToolbar);
@@ -472,9 +472,18 @@ UIMediator::refreshUI()
   } else {
     if (config->isRealTime()) {
       sourceDesc = QString::fromStdString(dev.getDesc());
-    } else {
+    } else if (config->isSeekable()) {
       QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
       sourceDesc = fi.fileName();
+    } else {
+      const struct suscan_source_interface *iface;
+
+      iface = suscan_source_interface_lookup_by_name(config->getType().c_str());
+      if (iface == nullptr)
+        sourceDesc = QString::fromStdString(
+              "Unknown source type `" + config->getType() + "'");
+      else
+        sourceDesc = iface->desc;
     }
     this->ui->spectrum->setGracePeriod(
           SIGDIGGER_UI_MEDIATOR_LOCAL_GRACE_PERIOD_MS);

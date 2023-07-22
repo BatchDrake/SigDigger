@@ -495,12 +495,13 @@ Source::Config::getParamList(void) const
 bool
 Source::Config::isRealTime() const
 {
-  auto *iface = suscan_source_interface_lookup_by_name(getType().c_str());
+  return suscan_source_config_is_real_time(this->instance) == SU_TRUE;
+}
 
-  if (iface == nullptr)
-    return false;
-
-  return iface->realtime;
+bool
+Source::Config::isSeekable() const
+{
+  return suscan_source_config_is_seekable(this->instance) == SU_TRUE;
 }
 
 bool

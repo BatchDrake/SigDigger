@@ -1,5 +1,5 @@
 //
-//    ToneGenSourcePage.h: description
+//    StdinSourcePage.h: description
 //    Copyright (C) 2023 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,14 +16,14 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef TONEGENSOURCEPAGE_H
-#define TONEGENSOURCEPAGE_H
+#ifndef STDINSOURCEPAGE_H
+#define STDINSOURCEPAGE_H
 
 #include <QWidget>
 #include <SourceConfigWidgetFactory.h>
 
 namespace Ui {
-  class ToneGenSourcePage;
+  class StdinSourcePage;
 }
 
 namespace Suscan {
@@ -35,20 +35,21 @@ namespace SigDigger {
   class UIMediator;
   class DeviceTweaks;
 
-  class ToneGenSourcePage : public SourceConfigWidget
+  class StdinSourcePage : public SourceConfigWidget
   {
     Q_OBJECT
 
     Suscan::Source::Config *m_config = nullptr;
 
+    void registerFormat(QString const &, QString const &);
     void refreshUi();
     void connectAll();
 
   public:
-    explicit ToneGenSourcePage(
+    explicit StdinSourcePage(
         SourceConfigWidgetFactory *,
         QWidget *parent = nullptr);
-    virtual ~ToneGenSourcePage() override;
+    virtual ~StdinSourcePage() override;
 
     virtual void setConfigRef(Suscan::Source::Config &) override;
     virtual uint64_t getCapabilityMask() const override;
@@ -61,8 +62,8 @@ namespace SigDigger {
     void onConfigChanged();
 
   private:
-    Ui::ToneGenSourcePage *ui;
+    Ui::StdinSourcePage *ui;
   };
 }
 
-#endif // TONEGENSOURCEPAGE_H
+#endif // STDINSOURCEPAGE_H

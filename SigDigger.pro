@@ -131,6 +131,8 @@ SOURCES += \
     Default/SourceConfig/FileSourcePageFactory.cpp \
     Default/SourceConfig/SoapySDRSourcePage.cpp  \
     Default/SourceConfig/SoapySDRSourcePageFactory.cpp \
+    Default/SourceConfig/StdinSourcePage.cpp \
+    Default/SourceConfig/StdinSourcePageFactory.cpp \
     Default/SourceConfig/ToneGenSourcePage.cpp \
     Default/SourceConfig/ToneGenSourcePageFactory.cpp \
     Misc/AutoGain.cpp \
@@ -327,6 +329,8 @@ HEADERS += \
     Default/SourceConfig/FileSourcePageFactory.h \
     Default/SourceConfig/SoapySDRSourcePage.h \
     Default/SourceConfig/SoapySDRSourcePageFactory.h \
+    Default/SourceConfig/StdinSourcePage.h \
+    Default/SourceConfig/StdinSourcePageFactory.h \
     Default/SourceConfig/ToneGenSourcePage.h \
     Default/SourceConfig/ToneGenSourcePageFactory.h \
     include/AGCTask.h \
@@ -410,6 +414,7 @@ FORMS += \
     Default/SourceConfig/DeviceTweaks.ui \
     Default/SourceConfig/FileSourcePage.ui \
     Default/SourceConfig/SoapySDRSourcePage.ui \
+    Default/SourceConfig/StdinSourcePage.ui \
     Default/SourceConfig/ToneGenSourcePage.ui \
     ui/AboutDialog.ui \
     ui/AddTLESourceDialog.ui \
