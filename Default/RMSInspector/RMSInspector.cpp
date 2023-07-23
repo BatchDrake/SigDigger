@@ -254,7 +254,6 @@ RMSInspector::registerDataSaver(
 void
 RMSInspector::pushPowerSample(qreal mean)
 {
-  static int count = 0;
   if (m_analyzer != nullptr) {
 
     struct timeval currTv, diff;
