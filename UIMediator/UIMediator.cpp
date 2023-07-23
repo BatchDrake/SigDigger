@@ -470,9 +470,9 @@ UIMediator::refreshUI()
     this->ui->spectrum->setGracePeriod(
           SIGDIGGER_UI_MEDIATOR_REMOTE_GRACE_PERIOD_MS);
   } else {
-    if (config->isRealTime()) {
+    if (config->getType() == "soapysdr") {
       sourceDesc = QString::fromStdString(dev.getDesc());
-    } else if (config->isSeekable()) {
+    } else if (config->getType() == "file") {
       QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
       sourceDesc = fi.fileName();
     } else {
