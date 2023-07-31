@@ -67,7 +67,8 @@ InitThread::run()
     sing->init_ui_config();
     emit change("Loading profile history");
     sing->init_recent_list();
-    emit change("Init done, reloading devices");
+    emit change("Init done, triggering delayed plugin tasks...");
+    sing->trigger_delayed();
   } catch (Suscan::Exception const &e) {
     emit failure(QString(e.what()));
   }

@@ -55,6 +55,7 @@ namespace Suscan {
   uint qHash(const Suscan::Source::Device &dev);
 
   class MultitaskController;
+  class Plugin;
 
   typedef std::map<std::string, Source::Config> ConfigMap;
 
@@ -249,6 +250,8 @@ namespace Suscan {
     void debug(void) const;
   };
 
+  typedef void (*DelayedPluginCallback) (Suscan::Plugin *);
+
   class Singleton {
     static Singleton *instance;
     static Logger *logger;
@@ -270,6 +273,9 @@ namespace Suscan {
     QMap<qint64, Bookmark>          bookmarks;
     QMap<std::string, SpectrumUnit> spectrumUnits;
     QHash<QString, Source::Config>  networkProfiles;
+
+    // Delayed plugin callbacks
+    std::list<std::pair<DelayedPluginCallback, Suscan::Plugin *>> pluginCallbacks;
 
     // Feature object factories
     QList<SigDigger::ToolWidgetFactory *>         toolWidgetFactories;
@@ -323,11 +329,13 @@ namespace Suscan {
     void init_tle(void);
     void init_plugins(void);
     void detect_devices(void);
+    void trigger_delayed(void);
 
     void sync(void);
 
     void killBackgroundTaskController(void);
 
+    void registerDelayedCallback(DelayedPluginCallback, Plugin *);
     void registerSourceConfig(suscan_source_config_t *config);
     void registerNetworkProfile(const suscan_source_config_t *config);
     void registerSourceDevice(const suscan_source_device_t *dev);

@@ -563,6 +563,13 @@ Singleton::detect_devices(void)
 }
 
 void
+Singleton::trigger_delayed(void)
+{
+  for (auto p : pluginCallbacks)
+    (p.first)(p.second);
+}
+
+void
 Singleton::init_ui_config(void)
 {
   unsigned int i, count;
@@ -728,6 +735,12 @@ Singleton::sync(void)
 }
 
 // Singleton methods
+void
+Singleton::registerDelayedCallback(DelayedPluginCallback cb, Plugin *plugin)
+{
+  pluginCallbacks.push_back(std::pair(cb, plugin));
+}
+
 void
 Singleton::registerSourceConfig(suscan_source_config_t *config)
 {

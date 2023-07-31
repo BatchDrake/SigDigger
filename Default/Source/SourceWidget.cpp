@@ -396,7 +396,6 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
     this->clearGains();
 
     info.getGainInfo(gains);
-
     for (auto p: gains) {
       gain = new DeviceGain(nullptr, p);
       this->gainControls.push_back(gain);
@@ -414,12 +413,12 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
             SLOT(onGainChanged(QString, float)));
       gain->setGain(p.getDefault());
     }
-
-    if (this->gainControls.size() == 0)
-      this->ui->gainsFrame->hide();
-    else
-      this->ui->gainsFrame->show();
   }
+
+  if (this->gainControls.size() == 0)
+    this->ui->gainsFrame->hide();
+  else
+    this->ui->gainsFrame->show();
 
   // Everything is set, time to decide what is enabled and what is not
   this->refreshUi();

@@ -239,6 +239,7 @@ INSTALL_HEADERS += \
     include/Palette.h \
     include/PersistentWidget.h \
     include/RemoteControlConfig.h \
+    include/SourceConfigWidgetFactory.h \
     include/TabWidgetFactory.h \
     include/TLESourceConfig.h \
     include/ToolWidgetFactory.h \
@@ -375,7 +376,6 @@ HEADERS += \
     include/Loader.h \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
-    include/SourceConfigWidgetFactory.h \
     include/TLESourceTab.h \
     include/TimeWindow.h \
     include/FileDataSaver.h \
