@@ -8,7 +8,15 @@ inputs:
 
 runs:
   using: 'composite'
-  steps:
+  steps:  
+    - name: Install libiio
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libiio-dev
+
+    - name: Install libad9361
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libad9361-dev
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
 
@@ -27,14 +35,6 @@ runs:
     - name: Install FFTW3
       shell:  ${{inputs.shell}}
       run: sudo apt-get install libfftw3-dev
-
-    - name: Install libiio
-      shell:  ${{inputs.shell}}
-      run: sudo apt-get install libiio-dev
-
-    - name: Install libad9361
-      shell:  ${{inputs.shell}}
-      run: sudo apt-get install libad9361-dev
 
     - name: Install SoapySDR modules
       shell:  ${{inputs.shell}}
