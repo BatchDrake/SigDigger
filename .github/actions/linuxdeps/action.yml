@@ -34,7 +34,7 @@ runs:
 
     - name: Install libad9361
       shell:  ${{inputs.shell}}
-      run: sudo apt-get install lib9361-dev
+      run: sudo apt-get install libad9361-dev
 
     - name: Install SoapySDR modules
       shell:  ${{inputs.shell}}
