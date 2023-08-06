@@ -738,7 +738,7 @@ Singleton::sync(void)
 void
 Singleton::registerDelayedCallback(DelayedPluginCallback cb, Plugin *plugin)
 {
-  pluginCallbacks.push_back(std::pair(cb, plugin));
+  pluginCallbacks.push_back(std::pair<DelayedPluginCallback, Plugin *>(cb, plugin));
 }
 
 void
