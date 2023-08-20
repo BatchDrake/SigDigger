@@ -247,6 +247,13 @@ Analyzer::setHopRange(SUFREQ min, SUFREQ max)
 }
 
 void
+Analyzer::setRelBandwidth(SUFLOAT rel_bw)
+{
+  SU_ATTEMPT(
+        suscan_analyzer_set_rel_bandwidth(this->instance, rel_bw));
+}
+
+void
 Analyzer::setBufferingSize(SUSCOUNT len)
 {
   SU_ATTEMPT(suscan_analyzer_set_buffering_size(this->instance, len));

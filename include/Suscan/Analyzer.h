@@ -314,6 +314,7 @@ namespace Suscan {
     void setIQReverse(bool reverse);
     void setAGC(bool enabled);
     void setHopRange(SUFREQ min, SUFREQ max);
+    void setRelBandwidth(SUFLOAT rel_bw);
     void setBufferingSize(SUSCOUNT len);
     void halt();
 
