@@ -382,8 +382,6 @@ PanoramicDialog::getStrategy(void) const
 QString
 PanoramicDialog::getPartitioning(void) const
 {
-  if (this->getStrategy() == QString("Progressive"))
-    return "Discrete";
   return this->ui->partitioningCombo->currentText();
 }
 
@@ -1077,10 +1075,7 @@ PanoramicDialog::onPaletteChanged(int)
 void
 PanoramicDialog::onStrategyChanged(int)
 {
-  QString strategy = this->ui->walkStrategyCombo->currentText();
-
-  this->ui->partitioningCombo->setEnabled(strategy != QString("Progressive"));
-  emit strategyChanged(strategy);
+  emit strategyChanged(this->ui->walkStrategyCombo->currentText());
 }
 
 void
