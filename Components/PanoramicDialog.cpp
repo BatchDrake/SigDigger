@@ -177,6 +177,8 @@ PanoramicDialog::PanoramicDialog(QWidget *parent) :
   this->ui->lnbDoubleSpinBox->setMinimum(-300e9);
   this->ui->lnbDoubleSpinBox->setMaximum(300e9);
 
+  this->ui->waterfall->setUseLBMdrag(true);
+
   this->connectAll();
 }
 
@@ -1036,9 +1038,9 @@ PanoramicDialog::onNewCenterFreq(qint64 freq)
   qint64 span = this->currBw;
   qint64 min = freq - span / 2;
   qint64 max = freq + span / 2;
-  bool smallRange;
   bool leftBorder = false;
   bool rightBorder = false;
+
   if (min <= this->getMinFreq()) {
     leftBorder = true;
     min = static_cast<qint64>(this->getMinFreq());
@@ -1049,19 +1051,16 @@ PanoramicDialog::onNewCenterFreq(qint64 freq)
     max = static_cast<qint64>(this->getMaxFreq());
   }
 
-  smallRange = static_cast<quint64>(max - min) <= this->minBwForZoom;
-
-  if (smallRange) {
+  if (rightBorder || leftBorder) {
     if (leftBorder && !rightBorder) {
       max = min + span;
     } else if (rightBorder && !leftBorder) {
       min = max - span;
     }
-  }
 
-  if (rightBorder || leftBorder)
     this->ui->waterfall->setCenterFreq(
         static_cast<qint64>(.5 * (max + min)));
+  }
 
   emit detailChanged(min, max, this->fixedFreqMode);
 }
