@@ -180,6 +180,7 @@ PanoramicDialog::PanoramicDialog(QWidget *parent) :
   this->ui->lnbDoubleSpinBox->setMaximum(300e9);
 
   this->ui->waterfall->setUseLBMdrag(true);
+  this->ui->waterfall->setWaterfallSpan(30 * 1000); // 30 seconds
 
   this->connectAll();
 }
