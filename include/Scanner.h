@@ -26,7 +26,7 @@
 // It does not make much sense to have different spectrum sizes for the
 // PSD and the panoramic view. We use this size for both thigs.
 //
-#define SIGDIGGER_SCANNER_SPECTRUM_SIZE     8192
+#define SIGDIGGER_SCANNER_SPECTRUM_SIZE     16384
 #define SIGDIGGER_SCANNER_DEFAULT_BIN_VALUE -200.0f
 #define SIGDIGGER_SCANNER_MIN_BIN_VALUE     -150.0f
 
