@@ -352,6 +352,10 @@ FFTWidget::FFTWidget(FFTWidgetFactory *factory, UIMediator *mediator, QWidget *p
 
   // Add Gqrx time spans
   this->addTimeSpan(0);
+  this->addTimeSpan(15);
+  this->addTimeSpan(30);
+  this->addTimeSpan(1 * 60);
+  this->addTimeSpan(2 * 60);
   this->addTimeSpan(5 * 60);
   this->addTimeSpan(10 * 60);
   this->addTimeSpan(15 * 60);
