@@ -80,6 +80,7 @@ PanoramicDialogConfig::deserialize(Suscan::Object const &conf)
   LOAD(panRangeMax);
   LOAD(lnbFreq);
   LOAD(device);
+  LOAD(antenna);
   LOAD(sampRate);
   LOAD(strategy);
   LOAD(partitioning);
@@ -107,8 +108,9 @@ PanoramicDialogConfig::serialize(void)
   STORE(panRangeMin);
   STORE(panRangeMax);
   STORE(lnbFreq);
-  STORE(sampRate);
   STORE(device);
+  STORE(antenna);
+  STORE(sampRate);
   STORE(strategy);
   STORE(partitioning);
   STORE(palette);
@@ -176,6 +178,8 @@ PanoramicDialog::PanoramicDialog(QWidget *parent) :
 
   this->ui->lnbDoubleSpinBox->setMinimum(-300e9);
   this->ui->lnbDoubleSpinBox->setMaximum(300e9);
+
+  this->ui->waterfall->setUseLBMdrag(true);
 
   this->connectAll();
 }
@@ -317,11 +321,13 @@ unsigned int
 PanoramicDialog::preferredRttMs(Suscan::Source::Device const &dev)
 {
   if (dev.getDriver() == "rtlsdr")
-    return 60;
+    return 75;
   else if (dev.getDriver() == "airspy")
     return 16;
   else if (dev.getDriver() == "hackrf")
     return 10;
+  else if (dev.getDriver() == "uhd")
+    return 8;
 
   return 0;
 }
@@ -333,6 +339,8 @@ PanoramicDialog::refreshUi(void)
   bool fullRange = this->ui->fullRangeCheck->isChecked();
 
   this->ui->deviceCombo->setEnabled(!this->running && !empty);
+  this->ui->antennaCombo->setEnabled(!this->running && !empty &&
+        this->ui->antennaCombo->count());
   this->ui->fullRangeCheck->setEnabled(!this->running && !empty);
   this->ui->rangeEndSpin->setEnabled(!this->running && !empty && !fullRange);
   this->ui->rangeStartSpin->setEnabled(!this->running && !empty && !fullRange);
@@ -374,6 +382,12 @@ PanoramicDialog::setRunning(bool running)
 }
 
 QString
+PanoramicDialog::getAntenna(void) const
+{
+  return this->ui->antennaCombo->currentText();
+}
+
+QString
 PanoramicDialog::getStrategy(void) const
 {
   return this->ui->walkStrategyCombo->currentText();
@@ -382,8 +396,6 @@ PanoramicDialog::getStrategy(void) const
 QString
 PanoramicDialog::getPartitioning(void) const
 {
-  if (this->getStrategy() == QString("Progressive"))
-    return "Discrete";
   return this->ui->partitioningCombo->currentText();
 }
 
@@ -629,10 +641,11 @@ void
 PanoramicDialog::saveConfig(void)
 {
   Suscan::Source::Device dev;
+  if (this->getSelectedDevice(dev)) {
+    this->dialogConfig->device = dev.getDesc();
+    this->dialogConfig->antenna = this->ui->antennaCombo->currentText().toStdString();
+  }
 
-  this->getSelectedDevice(dev);
-
-  this->dialogConfig->device = dev.getDesc();
   this->dialogConfig->lnbFreq = this->ui->lnbDoubleSpinBox->value();
   this->dialogConfig->palette = this->paletteGradient.toStdString();
   this->dialogConfig->rangeMin = this->ui->rangeStartSpin->value();
@@ -874,7 +887,15 @@ PanoramicDialog::applyConfig(void)
   this->ui->waterfall->setWaterfallRange(
         this->dialogConfig->panRangeMin,
         this->dialogConfig->panRangeMax);
+  this->ui->walkStrategyCombo->setCurrentText(QString::fromStdString(
+        this->dialogConfig->strategy));
+  this->ui->partitioningCombo->setCurrentText(QString::fromStdString(
+        this->dialogConfig->partitioning));
+  this->ui->deviceCombo->setCurrentText(QString::fromStdString(
+        this->dialogConfig->device));
   this->onDeviceChanged();
+  this->ui->antennaCombo->setCurrentText(QString::fromStdString(
+        this->dialogConfig->antenna));
 }
 
 ////////////////////////////// Slots //////////////////////////////////////
@@ -894,6 +915,16 @@ PanoramicDialog::onDeviceChanged(void)
       this->ui->rangeStartSpin->setValue(dev.getMinFreq() + this->getLnbOffset());
       this->ui->rangeEndSpin->setValue(dev.getMaxFreq() + this->getLnbOffset());
     }
+
+    int curAntennaIndex = this->ui->antennaCombo->currentIndex();
+    this->ui->antennaCombo->clear();
+    for (auto i = dev.getFirstAntenna(); i != dev.getLastAntenna(); i++) {
+      this->ui->antennaCombo->addItem(QString::fromStdString(*i));
+    }
+    int antennaCount = this->ui->antennaCombo->count();
+    this->ui->antennaCombo->setEnabled(antennaCount > 0);
+    if (curAntennaIndex < antennaCount && curAntennaIndex >= 0)
+      this->ui->antennaCombo->setCurrentIndex(curAntennaIndex);
   } else {
     this->clearGains();
   }
@@ -1038,9 +1069,9 @@ PanoramicDialog::onNewCenterFreq(qint64 freq)
   qint64 span = this->currBw;
   qint64 min = freq - span / 2;
   qint64 max = freq + span / 2;
-  bool smallRange;
   bool leftBorder = false;
   bool rightBorder = false;
+
   if (min <= this->getMinFreq()) {
     leftBorder = true;
     min = static_cast<qint64>(this->getMinFreq());
@@ -1051,19 +1082,16 @@ PanoramicDialog::onNewCenterFreq(qint64 freq)
     max = static_cast<qint64>(this->getMaxFreq());
   }
 
-  smallRange = static_cast<quint64>(max - min) <= this->minBwForZoom;
-
-  if (smallRange) {
+  if (rightBorder || leftBorder) {
     if (leftBorder && !rightBorder) {
       max = min + span;
     } else if (rightBorder && !leftBorder) {
       min = max - span;
     }
-  }
 
-  if (rightBorder || leftBorder)
     this->ui->waterfall->setCenterFreq(
         static_cast<qint64>(.5 * (max + min)));
+  }
 
   emit detailChanged(min, max, this->fixedFreqMode);
 }
@@ -1077,10 +1105,7 @@ PanoramicDialog::onPaletteChanged(int)
 void
 PanoramicDialog::onStrategyChanged(int)
 {
-  QString strategy = this->ui->walkStrategyCombo->currentText();
-
-  this->ui->partitioningCombo->setEnabled(strategy != QString("Progressive"));
-  emit strategyChanged(strategy);
+  emit strategyChanged(this->ui->walkStrategyCombo->currentText());
 }
 
 void

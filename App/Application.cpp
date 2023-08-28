@@ -726,6 +726,7 @@ Application::onPanSpectrumStart(void)
       this->scanMaxFreq = static_cast<SUFREQ>(freqMax);
 
       config.setDevice(device);
+      config.setAntenna(this->mediator->getPanSpectrumAntenna().toStdString());
       config.setSampleRate(
             static_cast<unsigned int>(
               this->mediator->getPanSpectrumPreferredSampleRate()));

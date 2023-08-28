@@ -394,7 +394,7 @@ Scanner::setRelativeBw(float ratio)
     ratio = 2.f / SIGDIGGER_SCANNER_SPECTRUM_SIZE;
 
   this->views[0].fftRelBw = this->views[1].fftRelBw = ratio;
-  this->relBw = ratio;
+  this->analyzer->setRelBandwidth(ratio);
 }
 
 SpectrumView &

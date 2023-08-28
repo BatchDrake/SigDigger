@@ -28,6 +28,12 @@ UIMediator::getPanSpectrumDevice(Suscan::Source::Device &dev) const
   return this->ui->panoramicDialog->getSelectedDevice(dev);
 }
 
+QString
+UIMediator::getPanSpectrumAntenna(void) const
+{
+  return this->ui->panoramicDialog->getAntenna();
+}
+
 bool
 UIMediator::getPanSpectrumRange(qint64 &min, qint64 &max) const
 {

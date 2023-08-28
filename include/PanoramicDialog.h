@@ -52,6 +52,7 @@ namespace SigDigger {
     SUFREQ lnbFreq;
     int sampRate = 20000000;
     std::string device;
+    std::string antenna;
     std::string strategy;
     std::string partitioning;
     std::string palette = "Turbo (Gqrx)";
@@ -134,6 +135,7 @@ namespace SigDigger {
       void setMinBwForZoom(quint64 bw);
       bool invalidRange(void) const;
       bool getSelectedDevice(Suscan::Source::Device &) const;
+      QString getAntenna(void) const;
       QString getStrategy(void) const;
       QString getPartitioning(void) const;
       float getGain(QString const &) const;

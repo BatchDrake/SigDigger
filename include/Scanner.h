@@ -124,7 +124,6 @@ namespace SigDigger {
       SUFREQ lnb;
 
       bool fsGuessed = false;
-      float relBw = .5f;
       unsigned int fs = 0;
       unsigned int rtt = 15;
       SpectrumView views[2];
