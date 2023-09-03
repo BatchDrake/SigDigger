@@ -8,7 +8,7 @@ inputs:
 
 runs:
   using: 'composite'
-  steps:  
+  steps:    
     - name: Install Pothosware taps
       shell:  ${{inputs.shell}}
       run: |
@@ -23,6 +23,13 @@ runs:
     - name: Install common dependencies
       shell:  ${{inputs.shell}}
       run: brew install libsndfile volk fftw soapysdr libxml2 portaudio
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: 5.14.2
+        setup-python: false
+        py7zrversion: '==0.18.1'
 
     - name: Install SoapySDR modules
       shell:  ${{inputs.shell}}
