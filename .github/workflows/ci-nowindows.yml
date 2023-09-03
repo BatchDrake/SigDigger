@@ -57,64 +57,9 @@ jobs:
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
     
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
-      with:
-        version: 5.14.2
-        setup-python: false
-        py7zrversion: '==0.18.1'
-
-    - name: Install sndfile
-      run: brew install libsndfile
-
-    - name: Install Volk
-      run: brew install volk
-
-    - name: Install cURL
-      run: brew install curl
-
-    - name: Install FFTW3
-      run: brew install fftw
-
-    - name: Adding SoapySDR taps (Pothos)
-      run: brew tap pothosware/homebrew-pothos && brew update
-
-    - name: Install SoapySDR (Pothos)
-      run: brew install pothossoapy
-
-    - name: Fix brew/SoapySDR linking disaster
-      run: |
-        rm -f /usr/local/lib/libSoapySDR.0.8.dylib
-        ln -s /usr/local/lib/libSoapySDR.0.8.1.dylib /usr/local/lib/libSoapySDR.0.8.dylib
-    
-    - name: Creating modules0.8
-      run: sudo mkdir -p /usr/local/lib/SoapySDR/modules0.8
-
-    # - name: Install SDRPlay API
-    #  run: wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg && sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /
-
-    # - name: Build and install SoapySDR module for SDRPlay
-    #   run: git clone https://github.com/pothosware/SoapySDRPlay3 && cd SoapySDRPlay3 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j3 && sudo make install && cd ../../
-
-    # soapyosmo   removed because of random compilation errors
-    # soapyuhd    removed for the same reason
-    # soapyaudio  removed as it keeps breaking
-    # soapyremote removed because it crashes for whatever reason
-    # SDRPlay support removed becuase it hangs SoapySDR on startup
-    - name: Install SoapySDR modules (Pothos)
-      run: |
-        sudo chmod -R a+rw /usr/local/lib/SoapySDR/modules0.8
-        brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyairspyhf soapyredpitaya soapyiris limesuite soapyplutosdr
-
-    - name: Remove SoapySDR remote module to prevent crashes
-      run: sudo rm /usr/local/lib/SoapySDR/modules0.8/libremote*
-
-    - name: Install libxml2
-      run: brew install libxml2
-
-    - name: Install portaudio
-      run: brew install portaudio
-
+    - name: Install dependencies
+      uses: "./.github/actions/macosdeps"
+      
     - name: Build & Distribute (SigDigger)
       run: |
         cd Scripts
