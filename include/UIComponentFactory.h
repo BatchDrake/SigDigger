@@ -24,7 +24,7 @@
 #include <PersistentWidget.h>
 
 namespace Suscan {
-  class Location;
+  struct Location;
 }
 
 namespace SigDigger {
