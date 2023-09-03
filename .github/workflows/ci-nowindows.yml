@@ -50,7 +50,7 @@ jobs:
     steps:
     - uses: actions/setup-python@v3
       with:
-        python-version: '3.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+        python-version: '3.11' # Version range or exact version of a Python version to use, using SemVer's version range syntax
     
     - uses: actions/checkout@v2
     - name: Setup interactive shell session
