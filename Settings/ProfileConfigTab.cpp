@@ -201,6 +201,7 @@ ProfileConfigTab::refreshUiState()
 
   setSelectedSampleRate(m_profile.getSampleRate());
   refreshTrueSampleRate();
+  BLOCKSIG(ui->frequencySpinBox, setValue(m_profile.getFreq()));
 }
 
 void
@@ -808,6 +809,7 @@ ProfileConfigTab::onSourceConfigWidgetChanged()
 
     configChanged(true);
     refreshSampRates();
+    refreshUiState(); // maybe sample rate and/or freq changed
   }
 }
 
