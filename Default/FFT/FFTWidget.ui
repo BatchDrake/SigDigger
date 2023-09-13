@@ -131,6 +131,16 @@
        <string>60 fps</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>90 fps</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>120 fps</string>
+      </property>
+     </item>
     </widget>
    </item>
    <item row="0" column="0" colspan="3">
