@@ -804,11 +804,8 @@ ProfileConfigTab::onSourceConfigWidgetChanged()
       static_cast<SigDigger::SourceConfigWidget *>(QObject::sender());
 
   if (widget == m_currentConfigWidget) {
-    // Changes from the current config widget. Maybe the preferred list of
-    // rates has changed?
-
     configChanged(true);
-    refreshSampRates();
+    refreshUi();
   }
 }
 
@@ -937,13 +934,18 @@ ProfileConfigTab::onSpinsChanged()
   timeStampUsec = 1000 * (
         ui->sourceTimeEdit->dateTime().toMSecsSinceEpoch() % 1000);
 
-  if (!sufeq(m_profile.getFreq(), freq, .5f)) {
-    m_profile.setFreq(freq);
+
+  if (!sufeq(m_profile.getLnbFreq(), lnbFreq, .5f)) {
+    // Hey! Recall to adjust frequency accordingly
+    qreal diff = lnbFreq - m_profile.getLnbFreq();
+    freq += diff;
+    BLOCKSIG(ui->frequencySpinBox, setValue(freq));
+    m_profile.setLnbFreq(lnbFreq);
     configChanged();
   }
 
-  if (!sufeq(m_profile.getLnbFreq(), lnbFreq, .5f)) {
-    m_profile.setLnbFreq(lnbFreq);
+  if (!sufeq(m_profile.getFreq(), freq, .5f)) {
+    m_profile.setFreq(freq);
     configChanged();
   }
 

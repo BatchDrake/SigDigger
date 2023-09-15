@@ -1198,6 +1198,7 @@ UIMediator::onTriggerSetup(bool)
 {
   auto sus = Suscan::Singleton::get_instance();
 
+  // Make sure configDialog is up to date
   this->ui->configDialog->setProfile(*this->getProfile());
   this->ui->configDialog->setAnalyzerParams(*this->getAnalyzerParams());
   this->ui->configDialog->setColors(this->appConfig->colors);
@@ -1208,6 +1209,7 @@ UIMediator::onTriggerSetup(bool)
   if (sus->haveQth())
     this->ui->configDialog->setLocation(sus->getQth());
 
+  // Run config dialog
   if (this->ui->configDialog->run()) {
     this->appConfig->analyzerParams = this->ui->configDialog->getAnalyzerParams();
 

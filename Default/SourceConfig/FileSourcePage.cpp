@@ -128,8 +128,9 @@ FileSourcePage::guessParamsFromFileName()
       changes = true;
     }
 
-    if (params.haveFc && !sufeq(m_config->getFreq(), params.fc, 1)) {
-      m_config->setFreq(params.fc);
+    qreal shiftedFc = params.fc + m_config->getLnbFreq();
+    if (params.haveFc && !sufeq(m_config->getFreq(), shiftedFc, 1)) {
+      m_config->setFreq(shiftedFc);
       changes = true;
     }
   }
