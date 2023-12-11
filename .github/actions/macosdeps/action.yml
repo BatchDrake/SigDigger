@@ -16,6 +16,7 @@ runs:
     - name: Install SoapySDR dependencies
       shell:  ${{inputs.shell}}
       run: |
+        export HOMEBREW_NO_AUTO_UPDATE=1
         # Add custom homebrew repos
         brew tap pothosware/homebrew-pothos
         brew update
