@@ -9,17 +9,6 @@ inputs:
 runs:
   using: 'composite'
   steps:    
-    - name: Install Pothosware taps
-      shell:  ${{inputs.shell}}
-      run: |
-        brew tap pothosware/homebrew-pothos
-        brew update
-
-        # Install deps
-        # soapyaudio removed from due to deprecated hamlib API
-        # soapyosmo  removed because of random compilation errors
-        # soapyairspyhf  removed because of random compilation errors
-
     - name: Remove spurious symlinks
       shell:  ${{inputs.shell}}
       run: sudo rm -f /usr/local/bin/2to3
@@ -35,23 +24,25 @@ runs:
         setup-python: false
         py7zrversion: '==0.18.1'
 
-    - name: Install SoapySDR modules
-      shell:  ${{inputs.shell}}
-      run: brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
-
-    - name: Install SoapyUHD
-      shell:  ${{inputs.shell}}
-      run: brew install --head soapyuhd
-
-    - name: Download and instal SDRPlay API package
-      shell: ${{inputs.shell}}
+    - name: Install SoapySDR dependencies
       run: |
+        # Add custom homebrew repos
+        brew tap pothosware/homebrew-pothos
+        brew update
+        # Install deps
+        # soapyaudio removed from due to deprecated hamlib API
+        # soapyosmo  removed because of random compilation errors
+        # soapyairspyhf  removed because of random compilation errors
+        brew install libsndfile volk fftw soapysdr libxml2 portaudio
+        brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
+        brew install --head soapyuhd
+        # TODO: needed?
+        #sudo mkdir -p /usr/local/lib/SoapySDR/modules0.8
+        #sudo chmod -R a+rw /usr/local/lib/SoapySDR/modules0.8
+        # SDRPlay API
         wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg
         sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /
-
-    - name: Build SoapySDRPlay module from source
-      shell: ${{inputs.shell}}
-      run: |
+        # SoapySDRPlay3 from source
         git clone https://github.com/pothosware/SoapySDRPlay3
         cd SoapySDRPlay3
         cmake -DCMAKE_BUILD_TYPE=Release -B build .
