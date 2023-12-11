@@ -13,17 +13,6 @@ runs:
       shell:  ${{inputs.shell}}
       run: sudo rm -f /usr/local/bin/2to3 /usr/local/bin/2to3-3.11
       
-    - name: Install common dependencies
-      shell:  ${{inputs.shell}}
-      run: brew install libsndfile volk fftw soapysdr libxml2 portaudio
-
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
-      with:
-        version: 5.14.2
-        setup-python: false
-        py7zrversion: '==0.18.1'
-
     - name: Install SoapySDR dependencies
       shell:  ${{inputs.shell}}
       run: |
@@ -51,3 +40,12 @@ runs:
         cd build
         sudo make install
         cd ../..
+
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: 5.14.2
+        setup-python: false
+        py7zrversion: '==0.18.1'
+
