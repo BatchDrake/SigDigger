@@ -25,6 +25,7 @@ runs:
         py7zrversion: '==0.18.1'
 
     - name: Install SoapySDR dependencies
+      shell:  ${{inputs.shell}}
       run: |
         # Add custom homebrew repos
         brew tap pothosware/homebrew-pothos
