@@ -11,7 +11,7 @@ runs:
   steps:    
     - name: Remove spurious symlinks
       shell:  ${{inputs.shell}}
-      run: sudo rm -f /usr/local/bin/2to3
+      run: sudo rm -f /usr/local/bin/2to3 /usr/local/bin/2to3-3.11
       
     - name: Install common dependencies
       shell:  ${{inputs.shell}}
