@@ -23,8 +23,8 @@ runs:
         # soapyaudio removed from due to deprecated hamlib API
         # soapyosmo  removed because of random compilation errors
         # soapyairspyhf  removed because of random compilation errors
-        brew install libsndfile volk fftw soapysdr libxml2 portaudio
-        brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
+        brew install --force --overwrite libsndfile volk fftw soapysdr libxml2 portaudio
+        brew install --force --overwrite soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
         brew install --head soapyuhd
         # TODO: needed?
         #sudo mkdir -p /usr/local/lib/SoapySDR/modules0.8
