@@ -24,7 +24,7 @@ runs:
         # soapyaudio removed from due to deprecated hamlib API
         # soapyosmo  removed because of random compilation errors
         # soapyairspyhf  removed because of random compilation errors
-        brew install --force --overwrite python@3.12
+        # brew install --force --overwrite python@3.12
         brew install --force --overwrite libsndfile volk fftw soapysdr libxml2 portaudio
         python3 -Im pip install setuptools
         brew install --force --overwrite soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
