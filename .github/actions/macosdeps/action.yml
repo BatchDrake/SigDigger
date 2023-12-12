@@ -9,6 +9,9 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      
     - name: Remove spurious symlinks
       shell:  ${{inputs.shell}}
       run: sudo rm -f /usr/local/bin/2to3 /usr/local/bin/2to3-3.11
@@ -17,54 +20,42 @@ runs:
       shell:  ${{inputs.shell}}
       run: brew tap pothosware/homebrew-pothos && brew update
 
+    - name: Force-install of Python 3.11
+      shell:  ${{inputs.shell}}
+      run:  brew install --force --overwrite python@3.11
+
     - name: Force-install of Python 3.12 
       shell:  ${{inputs.shell}}
-      env:
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: |
         brew install --force --overwrite python@3.12
         python3 -Im pip install setuptools
 
     - name: Install libsndfile
       shell: ${{inputs.shell}}
-      env:
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install libsndfile
     
     - name: Install Volk
       shell: ${{inputs.shell}}
-      env:
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install volk
     
     - name: Install FFTW
       shell: ${{inputs.shell}}
-      env:
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install fftw
     
     - name: Install SoapySDR
       shell: ${{inputs.shell}}
-      env:
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install soapysdr
     
     - name: Install libxml2
       shell: ${{inputs.shell}}
-      env:
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install libxml2
     
     - name: Install portaudio
       shell: ${{inputs.shell}}
-      env:
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install portaudio
     
     - name: Install SoapySDR modules
       shell: ${{inputs.shell}}
-      env:
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: |
         brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
         brew install --head soapyuhd
@@ -82,11 +73,3 @@ runs:
         cd build
         sudo make install
         cd ../..
-
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
-      with:
-        version: 5.14.2
-        setup-python: false
-        py7zrversion: '==0.18.1'
-
