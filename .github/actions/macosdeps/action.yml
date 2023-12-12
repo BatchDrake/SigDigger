@@ -34,9 +34,10 @@ runs:
       shell:  ${{inputs.shell}}
       run:  brew install --force --overwrite node@18
 
-    - name: Install libsndfile
+    # Reinstall step needed to fix the problem with @loader_path
+    - name: (Re) Install libsndfile
       shell: ${{inputs.shell}}
-      run: brew install libsndfile
+      run: brew reinstall libsndfile
     
     - name: Install Volk
       shell: ${{inputs.shell}}
