@@ -1,4 +1,4 @@
-name: Build
+oname: Build
 description: 'Install macOS specific dependencies'
 
 inputs:
@@ -8,31 +8,54 @@ inputs:
 
 runs:
   using: 'composite'
-  steps:    
+  steps:
     - name: Remove spurious symlinks
       shell:  ${{inputs.shell}}
       run: sudo rm -f /usr/local/bin/2to3 /usr/local/bin/2to3-3.11
       
-    - name: Install SoapySDR dependencies
+    - name: Add custom Homebrew repos
+      shell:  ${{inputs.shell}}
+      run: brew tap pothosware/homebrew-pothos && brew update
+
+    - name: Force-install of Python 3.12 
       shell:  ${{inputs.shell}}
       run: |
-        export HOMEBREW_NO_AUTO_UPDATE=1
-        # Add custom homebrew repos
-        brew tap pothosware/homebrew-pothos
-        brew update
-        # Install deps
-        # soapyaudio removed from due to deprecated hamlib API
-        # soapyosmo  removed because of random compilation errors
-        # soapyairspyhf  removed because of random compilation errors
-        # brew install --force --overwrite python@3.12
-        brew install --force --overwrite libsndfile volk fftw soapysdr libxml2 portaudio
+        brew install --force --overwrite python@3.12
         python3 -Im pip install setuptools
-        brew install --force --overwrite soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
+
+    - name: Install libsndfile
+      shell: ${{inputs.shell}}
+      run: brew install libsndfile
+    
+    - name: Install Volk
+      shell: ${{inputs.shell}}
+      run: brew install volk
+    
+    - name: Install FFTW
+      shell: ${{inputs.shell}}
+      run: brew install fftw
+    
+    - name: Install SoapySDR
+      shell: ${{inputs.shell}}
+      run: brew install soapysdr
+    
+    - name: Install libxml2
+      shell: ${{inputs.shell}}
+      run: brew install libxml2
+    
+    - name: Install portaudio
+      shell: ${{inputs.shell}}
+      run: brew install portaudio
+    
+    - name: Install SoapySDR modules
+      shell: ${{inputs.shell}}
+      run: |
+        brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
         brew install --head soapyuhd
-        # TODO: needed?
-        #sudo mkdir -p /usr/local/lib/SoapySDR/modules0.8
-        #sudo chmod -R a+rw /usr/local/lib/SoapySDR/modules0.8
-        # SDRPlay API
+
+    - name: Install SDRPlay
+      shell: ${{inputs.shell}}
+      run: |
         wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg
         sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /
         # SoapySDRPlay3 from source
@@ -43,7 +66,6 @@ runs:
         cd build
         sudo make install
         cd ../..
-
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
