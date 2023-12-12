@@ -19,36 +19,52 @@ runs:
 
     - name: Force-install of Python 3.12 
       shell:  ${{inputs.shell}}
+      env:
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: |
         brew install --force --overwrite python@3.12
         python3 -Im pip install setuptools
 
     - name: Install libsndfile
       shell: ${{inputs.shell}}
+      env:
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install libsndfile
     
     - name: Install Volk
       shell: ${{inputs.shell}}
+      env:
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install volk
     
     - name: Install FFTW
       shell: ${{inputs.shell}}
+      env:
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install fftw
     
     - name: Install SoapySDR
       shell: ${{inputs.shell}}
+      env:
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install soapysdr
     
     - name: Install libxml2
       shell: ${{inputs.shell}}
+      env:
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install libxml2
     
     - name: Install portaudio
       shell: ${{inputs.shell}}
+      env:
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: brew install portaudio
     
     - name: Install SoapySDR modules
       shell: ${{inputs.shell}}
+      env:
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: |
         brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
         brew install --head soapyuhd
