@@ -11,7 +11,7 @@ runs:
   steps:
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
-      
+
     - name: Remove spurious symlinks
       shell:  ${{inputs.shell}}
       run: sudo rm -f /usr/local/bin/2to3 /usr/local/bin/2to3-3.11
@@ -29,6 +29,10 @@ runs:
       run: |
         brew install --force --overwrite python@3.12
         python3 -Im pip install setuptools
+
+    - name: Force-install of Node 18
+      shell:  ${{inputs.shell}}
+      run:  brew install --force --overwrite node@18
 
     - name: Install libsndfile
       shell: ${{inputs.shell}}
