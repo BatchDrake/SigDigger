@@ -2,7 +2,11 @@ name: DevelopReleaseNoWindows
 
 on:
   workflow_dispatch:
-
+    inputs:
+      plugin_list:
+        description: 'Plugins to include'
+        required: false
+        default: ''
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -27,7 +31,7 @@ jobs:
         cd Scripts
         chmod a+x dist-appimage.sh
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
-        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-appimage.sh 
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-appimage.sh ${{ github.event.inputs.plugin_list }}
         cd ..
 
     - name: Archive AppImage files
@@ -51,7 +55,7 @@ jobs:
       run: |
         cd Scripts
         chmod a+x dist-dmg.sh
-        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-dmg.sh
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-dmg.sh ${{ github.event.inputs.plugin_list }}
         cd ..
 
     - name: Archive .DMG files
