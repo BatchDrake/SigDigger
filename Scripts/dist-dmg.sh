@@ -167,13 +167,13 @@ function remove_full_path_stdin () {
 
 function ensure_rpath()
 {
-  for i in "$LIBPATH"/*.dylib "$LIBPATH/SoapySDR/modules"*/*.so "$BUNDLEPATH"/Contents/MacOS/*; do
-      if ! [ -L "$i" ]; then
-	  chmod u+rw "$i"
-	  try "Fixing "`basename $i`"..." true
-	  otool -L "$i" | grep '\t/usr/local/' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
-	  otool -L "$i" | grep '\t@rpath/.*\.dylib' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
-      fi
+  for i in "$LIBPATH"/*.dylib "$LIBPATH/SoapySDR/modules"*/*.so "$BUNDLEPATH"/Contents/MacOS/* "$RSRCPATH"/suscan/plugins/*; do
+    if ! [ -L "$i" ]; then
+	    chmod u+rw "$i"
+	    try "Fixing "`basename $i`"..." true
+	    otool -L "$i" | grep '\t/usr/local/' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
+	    otool -L "$i" | grep '\t@rpath/.*\.dylib' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
+    fi
   done
 }
 
