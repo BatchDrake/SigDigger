@@ -5,7 +5,8 @@
 #-------------------------------------------------
 
 QT           += core gui network widgets opengl
-unix: QMAKE_LFLAGS += -rdynamic
+unix: QMAKE_LFLAGS   += -rdynamic
+darwin: QMAKE_LFLAGS += -Wl,-export_dynamic
 
 greaterThan(QT_MAJOR_VERSION, 5): QT += openglwidgets
 
