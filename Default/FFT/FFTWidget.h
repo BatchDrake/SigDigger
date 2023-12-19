@@ -77,28 +77,28 @@ namespace SigDigger {
     Q_OBJECT
 
     // Convenience pointer
-    FFTWidgetConfig *panelConfig = nullptr;
+    FFTWidgetConfig *m_panelConfig = nullptr;
 
     // UI Objects
-    Ui::FftPanel *ui = nullptr;
+    Ui::FftPanel *m_ui = nullptr;
     MainSpectrum *m_spectrum = nullptr;
     UIMediator   *m_mediator = nullptr;
     Suscan::Analyzer *m_analyzer = nullptr;
 
     // UI Data
-    unsigned int rate = 0;
-    unsigned int defaultFftSize = 0;
-    unsigned int fftSize = 0;
-    unsigned int refreshRate = 0;
-    unsigned int defaultRefreshRate = 0;
+    unsigned int m_rate = 0;
+    unsigned int m_defaultFftSize = 0;
+    unsigned int m_fftSize = 0;
+    unsigned int m_refreshRate = 0;
+    unsigned int m_defaultRefreshRate = 0;
 
-    std::vector<unsigned int> sizes;
-    std::vector<unsigned int> refreshRates;
-    std::vector<unsigned int> timeSpans;
+    std::vector<unsigned int> m_sizes;
+    std::vector<unsigned int> m_refreshRates;
+    std::vector<unsigned int> m_timeSpans;
 
-    Suscan::SpectrumUnit currentUnit;
+    Suscan::SpectrumUnit m_currentUnit;
 
-    const Palette *selected = nullptr;
+    const Palette *m_selected = nullptr;
 
     // Private methods
     void addFftSize(unsigned int sz);
@@ -186,13 +186,13 @@ namespace SigDigger {
     float
     zeroPointToDb() const
     {
-      return this->getZeroPoint() * this->currentUnit.dBPerUnit;
+      return this->getZeroPoint() * this->m_currentUnit.dBPerUnit;
     }
 
     float
     dbToZeroPoint(float dB) const
     {
-      return dB / this->currentUnit.dBPerUnit;
+      return dB / this->m_currentUnit.dBPerUnit;
     }
 
   public:
@@ -211,7 +211,7 @@ namespace SigDigger {
   public slots:
     void onPandRangeChanged(int min, int max);
     void onWfRangeChanged(int min, int max);
-    void onAveragingChanged(int val);
+    void onAveragingChanged(qreal val);
     void onAspectRatioChanged(int val);
     void onPaletteChanged(int);
     void onFreqZoomChanged(int);
