@@ -41,6 +41,8 @@ InitThread::run()
   QString verString;
 
   try {
+    emit change("Generating FFT wisdom (this may take a while)");
+    su_lib_gen_wisdom();
     emit change("Loading signal sources");
     sing->init_sources();
     emit change("Loading spectrum sources");
