@@ -246,8 +246,6 @@ Loader::saveConfig()
     sing->sync();
 
     Suscan::ConfigContext::saveAll();
-
-    SU_INFO("Config saved\n");
   } catch (Suscan::Exception const &e) {
     QWidget *parent = isVisible()
         ? SCAST(QWidget *, this)
