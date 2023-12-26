@@ -201,6 +201,7 @@ void
 UIMediator::onBookmarkChanged(void)
 {
   this->ui->spectrum->updateOverlay();
+  emit triggerSaveConfig();
 }
 
 void

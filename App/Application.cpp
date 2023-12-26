@@ -61,19 +61,19 @@ Application::Application(QWidget *parent) : QMainWindow(parent), m_ui(this)
 }
 
 Suscan::Object &&
-Application::getConfig(void)
+Application::getConfig()
 {
   return m_mediator->getConfig()->serialize();
 }
 
 void
-Application::refreshConfig(void)
+Application::refreshConfig()
 {
   m_mediator->saveUIConfig();
 }
 
 void
-Application::updateRecent(void)
+Application::updateRecent()
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
 
@@ -111,7 +111,7 @@ Application::run(Suscan::Object const &config)
 
 
 void
-Application::connectUI(void)
+Application::connectUI()
 {
   connect(
         m_mediator,
@@ -145,15 +145,15 @@ Application::connectUI(void)
 
   connect(
         m_mediator,
-        SIGNAL(uiQuit(void)),
+        SIGNAL(uiQuit()),
         this,
-        SLOT(quit(void)));
+        SLOT(quit()));
 
   connect(
         m_mediator,
-        SIGNAL(refreshDevices(void)),
+        SIGNAL(refreshDevices()),
         this,
-        SLOT(onDeviceRefresh(void)));
+        SLOT(onDeviceRefresh()));
 
   connect(
         m_mediator,
@@ -163,15 +163,15 @@ Application::connectUI(void)
 
   connect(
         m_mediator,
-        SIGNAL(recentCleared(void)),
+        SIGNAL(recentCleared()),
         this,
-        SLOT(onRecentCleared(void)));
+        SLOT(onRecentCleared()));
 
   connect(
         m_mediator,
-        SIGNAL(panSpectrumStart(void)),
+        SIGNAL(panSpectrumStart()),
         this,
-        SLOT(onPanSpectrumStart(void)));
+        SLOT(onPanSpectrumStart()));
 
   connect(
         m_mediator,
@@ -181,27 +181,27 @@ Application::connectUI(void)
 
   connect(
         m_mediator,
-        SIGNAL(panSpectrumStop(void)),
+        SIGNAL(panSpectrumStop()),
         this,
-        SLOT(onPanSpectrumStop(void)));
+        SLOT(onPanSpectrumStop()));
 
   connect(
         m_mediator,
-        SIGNAL(panSpectrumSkipChanged(void)),
+        SIGNAL(panSpectrumSkipChanged()),
         this,
-        SLOT(onPanSpectrumSkipChanged(void)));
+        SLOT(onPanSpectrumSkipChanged()));
 
   connect(
         m_mediator,
-        SIGNAL(panSpectrumRelBwChanged(void)),
+        SIGNAL(panSpectrumRelBwChanged()),
         this,
-        SLOT(onPanSpectrumRelBwChanged(void)));
+        SLOT(onPanSpectrumRelBwChanged()));
 
   connect(
         m_mediator,
-        SIGNAL(panSpectrumReset(void)),
+        SIGNAL(panSpectrumReset()),
         this,
-        SLOT(onPanSpectrumReset(void)));
+        SLOT(onPanSpectrumReset()));
 
   connect(
         m_mediator,
@@ -223,31 +223,37 @@ Application::connectUI(void)
 
   connect(
         &m_uiTimer,
-        SIGNAL(timeout(void)),
+        SIGNAL(timeout()),
         this,
-        SLOT(onTick(void)));
+        SLOT(onTick()));
+
+  connect(
+        m_mediator,
+        SIGNAL(triggerSaveConfig()),
+        this,
+        SIGNAL(triggerSaveConfig()));
 }
 
 void
-Application::connectAnalyzer(void)
+Application::connectAnalyzer()
 {
   connect(
         m_analyzer.get(),
-        SIGNAL(halted(void)),
+        SIGNAL(halted()),
         this,
-        SLOT(onAnalyzerHalted(void)));
+        SLOT(onAnalyzerHalted()));
 
   connect(
         m_analyzer.get(),
-        SIGNAL(eos(void)),
+        SIGNAL(eos()),
         this,
-        SLOT(onAnalyzerEos(void)));
+        SLOT(onAnalyzerEos()));
 
   connect(
         m_analyzer.get(),
-        SIGNAL(read_error(void)),
+        SIGNAL(read_error()),
         this,
-        SLOT(onAnalyzerReadError(void)));
+        SLOT(onAnalyzerReadError()));
 
   connect(
         m_analyzer.get(),
@@ -275,23 +281,23 @@ Application::connectAnalyzer(void)
 }
 
 void
-Application::connectScanner(void)
+Application::connectScanner()
 {
   connect(
         m_scanner,
-        SIGNAL(spectrumUpdated(void)),
+        SIGNAL(spectrumUpdated()),
         this,
-        SLOT(onScannerUpdated(void)));
+        SLOT(onScannerUpdated()));
 
   connect(
         m_scanner,
-        SIGNAL(stopped(void)),
+        SIGNAL(stopped()),
         this,
-        SLOT(onScannerStopped(void)));
+        SLOT(onScannerStopped()));
 }
 
 void
-Application::connectDeviceDetect(void)
+Application::connectDeviceDetect()
 {
   connect(
         this,
@@ -356,13 +362,13 @@ Application::getLogText(int howMany)
 
 
 void
-Application::startCapture(void)
+Application::startCapture()
 {
   auto iface = m_mediator->getProfile()->getInterface();
 
 #ifdef _WIN32
   if (iface == SUSCAN_SOURCE_REMOTE_INTERFACE) {
-    (void)  QMessageBox::critical(
+    QMessageBox::critical(
           this,
           "SigDigger error",
           "Remote analyzers are not supported in Windows operating systems.\n\n"
@@ -439,7 +445,7 @@ Application::startCapture(void)
       m_mediator->setState(UIMediator::RUNNING, m_analyzer.get());
     }
   } catch (Suscan::Exception &) {
-    (void)  QMessageBox::critical(
+    QMessageBox::critical(
           this,
           "SigDigger error",
           "Failed to start capture due to errors:<p /><pre>"
@@ -451,7 +457,7 @@ Application::startCapture(void)
 }
 
 void
-Application::orderedHalt(void)
+Application::orderedHalt()
 {
   m_mediator->setState(UIMediator::HALTING);
   m_analyzer = nullptr;
@@ -459,7 +465,7 @@ Application::orderedHalt(void)
 }
 
 void
-Application::stopCapture(void)
+Application::stopCapture()
 {
   if (m_mediator->getState() == UIMediator::RUNNING) {
     m_mediator->setState(UIMediator::HALTING);
@@ -468,7 +474,7 @@ Application::stopCapture(void)
 }
 
 void
-Application::restartCapture(void)
+Application::restartCapture()
 {
   if (m_mediator->getState() == UIMediator::RUNNING) {
     m_mediator->setState(UIMediator::RESTARTING);
@@ -477,7 +483,7 @@ Application::restartCapture(void)
 }
 
 void
-Application::onAnalyzerHalted(void)
+Application::onAnalyzerHalted()
 {
   bool restart = m_mediator->getState() == UIMediator::RESTARTING;
 
@@ -488,9 +494,9 @@ Application::onAnalyzerHalted(void)
 }
 
 void
-Application::onAnalyzerEos(void)
+Application::onAnalyzerEos()
 {
-  (void)  QMessageBox::information(
+  QMessageBox::information(
         this,
         "End of stream",
         "Capture interrupted due to stream end:<p /><pre>"
@@ -520,7 +526,7 @@ void
 Application::onStatusMessage(const Suscan::StatusMessage &message)
 {
   if (message.getCode() == SUSCAN_ANALYZER_INIT_FAILURE) {
-    (void)  QMessageBox::critical(
+    QMessageBox::critical(
           this,
           "Analyzer initialization",
           "Initialization failed: " + message.getMessage(),
@@ -537,9 +543,9 @@ Application::onAnalyzerParams(const Suscan::AnalyzerParams &params)
 }
 
 void
-Application::onAnalyzerReadError(void)
+Application::onAnalyzerReadError()
 {
-  (void)  QMessageBox::critical(
+  QMessageBox::critical(
         this,
         "Source error",
         "Capture stopped due to source read error. Last errors were:<p /><pre>"
@@ -576,20 +582,20 @@ Application::closeEvent(QCloseEvent *)
 
 //////////////////////////////// Slots /////////////////////////////////////////
 void
-Application::quit(void)
+Application::quit()
 {
   stopCapture();
   QApplication::quit();
 }
 
 void
-Application::onCaptureStart(void)
+Application::onCaptureStart()
 {
   startCapture();
 }
 
 void
-Application::onCaptureStop(void)
+Application::onCaptureStop()
 {
   stopCapture();
 }
@@ -643,7 +649,7 @@ Application::hotApplyProfile(Suscan::Source::Config const *profile)
     TRYSILENT(m_analyzer->setDCRemove(profile->getDCRemove()));
 
   if (errorsOccurred) {
-    (void)  QMessageBox::warning(
+    QMessageBox::warning(
           this,
           "Update analyzer configuration",
           "Some of the settings in the profile could not be applied. See log window for details.",
@@ -658,7 +664,7 @@ Application::onSeek(struct timeval tv)
     try {
       m_analyzer->seek(tv);
     } catch (Suscan::Exception &) {
-      (void)  QMessageBox::critical(
+      QMessageBox::critical(
             this,
             "SigDigger error",
             "Source does not allow seeking",
@@ -668,13 +674,13 @@ Application::onSeek(struct timeval tv)
 }
 
 void
-Application::onDeviceRefresh(void)
+Application::onDeviceRefresh()
 {
   emit detectDevices();
 }
 
 void
-Application::onDetectFinished(void)
+Application::onDetectFinished()
 {
   m_mediator->refreshDevicesDone();
 }
@@ -691,7 +697,7 @@ Application::onRecentSelected(QString profile)
     if (forceStart)
       startCapture();
   } else {
-    (void) sing->removeRecent(profile.toStdString());
+    sing->removeRecent(profile.toStdString());
     QMessageBox::warning(
           this,
           "Failed to load recent profile",
@@ -702,7 +708,7 @@ Application::onRecentSelected(QString profile)
 }
 
 void
-Application::onRecentCleared(void)
+Application::onRecentCleared()
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
 
@@ -710,7 +716,7 @@ Application::onRecentCleared(void)
 }
 
 void
-Application::onPanSpectrumStart(void)
+Application::onPanSpectrumStart()
 {
   if (m_scanner == nullptr) {
     qint64 freqMin;
@@ -758,7 +764,7 @@ Application::onPanSpectrumStart(void)
         connectScanner();
         Suscan::Logger::getInstance()->flush();
       } catch (Suscan::Exception &) {
-        (void)  QMessageBox::critical(
+        QMessageBox::critical(
               this,
               "SigDigger error",
               "Failed to start capture due to errors:<p /><pre>"
@@ -773,7 +779,7 @@ Application::onPanSpectrumStart(void)
 }
 
 void
-Application::onPanSpectrumStop(void)
+Application::onPanSpectrumStop()
 {
   if (m_scanner != nullptr) {
     delete m_scanner;
@@ -791,21 +797,21 @@ Application::onPanSpectrumRangeChanged(qint64 min, qint64 max, bool noHop)
 }
 
 void
-Application::onPanSpectrumSkipChanged(void)
+Application::onPanSpectrumSkipChanged()
 {
   if (m_scanner != nullptr)
     m_scanner->setRttMs(m_mediator->getPanSpectrumRttMs());
 }
 
 void
-Application::onPanSpectrumRelBwChanged(void)
+Application::onPanSpectrumRelBwChanged()
 {
   if (m_scanner != nullptr)
     m_scanner->setRelativeBw(m_mediator->getPanSpectrumRelBw());
 }
 
 void
-Application::onPanSpectrumReset(void)
+Application::onPanSpectrumReset()
 {
   if (m_scanner != nullptr) {
     m_scanner->flip();
@@ -843,7 +849,7 @@ Application::onPanSpectrumGainChanged(QString name, float value)
 }
 
 void
-Application::onScannerStopped(void)
+Application::onScannerStopped()
 {
   QString messages = getLogText();
 
@@ -853,7 +859,7 @@ Application::onScannerStopped(void)
   }
 
   if (messages.size() > 0) {
-    (void)  QMessageBox::warning(
+    QMessageBox::warning(
           this,
           "Scanner stopped",
           "Running scanner has stopped. The error log was:<p /><pre>"
@@ -866,7 +872,7 @@ Application::onScannerStopped(void)
 }
 
 void
-Application::onScannerUpdated(void)
+Application::onScannerUpdated()
 {
   SpectrumView &view = m_scanner->getSpectrumView();
 
@@ -880,7 +886,7 @@ Application::onScannerUpdated(void)
 }
 
 void
-Application::onTick(void)
+Application::onTick()
 {
   if (m_mediator->getState() == UIMediator::RUNNING)
     m_mediator->notifyTimeStamp(m_analyzer->getSourceTimeStamp());

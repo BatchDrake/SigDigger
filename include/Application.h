@@ -29,7 +29,7 @@
 #include "AppConfig.h"
 #include "UIMediator.h"
 
-#define SIGDIGGER_AUTOSAVE_INTERVAL_MS (60 * 1000)
+#define SIGDIGGER_AUTOSAVE_INTERVAL_MS (1800 * 1000)
 
 namespace SigDigger {
   class Scanner;

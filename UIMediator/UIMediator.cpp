@@ -1593,6 +1593,8 @@ UIMediator::onBookmarkAccepted()
   }
 
   this->ui->spectrum->updateOverlay();
+
+  emit triggerSaveConfig();
 }
 
 void

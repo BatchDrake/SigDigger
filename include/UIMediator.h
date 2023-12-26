@@ -251,6 +251,7 @@ namespace SigDigger {
     void recentCleared();
     void profileChanged(bool);
     void frequencyChanged(qint64, qint64);
+    void triggerSaveConfig();
 
     // Panspectrum signals
     void panSpectrumStart();
