@@ -38,7 +38,7 @@ namespace SigDigger {
     InitThread(QObject *parent);
 
   signals:
-    void done(void);
+    void done();
     void change(const QString &state);
     void failure(const QString &reason);
   };
@@ -46,29 +46,29 @@ namespace SigDigger {
   class Loader: public QSplashScreen {
     Q_OBJECT
 
-    unsigned int confIndex = 0;
-    void flushLog(void);
-    QString getLogText(void);
+    unsigned int m_confIndex = 0;
+    void flushLog();
+    QString getLogText();
 
-  private:
     // Owned pointers
-    std::unique_ptr<InitThread> initThread; // QT wants this to be a pointer
+    std::unique_ptr<InitThread> m_initThread; // QT wants this to be a pointer
 
     // Borrowed pointers
-    Application *app;
-    Suscan::Singleton *suscan;
+    Application *m_app;
+    Suscan::Singleton *m_suscan;
     void showMessage(const QString &message);
 
   public:
     Loader(Application *app);
     ~Loader();
-    void load(void);
-    void saveConfig(void);
+    void load();
 
   public slots:
     void handleChange(const QString &state);
     void handleFailure(const QString &state);
-    void handleDone(void);
+    void handleDone();
+
+    void saveConfig();
   };
 };
 

@@ -41,6 +41,7 @@ AppConfig::serialize(void)
   Suscan::Object profileObj = this->profile.serialize();
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
   Suscan::Object bandPlans(SUSCAN_OBJECT_TYPE_SET);
+  Suscan::Object componentConfigCopy;
 
   obj.setClass("qtui");
 
@@ -66,7 +67,8 @@ AppConfig::serialize(void)
 
   obj.setField("bandPlans", bandPlans);
 
-  obj.setField("Components", this->cachedComponentConfig);
+  componentConfigCopy.copyFrom(this->cachedComponentConfig);
+  obj.setField("Components", componentConfigCopy);
 
   for (auto p : this->enabledBandPlans) {
     Suscan::Object entry(SUSCAN_OBJECT_TYPE_FIELD);
