@@ -111,6 +111,7 @@ FileSourcePage::guessParamsFromFileName()
   SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
   CaptureFileParams params;
   bool changes = false;
+  bool refresh = false;
 
   if (m_config == nullptr)
     return false;
@@ -133,7 +134,21 @@ FileSourcePage::guessParamsFromFileName()
       m_config->setFreq(shiftedFc);
       changes = true;
     }
+
+    if (params.havePath && params.path != m_config->getPath()) {
+      m_config->setPath(params.path);
+      ui->pathEdit->setText(QString::fromStdString(params.path));
+      changes = refresh = true;
+    }
+
+    if (params.haveFmt && params.format != m_config->getFormat()) {
+      m_config->setFormat(params.format);
+      changes = refresh = true;
+    }
   }
+
+  if (refresh)
+    refreshUi();
 
   return changes;
 }
@@ -183,6 +198,7 @@ FileSourcePage::onBrowseCaptureFile()
           << "Raw complex 8-bit signed (*.s8 *.cs8)"
           << "Raw complex 16-bit signed (*.s16 *.cs16)"
           << "WAV files (*.wav)"
+          << "SigMF signal rcordings (*.sigmf-data *.sigmf-meta)"
           << "All files (*)";
       break;
 

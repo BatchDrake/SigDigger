@@ -20,6 +20,7 @@ FileViewer::FileViewer(QObject *parent)
       << "Raw complex 8-bit signed (*.s8 *.cs8)"
       << "Raw complex 16-bit signed (*.s16 *.cs16)"
       << "WAV files (*.wav)"
+      << "SigMF signal rcordings (*.sigmf-data *.sigmf-meta)"
       << "All files (*)";
 
   m_dialog->setFileMode(QFileDialog::ExistingFile);
@@ -51,11 +52,11 @@ FileViewer::processFile(QString path)
     return;
   }
 
-  if (!params.isRaw) {
+  if (params.format != SUSCAN_SOURCE_FORMAT_RAW_FLOAT32) {
     QMessageBox::warning(
           nullptr,
           "Unsupported file format",
-          "The selected file has been recognized, but its storage format is not raw. "
+          "The selected file has been recognized, but its storage format is not float32. "
           "FileViewer currently relies on memory-mapped files to display large files, "
           "and non-native sample formats cannot be converted on the go.");
     return;
@@ -69,6 +70,9 @@ FileViewer::processFile(QString path)
           "Capture files need their sample format and rate to be defined prior processing.");
     return;
   }
+
+  if (params.havePath)
+    path = QString::fromStdString(params.path);
 
   QFile file(path);
 

@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <Suscan/Library.h>
+#include <Suscan/Source.h>
 #include <Palette.h>
 #include <QStyledItemDelegate>
 #include <QItemDelegate>
@@ -30,6 +31,7 @@
 #include <sys/time.h>
 
 class QComboBox;
+class QFile;
 
 namespace SigDigger {
   class MultitaskController;
@@ -42,42 +44,46 @@ namespace SigDigger {
   };
 
   struct CaptureFileParams {
-    bool haveFc = false;
-    bool haveFs = false;
+    bool haveFc   = false;
+    bool haveFs   = false;
     bool haveDate = false;
     bool haveTime = false;
-    bool isUTC = false;
-    bool haveTm = false;
-    bool isRaw = false;
+    bool isUTC    = false;
+    bool haveTm   = false;
+    bool haveFmt  = false;
+    bool havePath = false;
 
-    SUFREQ fc = 0;
+    std::string  path;
+    SUFREQ       fc = 0;
     unsigned int fs = 0;
+    enum suscan_source_format format = SUSCAN_SOURCE_FORMAT_RAW_FLOAT32;
 
-    struct tm tm;
+    struct tm      tm;
     struct timeval tv = {0, 0};
   };
 
   class SigDiggerHelpers
   {
-    std::vector<Palette> palettes;
-    Palette *gqrxPalette = nullptr;
+    std::vector<Palette>           m_palettes;
+    Palette                       *m_gqrxPalette = nullptr;
+    std::list<std::string>         m_tzs;
+    std::list<const std::string *> m_tzStack;
 
-    std::list<std::string> tzs;
-    std::list<const std::string *> tzStack;
+    bool                           m_haveTZvar = false;
+    std::string                    m_tzVar;
+    static SigDiggerHelpers       *m_currInstance;
 
-    bool haveTZvar = false;
-    std::string tzVar;
-
-    static SigDiggerHelpers *currInstance;
+    // Private methods
 
     SigDiggerHelpers();
-
-    Palette *getGqrxPalette(void);
+    Palette *getGqrxPalette();
+    bool     guessSigMFParams(CaptureFileParams &, QString const &);
+    bool     parseSigMFMeta(CaptureFileParams &, QFile &);
 
   public:
-    static unsigned int abiVersion(void);
-    static QString version(void);
-    static QString pkgversion(void);
+    static unsigned int abiVersion();
+    static QString version();
+    static QString pkgversion();
     static void timerdup(struct timeval *);
 
     // Demod helpers
@@ -94,7 +100,7 @@ namespace SigDigger {
         int end,
         Suscan::MultitaskController *);
 
-    static SigDiggerHelpers *instance(void);
+    static SigDiggerHelpers *instance();
     int getPaletteIndex(std::string const &) const;
     const Palette *getPalette(std::string const &) const;
     const Palette *getPalette(int index) const;
@@ -103,13 +109,13 @@ namespace SigDigger {
     static void populateAntennaCombo(
         Suscan::Source::Config &profile,
         QComboBox *combo);
-    void deserializePalettes(void);
+    void deserializePalettes();
 
-    void pushLocalTZ(void);
-    void pushUTCTZ(void);
+    void pushLocalTZ();
+    void pushUTCTZ();
 
     void pushTZ(const char *);
-    bool popTZ(void);
+    bool popTZ();
 
     static QString expandGlobalProperties(QString const &);
   };

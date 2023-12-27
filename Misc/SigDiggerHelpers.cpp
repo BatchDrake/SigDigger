@@ -29,6 +29,9 @@
 #include <Suscan/MultitaskController.h>
 #include <ExportSamplesTask.h>
 #include <sigutils/util/compat-stdlib.h>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 #ifndef SIGDIGGER_PKGVERSION
 #  define SIGDIGGER_PKGVERSION \
@@ -41,25 +44,25 @@
 
 using namespace SigDigger;
 
-SigDiggerHelpers *SigDiggerHelpers::currInstance = nullptr;
+SigDiggerHelpers *SigDiggerHelpers::m_currInstance = nullptr;
 
 SigDiggerHelpers *
-SigDiggerHelpers::instance(void)
+SigDiggerHelpers::instance()
 {
-  if (currInstance == nullptr)
-    currInstance = new SigDiggerHelpers();
+  if (m_currInstance == nullptr)
+    m_currInstance = new SigDiggerHelpers();
 
-  return currInstance;
+  return m_currInstance;
 }
 
 QString
-SigDiggerHelpers::version(void)
+SigDiggerHelpers::version()
 {
   return QString(SIGDIGGER_VERSION_STRING);
 }
 
 QString
-SigDiggerHelpers::pkgversion(void)
+SigDiggerHelpers::pkgversion()
 {
   return QString(SIGDIGGER_PKGVERSION);
 }
@@ -236,10 +239,10 @@ SigDiggerHelpers::openSaveSamplesDialog(
 
 
 Palette *
-SigDiggerHelpers::getGqrxPalette(void)
+SigDiggerHelpers::getGqrxPalette()
 {
   static qreal color[256][3];
-  if (this->gqrxPalette == nullptr) {
+  if (this->m_gqrxPalette == nullptr) {
     for (int i = 0; i < 256; i++) {
       if (i < 20) { // level 0: black background
         color[i][0] = color[i][1] = color[i][2] = 0;
@@ -265,27 +268,171 @@ SigDiggerHelpers::getGqrxPalette(void)
       }
     }
 
-    gqrxPalette = new Palette("Gqrx", color);
+    m_gqrxPalette = new Palette("Gqrx", color);
   }
 
-  return gqrxPalette;
+  return m_gqrxPalette;
 }
 
 void
-SigDiggerHelpers::deserializePalettes(void)
+SigDiggerHelpers::deserializePalettes()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
-  if (this->palettes.size() == 0) {
-    this->palettes.push_back(Palette("Suscan", wf_gradient));
-    this->palettes.push_back(*this->getGqrxPalette());
+  if (this->m_palettes.size() == 0) {
+    this->m_palettes.push_back(Palette("Suscan", wf_gradient));
+    this->m_palettes.push_back(*this->getGqrxPalette());
   }
 
   // Fill palette vector
   for (auto i = sus->getFirstPalette();
        i != sus->getLastPalette();
        i++)
-    this->palettes.push_back(Palette(*i));
+    this->m_palettes.push_back(Palette(*i));
+}
+
+#define OBJECT_HAS_OBJ(obj, what) (obj.contains(what) && obj.value(what).isObject())
+#define OBJECT_HAS_STR(obj, what) (obj.contains(what) && obj.value(what).isString())
+#define OBJECT_HAS_DOUBLE(obj, what) (obj.contains(what) && obj.value(what).isDouble())
+#define OBJECT_HAS_ARRAY(obj, what) (obj.contains(what) && obj.value(what).isArray())
+
+bool
+SigDiggerHelpers::parseSigMFMeta(CaptureFileParams &params, QFile &file)
+{
+  QJsonParseError err;
+  QJsonDocument metaData = QJsonDocument::fromJson(file.readAll(), &err);
+
+  if (err.error != QJsonParseError::NoError) {
+    SU_ERROR(
+          "Failed to parse SigMF meta: %s\n",
+          err.errorString().toStdString().c_str());
+    return false;
+  }
+
+  QJsonObject root = metaData.object();
+
+  if (!OBJECT_HAS_OBJ(root, "global")) {
+    SU_ERROR("SigMF file does not contain the global key, discarding\n");
+    return false;
+  }
+
+  QJsonObject global = root.value("global").toObject();
+  if (!OBJECT_HAS_STR(global, "core:datatype")) {
+    SU_ERROR("SigMF datatype is undefined\n");
+    return false;
+  }
+
+  if (!OBJECT_HAS_DOUBLE(global, "core:sample_rate")) {
+    SU_ERROR("SigMF sample rate is undefined\n");
+    return false;
+  }
+
+  // Parse datatype
+  QString dataType = global.value("core:datatype").toString();
+  if (dataType == "ci8") {
+    params.haveFmt = true;
+    params.format  = SUSCAN_SOURCE_FORMAT_RAW_SIGNED8;
+  } else if (dataType == "cu8") {
+    params.haveFmt = true;
+    params.format  = SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8;
+  } else if (dataType == "ci16_le") {
+    params.haveFmt = true;
+    params.format  = SUSCAN_SOURCE_FORMAT_RAW_SIGNED16;
+  } else if (dataType == "cf32_le") {
+    params.haveFmt = true;
+    params.format  = SUSCAN_SOURCE_FORMAT_RAW_FLOAT32;
+  } else {
+    SU_ERROR(
+          "Failed to parse SigMF meta: unsupported datatype `%s`\n",
+          dataType.toStdString().c_str());
+    return false;
+  }
+
+  // Parse sample rate
+  qreal sampRate = global.value("core:sample_rate").toDouble();
+  if (sampRate < 1) {
+    SU_ERROR("SigMF sample rate is invalid\n");
+    return false;
+  }
+
+  params.haveFs   = true;
+  params.fs       = sampRate;
+
+  // Parse optional fields
+  if (OBJECT_HAS_ARRAY(root, "captures")) {
+    QJsonArray array = root.value("captures").toArray();
+    if (array.size() > 0) {
+      auto value = array.at(0);
+      if (value.isObject()) {
+        QJsonObject firstCapture = value.toObject();
+
+        if (OBJECT_HAS_DOUBLE(firstCapture, "core:frequency")) {
+          qreal freq = firstCapture.value("core:frequency").toDouble();
+
+          params.haveFc = true;
+          params.fc     = freq;
+        }
+
+        if (OBJECT_HAS_STR(firstCapture, "core:datetime")) {
+          QString str = firstCapture.value("core:datetime").toString();
+
+          QDateTime dateTime = QDateTime::fromString(str, Qt::ISODate);
+          time_t sinceEpoch = dateTime.toSecsSinceEpoch();
+
+          params.haveTm  = true;
+          params.tv.tv_sec  = sinceEpoch;
+          params.tv.tv_usec = 0;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+bool
+SigDiggerHelpers::guessSigMFParams(
+    CaptureFileParams &params,
+    QString const &path)
+{
+  QString captureName, extension;
+  QFile file;
+  QString dataFile, metaFile;
+  int extPos = path.lastIndexOf('.');
+
+  if (extPos == -1)
+    return false;
+
+  extension = path.mid(extPos);
+  if (extension != ".sigmf-data" && extension != ".sigmf-meta")
+    return false;
+
+  captureName = path.mid(0, extPos);
+  dataFile = captureName + ".sigmf-data";
+  metaFile = captureName + ".sigmf-meta";
+
+  file.setFileName(dataFile);
+  if (!file.exists())
+    return false;
+
+  file.setFileName(metaFile);
+  if (!file.exists())
+    return false;
+
+  if (!file.open(QFile::ReadOnly)) {
+    SU_ERROR(
+          "Failed to read SigMF meta file: %s\n",
+          file.errorString().toStdString().c_str());
+    return false;
+  }
+
+  if (!parseSigMFMeta(params, file))
+    return false;
+
+  params.havePath = true;
+  params.path     = dataFile.toStdString();
+
+  return true;
 }
 
 bool
@@ -301,6 +448,11 @@ SigDiggerHelpers::guessCaptureFileParams(
 
   memset(&params.tm, 0, sizeof(struct tm));
 
+  params.format = SUSCAN_SOURCE_FORMAT_RAW_FLOAT32;
+
+  if (guessSigMFParams(params, path))
+    return true;
+
   if (sscanf(
         baseName.c_str(),
         "sigdigger_%08d_%06dZ_%d_%lg_float32_iq",
@@ -313,7 +465,7 @@ SigDiggerHelpers::guessCaptureFileParams(
     params.haveDate = true;
     params.haveTime = true;
     params.isUTC    = true;
-    params.isRaw    = true;
+    params.haveFmt  = true;
   } else if (sscanf(
         baseName.c_str(),
         "sigdigger_%d_%lg_float32_iq",
@@ -321,7 +473,7 @@ SigDiggerHelpers::guessCaptureFileParams(
         &fc) == 2) {
     params.haveFc = true;
     params.haveFs = true;
-    params.isRaw    = true;
+    params.haveFmt  = true;
   } else if (sscanf(
         baseName.c_str(),
         "gqrx_%08d_%06d_%lg_%d_fc",
@@ -333,7 +485,7 @@ SigDiggerHelpers::guessCaptureFileParams(
     params.haveFs   = true;
     params.haveDate = true;
     params.haveTime = true;
-    params.isRaw    = true;
+    params.haveFmt  = true;
   } else if (sscanf(
         baseName.c_str(),
         "SDRSharp_%08d_%06dZ_%lg_IQ",
@@ -370,7 +522,7 @@ SigDiggerHelpers::guessCaptureFileParams(
     params.haveFc   = true;
     params.haveTm   = true;
     params.isUTC    = true;
-    params.isRaw    = true;
+    params.haveFmt  = true;
   } else {
     // Unrecognized
     return false;
@@ -422,7 +574,7 @@ SigDiggerHelpers::populatePaletteCombo(QComboBox *cb)
   cb->clear();
 
   // Populate combo
-  for (auto p : this->palettes) {
+  for (auto p : this->m_palettes) {
     cb->insertItem(
           ndx,
           QIcon(QPixmap::fromImage(p.getThumbnail())),
@@ -458,10 +610,10 @@ SigDiggerHelpers::populateAntennaCombo(
 const Palette *
 SigDiggerHelpers::getPalette(int index) const
 {
-  if (index < 0 || index >= static_cast<int>(this->palettes.size()))
+  if (index < 0 || index >= static_cast<int>(this->m_palettes.size()))
     return nullptr;
 
-  return &this->palettes[static_cast<size_t>(index)];
+  return &this->m_palettes[static_cast<size_t>(index)];
 }
 
 int
@@ -469,8 +621,8 @@ SigDiggerHelpers::getPaletteIndex(std::string const &name) const
 {
   unsigned int i;
 
-  for (i = 0; i < this->palettes.size(); ++i)
-    if (this->palettes[i].getName().compare(name) == 0)
+  for (i = 0; i < this->m_palettes.size(); ++i)
+    if (this->m_palettes[i].getName().compare(name) == 0)
       return static_cast<int>(i);
 
   return -1;
@@ -482,7 +634,7 @@ SigDiggerHelpers::getPalette(std::string const &name) const
   int index = this->getPaletteIndex(name);
 
   if (index >= 0)
-    return &this->palettes[index];
+    return &this->m_palettes[index];
 
   return nullptr;
 }
@@ -491,9 +643,9 @@ SigDiggerHelpers::SigDiggerHelpers()
 {
   const char *localTZ = getenv("TZ");
 
-  this->haveTZvar = localTZ != nullptr;
+  this->m_haveTZvar = localTZ != nullptr;
   if (localTZ != nullptr)
-    this->tzVar = localTZ;
+    this->m_tzVar = localTZ;
 
   this->deserializePalettes();
 }
@@ -507,12 +659,12 @@ SigDiggerHelpers::pushTZ(const char *tz)
 
   // Non-null TZ, push in saving stack
   if (prev != nullptr) {
-    this->tzs.push_front(prev);
-    front = &this->tzs.front();
+    this->m_tzs.push_front(prev);
+    front = &this->m_tzs.front();
   }
 
   // Push this one nonetheless
-  this->tzStack.push_front(front);
+  this->m_tzStack.push_front(front);
 
   if (tz != nullptr)
     setenv("TZ", tz, 1);
@@ -523,19 +675,19 @@ SigDiggerHelpers::pushTZ(const char *tz)
 }
 
 bool
-SigDiggerHelpers::popTZ(void)
+SigDiggerHelpers::popTZ()
 {
   const std::string *front;
 
-  if (this->tzStack.empty())
+  if (this->m_tzStack.empty())
     return false;
 
-  front = this->tzStack.front();
+  front = this->m_tzStack.front();
 
   if (front != nullptr) {
     setenv("TZ", front->c_str(), 1);
     // Non-null TZ, pop from the saving stack
-    this->tzs.pop_front();
+    this->m_tzs.pop_front();
   } else {
     unsetenv("TZ");
   }
@@ -543,22 +695,22 @@ SigDiggerHelpers::popTZ(void)
   tzset();
 
   // Pop it
-  this->tzStack.pop_front();
+  this->m_tzStack.pop_front();
 
   return true;
 }
 
 void
-SigDiggerHelpers::pushLocalTZ(void)
+SigDiggerHelpers::pushLocalTZ()
 {
-  if (this->haveTZvar)
-    this->pushTZ(this->tzVar.c_str());
+  if (this->m_haveTZvar)
+    this->pushTZ(this->m_tzVar.c_str());
   else
     this->pushTZ(nullptr);
 }
 
 void
-SigDiggerHelpers::pushUTCTZ(void)
+SigDiggerHelpers::pushUTCTZ()
 {
   this->pushTZ("");
 }
