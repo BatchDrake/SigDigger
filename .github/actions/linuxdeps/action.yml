@@ -24,6 +24,10 @@ runs:
       shell:  ${{inputs.shell}}
       run: sudo apt-get install libsndfile1-dev
 
+    - name: Install json-c
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libjson-c-dev
+
     - name: Install Volk
       shell:  ${{inputs.shell}}
       run: sudo apt-get install libvolk2-dev

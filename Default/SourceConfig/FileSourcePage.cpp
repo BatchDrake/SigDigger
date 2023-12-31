@@ -100,6 +100,10 @@ FileSourcePage::refreshUi()
     case SUSCAN_SOURCE_FORMAT_WAV:
       index = 5;
       break;
+
+    case SUSCAN_SOURCE_FORMAT_SIGMF:
+      index = 6;
+      break;
   }
 
   BLOCKSIG(ui->formatCombo, setCurrentIndex(index));
@@ -141,7 +145,9 @@ FileSourcePage::guessParamsFromFileName()
       changes = refresh = true;
     }
 
-    if (params.haveFmt && params.format != m_config->getFormat()) {
+    if (params.haveFmt
+        && m_config->getFormat() == SUSCAN_SOURCE_FORMAT_AUTO
+        && params.format != m_config->getFormat()) {
       m_config->setFormat(params.format);
       changes = refresh = true;
     }
@@ -198,7 +204,7 @@ FileSourcePage::onBrowseCaptureFile()
           << "Raw complex 8-bit signed (*.s8 *.cs8)"
           << "Raw complex 16-bit signed (*.s16 *.cs16)"
           << "WAV files (*.wav)"
-          << "SigMF signal rcordings (*.sigmf-data *.sigmf-meta)"
+          << "SigMF signal recordings (*.sigmf-data *.sigmf-meta)"
           << "All files (*)";
       break;
 
@@ -227,6 +233,13 @@ FileSourcePage::onBrowseCaptureFile()
       title = "Open I/Q file";
       formats
           << "Raw complex 16-bit signed (*.s16 *.cs16)"
+          << "All files (*)";
+      break;
+
+    case SUSCAN_SOURCE_FORMAT_SIGMF:
+      title = "Open SigMF recording";
+      formats
+          << "SigMF signal recordings (*.sigmf-data *.sigmf-meta)"
           << "All files (*)";
       break;
 
@@ -292,6 +305,10 @@ FileSourcePage::onFormatChanged(int index)
 
     case 5:
       m_config->setFormat(SUSCAN_SOURCE_FORMAT_WAV);
+      break;
+
+    case 6:
+      m_config->setFormat(SUSCAN_SOURCE_FORMAT_SIGMF);
       break;
   }
 

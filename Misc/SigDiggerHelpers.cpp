@@ -328,25 +328,8 @@ SigDiggerHelpers::parseSigMFMeta(CaptureFileParams &params, QFile &file)
   }
 
   // Parse datatype
-  QString dataType = global.value("core:datatype").toString();
-  if (dataType == "ci8") {
-    params.haveFmt = true;
-    params.format  = SUSCAN_SOURCE_FORMAT_RAW_SIGNED8;
-  } else if (dataType == "cu8") {
-    params.haveFmt = true;
-    params.format  = SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8;
-  } else if (dataType == "ci16_le") {
-    params.haveFmt = true;
-    params.format  = SUSCAN_SOURCE_FORMAT_RAW_SIGNED16;
-  } else if (dataType == "cf32_le") {
-    params.haveFmt = true;
-    params.format  = SUSCAN_SOURCE_FORMAT_RAW_FLOAT32;
-  } else {
-    SU_ERROR(
-          "Failed to parse SigMF meta: unsupported datatype `%s`\n",
-          dataType.toStdString().c_str());
-    return false;
-  }
+  params.haveFmt = true;
+  params.format = SUSCAN_SOURCE_FORMAT_SIGMF;
 
   // Parse sample rate
   qreal sampRate = global.value("core:sample_rate").toDouble();
@@ -428,9 +411,6 @@ SigDiggerHelpers::guessSigMFParams(
 
   if (!parseSigMFMeta(params, file))
     return false;
-
-  params.havePath = true;
-  params.path     = dataFile.toStdString();
 
   return true;
 }

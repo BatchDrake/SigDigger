@@ -42,6 +42,10 @@ runs:
     - name: Install Volk
       shell: ${{inputs.shell}}
       run: brew install volk
+
+    - name: Install JSON-C
+      shell: ${{inputs.shell}}
+      run: brew install json-c
     
     - name: Install FFTW
       shell: ${{inputs.shell}}
