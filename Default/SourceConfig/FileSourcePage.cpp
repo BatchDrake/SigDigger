@@ -112,43 +112,38 @@ FileSourcePage::refreshUi()
 bool
 FileSourcePage::guessParamsFromFileName()
 {
-  SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
-  CaptureFileParams params;
+  suscan_source_metadata meta;
   bool changes = false;
   bool refresh = false;
 
   if (m_config == nullptr)
     return false;
 
-  if (hlp->guessCaptureFileParams(params, m_config->getPath().c_str())) {
+  if (m_config->guessMetadata(meta)) {
     auto st = m_config->getStartTime();
-    if (params.haveTm &&
-        (st.tv_sec != params.tv.tv_sec || st.tv_usec != params.tv.tv_usec)) {
-      m_config->setStartTime(params.tv);
+    if ((meta.guessed & SUSCAN_SOURCE_CONFIG_GUESS_START_TIME)
+        && (st.tv_sec != meta.start_time.tv_sec || st.tv_usec != meta.start_time.tv_usec)) {
+      m_config->setStartTime(meta.start_time);
       changes = true;
     }
 
-    if (params.haveFs && m_config->getSampleRate() != params.fs) {
-      m_config->setSampleRate(params.fs);
+    if ((meta.guessed & SUSCAN_SOURCE_CONFIG_GUESS_SAMP_RATE)
+        && m_config->getSampleRate() != meta.sample_rate) {
+      m_config->setSampleRate(meta.sample_rate);
       changes = true;
     }
 
-    qreal shiftedFc = params.fc + m_config->getLnbFreq();
-    if (params.haveFc && !sufeq(m_config->getFreq(), shiftedFc, 1)) {
-      m_config->setFreq(shiftedFc);
-      changes = true;
+    if (meta.guessed & SUSCAN_SOURCE_CONFIG_GUESS_FREQ) {
+      qreal shiftedFc = meta.frequency + m_config->getLnbFreq();
+      if (!sufeq(m_config->getFreq(), shiftedFc, 1)) {
+        m_config->setFreq(shiftedFc);
+        changes = true;
+      }
     }
 
-    if (params.havePath && params.path != m_config->getPath()) {
-      m_config->setPath(params.path);
-      ui->pathEdit->setText(QString::fromStdString(params.path));
-      changes = refresh = true;
-    }
-
-    if (params.haveFmt
-        && m_config->getFormat() == SUSCAN_SOURCE_FORMAT_AUTO
-        && params.format != m_config->getFormat()) {
-      m_config->setFormat(params.format);
+    if ((meta.guessed & SUSCAN_SOURCE_CONFIG_GUESS_FORMAT)
+        && meta.format != m_config->getFormat()) {
+      m_config->setFormat(meta.format);
       changes = refresh = true;
     }
   }
@@ -175,8 +170,8 @@ FileSourcePage::getCapabilityMask() const
 void
 FileSourcePage::activateWidget()
 {
-  if (guessParamsFromFileName())
-    emit changed();
+  /* if (guessParamsFromFileName())
+    emit changed(); */
 }
 
 void

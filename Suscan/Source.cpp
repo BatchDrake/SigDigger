@@ -495,20 +495,38 @@ Source::Config::getParamList(void) const
 bool
 Source::Config::isRealTime() const
 {
+  if (this->instance == nullptr)
+    return false;
+
   return suscan_source_config_is_real_time(this->instance) == SU_TRUE;
 }
 
 bool
 Source::Config::isSeekable() const
 {
+  if (this->instance == nullptr)
+    return false;
+
   return suscan_source_config_is_seekable(this->instance) == SU_TRUE;
 }
 
 bool
 Source::Config::getFreqLimits(SUFREQ &min, SUFREQ &max) const
 {
+  if (this->instance == nullptr)
+    return false;
+
   return
      suscan_source_config_get_freq_limits(this->instance, &min, &max) == SU_TRUE;
+}
+
+bool
+Source::Config::guessMetadata(struct suscan_source_metadata &meta) const
+{
+  if (this->instance == nullptr)
+    return false;
+
+  return suscan_source_config_guess_metadata(this->instance, &meta) == SU_TRUE;
 }
 
 bool

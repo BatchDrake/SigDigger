@@ -40,10 +40,12 @@ FileViewer::FileViewer(QObject *parent)
 void
 FileViewer::processFile(QString path)
 {
-  SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
-  CaptureFileParams params;
+  Suscan::Source::Config config;
+  suscan_source_metadata meta;
 
-  if (!hlp->guessCaptureFileParams(params, path)) {
+  config.setPath(path.toStdString());
+
+  if (!config.guessMetadata(meta)) {
     QMessageBox::warning(
           nullptr,
           "Unrecognized file",
@@ -52,7 +54,8 @@ FileViewer::processFile(QString path)
     return;
   }
 
-  if (params.format != SUSCAN_SOURCE_FORMAT_RAW_FLOAT32) {
+  if (!(meta.guessed & SUSCAN_SOURCE_CONFIG_GUESS_FORMAT)
+      || meta.format != SUSCAN_SOURCE_FORMAT_RAW_FLOAT32) {
     QMessageBox::warning(
           nullptr,
           "Unsupported file format",
@@ -62,7 +65,7 @@ FileViewer::processFile(QString path)
     return;
   }
 
-  if (!params.haveFs) {
+  if (!(meta.guessed & SUSCAN_SOURCE_CONFIG_GUESS_SAMP_RATE)) {
     QMessageBox::warning(
           nullptr,
           "Unsupported file format",
@@ -70,9 +73,6 @@ FileViewer::processFile(QString path)
           "Capture files need their sample format and rate to be defined prior processing.");
     return;
   }
-
-  if (params.havePath)
-    path = QString::fromStdString(params.path);
 
   QFile file(path);
 
@@ -100,8 +100,10 @@ FileViewer::processFile(QString path)
 
   window->postLoadInit();
 
-  window->setData(data, file.size() / sizeof(SUCOMPLEX), params.fs, params.fs);
-  window->setCenterFreq(params.fc);
+  window->setData(data, file.size() / sizeof(SUCOMPLEX), meta.sample_rate, meta.sample_rate);
+
+  if (meta.guessed & SUSCAN_SOURCE_CONFIG_GUESS_FREQ)
+    window->setCenterFreq(meta.frequency);
 
   window->show();
   window->raise();

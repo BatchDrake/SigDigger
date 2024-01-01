@@ -343,6 +343,7 @@ namespace Suscan {
     bool isRealTime() const;
     bool isSeekable() const;
     bool getFreqLimits(SUFREQ &, SUFREQ &) const;
+    bool guessMetadata(struct suscan_source_metadata &) const;
 
     const Source::Device &getDevice();
     enum suscan_source_format getFormat() const;

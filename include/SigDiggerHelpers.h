@@ -43,25 +43,6 @@ namespace SigDigger {
     LSB
   };
 
-  struct CaptureFileParams {
-    bool haveFc   = false;
-    bool haveFs   = false;
-    bool haveDate = false;
-    bool haveTime = false;
-    bool isUTC    = false;
-    bool haveTm   = false;
-    bool haveFmt  = false;
-    bool havePath = false;
-
-    std::string  path;
-    SUFREQ       fc = 0;
-    unsigned int fs = 0;
-    enum suscan_source_format format = SUSCAN_SOURCE_FORMAT_RAW_FLOAT32;
-
-    struct tm      tm;
-    struct timeval tv = {0, 0};
-  };
-
   class SigDiggerHelpers
   {
     std::vector<Palette>           m_palettes;
@@ -77,8 +58,6 @@ namespace SigDigger {
 
     SigDiggerHelpers();
     Palette *getGqrxPalette();
-    bool     guessSigMFParams(CaptureFileParams &, QString const &);
-    bool     parseSigMFMeta(CaptureFileParams &, QFile &);
 
   public:
     static unsigned int abiVersion();
@@ -104,7 +83,6 @@ namespace SigDigger {
     int getPaletteIndex(std::string const &) const;
     const Palette *getPalette(std::string const &) const;
     const Palette *getPalette(int index) const;
-    bool guessCaptureFileParams(CaptureFileParams &, QString const &);
     void populatePaletteCombo(QComboBox *combo);
     static void populateAntennaCombo(
         Suscan::Source::Config &profile,
