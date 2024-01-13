@@ -34,9 +34,13 @@ namespace SigDigger {
   {
       Q_OBJECT
 
-      QVector<Suscan::LoggerMessage> msgVec;
-      bool errorFound = false;
-      Suscan::Logger *logger;
+      QVector<Suscan::LoggerMessage> m_msgVec;
+      bool                           m_errorFound = false;
+      Suscan::Logger                *m_logger;
+      unsigned int                   m_repeat = 1;
+
+      bool isRepeated(std::string const &msg) const;
+
       void connectAll(void);
       void saveLog(QString path);
       static QTableWidgetItem *makeSeverityItem(
@@ -45,7 +49,7 @@ namespace SigDigger {
     public:
       bool haveErrorMessages(void) const
       {
-        return this->errorFound;
+        return this->m_errorFound;
       }
 
       QString getErrorHtml(void) const;
