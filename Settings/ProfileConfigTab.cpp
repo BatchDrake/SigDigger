@@ -567,9 +567,8 @@ ProfileConfigTab::setProfile(const Suscan::Source::Config &profile)
   m_currentConfigWidget = nullptr;
   m_currentConfigIndex = -1;
 
-  loadProfile(profile);
-
   setUnchanged();
+  loadProfile(profile);
 }
 
 void
@@ -717,19 +716,19 @@ ProfileConfigTab::selectSourceType(std::string const &type)
     if (!tryLeaveCurrentConfigWidget())
       return false;
 
-    // New widget, call activate and set current widget.
+    // New widget, set current widget and call activate
+    m_currentConfigWidget = next;
+
     if (next != nullptr) {
       ui->sourceConfigGroupBox->setVisible(true);
       ui->sourceConfigStack->setCurrentWidget(next);
       BLOCKSIG(
             ui->sourceTypeCombo,
             setCurrentIndex(ui->sourceConfigStack->currentIndex()));
-      next->activateWidget();
+      BLOCKSIG(next, activateWidget());
     } else {
       ui->sourceConfigGroupBox->setVisible(false);
     }
-
-    m_currentConfigWidget = next;
 
     // Refresh sample rate combo
     refreshSampRates();

@@ -65,7 +65,7 @@ namespace SigDigger {
   class FrequencyCorrectionDialog;
   class AppConfig;
   class EstimatorControl;
-  class GenericInspectorConfig;
+  struct GenericInspectorConfig;
 
   class InspectorUI : public QObject {
     Q_OBJECT

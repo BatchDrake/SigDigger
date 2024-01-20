@@ -118,7 +118,6 @@ void
 StdinSourcePage::activateWidget()
 {
   refreshUi();
-  emit changed();
 }
 
 bool

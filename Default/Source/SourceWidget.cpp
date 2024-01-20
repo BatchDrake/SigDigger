@@ -885,13 +885,6 @@ SourceWidget::setBlockingSignals(bool blocking)
 void
 SourceWidget::setDelayedAnalyzerOptions()
 {
-  if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN)) {
-    if (this->panelConfig->gainPresetEnabled)
-      this->applyCurrentAutogain();
-    else
-      this->applyCurrentProfileGains();
-  }
-
   if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE))
     this->onThrottleChanged();
 
@@ -1311,6 +1304,15 @@ SourceWidget::onToggleAGCEnabled(void)
             "SigDigger error",
             "Source does not allow toggling the AGC setting",
             QMessageBox::Ok);
+    }
+
+    if (!this->panelConfig->agcEnabled &&
+        m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN)) {
+      // restore the manual gain settings
+      if (this->panelConfig->gainPresetEnabled)
+        this->applyCurrentAutogain();
+      else
+        this->applyCurrentProfileGains();
     }
   }
 }

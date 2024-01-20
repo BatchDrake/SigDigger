@@ -349,9 +349,15 @@ FFTWidget::FFTWidget(FFTWidgetFactory *factory, UIMediator *mediator, QWidget *p
   addRefreshRate(30);
   addRefreshRate(50);
   addRefreshRate(60);
+  addRefreshRate(90);
+  addRefreshRate(120);
 
   // Add Gqrx time spans
   addTimeSpan(0);
+  addTimeSpan(15);
+  addTimeSpan(30);
+  addTimeSpan(1 * 60);
+  addTimeSpan(2 * 60);
   addTimeSpan(5 * 60);
   addTimeSpan(10 * 60);
   addTimeSpan(15 * 60);

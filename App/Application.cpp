@@ -103,7 +103,7 @@ Application::run(Suscan::Object const &config)
 
   show();
 
-  m_uiTimer.start(250);
+  m_uiTimer.start(100);
   m_cfgTimer.start();
 
   //mediator->notifyStartupErrors();

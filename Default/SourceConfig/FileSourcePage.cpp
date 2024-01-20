@@ -170,8 +170,6 @@ FileSourcePage::getCapabilityMask() const
 void
 FileSourcePage::activateWidget()
 {
-  /* if (guessParamsFromFileName())
-    emit changed(); */
 }
 
 void
