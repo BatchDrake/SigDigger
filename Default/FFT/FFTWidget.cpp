@@ -1064,7 +1064,10 @@ FFTWidget::onAveragingChanged(qreal)
 
   setAveraging(avg);
 
-  averager->setAlpha(SU_SPLPF_ALPHA(avg));
+  if (avg <= 1.f)
+    averager->setAlpha(1.);
+  else
+    averager->setAlpha(SU_SPLPF_ALPHA(avg - 1));
 }
 
 void
