@@ -46,33 +46,33 @@ namespace SigDigger {
     Q_OBJECT
 
     // Ui members
-    HistogramDialog *histogramDialog = nullptr;
-    SamplerDialog *samplerDialog = nullptr;
-    DopplerDialog *dopplerDialog = nullptr;
+    HistogramDialog *m_histogramDialog = nullptr;
+    SamplerDialog *m_samplerDialog = nullptr;
+    DopplerDialog *m_dopplerDialog = nullptr;
 
     Ui::TimeWindow *ui = nullptr;
 
-    bool hadSelectionBefore = true; // Yep. This must be true.
-    bool adjusting = false;
-    bool firstShow = true;
+    bool m_hadSelectionBefore = true; // Yep. This must be true.
+    bool m_adjusting = false;
+    bool m_firstShow = true;
 
-    qreal     fs = 0;
-    qreal     bw = 0;
+    qreal     m_fs = 0;
+    qreal     m_bw = 0;
 
-    std::vector<SUCOMPLEX> const *data = nullptr;
-    const SUCOMPLEX *roDataPtr = nullptr;
-    size_t           roDataLength = 0;
+    std::vector<SUCOMPLEX> const *m_data = nullptr;
+    const SUCOMPLEX *m_roDataPtr = nullptr;
+    size_t           m_roDataLength = 0;
 
-    std::vector<SUCOMPLEX> processedData;
+    std::vector<SUCOMPLEX> m_processedData;
 
-    const SUCOMPLEX *displayDataPtr = nullptr;
-    size_t           displayDataLength = 0;
+    const SUCOMPLEX *m_displayDataPtr = nullptr;
+    size_t           m_displayDataLength = 0;
 
-    SUFREQ    centerFreq;
+    SUFREQ    m_centerFreq;
 
-    bool taskRunning = false;
+    bool m_taskRunning = false;
 
-    Suscan::CancellableController taskController;
+    Suscan::CancellableController m_taskController;
 
     int getPeriodicDivision(void) const;
 

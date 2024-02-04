@@ -32,19 +32,20 @@ namespace SigDigger {
   {
     Q_OBJECT
 
-    Decider decider;
-    SamplingProperties properties;
+    Decider            m_decider;
+    SamplingProperties m_properties;
 
-    SUFLOAT minVal = +INFINITY;
+    SUFLOAT m_minVal = +INFINITY;
     SUFLOAT maxVal = -INFINITY;
 
-    SUFLOAT minAmp = 0;
-    SUFLOAT maxAmp = 1;
+    SUFLOAT m_minAmp = 0;
+    SUFLOAT m_maxAmp = 1;
+
+    bool m_scrolling = false;
+    bool m_autoScroll = true;
 
     void connectAll(void);
     void refreshUi(void);
-    bool scrolling = false;
-    bool autoScroll = true;
 
     unsigned int getVScrollPageSize(void) const;
     unsigned int getHScrollOffset(void) const;
