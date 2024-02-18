@@ -322,7 +322,7 @@ unsigned int
 PanoramicDialog::preferredRttMs(Suscan::Source::Device const &dev)
 {
   if (dev.getDriver() == "rtlsdr")
-    return 75;
+    return 5;
   else if (dev.getDriver() == "airspy")
     return 16;
   else if (dev.getDriver() == "hackrf")

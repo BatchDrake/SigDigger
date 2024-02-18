@@ -797,6 +797,11 @@ Application::onPanSpectrumStart()
       config.setLnbFreq(m_mediator->getPanSpectrumLnbOffset());
       config.setFreq(.5 * (m_scanMinFreq + m_scanMaxFreq));
 
+      // default RTL-SDR buffer size results in ~40 ms wait between chunks of data
+      // shorter buffer size avoids that being a bottleneck in sweep speed
+      if (device.getDriver() == "rtlsdr")
+        config.setParam("stream:bufflen", "16384");
+
       try {
         Suscan::Logger::getInstance()->flush();
         m_scanner = new Scanner(this, freqMin, freqMax, config);
