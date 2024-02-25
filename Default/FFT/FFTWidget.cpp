@@ -392,6 +392,8 @@ FFTWidget::FFTWidget(FFTWidgetFactory *factory, UIMediator *mediator, QWidget *p
   addClickResolution(100000);
   addClickResolution(250000);
   addClickResolution(1000000);
+  addClickResolution(2500000);
+  addClickResolution(10000000);
 
   populateUnits();
 

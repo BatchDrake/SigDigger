@@ -208,6 +208,16 @@
        <string>1 MHz</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>2.5 MHz</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>10 MHz</string>
+      </property>
+     </item>
     </widget>
    </item>
    <item row="0" column="0" colspan="3">
