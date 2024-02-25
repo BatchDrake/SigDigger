@@ -169,6 +169,7 @@ namespace SigDigger {
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
     void setGracePeriod(qint64 ms);
+    void setClickResolution(unsigned int res);
 
     void setShowChannels(bool);
     void setShowFATs(bool);

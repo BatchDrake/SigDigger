@@ -334,8 +334,6 @@ void
 MainSpectrum::notifyHalt(void)
 {
   WATERFALL_CALL(setRunningState(false));
-  WATERFALL_CALL(setClickResolution(1));
-  WATERFALL_CALL(setFilterClickResolution(1));
 }
 
 void
@@ -376,6 +374,16 @@ void
 MainSpectrum::setTimeStampsUTC(bool utc)
 {
   WATERFALL_CALL(setTimeStampsUTC(utc));
+}
+
+void
+MainSpectrum::setClickResolution(unsigned int res)
+{
+  WATERFALL_CALL(setClickResolution((int)res));
+
+  // filter click resolution of 1/5th the tuning resolution is reasonable
+  int filter_res = res > 5 ? (int)(res / 5) : 1;
+  WATERFALL_CALL(setFilterClickResolution(filter_res));
 }
 
 void
@@ -524,8 +532,6 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
     this->ui->gridLayout->addWidget(this->wf, 2, 0, 1, 4);
     this->connectWf();
     this->wf->setBookmarkSource(this->bookmarkSource);
-    this->wf->setClickResolution(1);
-    this->wf->setFilterClickResolution(1);
 
     this->setShowFATs(true);
     this->setColorConfig(this->lastColorConfig);
