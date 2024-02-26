@@ -328,7 +328,7 @@ PanoramicDialog::preferredRttMs(Suscan::Source::Device const &dev)
   else if (dev.getDriver() == "hackrf")
     return 10;
   else if (dev.getDriver() == "uhd")
-    return 8;
+    return 2;
 
   return 0;
 }
