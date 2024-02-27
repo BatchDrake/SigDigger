@@ -588,6 +588,7 @@ PanoramicDialog::adjustRanges(void)
           static_cast<qint64>(maxFreq)));
 
   this->ui->waterfall->setSpanFreq(static_cast<qint64>(maxFreq - minFreq));
+  this->ui->waterfall->setSampleRate(static_cast<qint64>(maxFreq - minFreq));
   this->ui->waterfall->setCenterFreq(static_cast<qint64>(maxFreq + minFreq) / 2);
 }
 
