@@ -22,10 +22,6 @@
 #include <QObject>
 #include <Suscan/Analyzer.h>
 
-//
-// It does not make much sense to have different spectrum sizes for the
-// PSD and the panoramic view. We use this size for both thigs.
-//
 #define SIGDIGGER_SCANNER_SPECTRUM_SIZE     16384
 #define SIGDIGGER_SCANNER_DEFAULT_BIN_VALUE -200.0f
 #define SIGDIGGER_SCANNER_MIN_BIN_VALUE     -150.0f
@@ -86,6 +82,7 @@ namespace SigDigger {
       void feed(
           const SUFLOAT *,
           const SUFLOAT *,
+          SUSCOUNT psdSize,
           SUFREQ freqMin,
           SUFREQ freqMax,
           bool adjustSides = true);
@@ -93,6 +90,7 @@ namespace SigDigger {
       void feed(
           const SUFLOAT *,
           const SUFLOAT *,
+          SUSCOUNT psdSize,
           SUFREQ center,
           bool adjustSides = true);
 
@@ -105,12 +103,14 @@ namespace SigDigger {
       void feedLinearMode(
           const SUFLOAT *,
           const SUFLOAT *,
+          SUSCOUNT psdSize,
           SUFREQ freqMin,
           SUFREQ freqMax,
           bool adjustSides = true);
 
       void feedHistogramMode(
           const SUFLOAT *,
+          SUSCOUNT psdSize,
           SUFREQ freqMin,
           SUFREQ freqMax);
   };
@@ -126,6 +126,7 @@ namespace SigDigger {
       bool fsGuessed = false;
       unsigned int fs = 0;
       unsigned int rtt = 15;
+      unsigned int fftSize = 8192;
       SpectrumView views[2];
       int view = 0;
 

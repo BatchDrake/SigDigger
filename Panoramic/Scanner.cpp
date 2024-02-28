@@ -104,6 +104,7 @@ void
 SpectrumView::feedLinearMode(
     const SUFLOAT *psdData,
     const SUFLOAT *countData,
+    SUSCOUNT psdSize,
     SUFREQ freqMin,
     SUFREQ freqMax,
     bool adjustSides)
@@ -131,14 +132,13 @@ SpectrumView::feedLinearMode(
   inpBw = freqMax - freqMin;
   if (adjustSides) {
     skip = static_cast<int>(
-          .5f * (1 - this->fftRelBw) * SIGDIGGER_SCANNER_SPECTRUM_SIZE);
+          .5f * (1 - this->fftRelBw) * psdSize);
   } else {
     skip = 0;
   }
 
-  freqSkip = static_cast<SUFREQ>(skip) / SIGDIGGER_SCANNER_SPECTRUM_SIZE
-      * inpBw;
-  pieceWidth = SIGDIGGER_SCANNER_SPECTRUM_SIZE - 2 * skip;
+  freqSkip = static_cast<SUFREQ>(skip) / psdSize * inpBw;
+  pieceWidth = psdSize - 2 * skip;
   bw = inpBw - 2 * freqSkip;
   assert(skip >= 0);
 
@@ -224,6 +224,7 @@ SpectrumView::feedLinearMode(
 void
 SpectrumView::feedHistogramMode(
     const SUFLOAT *psdData,
+    SUSCOUNT psdSize,
     SUFREQ freqMin,
     SUFREQ freqMax)
 {
@@ -231,7 +232,7 @@ SpectrumView::feedHistogramMode(
   SUFREQ fStart = (freqMin - this->freqMin) / this->freqRange;
   SUFREQ fEnd   = (freqMax - this->freqMin) / this->freqRange;
   SUFLOAT t;
-  SUFLOAT inv = 1. / SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+  SUFLOAT inv = 1. / psdSize;
   unsigned int i;
   SUFLOAT accum = 0;
 
@@ -244,7 +245,7 @@ SpectrumView::feedHistogramMode(
   // Now, relBw represents the relative size of the range
   // with respecto to the spectrum bin.
 
-  for (i = 0; i < SIGDIGGER_SCANNER_SPECTRUM_SIZE; ++i)
+  for (i = 0; i < psdSize; ++i)
     accum += psdData[i];
 
   accum *= inv;
@@ -273,6 +274,7 @@ void
 SpectrumView::feed(
     const SUFLOAT *psd,
     const SUFLOAT *count,
+    SUSCOUNT psdSize,
     SUFREQ freqMin,
     SUFREQ freqMax,
     bool adjustSides)
@@ -280,9 +282,9 @@ SpectrumView::feed(
   SUFREQ fftCount = (freqMax - freqMin) / this->freqRange;
 
   if (fftCount * SIGDIGGER_SCANNER_SPECTRUM_SIZE >= 2)
-    this->feedLinearMode(psd, count, freqMin, freqMax, adjustSides);
+    this->feedLinearMode(psd, count, psdSize, freqMin, freqMax, adjustSides);
   else
-    this->feedHistogramMode(psd, freqMin, freqMax);
+    this->feedHistogramMode(psd, psdSize, freqMin, freqMax);
 
   this->interpolate();
 }
@@ -291,12 +293,14 @@ void
 SpectrumView::feed(
     const SUFLOAT *psd,
     const SUFLOAT *count,
+    SUSCOUNT psdSize,
     SUFREQ center,
     bool adjustSides)
 {
   this->feed(
         psd,
         count,
+        psdSize,
         center - this->fftBandwidth / 2,
         center + this->fftBandwidth / 2,
         adjustSides);
@@ -308,6 +312,7 @@ SpectrumView::feed(SpectrumView const &detail)
   this->feed(
         detail.psdAccum,
         detail.psdCount,
+        SIGDIGGER_SCANNER_SPECTRUM_SIZE,
         detail.freqMin,
         detail.freqMax,
         false);
@@ -345,7 +350,7 @@ Scanner::Scanner(
   params.sAvgAlpha = 0.001f;
   params.nAvgAlpha = 0.5;
   params.snr = 2;
-  params.windowSize = SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+  params.windowSize = this->fftSize;
 
   params.mode = Suscan::AnalyzerParams::Mode::WIDE_SPECTRUM;
   params.minFreq = freqMin;
@@ -514,10 +519,11 @@ Scanner::onPSDMessage(const Suscan::PSDMessage &msg)
     this->getSpectrumView().setRange(this->freqMin, this->freqMax);
   }
 
-  if (msg.size() == SIGDIGGER_SCANNER_SPECTRUM_SIZE) {
+  if (msg.size() == this->fftSize) {
     this->getSpectrumView().feed(
           msg.get(),
           nullptr,
+          this->fftSize,
           msg.getFrequency());
   }
 
