@@ -335,6 +335,7 @@ Scanner::Scanner(
     Suscan::Source::Config const &cfg) : QObject(parent)
 {
   Suscan::AnalyzerParams params;
+  unsigned int ms_samples;
 
   if (freqMin > freqMax) {
     SUFREQ tmp = freqMin;
@@ -344,6 +345,12 @@ Scanner::Scanner(
 
   this->freqMin = freqMin;
   this->freqMax = freqMax;
+
+  // choose an FFT size such that data capture is at least 1 ms
+  ms_samples = cfg.getSampleRate() * 0.001;
+  this->fftSize = 256;
+  while (this->fftSize < ms_samples)
+    this->fftSize <<= 1;
 
   params.channelUpdateInterval = 0;
   params.spectrumAvgAlpha = .001f;
