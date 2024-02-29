@@ -28,6 +28,7 @@
 #include <SuWidgetsHelpers.h>
 #include <Suscan/MultitaskController.h>
 #include <ExportSamplesTask.h>
+#include <ExportCSVTask.h>
 #include <sigutils/util/compat-stdlib.h>
 
 #ifndef SIGDIGGER_PKGVERSION
@@ -212,6 +213,65 @@ SigDiggerHelpers::openSaveSamplesDialog(
       path = SuWidgetsHelpers::ensureExtension(path, format);
 
       task = new ExportSamplesTask(path, format, data, length, fs, start, end);
+
+      if (!task->attemptOpen()) {
+        QMessageBox::critical(
+              root,
+              "Save samples to file",
+              task->getLastError());
+        delete task;
+      } else {
+        QFileInfo info(path);
+
+        // TODO: Decide whether to send to multitask controller or to
+        // run in the current thread according to data size.
+
+        mt->pushTask(task, "Save samples to " + info.fileName());
+        done = true;
+      }
+    } else {
+      done = true;
+    }
+  } while (!done);
+}
+
+void
+SigDiggerHelpers::openSaveCoherentSamplesDialog(
+    QWidget *root,
+    const SUCOMPLEX *channel1,
+    const SUCOMPLEX *channel2,
+    size_t length,
+    qreal fs,
+    int start,
+    int end,
+    Suscan::MultitaskController *mt)
+{
+  bool done = false;
+
+  do {
+    QFileDialog dialog(root);
+    QStringList filters;
+    QString format;
+
+    dialog.setFileMode(QFileDialog::FileMode::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setWindowTitle(QString("Save coherent capture"));
+
+    filters << "Comma separated values (*.csv)";
+
+    dialog.setNameFilters(filters);
+
+    if (dialog.exec()) {
+      QString path = dialog.selectedFiles().first();
+      QString filter = dialog.selectedNameFilter();
+      ExportCSVTask *task;
+
+      path = SuWidgetsHelpers::ensureExtension(path, "csv");
+
+      const char *names[]     = {"H", "V"};
+      const SUCOMPLEX *data[] = {channel1, channel2};
+
+      task = new ExportCSVTask(path, 2,  names, data, length, start, end);
 
       if (!task->attemptOpen()) {
         QMessageBox::critical(

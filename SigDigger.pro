@@ -181,6 +181,7 @@ SOURCES += \
     Tasks/CostasRecoveryTask.cpp \
     Tasks/DelayedConjTask.cpp \
     Tasks/DopplerCalculator.cpp \
+    Tasks/ExportCSVTask.cpp \
     Tasks/HistogramFeeder.cpp \
     Tasks/LPFTask.cpp \
     Tasks/PLLSyncTask.cpp \
@@ -335,6 +336,7 @@ HEADERS += \
     Default/SourceConfig/StdinSourcePageFactory.h \
     Default/SourceConfig/ToneGenSourcePage.h \
     Default/SourceConfig/ToneGenSourcePageFactory.h \
+    ExportCSVTask.h \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \

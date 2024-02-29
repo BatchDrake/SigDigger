@@ -279,8 +279,9 @@ function build()
         try "Recreating directories..."    mkdir -p "$DEPLOYROOT" "$BUILDROOT"
 
         cd "$BUILDROOT"
-        
-        try "Cloning sigutils (${BRANCH})..."          git clone --recurse-submodules -b "$BRANCH" https://github.com/BatchDrake/sigutils
+
+	# The latest sigutils is now on master
+        try "Cloning sigutils (${BRANCH})..."          git clone --recurse-submodules -b master https://github.com/BatchDrake/sigutils
         try "Cloning suscan (${BRANCH})..."            git clone --recurse-submodules -b "$BRANCH" https://github.com/BatchDrake/suscan
         try "Cloning SuWidgets (${BRANCH})..."         git clone --recurse-submodules -b "$BRANCH" https://github.com/BatchDrake/SuWidgets
         try "Cloning SigDigger (${BRANCH})..."         git clone --recurse-submodules -b "$BRANCH" https://github.com/BatchDrake/SigDigger

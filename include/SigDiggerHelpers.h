@@ -79,6 +79,16 @@ namespace SigDigger {
         int end,
         Suscan::MultitaskController *);
 
+    static void openSaveCoherentSamplesDialog(
+        QWidget *root,
+        const SUCOMPLEX *channel1,
+        const SUCOMPLEX *channel2,
+        size_t len,
+        qreal fs,
+        int start,
+        int end,
+        Suscan::MultitaskController *);
+
     static SigDiggerHelpers *instance();
     int getPaletteIndex(std::string const &) const;
     const Palette *getPalette(std::string const &) const;
