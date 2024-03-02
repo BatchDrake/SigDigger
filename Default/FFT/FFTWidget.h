@@ -52,6 +52,7 @@ namespace SigDigger {
     float wfRangeMax = -10;
 
     unsigned int timeSpan = 0;
+    unsigned int clickResolution = 1;
 
     bool rangeLock = true;
     bool channels = true;
@@ -95,6 +96,7 @@ namespace SigDigger {
     std::vector<unsigned int> m_sizes;
     std::vector<unsigned int> m_refreshRates;
     std::vector<unsigned int> m_timeSpans;
+    std::vector<unsigned int> m_clickResolutions;
 
     Suscan::SpectrumUnit m_currentUnit;
 
@@ -104,6 +106,7 @@ namespace SigDigger {
     void addFftSize(unsigned int sz);
     void addTimeSpan(unsigned int timeSpan);
     void addRefreshRate(unsigned int rate);
+    void addClickResolution(unsigned int res);
     void updateRefreshRates();
     void updateFftSizes();
     void updateTimeSpans();
@@ -126,6 +129,7 @@ namespace SigDigger {
     unsigned int getFftSize() const;
     unsigned int getTimeSpan() const;
     unsigned int getRefreshRate() const;
+    unsigned int getClickResolution() const;
     bool getPeakHold() const;
     bool getPeakDetect() const;
     bool getRangeLock() const;
@@ -172,6 +176,7 @@ namespace SigDigger {
     void setFilled(bool);
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
+    void setClickResolution(unsigned int);
 
     // Refresh logic
     void refreshSpectrumSettings();
@@ -226,6 +231,7 @@ namespace SigDigger {
     void onBookmarksChanged();
     void onUTCChanged();
     void onChannelsChanged();
+    void onClickResolutionChanged();
 
     // Unit handling slots
     void onUnitChanged();

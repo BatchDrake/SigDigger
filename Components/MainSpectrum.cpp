@@ -35,16 +35,12 @@ using namespace SigDigger;
   do {                              \
     if (this->wf != nullptr)        \
       this->wf->call;               \
-    else if (this->glWf != nullptr) \
-      this->glWf->call;             \
   } while (false);                  \
 
 #define WATERFALL_CALL_LHT(t, call) \
   do {                              \
     if (this->wf != nullptr)        \
       t this->wf->call;             \
-    else if (this->glWf != nullptr) \
-      t this->glWf->call;           \
   } while (false);                  \
 
 namespace SigDigger {
@@ -134,46 +130,6 @@ MainSpectrum::connectWf(void)
 
   connect(
         this->wf,
-        SIGNAL(newModulation(QString)),
-        this,
-        SLOT(onNewModulation(QString)));
-}
-
-void
-MainSpectrum::connectGLWf(void)
-{
-  connect(
-        this->glWf,
-        SIGNAL(newFilterFreq(int, int)),
-        this,
-        SLOT(onWfBandwidthChanged(int, int)));
-
-  connect(
-        this->glWf,
-        SIGNAL(newDemodFreq(qint64, qint64)),
-        this,
-        SLOT(onWfLoChanged(void)));
-
-  connect(
-        this->glWf,
-        SIGNAL(pandapterRangeChanged(float, float)),
-        this,
-        SLOT(onRangeChanged(float, float)));
-
-  connect(
-        this->glWf,
-        SIGNAL(newCenterFreq(qint64)),
-        this,
-        SLOT(onNewCenterFreq(qint64)));
-
-  connect(
-        this->glWf,
-        SIGNAL(newZoomLevel(float)),
-        this,
-        SLOT(onNewZoomLevel(float)));
-
-  connect(
-        this->glWf,
         SIGNAL(newModulation(QString)),
         this,
         SLOT(onNewModulation(QString)));
@@ -378,8 +334,6 @@ void
 MainSpectrum::notifyHalt(void)
 {
   WATERFALL_CALL(setRunningState(false));
-  WATERFALL_CALL(setClickResolution(1));
-  WATERFALL_CALL(setFilterClickResolution(1));
 }
 
 void
@@ -420,6 +374,16 @@ void
 MainSpectrum::setTimeStampsUTC(bool utc)
 {
   WATERFALL_CALL(setTimeStampsUTC(utc));
+}
+
+void
+MainSpectrum::setClickResolution(unsigned int res)
+{
+  WATERFALL_CALL(setClickResolution((int)res));
+
+  // filter click resolution of 1/5th the tuning resolution is reasonable
+  int filter_res = res > 5 ? (int)(res / 5) : 1;
+  WATERFALL_CALL(setFilterClickResolution(filter_res));
 }
 
 void
@@ -555,39 +519,32 @@ MainSpectrum::setGuiConfig(GuiConfig const &cfg)
     this->updateLimits();
   }
 
-  if (this->wf == nullptr && this->glWf == nullptr) {
+  if (this->wf == nullptr) {
     if (cfg.useGLWaterfall) {
       // OpenGL waterfall
-      this->glWf = new GLWaterfall(this);
-      this->glWf->setObjectName(QStringLiteral("mainSpectrum"));
-      this->ui->gridLayout->addWidget(this->glWf, 2, 0, 1, 4);
-      this->connectGLWf();
+      this->wf = new GLWaterfall(this);
     } else {
       // Classic waterfall
       this->wf = new Waterfall(this);
-      this->wf->setObjectName(QStringLiteral("mainSpectrum"));
-      this->ui->gridLayout->addWidget(this->wf, 2, 0, 1, 4);
-      this->connectWf();
     }
 
-    WATERFALL_CALL(setBookmarkSource(this->bookmarkSource));
-    WATERFALL_CALL(setClickResolution(1));
-    WATERFALL_CALL(setFilterClickResolution(1));
+    this->wf->setObjectName(QStringLiteral("mainSpectrum"));
+    this->ui->gridLayout->addWidget(this->wf, 2, 0, 1, 4);
+    this->connectWf();
+    this->wf->setBookmarkSource(this->bookmarkSource);
 
     this->setShowFATs(true);
     this->setColorConfig(this->lastColorConfig);
   }
 
-  if (this->glWf != nullptr)
-    this->glWf->setMaxBlending(cfg.useMaxBlending);
-
-  WATERFALL_CALL(setUseLBMdrag(cfg.useLMBdrag));
+  this->wf->setMaxBlending(cfg.useMaxBlending);
+  this->wf->setUseLBMdrag(cfg.useLMBdrag);
 
   infoTextTemplate = QString::fromStdString(cfg.infoText).trimmed();
   infoText = infoTextTemplate;
-  
-  WATERFALL_CALL(setInfoText(infoTextTemplate));
-  WATERFALL_CALL(setInfoTextColor(cfg.infoTextColor));
+
+  this->wf->setInfoText(infoTextTemplate);
+  this->wf->setInfoTextColor(cfg.infoTextColor);
 
   refreshInfoText();
 }
@@ -995,8 +952,6 @@ MainSpectrum::onWfLoChanged(void)
 {
   if (this->wf != nullptr)
     this->ui->loLcd->setValue(this->wf->getFilterOffset() + this->getCenterFreq());
-  else if (this->glWf != nullptr)
-    this->ui->loLcd->setValue(this->glWf->getFilterOffset() + this->getCenterFreq());
 
   emit loChanged(this->getLoFreq());
 }

@@ -34,6 +34,7 @@
 #include <SNREstimator.h>
 #include <sys/time.h>
 #include <SocketForwarder.h>
+#include <AbstractWaterfall.h>
 
 #include "ThrottleableWidget.h"
 #include "Decider.h"
@@ -57,9 +58,6 @@ namespace Ui {
 #define SIGDIGGER_INSPECTOR_UI_SOFT_BITS_I    2
 #define SIGDIGGER_INSPECTOR_UI_SOFT_BITS_Q    3
 #define SIGDIGGER_INSPECTOR_UI_SYMBOLS        4
-
-class Waterfall;
-class GLWaterfall;
 
 namespace SigDigger {
   class FrequencyCorrectionDialog;
@@ -114,8 +112,7 @@ namespace SigDigger {
     std::vector<SUFLOAT>  fftData;
 
     // UI objects
-    Waterfall   *wf   = nullptr;
-    GLWaterfall *glWf = nullptr;
+    AbstractWaterfall *wf = nullptr;
     ColorConfig colors;
     bool usingGlWf = false;
     bool usingMaxBlending = false;
