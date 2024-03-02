@@ -91,7 +91,6 @@ namespace SigDigger {
       QString paletteGradient = "Suscan";
       std::string currentFAT = "";
 
-      bool adjustingRange = false;
       bool fixedFreqMode = false;
 
       void connectAll(void);
@@ -103,7 +102,6 @@ namespace SigDigger {
       void refreshGains(Suscan::Source::Device &device);
       void deserializeFATs(void);
       void setRanges(Suscan::Source::Device const &);
-      void setWfRange(qint64 min, qint64 max);
       void adjustRanges(void);
 
       static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
@@ -167,7 +165,7 @@ namespace SigDigger {
       void onNewOffset(void);
       void onNewBandwidth(int, int);
       void onBandPlanChanged(int);
-      void onNewCenterFreq(qint64);
+      void onNewFftCenterFreq(qint64);
       void onPaletteChanged(int);
       void onStrategyChanged(int);
       void onLnbOffsetChanged(void);
