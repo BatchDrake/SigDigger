@@ -54,62 +54,55 @@ using namespace SigDigger;
   do {                              \
     if (this->wf != nullptr)        \
       this->wf->call;               \
-    else if (this->glWf != nullptr) \
-      this->glWf->call;             \
   } while (false)
 
 
 #define WATERFALL_FUNC(call, dfl)   \
   (this->wf != nullptr              \
     ? this->wf->call                \
-    : (this->glWf != nullptr        \
-        ? this->glWf->call          \
-        : (dfl)))
+    : (dfl))
+
 void
 InspectorUI::makeWf(QWidget *owner)
 {
-  if (this->wf == nullptr && this->glWf == nullptr) {
+  if (this->wf == nullptr) {
     if (this->usingGlWf) {
       // OpenGL waterfall
-      this->glWf = new GLWaterfall(owner);
-      this->glWf->setObjectName(QStringLiteral("wfSpectrum"));
-      this->ui->spectLayout->addWidget(this->glWf, 1, 0, 1, 2);
-      this->connectGLWf();
+      this->wf = new GLWaterfall(owner);
     } else {
       // Classic waterfall
       this->wf = new Waterfall(owner);
-      this->wf->setObjectName(QStringLiteral("wfSpectrum"));
-      this->ui->spectLayout->addWidget(this->wf, 1, 0, 1, 2);
-      this->connectWf();
     }
 
-    WATERFALL_CALL(setClickResolution(1));
-    WATERFALL_CALL(setFilterClickResolution(1));
-    WATERFALL_CALL(setFreqUnits(1));
+    this->wf->setObjectName(QStringLiteral("wfSpectrum"));
+    this->ui->spectLayout->addWidget(this->wf, 1, 0, 1, 2);
+    this->connectWf();
 
-    WATERFALL_CALL(setCenterFreq(0));
-    WATERFALL_CALL(resetHorizontalZoom());
-    WATERFALL_CALL(setFftPlotColor(QColor(255, 255, 0)));
+    this->wf->setClickResolution(1);
+    this->wf->setFilterClickResolution(1);
+    this->wf->setFreqUnits(1);
 
+    this->wf->setCenterFreq(0);
+    this->wf->resetHorizontalZoom();
+    this->wf->setFftPlotColor(QColor(255, 255, 0));
   }
 
-  if (this->glWf != nullptr)
-    this->glWf->setMaxBlending(this->usingMaxBlending);
+  this->wf->setMaxBlending(this->usingMaxBlending);
 }
 
 void
 InspectorUI::beginReparenting(void)
 {
-  if (this->glWf != nullptr) {
-    delete this->glWf;
-    this->glWf = nullptr;
+  if (this->wf != nullptr) {
+    delete this->wf;
+    this->wf = nullptr;
   }
 }
 
 void
 InspectorUI::doneReparenting(void)
 {
-  bool recreated = this->glWf == nullptr && this->wf == nullptr;
+  bool recreated = this->wf == nullptr;
 
   if (this->fallBackToWf)
     this->usingGlWf = false;
@@ -179,28 +172,6 @@ InspectorUI::connectWf(void)
 
   connect(
         this->wf,
-        SIGNAL(newDemodFreq(qint64, qint64)),
-        this,
-        SLOT(onNewOffset()));
-}
-
-void
-InspectorUI::connectGLWf()
-{
-  connect(
-        this->glWf,
-        SIGNAL(pandapterRangeChanged(float, float)),
-        this,
-        SLOT(onPandapterRangeChanged(float, float)));
-
-  connect(
-        this->glWf,
-        SIGNAL(newFilterFreq(int, int)),
-        this,
-        SLOT(onNewBandwidth(int, int)));
-
-  connect(
-        this->glWf,
         SIGNAL(newDemodFreq(qint64, qint64)),
         this,
         SLOT(onNewOffset()));
@@ -1351,8 +1322,7 @@ InspectorUI::setAppConfig(AppConfig const &cfg)
   WATERFALL_CALL(setFftTextColor(colors.spectrumText));
   WATERFALL_CALL(setFilterBoxColor(colors.filterBox));
 
-  if (this->glWf != nullptr)
-    this->glWf->setMaxBlending(this->usingMaxBlending);
+  WATERFALL_CALL(setMaxBlending(this->usingMaxBlending));
 
   // Set SymView colors
   this->symViewTab->setColorConfig(colors);

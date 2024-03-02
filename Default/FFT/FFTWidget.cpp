@@ -58,6 +58,7 @@ FFTWidgetConfig::deserialize(Suscan::Object const &conf)
   LOAD(unitName);
   LOAD(zeroPoint);
   LOAD(gain);
+  LOAD(clickResolution);
 }
 
 Suscan::Object &&
@@ -88,6 +89,7 @@ FFTWidgetConfig::serialize()
   STORE(unitName);
   STORE(zeroPoint);
   STORE(gain);
+  STORE(clickResolution);
 
   return persist(obj);
 }
@@ -133,6 +135,7 @@ FFTWidget::applyConfig()
   setUnitName(QString::fromStdString(savedConfig.unitName));
   setZeroPoint(savedConfig.zeroPoint);
   setGain(savedConfig.gain);
+  setClickResolution(savedConfig.clickResolution);
 
   setProperty("collapsed", savedConfig.collapsed);
 
@@ -322,6 +325,12 @@ FFTWidget::connectAll()
         SIGNAL(activated(int)),
         this,
         SLOT(onUTCChanged()));
+
+  connect(
+        m_ui->clickResCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onClickResolutionChanged()));
 }
 
 FFTWidget::FFTWidget(FFTWidgetFactory *factory, UIMediator *mediator, QWidget *parent) :
@@ -371,6 +380,20 @@ FFTWidget::FFTWidget(FFTWidgetFactory *factory, UIMediator *mediator, QWidget *p
   addTimeSpan(16 * 3600);
   addTimeSpan(24 * 3600);
   addTimeSpan(48 * 3600);
+
+  // Add click resolutions
+  addClickResolution(1);
+  addClickResolution(10);
+  addClickResolution(100);
+  addClickResolution(1000);
+  addClickResolution(2500);
+  addClickResolution(10000);
+  addClickResolution(25000);
+  addClickResolution(100000);
+  addClickResolution(250000);
+  addClickResolution(1000000);
+  addClickResolution(2500000);
+  addClickResolution(10000000);
 
   populateUnits();
 
@@ -504,6 +527,12 @@ FFTWidget::addRefreshRate(unsigned int rate)
 }
 
 void
+FFTWidget::addClickResolution(unsigned int res)
+{
+  m_clickResolutions.push_back(res);
+}
+
+void
 FFTWidget::updateRbw()
 {
   if (m_rate == 0 || m_fftSize == 0) {
@@ -601,6 +630,12 @@ unsigned int
 FFTWidget::getRefreshRate() const
 {
   return m_refreshRate;
+}
+
+unsigned int
+FFTWidget::getClickResolution() const
+{
+  return m_panelConfig->clickResolution;
 }
 
 bool
@@ -827,6 +862,21 @@ FFTWidget::setTimeSpan(unsigned int span)
 }
 
 void
+FFTWidget::setClickResolution(unsigned int res)
+{
+  int index = 0;
+  m_panelConfig->clickResolution = res;
+
+  for (auto p = m_clickResolutions.begin(); p != m_clickResolutions.end(); ++p) {
+    if (*p >= m_panelConfig->clickResolution) {
+      m_ui->clickResCombo->setCurrentIndex(index);
+      break;
+    }
+    ++index;
+  }
+}
+
+void
 FFTWidget::setSampleRate(unsigned int rate)
 {
   m_rate = rate;
@@ -948,6 +998,7 @@ FFTWidget::refreshSpectrumScaleSettings()
   m_spectrum->setPanWfRatio(getPanWfRatio());
   m_spectrum->setZoom(getFreqZoom());
   m_spectrum->setTimeSpan(getTimeSpan());
+  m_spectrum->setClickResolution(getClickResolution());
 
   m_spectrum->blockSignals(blocking);
 }
@@ -1144,6 +1195,16 @@ FFTWidget::onTimeSpanChanged()
   m_panelConfig->timeSpan =
       m_timeSpans[
         SCAST(unsigned, m_ui->timeSpanCombo->currentIndex())];
+
+  refreshSpectrumScaleSettings();
+}
+
+void
+FFTWidget::onClickResolutionChanged()
+{
+  m_panelConfig->clickResolution =
+      m_clickResolutions[
+        SCAST(unsigned, m_ui->clickResCombo->currentIndex())];
 
   refreshSpectrumScaleSettings();
 }

@@ -24,6 +24,7 @@
 #include <ColorConfig.h>
 #include <GuiConfig.h>
 #include <WFHelpers.h>
+#include <AbstractWaterfall.h>
 #include <Palette.h>
 #include <QElapsedTimer>
 #include <QToolBar>
@@ -47,9 +48,6 @@ class QTimeSlider;
 namespace Ui {
   class MainSpectrum;
 }
-
-class Waterfall;
-class GLWaterfall;
 
 // Does it make sense to turn this into a PersistentWidget, anyways?
 namespace SigDigger {
@@ -76,8 +74,7 @@ namespace SigDigger {
     Ui::MainSpectrum *ui = nullptr;
     std::vector<FrequencyAllocationTable *> FATs;
     SuscanBookmarkSource *bookmarkSource = nullptr;
-    Waterfall   *wf   = nullptr;
-    GLWaterfall *glWf = nullptr;
+    AbstractWaterfall *wf = nullptr;
     ColorConfig  lastColorConfig;
     QString      infoTextTemplate;
     QString      infoText;
@@ -172,6 +169,7 @@ namespace SigDigger {
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
     void setGracePeriod(qint64 ms);
+    void setClickResolution(unsigned int res);
 
     void setShowChannels(bool);
     void setShowFATs(bool);
