@@ -72,9 +72,6 @@ namespace SigDigger {
       SUFLOAT psdAccum[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
       SUFLOAT psdCount[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
 
-      SUFLOAT scaledPsdAccum[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
-      SUFLOAT scaledPsdCount[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
-
       SpectrumView();
 
       void setRange(SUFREQ freqMin, SUFREQ freqMax);

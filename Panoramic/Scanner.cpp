@@ -19,6 +19,7 @@
 
 #include "Scanner.h"
 #include <cmath>
+#include <algorithm>
 #include <cassert>
 
 using namespace SigDigger;
@@ -109,24 +110,10 @@ SpectrumView::feedLinearMode(
     SUFREQ freqMax,
     bool adjustSides)
 {
-  SUFREQ inpBw;
-  SUFREQ bw;
-  SUFLOAT fftCount; // Number of FFTs in a full spectrum
-  SUFLOAT bins;
-  int skip;
-  int i, j = 0, p = 0;
-  int pieceWidth;
-  int startBin, endBin;
-  int scaledLen;
-  SUFLOAT psdAccum = 0, psdCount = 0;
-  SUFREQ pos = 0;
-  SUFLOAT accPrev, accCurr;
-  SUFLOAT cntPrev, cntCurr;
-  SUFLOAT x, c;
-  SUFLOAT t = 0;
-  SUFLOAT delta;
-  SUFREQ freqSkip;
-  SUFLOAT tStart, tEnd;
+  SUFREQ inpBw, bw, freqSkip;
+  double fftCount, bins, pos, delta;
+  double srcBinW, dstBinW;
+  int skip, j, k;
 
   // Compute subrange inside PSD message
   inpBw = freqMax - freqMin;
@@ -138,86 +125,48 @@ SpectrumView::feedLinearMode(
   }
 
   freqSkip = static_cast<SUFREQ>(skip) / psdSize * inpBw;
-  pieceWidth = psdSize - 2 * skip;
   bw = inpBw - 2 * freqSkip;
   assert(skip >= 0);
 
-  // Delicate step 1: Average in blocks of fftCount.
-  // In this range, we can fit fftCount = range / bw pieces
-  // Each piece is w = SIGDIGGER_SCANNER_SPECTRUM_SIZE / fftCount bins wide
-  // We must average SIGDIGGER_SCANNER_SPECTRUM_SIZE / w = fftCount bins
-
   // Compute dimension variables.
-  fftCount  = static_cast<SUFLOAT>(this->freqRange / bw); // How many FFTs fit in here.
-  bins      = SIGDIGGER_SCANNER_SPECTRUM_SIZE / fftCount; // Target bin count
-  delta     = static_cast<SUFLOAT>(pieceWidth - 1) / bins;
-  scaledLen = static_cast<int>(SU_FLOOR(bins));
+  fftCount  = static_cast<double>(this->freqRange / bw);  // How many FFTs fit in destination
+  bins      = SIGDIGGER_SCANNER_SPECTRUM_SIZE / fftCount; // Destination bin count
+  srcBinW   = static_cast<double>(inpBw) / psdSize;
+  dstBinW   = static_cast<double>(this->freqRange) / SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+  delta     = dstBinW / srcBinW;                          // Source bins per destination bin
 
-  if (scaledLen > SIGDIGGER_SCANNER_SPECTRUM_SIZE)
-    scaledLen = SIGDIGGER_SCANNER_SPECTRUM_SIZE;
-
-  // This is basically a linear scale
-  for (i = 0; i < scaledLen; ++i) {
-    startBin  = static_cast<int>(SU_FLOOR(i * delta));
-    endBin    = static_cast<int>(SU_FLOOR((i + 1) * delta));
-    tStart    =  1 - (i * delta - startBin);
-    tEnd      =  (i + 1) * delta - endBin;
-    psdAccum  = 0;
-    psdCount  = 0;
-
-    for (j = startBin; j <= endBin; ++j) {
-      x = psdData[j + skip];
-      c = countData != nullptr ? countData[j + skip] : 1;
-      if (j == startBin) {
-        psdAccum += tStart * x;
-        psdCount += tStart * c;
-      } else if (j == endBin) {
-        psdAccum += tEnd * x;
-        psdCount += tEnd * c;
-      } else {
-        psdAccum += x;
-        psdCount += c;
-      }
-    }
-
-    this->scaledPsdAccum[i] = psdAccum / delta;
-    this->scaledPsdCount[i] = psdCount / delta;
-  }
-
-  p = i;
-
-  // Delicate step 2: we have bpfft samples inside averaged. These
-  // samples now must be placed via interpolation in this->psd.
-  // The interpolation parameter t is calculated according to the
-  // relative position of the bpfft-sized block in the range.
-  //
-
-  pos = (freqSkip + freqMin - this->freqMin) / (this->freqRange);
+  pos = static_cast<double>(freqSkip + freqMin - this->freqMin) / (this->freqRange);
   pos *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
-  j = static_cast<int>(floor(pos));
-  t = static_cast<SUFLOAT>(pos - j);
-
   assert(!std::isnan(pos));
 
-  accPrev = cntPrev = 0;
-  for (i = 1; i <= p; ++i, ++j) {
-    accCurr = i < p ? this->scaledPsdAccum[i] : 0;
-    cntCurr = i < p ? this->scaledPsdCount[i] : 0;
+  // j is initial dest index, k is end of dest range
+  j = pos > 0 ? static_cast<int>(pos) : 0;
+  k = pos + bins < SIGDIGGER_SCANNER_SPECTRUM_SIZE ?
+    static_cast<int>(pos + bins) : SIGDIGGER_SCANNER_SPECTRUM_SIZE;
 
-    assert(!std::isnan(accCurr));
-    x = (1 - t) * accPrev + t * accCurr;
-    c = (1 - t) * cntPrev + t * cntCurr;
-    assert(!std::isnan(x));
+  // linearly scale from source to destination frequency range and bin count
+  while (j < k) {
+    double  freqJ     = this->freqMin + dstBinW*j;
+    double  srcBin    = (freqJ - freqMin) / srcBinW;
+    int     startBin  = static_cast<int>(srcBin);
+    int     endBin    = static_cast<int>(srcBin + delta);
+    SUFLOAT psdAccum  = 0;
+    SUFLOAT psdCount  = 0;
 
-    if (j >= 0 && j < SIGDIGGER_SCANNER_SPECTRUM_SIZE) {
-      // Add, taking into account the interpolation parameter
-      // and the weight of the last coefficient.
-      this->psdAccum[j] += x;
-      this->psdCount[j] += c;
+    startBin = std::clamp(startBin, 0, static_cast<int>(psdSize - 1));
+    endBin = std::clamp(endBin, startBin + 1, static_cast<int>(psdSize));
+
+    for (int i = startBin; i < endBin; i++) {
+      psdAccum += psdData[i];
+      psdCount += countData != nullptr ? countData[i] : 1;
     }
 
-    accPrev = accCurr;
-    cntPrev = cntCurr;
+    if (psdCount > 0) {
+      this->psdAccum[j] += psdAccum / psdCount;
+      this->psdCount[j] += 1;
+    }
+
+    j++;
   }
 }
 
@@ -324,8 +273,6 @@ SpectrumView::reset(void)
   memset(this->psd, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
   memset(this->psdAccum, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
   memset(this->psdCount, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
-  memset(this->scaledPsdAccum, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
-  memset(this->scaledPsdCount, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
 }
 
 Scanner::Scanner(
