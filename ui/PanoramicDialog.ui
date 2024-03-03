@@ -304,7 +304,7 @@
     </widget>
    </item>
    <item row="2" column="0" rowspan="2" colspan="4">
-    <widget class="Waterfall" name="waterfall"/>
+    <widget class="GLWaterfall" name="waterfall"/>
    </item>
    <item row="0" column="2">
     <widget class="QGroupBox" name="gainsGroup">
@@ -534,9 +534,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Waterfall</class>
-   <extends>QFrame</extends>
-   <header>Waterfall.h</header>
+   <class>GLWaterfall</class>
+   <extends>QOpenGLWidget</extends>
+   <header>GLWaterfall.h</header>
   </customwidget>
   <customwidget>
    <class>FrequencySpinBox</class>
