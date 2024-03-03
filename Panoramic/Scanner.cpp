@@ -182,14 +182,17 @@ SpectrumView::feedHistogramMode(
   SUFREQ fEnd   = (freqMax - this->freqMin) / this->freqRange;
   SUFLOAT t;
   SUFLOAT inv = 1. / psdSize;
-  unsigned int i;
+  unsigned int i, j;
   SUFLOAT accum = 0;
 
   fStart *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
   fEnd   *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
   relBw  *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
 
-  unsigned int j = static_cast<unsigned int>(fStart);
+  j = std::clamp(
+      static_cast<unsigned int>(fStart),
+      static_cast<unsigned int>(0),
+      static_cast<unsigned int>(SIGDIGGER_SCANNER_SPECTRUM_SIZE - 1));
 
   // Now, relBw represents the relative size of the range
   // with respecto to the spectrum bin.
