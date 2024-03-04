@@ -24,6 +24,15 @@
 
 using namespace SigDigger;
 
+static inline unsigned int nextPow2(unsigned int n)
+{
+  // note: this will infinite loop for n > 2^31
+  unsigned int i = 1;
+  while (i < n)
+    i <<= 1;
+  return i;
+}
+
 SpectrumView::SpectrumView()
 {
   this->reset();
@@ -35,6 +44,11 @@ SpectrumView::setRange(SUFREQ freqMin, SUFREQ freqMax)
   this->freqMin   = freqMin;
   this->freqMax   = freqMax;
   this->freqRange = freqMax - freqMin;
+
+  this->spectrumSize = nextPow2(this->freqRange /
+      SIGDIGGER_SCANNER_FREQ_RESOLUTION);
+  if (this->spectrumSize > SIGDIGGER_SCANNER_SPECTRUM_SIZE)
+    this->spectrumSize = SIGDIGGER_SCANNER_SPECTRUM_SIZE;
 
   this->reset();
 }
@@ -285,8 +299,6 @@ Scanner::Scanner(
     Suscan::Source::Config const &cfg) : QObject(parent)
 {
   Suscan::AnalyzerParams params;
-  unsigned int msSamples, spectrumSize;
-  double binWidth;
 
   if (freqMin > freqMax) {
     SUFREQ tmp = freqMin;
@@ -297,23 +309,9 @@ Scanner::Scanner(
   this->freqMin = freqMin;
   this->freqMax = freqMax;
 
-  // choose an FFT size such that data capture is at least 1 ms
-  msSamples = cfg.getSampleRate() * 0.001;
-  this->fftSize = 256;
-  while (this->fftSize < msSamples)
-    this->fftSize <<= 1;
-
-  // choose a spectrum size appropriate to the FFT bin width
-  binWidth = cfg.getSampleRate() / this->fftSize;
-  spectrumSize = static_cast<unsigned int>(((freqMax - freqMin) / binWidth) + 0.5);
-  if (spectrumSize > SIGDIGGER_SCANNER_SPECTRUM_SIZE)
-    spectrumSize = SIGDIGGER_SCANNER_SPECTRUM_SIZE;
-
-  if (spectrumSize != this->views[0].spectrumSize) {
-    this->views[0].spectrumSize = this->views[1].spectrumSize = spectrumSize;
-    this->views[0].reset();
-    this->views[1].reset();
-  }
+  // choose an FFT size to achieve the required frequency resolution
+  this->fftSize = nextPow2(cfg.getSampleRate() /
+      SIGDIGGER_SCANNER_FREQ_RESOLUTION);
 
   params.channelUpdateInterval = 0;
   params.spectrumAvgAlpha = .001f;
