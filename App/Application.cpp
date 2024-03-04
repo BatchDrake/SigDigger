@@ -942,7 +942,7 @@ Application::onScannerUpdated()
         static_cast<quint64>(view.freqMin),
         static_cast<quint64>(view.freqMax),
         view.psd,
-        SIGDIGGER_SCANNER_SPECTRUM_SIZE);
+        view.spectrumSize);
 }
 
 void

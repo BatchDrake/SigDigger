@@ -56,7 +56,7 @@ SpectrumView::interpolate(void)
 
   i = 0;
 
-  for (i = 0; i < SIGDIGGER_SCANNER_SPECTRUM_SIZE; ++i) {
+  for (i = 0; i < this->spectrumSize; ++i) {
     if (!inGap) {
       if (this->psdCount[i] <= .5f) {
         // Found zero!
@@ -130,19 +130,19 @@ SpectrumView::feedLinearMode(
 
   // Compute dimension variables.
   fftCount  = static_cast<double>(this->freqRange / bw);  // How many FFTs fit in destination
-  bins      = SIGDIGGER_SCANNER_SPECTRUM_SIZE / fftCount; // Destination bin count
+  bins      = this->spectrumSize / fftCount; // Destination bin count
   srcBinW   = static_cast<double>(inpBw) / psdSize;
-  dstBinW   = static_cast<double>(this->freqRange) / SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+  dstBinW   = static_cast<double>(this->freqRange) / this->spectrumSize;
   delta     = dstBinW / srcBinW;                          // Source bins per destination bin
 
   pos = static_cast<double>(freqSkip + freqMin - this->freqMin) / (this->freqRange);
-  pos *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+  pos *= this->spectrumSize;
   assert(!std::isnan(pos));
 
   // j is initial dest index, k is end of dest range
   j = pos > 0 ? static_cast<int>(pos) : 0;
-  k = pos + bins < SIGDIGGER_SCANNER_SPECTRUM_SIZE ?
-    static_cast<int>(pos + bins) : SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+  k = pos + bins < this->spectrumSize ?
+    static_cast<int>(pos + bins) : this->spectrumSize;
 
   // linearly scale from source to destination frequency range and bin count
   while (j < k) {
@@ -185,14 +185,14 @@ SpectrumView::feedHistogramMode(
   unsigned int i, j;
   SUFLOAT accum = 0;
 
-  fStart *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
-  fEnd   *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
-  relBw  *= SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+  fStart *= this->spectrumSize;
+  fEnd   *= this->spectrumSize;
+  relBw  *= this->spectrumSize;
 
   j = std::clamp(
       static_cast<unsigned int>(fStart),
       static_cast<unsigned int>(0),
-      static_cast<unsigned int>(SIGDIGGER_SCANNER_SPECTRUM_SIZE - 1));
+      static_cast<unsigned int>(this->spectrumSize - 1));
 
   // Now, relBw represents the relative size of the range
   // with respecto to the spectrum bin.
@@ -212,7 +212,7 @@ SpectrumView::feedHistogramMode(
     this->psdCount[j] += 1 - t;
     this->psdAccum[j] += (1 - t) * accum;
 
-    if (j + 1 < SIGDIGGER_SCANNER_SPECTRUM_SIZE) {
+    if (j + 1 < this->spectrumSize) {
       this->psdCount[j + 1] += t;
       this->psdAccum[j + 1] += t * accum;
     }
@@ -233,7 +233,7 @@ SpectrumView::feed(
 {
   SUFREQ fftCount = (freqMax - freqMin) / this->freqRange;
 
-  if (fftCount * SIGDIGGER_SCANNER_SPECTRUM_SIZE >= 2)
+  if (fftCount * this->spectrumSize >= 2)
     this->feedLinearMode(psd, count, psdSize, freqMin, freqMax, adjustSides);
   else
     this->feedHistogramMode(psd, psdSize, freqMin, freqMax);
@@ -264,7 +264,7 @@ SpectrumView::feed(SpectrumView const &detail)
   this->feed(
         detail.psdAccum,
         detail.psdCount,
-        SIGDIGGER_SCANNER_SPECTRUM_SIZE,
+        detail.spectrumSize,
         detail.freqMin,
         detail.freqMax,
         false);
@@ -285,7 +285,8 @@ Scanner::Scanner(
     Suscan::Source::Config const &cfg) : QObject(parent)
 {
   Suscan::AnalyzerParams params;
-  unsigned int ms_samples;
+  unsigned int msSamples, spectrumSize;
+  double binWidth;
 
   if (freqMin > freqMax) {
     SUFREQ tmp = freqMin;
@@ -297,10 +298,22 @@ Scanner::Scanner(
   this->freqMax = freqMax;
 
   // choose an FFT size such that data capture is at least 1 ms
-  ms_samples = cfg.getSampleRate() * 0.001;
+  msSamples = cfg.getSampleRate() * 0.001;
   this->fftSize = 256;
-  while (this->fftSize < ms_samples)
+  while (this->fftSize < msSamples)
     this->fftSize <<= 1;
+
+  // choose a spectrum size appropriate to the FFT bin width
+  binWidth = cfg.getSampleRate() / this->fftSize;
+  spectrumSize = static_cast<unsigned int>(((freqMax - freqMin) / binWidth) + 0.5);
+  if (spectrumSize > SIGDIGGER_SCANNER_SPECTRUM_SIZE)
+    spectrumSize = SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+
+  if (spectrumSize != this->views[0].spectrumSize) {
+    this->views[0].spectrumSize = this->views[1].spectrumSize = spectrumSize;
+    this->views[0].reset();
+    this->views[1].reset();
+  }
 
   params.channelUpdateInterval = 0;
   params.spectrumAvgAlpha = .001f;
@@ -352,8 +365,8 @@ Scanner::setRelativeBw(float ratio)
 {
   if (ratio > 1)
     ratio = 1;
-  else if (ratio < 2.f / SIGDIGGER_SCANNER_SPECTRUM_SIZE)
-    ratio = 2.f / SIGDIGGER_SCANNER_SPECTRUM_SIZE;
+  else if (ratio < 2.f / this->fftSize)
+    ratio = 2.f / this->fftSize;
 
   this->views[0].fftRelBw = this->views[1].fftRelBw = ratio;
   this->analyzer->setRelBandwidth(ratio);
