@@ -16,7 +16,7 @@ jobs:
   # miss that much by particularizing this in a per-OS basis.
   
   build-linux-appimage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Setup interactive shell session
