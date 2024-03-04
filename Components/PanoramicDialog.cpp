@@ -28,6 +28,8 @@
 #include <limits>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <Waterfall.h>
+#include <GLWaterfall.h>
 
 using namespace SigDigger;
 
@@ -179,9 +181,6 @@ PanoramicDialog::PanoramicDialog(QWidget *parent) :
   this->ui->lnbDoubleSpinBox->setMinimum(-300e9);
   this->ui->lnbDoubleSpinBox->setMaximum(300e9);
 
-  this->ui->waterfall->setWaterfallSpan(30 * 1000); // 30 seconds
-  this->ui->waterfall->setFreqDragLocked(true);
-
   this->connectAll();
 }
 
@@ -190,6 +189,51 @@ PanoramicDialog::~PanoramicDialog()
   if (this->noGainLabel != nullptr)
     this->noGainLabel->deleteLater();
   delete ui;
+}
+
+void
+PanoramicDialog::setGuiConfig(GuiConfig const &cfg)
+{
+  if (this->waterfall == nullptr) {
+    int index;
+
+    if (cfg.useGLWaterfall) {
+      // OpenGL waterfall
+      this->waterfall = new GLWaterfall(this);
+    } else {
+      // Classic waterfall
+      this->waterfall = new Waterfall(this);
+    }
+
+    this->ui->gridLayout->addWidget(this->waterfall, 2, 0, 2, 4);
+    this->connectWaterfall();
+
+    this->waterfall->setWaterfallSpan(30 * 1000); // 30 seconds
+    this->waterfall->setFreqDragLocked(true);
+
+    if (this->dialogConfig) {
+      this->waterfall->setPandapterRange(
+            this->dialogConfig->panRangeMin,
+            this->dialogConfig->panRangeMax);
+      this->waterfall->setWaterfallRange(
+            this->dialogConfig->panRangeMin,
+            this->dialogConfig->panRangeMax);
+    }
+
+    this->waterfall->setFftPlotColor(this->colorConfig.spectrumForeground);
+    this->waterfall->setFftAxesColor(this->colorConfig.spectrumAxes);
+    this->waterfall->setFftBgColor(this->colorConfig.spectrumBackground);
+    this->waterfall->setFftTextColor(this->colorConfig.spectrumText);
+    this->waterfall->setFilterBoxColor(this->colorConfig.filterBox);
+
+    index = SigDiggerHelpers::instance()->getPaletteIndex(
+        this->paletteGradient.toStdString());
+    if (index >= 0)
+      this->waterfall->setPalette(
+          SigDiggerHelpers::instance()->getPalette(index)->getGradient());
+
+    this->adjustRanges();
+  }
 }
 
 void
@@ -244,30 +288,6 @@ PanoramicDialog::connectAll(void)
         SIGNAL(reset(void)));
 
   connect(
-        this->ui->waterfall,
-        SIGNAL(newFilterFreq(int, int)),
-        this,
-        SLOT(onNewBandwidth(int, int)));
-
-  connect(
-        this->ui->waterfall,
-        SIGNAL(newDemodFreq(qint64, qint64)),
-        this,
-        SLOT(onNewOffset()));
-
-  connect(
-        this->ui->waterfall,
-        SIGNAL(newZoomLevel(float)),
-        this,
-        SLOT(onNewZoomLevel(float)));
-
-  connect(
-        this->ui->waterfall,
-        SIGNAL(newFftCenterFreq(qint64)),
-        this,
-        SLOT(onNewFftCenterFreq(qint64)));
-
-  connect(
         this->ui->rttSpin,
         SIGNAL(valueChanged(int)),
         this,
@@ -278,12 +298,6 @@ PanoramicDialog::connectAll(void)
         SIGNAL(valueChanged(int)),
         this,
         SIGNAL(relBandwidthChanged(void)));
-
-  connect(
-        this->ui->waterfall,
-        SIGNAL(pandapterRangeChanged(float, float)),
-        this,
-        SLOT(onRangeChanged(float, float)));
 
   connect(
         this->ui->paletteCombo,
@@ -316,6 +330,39 @@ PanoramicDialog::connectAll(void)
         SLOT(onExport(void)));
 }
 
+void
+PanoramicDialog::connectWaterfall(void)
+{
+  connect(
+        this->waterfall,
+        SIGNAL(newFilterFreq(int, int)),
+        this,
+        SLOT(onNewBandwidth(int, int)));
+
+  connect(
+        this->waterfall,
+        SIGNAL(newDemodFreq(qint64, qint64)),
+        this,
+        SLOT(onNewOffset()));
+
+  connect(
+        this->waterfall,
+        SIGNAL(newZoomLevel(float)),
+        this,
+        SLOT(onNewZoomLevel(float)));
+
+  connect(
+        this->waterfall,
+        SIGNAL(newFftCenterFreq(qint64)),
+        this,
+        SLOT(onNewFftCenterFreq(qint64)));
+
+  connect(
+        this->waterfall,
+        SIGNAL(pandapterRangeChanged(float, float)),
+        this,
+        SLOT(onRangeChanged(float, float)));
+}
 
 // The following values are purely experimental
 unsigned int
@@ -435,7 +482,7 @@ PanoramicDialog::feed(
         size);
 
   this->ui->exportButton->setEnabled(true);
-  this->ui->waterfall->setNewPartialFftData(data, static_cast<int>(size),
+  this->waterfall->setNewPartialFftData(data, static_cast<int>(size),
       freqStart, freqEnd);
 
   ++this->frames;
@@ -445,11 +492,15 @@ PanoramicDialog::feed(
 void
 PanoramicDialog::setColors(ColorConfig const &cfg)
 {
-  this->ui->waterfall->setFftPlotColor(cfg.spectrumForeground);
-  this->ui->waterfall->setFftAxesColor(cfg.spectrumAxes);
-  this->ui->waterfall->setFftBgColor(cfg.spectrumBackground);
-  this->ui->waterfall->setFftTextColor(cfg.spectrumText);
-  this->ui->waterfall->setFilterBoxColor(cfg.filterBox);
+  this->colorConfig = cfg;
+
+  if (this->waterfall) {
+    this->waterfall->setFftPlotColor(cfg.spectrumForeground);
+    this->waterfall->setFftAxesColor(cfg.spectrumAxes);
+    this->waterfall->setFftBgColor(cfg.spectrumBackground);
+    this->waterfall->setFftTextColor(cfg.spectrumText);
+    this->waterfall->setFilterBoxColor(cfg.filterBox);
+  }
 }
 
 void
@@ -460,7 +511,9 @@ PanoramicDialog::setPaletteGradient(QString const &name)
 
   if (index >= 0) {
     this->ui->paletteCombo->setCurrentIndex(index);
-    this->ui->waterfall->setPalette(
+
+    if (this->waterfall)
+      this->waterfall->setPalette(
           SigDiggerHelpers::instance()->getPalette(index)->getGradient());
   }
 }
@@ -517,8 +570,6 @@ PanoramicDialog::getSelectedDevice(Suscan::Source::Device &dev) const
 void
 PanoramicDialog::adjustRanges(void)
 {
-  SUFREQ minFreq, maxFreq, bw, demodBw;
-
   // swap min and max if reversed
   if (this->ui->rangeStartSpin->value() >
       this->ui->rangeEndSpin->value()) {
@@ -528,25 +579,29 @@ PanoramicDialog::adjustRanges(void)
     this->ui->rangeEndSpin->setValue(val);
   }
 
-  minFreq = this->ui->rangeStartSpin->value();
-  maxFreq = this->ui->rangeEndSpin->value();
-  bw = maxFreq - minFreq;
+  if (this->waterfall) {
+    SUFREQ minFreq, maxFreq, bw, demodBw;
 
-  this->ui->waterfall->setFreqUnits(
-        getFrequencyUnits(
-          static_cast<qint64>(maxFreq)));
+    minFreq = this->ui->rangeStartSpin->value();
+    maxFreq = this->ui->rangeEndSpin->value();
+    bw = maxFreq - minFreq;
 
-  this->ui->waterfall->setSpanFreq(static_cast<qint64>(maxFreq - minFreq));
-  this->ui->waterfall->setSampleRate(static_cast<qint64>(maxFreq - minFreq));
-  this->ui->waterfall->setCenterFreq(static_cast<qint64>(maxFreq + minFreq) / 2);
-  this->ui->waterfall->resetHorizontalZoom();
+    this->waterfall->setFreqUnits(
+          getFrequencyUnits(
+            static_cast<qint64>(maxFreq)));
 
-  demodBw = bw / 10;
-  if (demodBw > 4000000000)
-    demodBw = 4000000000;
+    this->waterfall->setSpanFreq(static_cast<qint64>(maxFreq - minFreq));
+    this->waterfall->setSampleRate(static_cast<qint64>(maxFreq - minFreq));
+    this->waterfall->setCenterFreq(static_cast<qint64>(maxFreq + minFreq) / 2);
+    this->waterfall->resetHorizontalZoom();
 
-  this->ui->waterfall->setDemodRanges(-bw / 2, 0, 0, bw / 2, true);
-  this->ui->waterfall->setHiLowCutFrequencies(-demodBw / 2, demodBw / 2);
+    demodBw = bw / 20;
+    if (demodBw > 4000000000)
+      demodBw = 4000000000;
+
+    this->waterfall->setDemodRanges(-bw / 2, 0, 0, bw / 2, true);
+    this->waterfall->setHiLowCutFrequencies(-demodBw / 2, demodBw / 2);
+  }
 }
 
 bool
@@ -696,20 +751,20 @@ void
 PanoramicDialog::redrawMeasures(void)
 {
   this->demodFreq = static_cast<qint64>(
-        this->ui->waterfall->getFilterOffset() +
+        this->waterfall->getFilterOffset() +
         .5 * (this->freqStart + this->freqEnd));
 
   this->ui->centerLabel->setText(
         SuWidgetsHelpers::formatQuantity(
           static_cast<qreal>(
-            this->ui->waterfall->getFilterOffset() +
+            this->waterfall->getFilterOffset() +
             .5 * (this->freqStart + this->freqEnd)),
           6,
           "Hz"));
 
   this->ui->bwLabel->setText(
         SuWidgetsHelpers::formatQuantity(
-          static_cast<qreal>(this->ui->waterfall->getFilterBw()),
+          static_cast<qreal>(this->waterfall->getFilterBw()),
           6,
           "Hz"));
 
@@ -840,12 +895,6 @@ PanoramicDialog::applyConfig(void)
   this->ui->rangeEndSpin->setValue(this->dialogConfig->rangeMax);
   this->ui->fullRangeCheck->setChecked(this->dialogConfig->fullRange);
   this->ui->sampleRateSpin->setValue(this->dialogConfig->sampRate);
-  this->ui->waterfall->setPandapterRange(
-        this->dialogConfig->panRangeMin,
-        this->dialogConfig->panRangeMax);
-  this->ui->waterfall->setWaterfallRange(
-        this->dialogConfig->panRangeMin,
-        this->dialogConfig->panRangeMax);
   this->ui->walkStrategyCombo->setCurrentText(QString::fromStdString(
         this->dialogConfig->strategy));
   this->ui->partitioningCombo->setCurrentText(QString::fromStdString(
@@ -855,6 +904,15 @@ PanoramicDialog::applyConfig(void)
   this->onDeviceChanged();
   this->ui->antennaCombo->setCurrentText(QString::fromStdString(
         this->dialogConfig->antenna));
+
+  if (this->waterfall) {
+    this->waterfall->setPandapterRange(
+          this->dialogConfig->panRangeMin,
+          this->dialogConfig->panRangeMax);
+    this->waterfall->setWaterfallRange(
+          this->dialogConfig->panRangeMin,
+          this->dialogConfig->panRangeMax);
+  }
 }
 
 ////////////////////////////// Slots //////////////////////////////////////
@@ -935,7 +993,8 @@ PanoramicDialog::onToggleScan(void)
     emit stop();
   }
 
-  this->ui->waterfall->setRunningState(this->ui->scanButton->isChecked());
+  if (this->waterfall)
+    this->waterfall->setRunningState(this->ui->scanButton->isChecked());
   this->ui->scanButton->setText(
         this->ui->scanButton->isChecked()
         ? "Stop"
@@ -949,9 +1008,9 @@ PanoramicDialog::onNewZoomLevel(float)
   bool leftBorder = false, rightBorder = false;
   qint64 min, max;
   qint64 fc =
-        this->ui->waterfall->getCenterFreq()
-        + this->ui->waterfall->getFftCenterFreq();
-  qint64 span = static_cast<qint64>(this->ui->waterfall->getSpanFreq());
+        this->waterfall->getCenterFreq()
+        + this->waterfall->getFftCenterFreq();
+  qint64 span = static_cast<qint64>(this->waterfall->getSpanFreq());
 
   min = fc - span / 2;
   max = fc + span / 2;
@@ -985,7 +1044,7 @@ PanoramicDialog::onRangeChanged(float min, float max)
 {
   this->dialogConfig->panRangeMin = min;
   this->dialogConfig->panRangeMax = max;
-  this->ui->waterfall->setWaterfallRange(min, max);
+  this->waterfall->setWaterfallRange(min, max);
 }
 
 void
@@ -1004,7 +1063,7 @@ void
 PanoramicDialog::onNewFftCenterFreq(qint64 freq)
 {
   // FftCenterFreq is an offset from CenterFreq
-  freq += this->ui->waterfall->getCenterFreq();
+  freq += this->waterfall->getCenterFreq();
 
   qint64 span = this->currBw;
   qint64 min = freq - span / 2;
@@ -1097,15 +1156,18 @@ PanoramicDialog::onBandPlanChanged(int)
 {
   int val = this->ui->allocationCombo->currentData().value<int>();
 
+  if (!this->waterfall)
+    return;
+
   if (this->currentFAT.size() > 0)
-    this->ui->waterfall->removeFAT(this->currentFAT);
+    this->waterfall->removeFAT(this->currentFAT);
 
   if (val >= 0) {
-    this->ui->waterfall->setFATsVisible(true);
-    this->ui->waterfall->pushFAT(this->FATs[static_cast<unsigned>(val)]);
+    this->waterfall->setFATsVisible(true);
+    this->waterfall->pushFAT(this->FATs[static_cast<unsigned>(val)]);
     this->currentFAT = this->FATs[static_cast<unsigned>(val)]->getName();
   } else {
-    this->ui->waterfall->setFATsVisible(false);
+    this->waterfall->setFATsVisible(false);
     this->currentFAT = "";
   }
 }

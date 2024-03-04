@@ -1155,6 +1155,7 @@ UIMediator::applyConfig()
   m_ui->configDialog->setTleSourceConfig(m_appConfig->tleSourceConfig);
   m_ui->configDialog->setAudioConfig(m_appConfig->audioConfig);
   m_ui->configDialog->setRemoteControlConfig(m_appConfig->rcConfig);
+  m_ui->panoramicDialog->setGuiConfig(m_appConfig->guiConfig);
   m_ui->panoramicDialog->setColors(m_appConfig->colors);
   m_ui->spectrum->setColorConfig(m_appConfig->colors);
 
@@ -1249,6 +1250,7 @@ UIMediator::openSettingsDialog(Suscan::Source::Config *prof)
   if (m_ui->configDialog->guiChanged()) {
     m_appConfig->guiConfig = m_ui->configDialog->getGuiConfig();
     m_ui->spectrum->setGuiConfig(m_appConfig->guiConfig);
+    m_ui->panoramicDialog->setGuiConfig(m_appConfig->guiConfig);
   }
 
   if (m_ui->configDialog->audioChanged()) {

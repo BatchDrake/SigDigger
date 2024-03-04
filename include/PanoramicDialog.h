@@ -27,6 +27,8 @@
 #include "ui_PanoramicDialog.h"
 #include "DeviceGain.h"
 #include "Palette.h"
+#include <AbstractWaterfall.h>
+#include <GuiConfig.h>
 
 namespace Ui {
   class PanoramicDialog;
@@ -94,6 +96,7 @@ namespace SigDigger {
       bool fixedFreqMode = false;
 
       void connectAll(void);
+      void connectWaterfall();
       void refreshUi(void);
       void redrawMeasures(void);
 
@@ -139,6 +142,7 @@ namespace SigDigger {
       float getGain(QString const &) const;
       void setBannedDevice(QString const &);
       void saveConfig(void);
+      void setGuiConfig(GuiConfig const &cfg);
 
       // Overriden methods
       Suscan::Serializable *allocConfig(void) override;
@@ -176,6 +180,8 @@ namespace SigDigger {
 
     private:
       Ui::PanoramicDialog *ui;
+      AbstractWaterfall *waterfall;
+      ColorConfig colorConfig;
   };
 }
 
