@@ -594,6 +594,7 @@ PanoramicDialog::adjustRanges(void)
     this->waterfall->setSampleRate(static_cast<qint64>(maxFreq - minFreq));
     this->waterfall->setCenterFreq(static_cast<qint64>(maxFreq + minFreq) / 2);
     this->waterfall->resetHorizontalZoom();
+    this->waterfall->clearPartialFftData();
 
     demodBw = bw / 20;
     if (demodBw > 4000000000)
