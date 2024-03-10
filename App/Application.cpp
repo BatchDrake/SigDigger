@@ -615,20 +615,22 @@ Application::onProfileChanged(bool needsRestart)
     hotApplyProfile(m_mediator->getProfile());
 }
 
+#define TRYSILENT(x) \
+  try { x; } catch (Suscan::Exception const &) { errorsOccurred = true; }
+
 void
 Application::onFrequencyChanged(qint64 freq, qint64 lnb)
 {
+  bool errorsOccurred = false;
+
   if (m_mediator->isLive()) {
     m_mediator->getProfile()->setFreq(freq);
     m_mediator->getProfile()->setLnbFreq(lnb);
   }
 
   if (m_mediator->getState() == UIMediator::RUNNING)
-    m_analyzer->setFrequency(freq, lnb);
+    TRYSILENT(m_analyzer->setFrequency(freq, lnb));
 }
-
-#define TRYSILENT(x) \
-  try { x; } catch (Suscan::Exception const &) { errorsOccurred = true; }
 
 void
 Application::hotApplyProfile(Suscan::Source::Config const *profile)
