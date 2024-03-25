@@ -109,6 +109,10 @@ namespace SigDigger {
 
   protected:
     void closeEvent(QCloseEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 
   signals:
     void detectDevices();

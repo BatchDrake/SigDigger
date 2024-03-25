@@ -1722,8 +1722,8 @@ UIMediator::attemptReplayFile(QString const &path)
     QMessageBox::critical(
           m_owner,
           "Replay file",
-          "Cannot replay file: failed to extract meaningful metadata from it. "
-          "If this is a raw I/Q file, please use the source settings dialog instead.");
+          "Cannot replay file: failed to extract meaningful metadata from it.\n\n"
+          "If this is a raw IQ file, please use the source settings dialog instead.");
     return false;
   }
 

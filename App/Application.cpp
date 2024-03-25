@@ -25,6 +25,11 @@
 
 #include <QMessageBox>
 #include <SuWidgetsHelpers.h>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
+#include <QMimeData>
 
 #include "MainSpectrum.h"
 
@@ -58,6 +63,8 @@ Application::Application(QWidget *parent) : QMainWindow(parent), m_ui(this)
   m_deviceDetectWorker = new DeviceDetectWorker();
   m_deviceDetectWorker->moveToThread(m_deviceDetectThread);
   m_deviceDetectThread->start();
+
+  setAcceptDrops(true);
 }
 
 Suscan::Object &&
@@ -578,6 +585,48 @@ void
 Application::closeEvent(QCloseEvent *)
 {
   stopCapture();
+}
+
+void
+Application::dragEnterEvent(QDragEnterEvent *event)
+{
+  if (event->proposedAction() == Qt::CopyAction)
+    event->acceptProposedAction();
+}
+
+void
+Application::dragMoveEvent(QDragMoveEvent *event)
+{
+  event->acceptProposedAction();
+}
+
+void
+Application::dragLeaveEvent(QDragLeaveEvent *event)
+{
+  event->accept();
+}
+
+void
+Application::dropEvent(QDropEvent *event)
+{
+  const QMimeData* mimeData = event->mimeData();
+
+  if (mimeData->hasUrls()) {
+    QList<QUrl> urlList = mimeData->urls();
+    if (urlList.size() != 1) {
+      event->ignore();
+      return;
+    }
+
+    QUrl url = urlList.at(0);
+
+    if (!url.isLocalFile()) {
+      event->ignore();
+      return;
+    }
+
+    m_mediator->attemptReplayFile(url.toLocalFile());
+  }
 }
 
 //////////////////////////////// Slots /////////////////////////////////////////
