@@ -62,20 +62,20 @@ namespace SigDigger {
 
   private:
     // Static part of the configuration
-    AppConfig *appConfig = nullptr;
+    AppConfig *m_appConfig = nullptr;
 
     // Static part of UI
-    QMainWindow *owner = nullptr;
-    AppUI *ui = nullptr;
+    QMainWindow *m_owner = nullptr;
+    AppUI *m_ui = nullptr;
     RemoteControlServer *m_remoteControl = nullptr;
 
-    QMessageBox *laggedMsgBox = nullptr;
-    std::map<std::string, QAction *> bandPlanMap;
+    QMessageBox *m_laggedMsgBox = nullptr;
+    std::map<std::string, QAction *> m_bandPlanMap;
 
     // Cached members
-    struct timeval profileStart;
-    struct timeval profileEnd;
-    Suscan::Source::Device remoteDevice;
+    struct timeval m_profileStart;
+    struct timeval m_profileEnd;
+    Suscan::Source::Device m_remoteDevice;
 
     GlobalProperty *m_propSampRate  = nullptr;
     GlobalProperty *m_propFftSize   = nullptr;
@@ -91,19 +91,19 @@ namespace SigDigger {
     GlobalProperty *m_propLNB       = nullptr;
 
     // UI Data
-    Averager averager;
-    unsigned int rate = 0;
-    unsigned int recentCount = 0;
+    Averager m_averager;
+    unsigned int m_rate = 0;
+    unsigned int m_recentCount = 0;
 
     // UI State
-    bool settingRanges = false;
-    struct timeval rtMaxDelta = {0, 10000};
-    struct timeval lastPsd;
-    qreal psdDelta = 0;
-    qreal psdAdj   = 0;
-    bool haveRtDelta = false;
-    unsigned int rtCalibrations = 0;
-    qreal rtDeltaReal = 0;
+    bool m_settingRanges = false;
+    struct timeval m_rtMaxDelta = {0, 10000};
+    struct timeval m_lastPsd;
+    qreal m_psdDelta = 0;
+    qreal m_psdAdj   = 0;
+    bool m_haveRtDelta = false;
+    unsigned int m_rtCalibrations = 0;
+    qreal m_rtDeltaReal = 0;
 
     // Private methods
     void connectMainWindow();
@@ -234,6 +234,9 @@ namespace SigDigger {
     void setProfile(Suscan::Source::Config const &config, bool restart = false);
     void setTimeStamp(struct timeval const &);
 
+    bool openSettingsDialog(Suscan::Source::Config *prof = nullptr);
+    bool attemptReplayFile(QString const &path);
+
     // Overriden methods
     Suscan::Serializable *allocConfig() override;
     void applyConfig() override;
@@ -272,6 +275,7 @@ namespace SigDigger {
     void onToggleAbout(bool);
     void onQuickConnect();
     void onQuickConnectAccepted();
+    void onTriggerReplayFile(bool);
     void onTriggerStart(bool);
     void onTriggerStop(bool);
     void onTriggerImport(bool);

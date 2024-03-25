@@ -54,6 +54,8 @@ namespace SigDigger {
       RemoteControlConfig rcConfig;
       Suscan::Serializable *panSpectrumConfig = nullptr;
 
+      std::string lastLoadedFile;
+
       // We cannot keep a pointer to the deserialized object. This is because
       // these objects may be created and destroyed during the application
       // lifecycle.

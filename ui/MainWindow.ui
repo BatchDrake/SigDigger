@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>1251</width>
-     <height>24</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -70,6 +70,8 @@
      <addaction name="separator"/>
      <addaction name="actionClear"/>
     </widget>
+    <addaction name="actionReplayFile"/>
+    <addaction name="separator"/>
     <addaction name="actionStart_capture"/>
     <addaction name="actionStop_capture"/>
     <addaction name="actionQuick_connect"/>
@@ -337,6 +339,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+U</string>
+   </property>
+  </action>
+  <action name="actionReplayFile">
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/media-playback-start.png</normaloff>:/icons/media-playback-start.png</iconset>
+   </property>
+   <property name="text">
+    <string>Replay file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>

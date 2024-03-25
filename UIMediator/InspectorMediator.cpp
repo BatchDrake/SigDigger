@@ -130,13 +130,13 @@ UIMediator::detachInspectionWidget(InspectionWidget *widget)
 SUFREQ
 UIMediator::getCurrentCenterFreq() const
 {
-  return this->ui->spectrum->getCenterFreq();
+  return this->m_ui->spectrum->getCenterFreq();
 }
 
 bool
 UIMediator::isLive() const
 {
-  return this->appConfig->profile.isRealTime();
+  return this->m_appConfig->profile.isRealTime();
 }
 
 void
@@ -182,7 +182,7 @@ UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
   } else {
     InspectionWidget *widget = factory->make(request, this);
 
-    widget->setColorConfig(appConfig->colors);
+    widget->setColorConfig(m_appConfig->colors);
     m_inspectors.push_back(widget);
     m_inspTable[request.inspectorId] = widget;
 

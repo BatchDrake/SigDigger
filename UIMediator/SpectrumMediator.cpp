@@ -31,16 +31,16 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
 {
   bool expired = false;
 
-  if (this->appConfig->guiConfig.enableMsgTTL) {
+  if (m_appConfig->guiConfig.enableMsgTTL) {
     qreal delta;
     qreal psdDelta;
     qreal prevDelta;
-    qreal interval = this->appConfig->analyzerParams.psdUpdateInterval;
+    qreal interval = m_appConfig->analyzerParams.psdUpdateInterval;
     qreal selRate = 1. / interval;
     struct timeval now, rttime, diff;
     qreal max_delta;
     qreal adj;
-    max_delta = this->appConfig->guiConfig.msgTTL * 1e-3;
+    max_delta = m_appConfig->guiConfig.msgTTL * 1e-3;
 
     gettimeofday(&now, nullptr);
 
@@ -50,50 +50,50 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
     timersub(&now, &rttime, &diff);
     delta = diff.tv_sec + diff.tv_usec * 1e-6;
 
-    timersub(&now, &this->lastPsd, &diff);
+    timersub(&now, &m_lastPsd, &diff);
     psdDelta = diff.tv_sec + diff.tv_usec * 1e-6;
 
-    this->lastPsd = now;
+    m_lastPsd = now;
 
-    if (this->rtCalibrations++ == 0) {
-      this->rtDeltaReal = delta;
-      this->psdDelta    = 1. / selRate;
-      prevDelta         = this->psdDelta;
+    if (m_rtCalibrations++ == 0) {
+      m_rtDeltaReal = delta;
+      m_psdDelta    = 1. / selRate;
+      prevDelta         = m_psdDelta;
       adj               = prevDelta;
     } else {
-      prevDelta         = this->psdDelta;
+      prevDelta         = m_psdDelta;
       SU_SPLPF_FEED(
-            this->rtDeltaReal,
+            m_rtDeltaReal,
             delta,
             SU_SPLPF_ALPHA(SIGDIGGER_UI_MEDIATOR_PSD_CAL_LEN));
-      SU_SPLPF_FEED(this->psdDelta, psdDelta, SU_SPLPF_ALPHA(selRate));
-      adj               = this->psdDelta - prevDelta;
+      SU_SPLPF_FEED(m_psdDelta, psdDelta, SU_SPLPF_ALPHA(selRate));
+      adj               = m_psdDelta - prevDelta;
     }
 
-    SU_SPLPF_FEED(this->psdAdj, adj, SU_SPLPF_ALPHA(selRate));
+    SU_SPLPF_FEED(m_psdAdj, adj, SU_SPLPF_ALPHA(selRate));
 
-    if (!this->haveRtDelta) {
-      if (++this->rtCalibrations > SIGDIGGER_UI_MEDIATOR_PSD_CAL_LEN)
-        this->haveRtDelta = true;
+    if (!m_haveRtDelta) {
+      if (++m_rtCalibrations > SIGDIGGER_UI_MEDIATOR_PSD_CAL_LEN)
+        m_haveRtDelta = true;
     } else {
       /* Subtract the intrinsic time delta */
-      delta -= this->rtDeltaReal;
+      delta -= m_rtDeltaReal;
       expired = delta > max_delta;
 
-      if (this->appConfig->profile.isRemote()
-          && fabs(this->psdAdj / interval)
+      if (m_appConfig->profile.isRemote()
+          && fabs(m_psdAdj / interval)
           < SIGDIGGER_UI_MEDIATOR_PSD_LAG_THRESHOLD) {
-        if ((this->psdDelta - interval) / interval
+        if ((m_psdDelta - interval) / interval
             > SIGDIGGER_UI_MEDIATOR_PSD_MAX_LAG) {
-          if (this->laggedMsgBox == nullptr) {
-            this->laggedMsgBox = new QMessageBox(this->owner);
-            this->laggedMsgBox->setWindowTitle("Connection quality warning");
-            this->laggedMsgBox->setWindowModality(Qt::NonModal);
-            this->laggedMsgBox->setIcon(QMessageBox::Icon::Warning);
+          if (m_laggedMsgBox == nullptr) {
+            m_laggedMsgBox = new QMessageBox(m_owner);
+            m_laggedMsgBox->setWindowTitle("Connection quality warning");
+            m_laggedMsgBox->setWindowModality(Qt::NonModal);
+            m_laggedMsgBox->setIcon(QMessageBox::Icon::Warning);
           }
 
-          if (this->laggedMsgBox->isHidden()) {
-            this->laggedMsgBox->setText(
+          if (m_laggedMsgBox->isHidden()) {
+            m_laggedMsgBox->setText(
                   QString::asprintf(
                     "The rate at which spectrum data is arriving is slower than "
                     "expected (requested %g fps, but it is arriving at %g fps). "
@@ -101,8 +101,8 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
                     "server synchronization issues, please reduce either the "
                     "spectrum rate or the FFT size.",
                     selRate,
-                    1. / this->psdDelta));
-            this->laggedMsgBox->show();
+                    1. / m_psdDelta));
+            m_laggedMsgBox->show();
           }
         }
       }
@@ -112,10 +112,10 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
   this->setSampleRate(msg.getSampleRate());
 
   if (!expired) {
-    this->averager.feed(msg);
-    this->ui->spectrum->feed(
-          this->averager.get(),
-          static_cast<int>(this->averager.size()),
+    m_averager.feed(msg);
+    m_ui->spectrum->feed(
+          m_averager.get(),
+          static_cast<int>(m_averager.size()),
           msg.getTimeStamp(),
           msg.hasLooped());
   }
@@ -125,37 +125,37 @@ void
 UIMediator::connectSpectrum(void)
 {
   connect(
-        this->ui->spectrum,
+        m_ui->spectrum,
         SIGNAL(bandwidthChanged(void)),
         this,
         SLOT(onSpectrumBandwidthChanged(void)));
 
   connect(
-        this->ui->spectrum,
+        m_ui->spectrum,
         SIGNAL(frequencyChanged(qint64)),
         this,
         SLOT(onFrequencyChanged(qint64)));
 
   connect(
-        this->ui->spectrum,
+        m_ui->spectrum,
         SIGNAL(lnbFrequencyChanged(qint64)),
         this,
         SLOT(onFrequencyChanged(qint64)));
 
   connect(
-        this->ui->spectrum,
+        m_ui->spectrum,
         SIGNAL(loChanged(qint64)),
         this,
         SLOT(onLoChanged(qint64)));
 
   connect(
-        this->ui->spectrum,
+        m_ui->spectrum,
         SIGNAL(newBandPlan(QString)),
         this,
         SLOT(onNewBandPlan(QString)));
 
   connect(
-        this->ui->spectrum,
+        m_ui->spectrum,
         SIGNAL(seek(struct timeval)),
         this,
         SIGNAL(seek(struct timeval)));
@@ -164,31 +164,31 @@ UIMediator::connectSpectrum(void)
 void
 UIMediator::onSpectrumBandwidthChanged(void)
 {
-  this->appConfig->bandwidth =
-      static_cast<unsigned int>(this->ui->spectrum->getBandwidth());
+  m_appConfig->bandwidth =
+      static_cast<unsigned int>(m_ui->spectrum->getBandwidth());
 }
 
 void
 UIMediator::onFrequencyChanged(qint64)
 {
-  qint64 freq = this->ui->spectrum->getCenterFreq();
-  qint64 lnb  = this->ui->spectrum->getLnbFreq();
+  qint64 freq = m_ui->spectrum->getCenterFreq();
+  qint64 lnb  = m_ui->spectrum->getLnbFreq();
 
   if (this->isLive())
-    this->appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
+    m_appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
 
   m_propFrequency->setValue(freq);
   m_propLNB->setValue(lnb);
 
   emit frequencyChanged(
-        this->ui->spectrum->getCenterFreq(),
-        this->ui->spectrum->getLnbFreq());
+        m_ui->spectrum->getCenterFreq(),
+        m_ui->spectrum->getLnbFreq());
 }
 
 void
 UIMediator::onLoChanged(qint64)
 {
-  this->appConfig->loFreq = static_cast<int>(this->ui->spectrum->getLoFreq());
+  m_appConfig->loFreq = static_cast<int>(m_ui->spectrum->getLoFreq());
 }
 
 void
@@ -200,7 +200,7 @@ UIMediator::onNewBandPlan(QString plan)
 void
 UIMediator::onBookmarkChanged(void)
 {
-  this->ui->spectrum->updateOverlay();
+  m_ui->spectrum->updateOverlay();
   emit triggerSaveConfig();
 }
 
@@ -209,14 +209,14 @@ UIMediator::onPropFrequencyChanged()
 {
   int64_t newFreq = SCAST(qint64, m_propFrequency->toDouble());
 
-  if (this->ui->spectrum->canChangeFrequency(
+  if (m_ui->spectrum->canChangeFrequency(
         newFreq,
-        this->ui->spectrum->getLnbFreq())) {
-    this->ui->spectrum->setFreqs(
+        m_ui->spectrum->getLnbFreq())) {
+    m_ui->spectrum->setFreqs(
         newFreq,
-        this->ui->spectrum->getLnbFreq());
+        m_ui->spectrum->getLnbFreq());
   } else {
-    int64_t currFreq = this->ui->spectrum->getCenterFreq();
+    int64_t currFreq = m_ui->spectrum->getCenterFreq();
     m_propFrequency->setValueSilent(currFreq);
   }
 }
@@ -224,7 +224,7 @@ UIMediator::onPropFrequencyChanged()
 void
 UIMediator::onPropLNBChanged()
 {
-  this->ui->spectrum->setFreqs(
-        this->ui->spectrum->getCenterFreq(),
+  m_ui->spectrum->setFreqs(
+        m_ui->spectrum->getCenterFreq(),
         SCAST(qint64, m_propLNB->toDouble()));
 }

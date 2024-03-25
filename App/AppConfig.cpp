@@ -55,6 +55,7 @@ AppConfig::serialize(void)
   obj.set("disableHighRateWarning", this->disableHighRateWarning);
   obj.set("loFreq", this->loFreq);
   obj.set("bandwidth", this->bandwidth);
+  obj.set("lastLoadedFile", this->lastLoadedFile);
 
   obj.setField("source", profileObj);
   obj.setField("analyzerParams", this->analyzerParams.serialize());
@@ -139,6 +140,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->disableHighRateWarning = conf.get("disableHighRateWarning", this->disableHighRateWarning));
     TRYSILENT(this->loFreq     = conf.get("loFreq", this->loFreq));
     TRYSILENT(this->bandwidth  = conf.get("bandwidth", this->bandwidth));
+    TRYSILENT(this->lastLoadedFile = conf.get("lastLoadedFile", this->lastLoadedFile));
 
     try {
       Suscan::Object set = conf.getField("bandPlans");
