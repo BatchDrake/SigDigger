@@ -130,7 +130,7 @@
    </attribute>
    <addaction name="actionSave"/>
    <addaction name="actionSave_selection"/>
-   <addaction name="actionFit_to_gain"/>
+   <addaction name="actionAutoFit"/>
    <addaction name="separator"/>
    <addaction name="actionZoom_selection"/>
    <addaction name="actionResetZoom"/>
@@ -148,7 +148,6 @@
    </property>
    <property name="font">
     <font>
-     <weight>50</weight>
      <bold>false</bold>
     </font>
    </property>
@@ -218,7 +217,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>303</width>
+          <width>333</width>
           <height>735</height>
          </rect>
         </property>
@@ -279,7 +278,6 @@
               <property name="font">
                <font>
                 <family>Monospace</family>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -300,7 +298,6 @@
               <property name="font">
                <font>
                 <family>Monospace</family>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -334,7 +331,6 @@
               <property name="font">
                <font>
                 <family>Monospace</family>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -378,7 +374,6 @@
               <property name="font">
                <font>
                 <family>Monospace</family>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -399,7 +394,6 @@
               <property name="font">
                <font>
                 <family>Monospace</family>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -419,7 +413,6 @@
               <property name="font">
                <font>
                 <family>Monospace</family>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -460,7 +453,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>4</number>
            </property>
            <widget class="QWidget" name="measurementsPage">
             <property name="sizePolicy">
@@ -499,7 +492,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -548,7 +540,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -568,7 +559,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -609,7 +599,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -643,7 +632,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -677,7 +665,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -742,7 +729,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -788,7 +774,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -808,7 +793,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -835,7 +819,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -953,7 +936,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -981,7 +963,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -1017,7 +998,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -1044,7 +1024,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -1071,7 +1050,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -1207,7 +1185,6 @@
                <property name="font">
                 <font>
                  <family>Monospace</family>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
@@ -1371,7 +1348,6 @@
                   <property name="font">
                    <font>
                     <family>Monospace</family>
-                    <weight>50</weight>
                     <bold>false</bold>
                    </font>
                   </property>
@@ -1450,7 +1426,6 @@
                   <property name="font">
                    <font>
                     <family>Monospace</family>
-                    <weight>50</weight>
                     <bold>false</bold>
                    </font>
                   </property>
@@ -1825,7 +1800,6 @@
                   <property name="font">
                    <font>
                     <family>Monospace</family>
-                    <weight>50</weight>
                     <bold>false</bold>
                    </font>
                   </property>
@@ -1931,7 +1905,6 @@
                   <property name="font">
                    <font>
                     <family>Monospace</family>
-                    <weight>50</weight>
                     <bold>false</bold>
                    </font>
                   </property>
@@ -1989,7 +1962,6 @@
               <widget class="QPushButton" name="startSamplinButton">
                <property name="font">
                 <font>
-                 <weight>75</weight>
                  <bold>true</bold>
                 </font>
                </property>
@@ -2477,15 +2449,6 @@
     <string>Ctrl+Shift+S</string>
    </property>
   </action>
-  <action name="actionFit_to_gain">
-   <property name="icon">
-    <iconset resource="../icons/Icons.qrc">
-     <normaloff>:/icons/view-restore.png</normaloff>:/icons/view-restore.png</iconset>
-   </property>
-   <property name="text">
-    <string>Fit to gain</string>
-   </property>
-  </action>
   <action name="actionHorizontal_selection">
    <property name="checkable">
     <bool>true</bool>
@@ -2572,6 +2535,18 @@
     <string>Toggle phase derivative (frequency)</string>
    </property>
   </action>
+  <action name="actionAutoFit">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../icons/Icons.qrc">
+     <normaloff>:/icons/view-restore.png</normaloff>:/icons/view-restore.png</iconset>
+   </property>
+   <property name="text">
+    <string>Automatically fit to evenlope</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -2596,16 +2571,16 @@
    <header>FrequencySpinBox.h</header>
   </customwidget>
   <customwidget>
+   <class>ContextAwareSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>ContextAwareSpinBox.h</header>
+  </customwidget>
+  <customwidget>
    <class>MultiToolBox</class>
    <extends>QWidget</extends>
    <header>MultiToolBox.h</header>
    <addpagemethod>addPage</addpagemethod>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ContextAwareSpinBox</class>
-   <extends>QDouble</extends>
-   <header>ContextAwareSpinBox.h</header>
   </customwidget>
  </customwidgets>
  <resources>
@@ -2613,8 +2588,8 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="intervalButtonGrp"/>
   <buttongroup name="clckSourceBtnGrp"/>
+  <buttongroup name="intervalButtonGrp"/>
   <buttongroup name="spaceButtonGrp"/>
  </buttongroups>
 </ui>

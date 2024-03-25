@@ -44,99 +44,99 @@
 using namespace SigDigger;
 
 void
-TimeWindow::connectFineTuneSelWidgets(void)
+TimeWindow::connectFineTuneSelWidgets()
 {
   connect(
         ui->selStartDecDeltaTButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onFineTuneSelectionClicked(void)));
+        SLOT(onFineTuneSelectionClicked()));
 
   connect(
         ui->selStartDecSampleButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onFineTuneSelectionClicked(void)));
+        SLOT(onFineTuneSelectionClicked()));
 
   connect(
         ui->selStartIncDeltaTButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onFineTuneSelectionClicked(void)));
+        SLOT(onFineTuneSelectionClicked()));
 
   connect(
         ui->selStartIncSampleButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onFineTuneSelectionClicked(void)));
+        SLOT(onFineTuneSelectionClicked()));
 
   connect(
         ui->selEndDecDeltaTButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onFineTuneSelectionClicked(void)));
+        SLOT(onFineTuneSelectionClicked()));
 
   connect(
         ui->selEndDecSampleButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onFineTuneSelectionClicked(void)));
+        SLOT(onFineTuneSelectionClicked()));
 
   connect(
         ui->selEndIncDeltaTButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onFineTuneSelectionClicked(void)));
+        SLOT(onFineTuneSelectionClicked()));
 
   connect(
         ui->selEndIncSampleButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onFineTuneSelectionClicked(void)));
+        SLOT(onFineTuneSelectionClicked()));
 }
 
 void
-TimeWindow::connectTransformWidgets(void)
+TimeWindow::connectTransformWidgets()
 {
   connect(
         ui->lpfApplyButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
         SLOT(onLPF()));
 
   connect(
         ui->costasSyncButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
         SLOT(onCostasRecovery()));
 
   connect(
         ui->pllSyncButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
         SLOT(onPLLRecovery()));
 
   connect(
         ui->cycloButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
         SLOT(onCycloAnalysis()));
 
   connect(
         ui->agcButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
         SLOT(onAGC()));
 
   connect(
         ui->dcmButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
         SLOT(onDelayedConjugate()));
 
   connect(
         ui->quadDemodButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
         SLOT(onQuadDemod()));
 
@@ -154,13 +154,13 @@ TimeWindow::connectTransformWidgets(void)
 
   connect(
         ui->resetTransformButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
         SLOT(onResetCarrier()));
 }
 
 void
-TimeWindow::connectAll(void)
+TimeWindow::connectAll()
 {
   connectTransformWidgets();
 
@@ -204,81 +204,81 @@ TimeWindow::connectAll(void)
         ui->actionSave,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onSaveAll(void)));
+        SLOT(onSaveAll()));
 
   connect(
         ui->actionSave_selection,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onSaveSelection(void)));
+        SLOT(onSaveSelection()));
 
   connect(
-        ui->actionFit_to_gain,
-        SIGNAL(triggered(bool)),
+        ui->actionAutoFit,
+        SIGNAL(toggled(bool)),
         this,
-        SLOT(onFit(void)));
+        SLOT(onToggleAutoFit()));
 
 #if 0
   connect(
         ui->actionHorizontal_selection,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onToggleHorizontalSelection(void)));
+        SLOT(onToggleHorizontalSelection()));
 
   connect(
         ui->actionVertical_selection,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onToggleVerticalSelection(void)));
+        SLOT(onToggleVerticalSelection()));
 #endif
 
   connect(
         ui->actionZoom_selection,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onZoomToSelection(void)));
+        SLOT(onZoomToSelection()));
 
   connect(
         ui->actionResetZoom,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onZoomReset(void)));
+        SLOT(onZoomReset()));
 
   connect(
         ui->actionShowWaveform,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onShowWaveform(void)));
+        SLOT(onShowWaveform()));
 
   connect(
         ui->actionShowEnvelope,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onShowEnvelope(void)));
+        SLOT(onShowEnvelope()));
 
   connect(
         ui->actionShowPhase,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onShowPhase(void)));
+        SLOT(onShowPhase()));
 
   connect(
         ui->actionPhaseDerivative,
         SIGNAL(triggered(bool)),
         this,
-        SLOT(onPhaseDerivative(void)));
+        SLOT(onPhaseDerivative()));
 
   connect(
         ui->periodicSelectionCheck,
         SIGNAL(stateChanged(int)),
         this,
-        SLOT(onTogglePeriodicSelection(void)));
+        SLOT(onTogglePeriodicSelection()));
 
   connect(
         ui->periodicDivisionsSpin,
         SIGNAL(valueChanged(int)),
         this,
-        SLOT(onPeriodicDivisionsChanged(void)));
+        SLOT(onPeriodicDivisionsChanged()));
 
   connect(
         ui->paletteCombo,
@@ -300,15 +300,15 @@ TimeWindow::connectAll(void)
 
   connect(
         ui->taskAbortButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onAbort(void)));
+        SLOT(onAbort()));
 
   connect(
         &m_taskController,
-        SIGNAL(cancelling(void)),
+        SIGNAL(cancelling()),
         this,
-        SLOT(onTaskCancelling(void)));
+        SLOT(onTaskCancelling()));
 
   connect(
         &m_taskController,
@@ -318,15 +318,15 @@ TimeWindow::connectAll(void)
 
   connect(
         &m_taskController,
-        SIGNAL(done(void)),
+        SIGNAL(done()),
         this,
-        SLOT(onTaskDone(void)));
+        SLOT(onTaskDone()));
 
   connect(
         &m_taskController,
-        SIGNAL(cancelled(void)),
+        SIGNAL(cancelled()),
         this,
-        SLOT(onTaskCancelled(void)));
+        SLOT(onTaskCancelled()));
 
   connect(
         &m_taskController,
@@ -336,70 +336,70 @@ TimeWindow::connectAll(void)
 
   connect(
         ui->guessCarrierButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onGuessCarrier(void)));
+        SLOT(onGuessCarrier()));
 
   connect(
         ui->syncButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onSyncCarrier(void)));
+        SLOT(onSyncCarrier()));
 
   connect(
         ui->resetButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onResetCarrier(void)));
+        SLOT(onResetCarrier()));
 
 
   connect(
         ui->dcNotchSlider,
         SIGNAL(valueChanged(int)),
         this,
-        SLOT(onCarrierSlidersChanged(void)));
+        SLOT(onCarrierSlidersChanged()));
 
   connect(
         ui->averagerSlider,
         SIGNAL(valueChanged(int)),
         this,
-        SLOT(onCarrierSlidersChanged(void)));
+        SLOT(onCarrierSlidersChanged()));
 
   connect(
         ui->showHistogramButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onTriggerHistogram(void)));
+        SLOT(onTriggerHistogram()));
 
   connect(
         m_histogramDialog,
-        SIGNAL(blanked(void)),
+        SIGNAL(blanked()),
         this,
-        SLOT(onHistogramBlanked(void)));
+        SLOT(onHistogramBlanked()));
 
   connect(
         ui->startSamplinButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onTriggerSampler(void)));
+        SLOT(onTriggerSampler()));
 
   connect(
         m_samplerDialog,
-        SIGNAL(resample(void)),
+        SIGNAL(resample()),
         this,
-        SLOT(onResample(void)));
+        SLOT(onResample()));
 
   connect(
         m_samplerDialog,
-        SIGNAL(stopTask(void)),
+        SIGNAL(stopTask()),
         this,
-        SLOT(onAbort(void)));
+        SLOT(onAbort()));
 
   connect(
         m_histogramDialog,
-        SIGNAL(stopTask(void)),
+        SIGNAL(stopTask()),
         this,
-        SLOT(onAbort(void)));
+        SLOT(onAbort()));
 
   connect(
         ui->clckSourceBtnGrp,
@@ -409,51 +409,51 @@ TimeWindow::connectAll(void)
 
   connect(
         ui->dopplerButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onCalculateDoppler(void)));
+        SLOT(onCalculateDoppler()));
 
   connect(
         ui->realWaveform,
-        SIGNAL(waveViewChanged(void)),
+        SIGNAL(waveViewChanged()),
         this,
-        SLOT(onWaveViewChanged(void)));
+        SLOT(onWaveViewChanged()));
 
   connect(
         ui->zeroPointSpin,
         SIGNAL(valueChanged(qreal)),
         this,
-        SLOT(onZeroPointChanged(void)));
+        SLOT(onZeroPointChanged()));
 
   connect(
         ui->clkComponentCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onZeroCrossingComponentChanged(void)));
+        SLOT(onZeroCrossingComponentChanged()));
 
   connect(
         ui->spaceButtonGrp,
         SIGNAL(buttonClicked(QAbstractButton *)),
         this,
-        SLOT(onZeroPointChanged(void)));
+        SLOT(onZeroPointChanged()));
 
   connectFineTuneSelWidgets();
 }
 
 int
-TimeWindow::getPeriodicDivision(void) const
+TimeWindow::getPeriodicDivision() const
 {
   return ui->periodicDivisionsSpin->value();
 }
 
 const SUCOMPLEX *
-TimeWindow::getDisplayData(void) const
+TimeWindow::getDisplayData() const
 {
   return m_displayDataPtr;
 }
 
 size_t
-TimeWindow::getDisplayDataLength(void) const
+TimeWindow::getDisplayDataLength() const
 {
   return m_displayDataLength;
 }
@@ -522,7 +522,7 @@ TimeWindow::setColorConfig(ColorConfig const &cfg)
 }
 
 std::string
-TimeWindow::getPalette(void) const
+TimeWindow::getPalette() const
 {
   const Palette *palette = SigDiggerHelpers::instance()->getPalette(
         ui->paletteCombo->currentIndex());
@@ -534,13 +534,13 @@ TimeWindow::getPalette(void) const
 }
 
 unsigned int
-TimeWindow::getPaletteOffset(void) const
+TimeWindow::getPaletteOffset() const
 {
   return static_cast<unsigned>(ui->offsetSlider->value());
 }
 
 int
-TimeWindow::getPaletteContrast(void) const
+TimeWindow::getPaletteContrast() const
 {
   return ui->contrastSlider->value();
 }
@@ -742,7 +742,7 @@ TimeWindow::notifyTaskRunning(bool running)
 }
 
 void
-TimeWindow::refreshUi(void)
+TimeWindow::refreshUi()
 {
   bool haveSelection = ui->realWaveform->getHorizontalSelectionPresent();
   bool baudEditable;
@@ -799,7 +799,7 @@ TimeWindow::refreshUi(void)
 }
 
 void
-TimeWindow::startSampling(void)
+TimeWindow::startSampling()
 {
   WaveSampler *ws = m_samplerDialog->makeSampler();
 
@@ -814,7 +814,7 @@ TimeWindow::startSampling(void)
 }
 
 void
-TimeWindow::refreshMeasures(void)
+TimeWindow::refreshMeasures()
 {
   qreal selStart = 0;
   qreal selEnd   = 0;
@@ -1101,6 +1101,8 @@ TimeWindow::TimeWindow(QWidget *parent) :
 
   ui->toolBox->setCurrentIndex(0);
 
+  onToggleAutoFit();
+
   connectAll();
 }
 
@@ -1305,7 +1307,7 @@ TimeWindow::onHoverTime(qreal time)
 }
 
 void
-TimeWindow::onTogglePeriodicSelection(void)
+TimeWindow::onTogglePeriodicSelection()
 {
   ui->realWaveform->setPeriodicSelection(
         ui->periodicSelectionCheck->isChecked());
@@ -1319,7 +1321,7 @@ TimeWindow::onTogglePeriodicSelection(void)
 }
 
 void
-TimeWindow::onPeriodicDivisionsChanged(void)
+TimeWindow::onPeriodicDivisionsChanged()
 {
   ui->realWaveform->setDivsPerSelection(
         getPeriodicDivision());
@@ -1334,7 +1336,7 @@ TimeWindow::onPeriodicDivisionsChanged(void)
 
 
 void
-TimeWindow::onSaveAll(void)
+TimeWindow::onSaveAll()
 {
   SigDiggerHelpers::openSaveSamplesDialog(
         this,
@@ -1347,7 +1349,7 @@ TimeWindow::onSaveAll(void)
 }
 
 void
-TimeWindow::onSaveSelection(void)
+TimeWindow::onSaveSelection()
 {
   SigDiggerHelpers::openSaveSamplesDialog(
         this,
@@ -1360,7 +1362,7 @@ TimeWindow::onSaveSelection(void)
 }
 
 void
-TimeWindow::onFit(void)
+TimeWindow::onFit()
 {
   if (ui->realWaveform->isComplete()) {
     ui->realWaveform->fitToEnvelope();
@@ -1375,14 +1377,20 @@ TimeWindow::onFit(void)
 }
 
 void
-TimeWindow::onToggleAutoFit(void)
+TimeWindow::onToggleAutoFit()
 {
+  bool doAutoFit = ui->actionAutoFit->isChecked();
 
+  ui->realWaveform->setAutoFitToEnvelope(doAutoFit);
+  ui->imagWaveform->setAutoFitToEnvelope(doAutoFit);
+
+  if (doAutoFit)
+    onFit();
 }
 
 #if 0
 void
-TimeWindow::onToggleHorizontalSelection(void)
+TimeWindow::onToggleHorizontalSelection()
 {
   if (!adjusting) {
     adjusting = true;
@@ -1393,7 +1401,7 @@ TimeWindow::onToggleHorizontalSelection(void)
 }
 
 void
-TimeWindow::onToggleVerticalSelection(void)
+TimeWindow::onToggleVerticalSelection()
 {
   if (!adjusting) {
     adjusting = true;
@@ -1404,7 +1412,7 @@ TimeWindow::onToggleVerticalSelection(void)
 }
 #endif
 void
-TimeWindow::onZoomToSelection(void)
+TimeWindow::onZoomToSelection()
 {
   if (ui->realWaveform->getHorizontalSelectionPresent()) {
     ui->realWaveform->zoomHorizontal(
@@ -1423,7 +1431,7 @@ TimeWindow::onZoomToSelection(void)
 }
 
 void
-TimeWindow::onZoomReset(void)
+TimeWindow::onZoomReset()
 {
   ui->realWaveform->zoomHorizontalReset();
   ui->imagWaveform->zoomHorizontalReset();
@@ -1436,7 +1444,7 @@ TimeWindow::onZoomReset(void)
 }
 
 void
-TimeWindow::onShowWaveform(void)
+TimeWindow::onShowWaveform()
 {
   ui->realWaveform->setShowWaveform(
         ui->actionShowWaveform->isChecked());
@@ -1446,7 +1454,7 @@ TimeWindow::onShowWaveform(void)
 }
 
 void
-TimeWindow::onShowEnvelope(void)
+TimeWindow::onShowEnvelope()
 {
   ui->realWaveform->setShowEnvelope(
         ui->actionShowEnvelope->isChecked());
@@ -1462,13 +1470,13 @@ TimeWindow::onShowEnvelope(void)
 }
 
 void
-TimeWindow::onAbort(void)
+TimeWindow::onAbort()
 {
   m_taskController.cancel();
 }
 
 void
-TimeWindow::onShowPhase(void)
+TimeWindow::onShowPhase()
 {
   ui->realWaveform->setShowPhase(ui->actionShowPhase->isChecked());
   ui->imagWaveform->setShowPhase(ui->actionShowPhase->isChecked());
@@ -1478,7 +1486,7 @@ TimeWindow::onShowPhase(void)
 }
 
 void
-TimeWindow::onPhaseDerivative(void)
+TimeWindow::onPhaseDerivative()
 {
   ui->realWaveform->setShowPhaseDiff(
         ui->actionPhaseDerivative->isChecked());
@@ -1523,7 +1531,7 @@ TimeWindow::onChangePaletteContrast(int contrast)
 }
 
 void
-TimeWindow::onTaskCancelling(void)
+TimeWindow::onTaskCancelling()
 {
   ui->taskProgressBar->setEnabled(false);
   ui->taskStateLabel->setText("Cancelling...");
@@ -1537,7 +1545,7 @@ TimeWindow::onTaskProgress(qreal progress, QString status)
 }
 
 void
-TimeWindow::onTaskDone(void)
+TimeWindow::onTaskDone()
 {
   ui->taskStateLabel->setText("Done.");
   ui->taskProgressBar->setValue(0);
@@ -1610,7 +1618,7 @@ TimeWindow::onTaskDone(void)
 }
 
 void
-TimeWindow::onTaskCancelled(void)
+TimeWindow::onTaskCancelled()
 {
   ui->taskProgressBar->setEnabled(true);
   ui->taskStateLabel->setText("Idle");
@@ -1631,7 +1639,7 @@ TimeWindow::onTaskError(QString error)
 }
 
 void
-TimeWindow::onGuessCarrier(void)
+TimeWindow::onGuessCarrier()
 {
   if (ui->realWaveform->getHorizontalSelectionPresent()) {
     const SUCOMPLEX *data = getDisplayData();
@@ -1654,7 +1662,7 @@ TimeWindow::onGuessCarrier(void)
 }
 
 void
-TimeWindow::onSyncCarrier(void)
+TimeWindow::onSyncCarrier()
 {
   SUFLOAT relFreq = SU_ABS2NORM_FREQ(
         m_fs,
@@ -1677,7 +1685,7 @@ TimeWindow::onSyncCarrier(void)
 }
 
 void
-TimeWindow::onResetCarrier(void)
+TimeWindow::onResetCarrier()
 {
   setDisplayData(getData(), getLength(), true);
   onFit();
@@ -1685,7 +1693,7 @@ TimeWindow::onResetCarrier(void)
 }
 
 void
-TimeWindow::onCarrierSlidersChanged(void)
+TimeWindow::onCarrierSlidersChanged()
 {
   qreal notchRelBw =
       static_cast<qreal>(ui->dcNotchSlider->value())
@@ -1714,7 +1722,7 @@ TimeWindow::onHistogramSamples(const float *samples, unsigned int size)
 }
 
 void
-TimeWindow::onTriggerHistogram(void)
+TimeWindow::onTriggerHistogram()
 {
   SamplingProperties props;
 
@@ -1739,7 +1747,7 @@ TimeWindow::onTriggerHistogram(void)
 }
 
 void
-TimeWindow::onHistogramBlanked(void)
+TimeWindow::onHistogramBlanked()
 {
   if (m_histogramDialog->isVisible())
     onTriggerHistogram();
@@ -1752,7 +1760,7 @@ TimeWindow::onSampleSet(SigDigger::WaveSampleSet set)
 }
 
 void
-TimeWindow::onTriggerSampler(void)
+TimeWindow::onTriggerSampler()
 {
   if (!ui->realWaveform->isComplete())
     return;
@@ -1806,7 +1814,7 @@ TimeWindow::onTriggerSampler(void)
 }
 
 void
-TimeWindow::onResample(void)
+TimeWindow::onResample()
 {
   if (m_samplerDialog->isVisible()) {
     m_samplerDialog->reset();
@@ -1835,7 +1843,7 @@ TimeWindow::fineTuneSenderIs(const QPushButton *button) const
 }
 
 void
-TimeWindow::onFineTuneSelectionClicked(void)
+TimeWindow::onFineTuneSelectionClicked()
 {
   qint64 newSelStart =
       static_cast<qint64>(ui->realWaveform->getHorizontalSelectionStart());
@@ -1876,13 +1884,13 @@ TimeWindow::onFineTuneSelectionClicked(void)
 }
 
 void
-TimeWindow::onClkSourceButtonClicked(void)
+TimeWindow::onClkSourceButtonClicked()
 {
   refreshUi();
 }
 
 void
-TimeWindow::onCalculateDoppler(void)
+TimeWindow::onCalculateDoppler()
 {
   if (!ui->realWaveform->isComplete())
     return;
@@ -1912,7 +1920,7 @@ TimeWindow::onCalculateDoppler(void)
 }
 
 void
-TimeWindow::onCostasRecovery(void)
+TimeWindow::onCostasRecovery()
 {
   if (!ui->realWaveform->isComplete())
     return;
@@ -1970,7 +1978,7 @@ TimeWindow::onCostasRecovery(void)
 }
 
 void
-TimeWindow::onPLLRecovery(void)
+TimeWindow::onPLLRecovery()
 {
   if (!ui->realWaveform->isComplete())
     return;
@@ -2002,7 +2010,7 @@ TimeWindow::onPLLRecovery(void)
 }
 
 void
-TimeWindow::onCycloAnalysis(void)
+TimeWindow::onCycloAnalysis()
 {
   if (!ui->realWaveform->isComplete())
     return;
@@ -2031,7 +2039,7 @@ TimeWindow::onCycloAnalysis(void)
 }
 
 void
-TimeWindow::onQuadDemod(void)
+TimeWindow::onQuadDemod()
 {
   if (!ui->realWaveform->isComplete())
     return;
@@ -2060,7 +2068,7 @@ TimeWindow::onQuadDemod(void)
 }
 
 void
-TimeWindow::onAGC(void)
+TimeWindow::onAGC()
 {
   if (!ui->realWaveform->isComplete())
     return;
@@ -2105,7 +2113,7 @@ TimeWindow::onAGC(void)
 }
 
 void
-TimeWindow::onLPF(void)
+TimeWindow::onLPF()
 {
   if (!ui->realWaveform->isComplete())
     return;
@@ -2140,7 +2148,7 @@ TimeWindow::onLPF(void)
 }
 
 void
-TimeWindow::onDelayedConjugate(void)
+TimeWindow::onDelayedConjugate()
 {
   if (!ui->realWaveform->isComplete())
     return;
@@ -2186,7 +2194,7 @@ TimeWindow::onDelayedConjugate(void)
 }
 
 void
-TimeWindow::onAGCRateChanged(void)
+TimeWindow::onAGCRateChanged()
 {
   SUFLOAT absRate = ui->agcRateSpin->value();
   SUFLOAT rate = SU_ABS2NORM_BAUD(m_fs, absRate);
@@ -2204,7 +2212,7 @@ TimeWindow::onAGCRateChanged(void)
 }
 
 void
-TimeWindow::onDelayedConjChanged(void)
+TimeWindow::onDelayedConjChanged()
 {
   SUFLOAT absRate = ui->dcmRateSpin->value();
   SUFLOAT rate = SU_ABS2NORM_BAUD(m_fs, absRate);
@@ -2222,14 +2230,14 @@ TimeWindow::onDelayedConjChanged(void)
 }
 
 void
-TimeWindow::onWaveViewChanged(void)
+TimeWindow::onWaveViewChanged()
 {
   refreshMeasures();
   onFit();
 }
 
 void
-TimeWindow::onZeroCrossingComponentChanged(void)
+TimeWindow::onZeroCrossingComponentChanged()
 {
   qreal min = -1, max = 1;
   int digits;
@@ -2262,7 +2270,7 @@ TimeWindow::onZeroCrossingComponentChanged(void)
 }
 
 void
-TimeWindow::onZeroPointChanged(void)
+TimeWindow::onZeroPointChanged()
 {
   QList<WaveVCursor> vCursors, vEmpty;
   QList<WaveACursor> aCursors, aEmpty;

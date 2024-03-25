@@ -74,14 +74,14 @@ namespace SigDigger {
 
     Suscan::CancellableController m_taskController;
 
-    int getPeriodicDivision(void) const;
+    int getPeriodicDivision() const;
 
-    void connectFineTuneSelWidgets(void);
-    void connectTransformWidgets(void);
-    void connectAll(void);
+    void connectFineTuneSelWidgets();
+    void connectTransformWidgets();
+    void connectAll();
 
-    void refreshMeasures(void);
-    void refreshUi(void);
+    void refreshMeasures();
+    void refreshUi();
 
     void notifyTaskRunning(bool);
 
@@ -102,14 +102,14 @@ namespace SigDigger {
         bool selection);
 
     void populateSamplingProperties(SamplingProperties &prop);
-    void startSampling(void);
+    void startSampling();
 
     void setDisplayData(
         const SUCOMPLEX *displayData,
         size_t           displayLen,
         bool keepView = false);
-    const SUCOMPLEX *getDisplayData(void) const;
-    size_t getDisplayDataLength(void) const;
+    const SUCOMPLEX *getDisplayData() const;
+    size_t getDisplayDataLength() const;
 
     static void adjustButtonToSize(
             QPushButton *button,
@@ -142,9 +142,9 @@ namespace SigDigger {
 
     void postLoadInit();
 
-    std::string getPalette(void) const;
-    unsigned int getPaletteOffset(void) const;
-    int getPaletteContrast(void) const;
+    std::string getPalette() const;
+    unsigned int getPaletteOffset() const;
+    int getPaletteContrast() const;
 
     void showEvent(QShowEvent *event) override;
 
@@ -161,63 +161,63 @@ namespace SigDigger {
 
     void onHoverTime(qreal);
 
-    void onTogglePeriodicSelection(void);
-    void onPeriodicDivisionsChanged(void);
+    void onTogglePeriodicSelection();
+    void onPeriodicDivisionsChanged();
 
-    void onSaveAll(void);
-    void onSaveSelection(void);
-    void onFit(void);
-    void onToggleAutoFit(void);
-    void onZoomToSelection(void);
-    void onZoomReset(void);
-    void onShowWaveform(void);
-    void onShowEnvelope(void);
-    void onShowPhase(void);
-    void onPhaseDerivative(void);
+    void onSaveAll();
+    void onSaveSelection();
+    void onFit();
+    void onToggleAutoFit();
+    void onZoomToSelection();
+    void onZoomReset();
+    void onShowWaveform();
+    void onShowEnvelope();
+    void onShowPhase();
+    void onPhaseDerivative();
     void onPaletteChanged(int);
     void onChangePaletteOffset(int);
     void onChangePaletteContrast(int);
 
-    void onAbort(void);
+    void onAbort();
 
-    void onTaskCancelling(void);
+    void onTaskCancelling();
     void onTaskProgress(qreal, QString);
-    void onTaskDone(void);
-    void onTaskCancelled(void);
+    void onTaskDone();
+    void onTaskCancelled();
     void onTaskError(QString);
 
-    void onGuessCarrier(void);
-    void onSyncCarrier(void);
-    void onResetCarrier(void);
+    void onGuessCarrier();
+    void onSyncCarrier();
+    void onResetCarrier();
 
-    void onTriggerHistogram(void);
-    void onHistogramBlanked(void);
+    void onTriggerHistogram();
+    void onHistogramBlanked();
     void onHistogramSamples(const float *data, unsigned int len);
 
-    void onTriggerSampler(void);
-    void onResample(void);
+    void onTriggerSampler();
+    void onResample();
     void onSampleSet(SigDigger::WaveSampleSet);
 
-    void onCarrierSlidersChanged(void);
+    void onCarrierSlidersChanged();
 
-    void onFineTuneSelectionClicked(void);
-    void onClkSourceButtonClicked(void);
-    void onCalculateDoppler(void);
+    void onFineTuneSelectionClicked();
+    void onClkSourceButtonClicked();
+    void onCalculateDoppler();
 
-    void onCostasRecovery(void);
-    void onPLLRecovery(void);
-    void onCycloAnalysis(void);
-    void onQuadDemod(void);
-    void onAGC(void);
-    void onLPF(void);
-    void onDelayedConjugate(void);
+    void onCostasRecovery();
+    void onPLLRecovery();
+    void onCycloAnalysis();
+    void onQuadDemod();
+    void onAGC();
+    void onLPF();
+    void onDelayedConjugate();
 
-    void onAGCRateChanged(void);
-    void onDelayedConjChanged(void);
+    void onAGCRateChanged();
+    void onDelayedConjChanged();
 
-    void onWaveViewChanged(void);
-    void onZeroCrossingComponentChanged(void);
-    void onZeroPointChanged(void);
+    void onWaveViewChanged();
+    void onZeroCrossingComponentChanged();
+    void onZeroPointChanged();
   };
 }
 
