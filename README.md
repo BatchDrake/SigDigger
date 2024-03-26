@@ -3,6 +3,34 @@ SigDigger is a free digital signal analyzer for GNU/Linux and macOS, designed to
 
 ![](Screenshots/0.2.0.png) 
 
+## NOTES FOR FIRST USERS
+You may want to start by giving a look to the [**User's Manual**](https://github.com/BatchDrake/SigDigger/blob/master/doc/SigDigger_User_Manual.pdf)
+
+This is the `master` branch (which contains the latest stable release) and it is usually **very old**. If you want to test **the latest changes in SigDigger**, please consider:
+
+* Downloading the latest [**development build**](https://github.com/BatchDrake/SigDigger/releases/tag/latest) as a self-contained AppImage file (GNU/Linux only)
+* Requesting a custom `.dmg` (macOS users only, I have to create these on demand because I currently do not own any Apple machine and little tweaks need to be done from version to version)
+* Building from sources and install system-wide (Unix in general):
+    ```
+    % git clone --recursive -b master https://github.com/BatchDrake/sigutils
+    % cd sigutils && mkdir -p build && cd build && cmake .. && make && sudo make install && cd ../..
+    % git clone --recursive -b develop https://github.com/BatchDrake/suscan
+    % cd suscan && mkdir -p build && cd build && cmake .. && make && sudo make install && cd ../..
+    % git clone -b develop https://github.com/BatchDrake/SuWidgets
+    % cd SuWidgets && qmake6 SuWidgetsLib.pro && make && sudo make install && cd ..
+    % git clone -b develop https://github.com/BatchDrake/SigDigger
+    % cd SigDigger && qmake6 SigDigger.pro && make && sudo make install && cd ..
+    ```
+* Let the [blsd](https://actinid.org/blsd) script handle all those details for you (GNU/Linux). This script will build SigDigger inside a directory under the current working directory (nothing gets installed system-wide). This directory can be placed anywhere you like, and contains a script that launches SigDigger.
+    ```
+    % wget https://actinid.org/blsd
+    % chmod a+x blsd
+    % ./blsd
+    ```
+    * **Bonus:** you can pass arguments to `blsd` to specify which plugins you want to be downloaded and bundled with SigDigger. The name of the plugins are just the names of the repositories in my GitHub account from which the code is pulled. I recommend the [AmateurDSN plugin](https://github.com/BatchDrake/AmateurDSN) because of its versatility, but you may also want to take a look to [APTPlugin](https://github.com/BatchDrake/APTPlugin), [AntSDRPlugin](https://github.com/BatchDrake/AntSDRPlugin) and [ZeroMQPlugin](https://github.com/BatchDrake/ZeroMQPlugin).
+
+* **Windows users:** sorry, Windows is a mess, I do not own Windows machines either and it is currently impossible to ensure Windows builds that include all the DLL dependencies in a reproducible way. You can try to build it from source on your own, although in this case I recommend to follow the steps in the [**User's Manual**](https://github.com/BatchDrake/SigDigger/blob/master/doc/SigDigger_User_Manual.pdf)
+  
 ## Wait, why does it look like Gqrx?
 Because I'm a terrible person. Also, because after dealing with a lot of software of the sort, I realized that Gqrx had the best UI of them all: minimalistic yet operative. Earlier versions of the UI were somewhat different, but after a lot of debugging I came to the conclusion that it would be better off if I just tried to mimic existing (and successful) software, reducing the learning curve to the new feature set.
 
