@@ -303,6 +303,8 @@ namespace Suscan {
     void setFrequency(SUFREQ freq);
     void setGain(std::string const &name, SUFLOAT val);
     void seek(struct timeval const &tv);
+    void setHistorySize(SUSCOUNT);
+    void replay(bool);
     void setSweepStrategy(SweepStrategy);
     void setSpectrumPartitioning(SpectrumPartitioning);
     void setAntenna(std::string const &name);

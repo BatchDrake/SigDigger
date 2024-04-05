@@ -155,6 +155,19 @@ Analyzer::seek(struct timeval const &tv)
 }
 
 void
+Analyzer::setHistorySize(SUSCOUNT size)
+{
+  SU_ATTEMPT(suscan_analyzer_set_history_size(this->instance, size));
+}
+
+void
+Analyzer::replay(bool replay)
+{
+  SU_ATTEMPT(suscan_analyzer_replay(this->instance, replay));
+}
+
+
+void
 Analyzer::setAntenna(std::string const &name)
 {
   SU_ATTEMPT(suscan_analyzer_set_antenna(this->instance, name.c_str()));
