@@ -543,6 +543,7 @@ SourceWidget::refreshUi()
   bool replayEnabled = m_panelConfig->allocHistory;
   bool canReplay = replayEnabled;
   bool haveAGC = m_currAutoGainSet != nullptr;
+  bool seekable = false;
 
   if (m_profile != nullptr) {
     bool isRemote = m_profile->isRemote();
@@ -552,7 +553,14 @@ SourceWidget::refreshUi()
     m_ui->bwSpin->setEnabled(m_profile->isRealTime());
     m_ui->ppmSpinBox->setEnabled(m_profile->isRealTime() || isRemote);
     m_saverUI->setEnabled(!isRemote);
+
+    seekable = m_profile->isSeekable();
   }
+
+  if (m_haveSourceInfo)
+    seekable = m_sourceInfo.isSeekable();
+
+  m_ui->replayWidget->setVisible(!seekable);
 
   // These depend on the source info only
   m_ui->dcRemoveCheck->setEnabled(
@@ -591,16 +599,18 @@ SourceWidget::refreshUi()
     canReplay = false;
   }
 
+  if (!canReplay) {
+    m_ui->replayTimeProgress->setValue(0);
+    m_ui->replayTimeProgress->setFormat("Idle");
+    m_ui->replayTimeProgress->setEnabled(false);
+  } else {
+    m_ui->replayTimeProgress->setEnabled(true);
+    m_ui->replayTimeProgress->setMaximum(m_sourceInfo.historyLength() >> 10);
+  }
 
   // History
   m_ui->allocHistoryCheck->setEnabled(
         m_analyzer == nullptr || !m_sourceInfo.isSeekable());
-  m_ui->replayTimeProgress->setEnabled(m_haveSourceInfo && m_sourceInfo.replayMode());
-
-  if (!m_sourceInfo.replayMode()) {
-    m_ui->replayTimeProgress->setValue(0);
-    m_ui->replayTimeProgress->setFormat("Idle");
-  }
 
   QString color = m_sourceInfo.replayMode() ? "#7f0000" : "#16448c";
 
@@ -1184,6 +1194,15 @@ SourceWidget::onPSDMessage(Suscan::PSDMessage const &msg)
 {
   setSampleRate(msg.getSampleRate());
   setProcessRate(msg.getMeasuredSampleRate());
+
+  if (m_ui->replayTimeProgress->isEnabled()) {
+    auto size = msg.getHistorySize();
+    QString text = SuWidgetsHelpers::formatQuantityFromDelta(
+          size / SU_ASFLOAT(msg.getSampleRate()),
+          1);
+    m_ui->replayTimeProgress->setFormat(text);
+    m_ui->replayTimeProgress->setValue(size >> 10);
+  }
 }
 
 void

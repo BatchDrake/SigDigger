@@ -30,14 +30,15 @@ namespace Suscan {
     struct suscan_analyzer_psd_msg *message = nullptr; // Convenience reference
 
   public:
-    SUSCOUNT size(void) const;
-    SUFREQ getFrequency(void) const;
-    unsigned int getSampleRate(void) const;
-    unsigned int getMeasuredSampleRate(void) const;
-    bool hasLooped(void) const;
-    struct timeval getTimeStamp(void) const;
-    struct timeval getRealTimeStamp(void) const;
-    const SUFLOAT *get(void) const;
+    SUSCOUNT size() const;
+    SUFREQ getFrequency() const;
+    unsigned int getSampleRate() const;
+    unsigned int getMeasuredSampleRate() const;
+    bool hasLooped() const;
+    struct timeval getTimeStamp() const;
+    struct timeval getRealTimeStamp() const;
+    const SUFLOAT *get() const;
+    SUSCOUNT getHistorySize() const;
 
     PSDMessage();
     PSDMessage(struct suscan_analyzer_psd_msg *msg);
