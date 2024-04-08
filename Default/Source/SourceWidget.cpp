@@ -381,9 +381,9 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   if (info.getMeasuredSampleRate() > 0)
     setProcessRate(SCAST(unsigned, info.getMeasuredSampleRate()));
 
+  m_sourceInfo = Suscan::AnalyzerSourceInfo(info);
+
   if (!m_haveSourceInfo) {
-    m_sourceInfo = Suscan::AnalyzerSourceInfo(info);
-    m_haveSourceInfo = true;
 
     // First source info! Set delayed analyzer options (this ones are
     // not bound to an analyzer)
@@ -401,6 +401,8 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
     setIQReverse(info.getIQReverse());
     setAGCEnabled(info.getAGC());
   }
+
+  m_haveSourceInfo = true;
 
   BLOCKSIG(m_ui->replayButton, setChecked(info.replayMode()));
 
@@ -600,9 +602,11 @@ SourceWidget::refreshUi()
     m_ui->replayTimeProgress->setFormat("Idle");
   }
 
+  QString color = m_sourceInfo.replayMode() ? "#7f0000" : "#16448c";
+
   m_ui->replayButton->setEnabled(canReplay);
   m_ui->replayButton->setStyleSheet(
-        canReplay ? "color: white;\nbackground-color: #16448c;" : "");
+        canReplay ? "color: white;\nbackground-color: " + color + ";" : "");
   m_ui->autoGainCombo->setEnabled(gainPresetEnabled);
   m_ui->autoGainSlider->setEnabled(gainPresetEnabled);
 }

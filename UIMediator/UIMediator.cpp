@@ -845,7 +845,7 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   m_ui->spectrum->setLocked(
         !info.testPermission(SUSCAN_ANALYZER_PERM_SET_FREQ));
 
-  if (info.isSeekable()) {
+  if (info.testPermission(SUSCAN_ANALYZER_PERM_SEEK)) {
     setSourceTimeStart(info.getSourceStartTime());
     setSourceTimeEnd(info.getSourceEndTime());
   }
