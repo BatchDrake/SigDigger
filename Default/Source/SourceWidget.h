@@ -73,33 +73,32 @@ namespace SigDigger {
     Q_OBJECT
 
     // Convenience pointer
-    SourceWidgetConfig *panelConfig = nullptr;
+    SourceWidgetConfig *m_panelConfig = nullptr;
 
     // Managed objects
-    Suscan::Source::Config *profile = nullptr;
+    Suscan::Source::Config    *m_profile = nullptr;
     Suscan::AnalyzerSourceInfo m_sourceInfo =
         Suscan::AnalyzerSourceInfo();
 
     // UI objects
-    int m_state;
-    Suscan::Analyzer *m_analyzer = nullptr; // Borrowed
-    bool m_haveSourceInfo = false;
-    Ui::SourcePanel *ui = nullptr;
-    std::vector<DeviceGain *> gainControls;
-    DataSaverUI *saverUI = nullptr;
+    int                       m_state;
+    Suscan::Analyzer         *m_analyzer = nullptr; // Borrowed
+    bool                      m_haveSourceInfo = false;
+    Ui::SourcePanel          *m_ui = nullptr;
+    std::vector<DeviceGain *> m_gainControls;
+    DataSaverUI              *m_saverUI = nullptr;
 
     // UI State
-    unsigned int rate = 0;
-    unsigned int processRate = 0;
-    bool haveSourceInfo = false;
-    std::map<std::string, std::vector<AutoGain>> autoGains;
-    bool throttleable = false;
-    std::vector<AutoGain> *currAutoGainSet = nullptr;
-    AutoGain *currentAutoGain = nullptr;
+    unsigned int              m_rate = 0;
+    unsigned int              m_processRate = 0;
+    std::map<std::string, std::vector<AutoGain>> m_autoGains;
+    bool                      m_throttleable = false;
+    std::vector<AutoGain>    *m_currAutoGainSet = nullptr;
+    AutoGain                 *m_currentAutoGain = nullptr;
 
     // Data saving state
-    bool m_filterInstalled = false;
-    FileDataSaver *m_dataSaver = nullptr;
+    bool                      m_filterInstalled = false;
+    FileDataSaver            *m_dataSaver = nullptr;
 
     // Private methods
     DeviceGain *lookupGain(std::string const &name);

@@ -30,8 +30,8 @@
 using namespace SigDigger;
 
 #define STRINGFY(x) #x
-#define STORE(field) obj.set(STRINGFY(field), this->field)
-#define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
+#define STORE(field) obj.set(STRINGFY(field), field)
+#define LOAD(field) field = conf.get(STRINGFY(field), field)
 
 ///////////////////////////////// Autogain config //////////////////////////////
 void
@@ -54,14 +54,14 @@ GainPresetSetting::serialize(void)
   STORE(name);
   STORE(value);
 
-  return this->persist(obj);
+  return persist(obj);
 }
 /////////////////////////////// Source widget config ////////////////////////////
 
 void
 SourceWidgetConfig::deserialize(Suscan::Object const &conf)
 {
-  this->agcSettings.clear();
+  agcSettings.clear();
 
   LOAD(collapsed);
   LOAD(throttle);
@@ -73,7 +73,7 @@ SourceWidgetConfig::deserialize(Suscan::Object const &conf)
 
   try {
     Suscan::Object field = conf.getField("dataSaverConfig");
-    this->dataSaverConfig->deserialize(field);
+    dataSaverConfig->deserialize(field);
   } catch (Suscan::Exception const &) {
 
   }
@@ -89,7 +89,7 @@ SourceWidgetConfig::deserialize(Suscan::Object const &conf)
             GainPresetSetting agcSetting;
 
             agcSetting.deserialize(field);
-            this->agcSettings[agcSetting.driver] = agcSetting;
+            agcSettings[agcSetting.driver] = agcSetting;
           } catch (Suscan::Exception const &) { }
         }
       }
@@ -119,21 +119,21 @@ SourceWidgetConfig::serialize(void)
 
   obj.setField("dataSaverConfig", dataSaverConfig);
 
-  for (auto p : this->agcSettings) {
+  for (auto p : agcSettings) {
     Suscan::Object serialized = p.second.serialize();
     list.append(serialized);
   }
 
   obj.setField("savedPresets", list);
 
-  return this->persist(obj);
+  return persist(obj);
 }
 
 
 SourceWidgetConfig::~SourceWidgetConfig()
 {
-  if (this->dataSaverConfig != nullptr)
-    delete this->dataSaverConfig;
+  if (dataSaverConfig != nullptr)
+    delete dataSaverConfig;
 }
 
 SourceWidget::SourceWidget(
@@ -141,24 +141,24 @@ SourceWidget::SourceWidget(
     UIMediator *mediator,
     QWidget *parent) :
   ToolWidget(factory, mediator, parent),
-  ui(new Ui::SourcePanel)
+  m_ui(new Ui::SourcePanel)
 {
-  ui->setupUi(this);
+  m_ui->setupUi(this);
 
-  this->saverUI = new DataSaverUI(this);
-  this->ui->dataSaverGrid->addWidget(this->saverUI);
-  this->ui->throttleSpin->setUnits("sps");
-  this->ui->throttleSpin->setMinimum(0);
+  m_saverUI = new DataSaverUI(this);
+  m_ui->dataSaverGrid->addWidget(m_saverUI);
+  m_ui->throttleSpin->setUnits("sps");
+  m_ui->throttleSpin->setMinimum(0);
 
-  this->assertConfig();
-  this->connectAll();
+  assertConfig();
+  connectAll();
 
-  this->setProperty("collapsed", this->panelConfig->collapsed);
+  setProperty("collapsed", m_panelConfig->collapsed);
 }
 
 SourceWidget::~SourceWidget()
 {
-  delete ui;
+  delete m_ui;
 }
 
 // Private methods
@@ -166,73 +166,73 @@ void
 SourceWidget::connectAll(void)
 {
   connect(
-        this->ui->throttleCheck,
+        m_ui->throttleCheck,
         SIGNAL(stateChanged(int)),
         this,
         SLOT(onThrottleChanged(void)));
 
   connect(
-        this->ui->throttleSpin,
+        m_ui->throttleSpin,
         SIGNAL(valueChanged(qreal)),
         this,
         SLOT(onThrottleChanged(void)));
 
   connect(
-        this->saverUI,
+        m_saverUI,
         SIGNAL(recordStateChanged(bool)),
         this,
         SLOT(onRecordStartStop()));
 
   connect(
-        this->ui->autoGainCombo,
+        m_ui->autoGainCombo,
         SIGNAL(activated(int)),
         this,
         SLOT(onSelectAutoGain(void)));
 
   connect(
-        this->ui->autoGainSlider,
+        m_ui->autoGainSlider,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onChangeAutoGain(void)));
 
   connect(
-        this->ui->gainPresetCheck,
+        m_ui->gainPresetCheck,
         SIGNAL(stateChanged(int)),
         this,
         SLOT(onToggleAutoGain(void)));
 
   connect(
-        this->ui->dcRemoveCheck,
+        m_ui->dcRemoveCheck,
         SIGNAL(stateChanged(int)),
         this,
         SLOT(onToggleDCRemove(void)));
 
   connect(
-        this->ui->swapIQCheck,
+        m_ui->swapIQCheck,
         SIGNAL(stateChanged(int)),
         this,
         SLOT(onToggleIQReverse(void)));
 
   connect(
-        this->ui->agcEnabledCheck,
+        m_ui->agcEnabledCheck,
         SIGNAL(stateChanged(int)),
         this,
         SLOT(onToggleAGCEnabled(void)));
 
   connect(
-        this->ui->antennaCombo,
+        m_ui->antennaCombo,
         SIGNAL(activated(int)),
         this,
         SLOT(onAntennaChanged(int)));
 
   connect(
-        this->ui->bwSpin,
+        m_ui->bwSpin,
         SIGNAL(valueChanged(qreal)),
         this,
         SLOT(onBandwidthChanged(void)));
 
   connect(
-        this->ui->ppmSpinBox,
+        m_ui->ppmSpinBox,
         SIGNAL(valueChanged(qreal)),
         this,
         SLOT(onPPMChanged(void)));
@@ -243,8 +243,8 @@ DeviceGain *
 SourceWidget::lookupGain(std::string const &name)
 {
   // Why is this? Use a map instead.
-  for (auto p = this->gainControls.begin();
-       p != this->gainControls.end();
+  for (auto p = m_gainControls.begin();
+       p != m_gainControls.end();
        ++p) {
     if ((*p)->getName() == name)
       return *p;
@@ -258,17 +258,17 @@ SourceWidget::clearGains(void)
 {
   int i, len;
 
-  len = static_cast<int>(this->gainControls.size());
+  len = static_cast<int>(m_gainControls.size());
 
   for (i = 0; i < len; ++i) {
-    QLayoutItem *item = this->ui->gainGridLayout->takeAt(i);
+    QLayoutItem *item = m_ui->gainGridLayout->takeAt(i);
     delete item;
 
     // This is what C++ is for.
-    this->gainControls[static_cast<unsigned long>(i)]->deleteLater();
+    m_gainControls[static_cast<unsigned long>(i)]->deleteLater();
   }
 
-  this->gainControls.clear();
+  m_gainControls.clear();
 }
 
 void
@@ -276,18 +276,18 @@ SourceWidget::refreshGains(Suscan::Source::Config &config)
 {
   Suscan::Source::Device const &dev = config.getDevice();
   DeviceGain *gain = nullptr;
-  bool presetEnabled = this->ui->gainPresetCheck->isChecked();
+  bool presetEnabled = m_ui->gainPresetCheck->isChecked();
 
-  this->clearGains();
+  clearGains();
 
   for (auto p = dev.getFirstGain();
        p != dev.getLastGain();
        ++p) {
     gain = new DeviceGain(nullptr, *p);
-    this->gainControls.push_back(gain);
-    this->ui->gainGridLayout->addWidget(
+    m_gainControls.push_back(gain);
+    m_ui->gainGridLayout->addWidget(
           gain,
-          static_cast<int>(this->gainControls.size() - 1),
+          static_cast<int>(m_gainControls.size() - 1),
           0,
           1,
           1);
@@ -300,15 +300,15 @@ SourceWidget::refreshGains(Suscan::Source::Config &config)
     gain->setGain(config.getGain(p->getName()));
   }
 
-  if (this->gainControls.size() == 0 || !config.isRealTime())
-    this->ui->gainsFrame->hide();
+  if (m_gainControls.size() == 0 || !config.isRealTime())
+    m_ui->gainsFrame->hide();
   else
-    this->ui->gainsFrame->show();
+    m_ui->gainsFrame->show();
 
   if (presetEnabled)
-    this->refreshCurrentAutoGain(dev.getDriver());
+    refreshCurrentAutoGain(dev.getDriver());
   else
-    this->ui->gainsFrame->setEnabled(true);
+    m_ui->gainsFrame->setEnabled(true);
 }
 
 bool
@@ -321,11 +321,11 @@ SourceWidget::tryApplyGains(
 
   info.getGainInfo(gains);
 
-  if (gains.size() != this->gainControls.size())
+  if (gains.size() != m_gainControls.size())
     return false;
 
   for (i = 0; i < gains.size(); ++i) {
-    if ((gain = this->lookupGain(gains[i].getName())) == nullptr)
+    if ((gain = lookupGain(gains[i].getName())) == nullptr)
       return false;
 
     gain->setGain(gains[i].getDefault());
@@ -341,7 +341,7 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   DeviceGain *gain = nullptr;
   bool oldBlocking;
 
-  oldBlocking = this->setBlockingSignals(true);
+  oldBlocking = setBlockingSignals(true);
 
   // There are 5 source settings that are overriden by the UI configuration
   //
@@ -354,54 +354,54 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
   // These settings are set once the first source info is received, and
   // refresh the UI in subsequent receptions.
 
-  this->setSampleRate(SCAST(unsigned, info.getSampleRate()));
+  setSampleRate(SCAST(unsigned, info.getSampleRate()));
 
   if (info.getMeasuredSampleRate() > 0)
-    this->setProcessRate(SCAST(unsigned, info.getMeasuredSampleRate()));
+    setProcessRate(SCAST(unsigned, info.getMeasuredSampleRate()));
 
-  if (!this->haveSourceInfo) {
+  if (!m_haveSourceInfo) {
     m_sourceInfo = Suscan::AnalyzerSourceInfo(info);
-    this->haveSourceInfo = true;
+    m_haveSourceInfo = true;
 
     // First source info! Set delayed analyzer options (this ones are
     // not bound to an analyzer)
 
-    this->setDelayedAnalyzerOptions();
+    setDelayedAnalyzerOptions();
   } else {
     bool throttleEnabled = !sufeq(
           info.getEffectiveSampleRate(),
           info.getSampleRate(),
           0); // Integer quantities
 
-    this->ui->throttleCheck->setChecked(throttleEnabled);
+    m_ui->throttleCheck->setChecked(throttleEnabled);
 
-    this->setDCRemove(info.getDCRemove());
-    this->setIQReverse(info.getIQReverse());
-    this->setAGCEnabled(info.getAGC());
+    setDCRemove(info.getDCRemove());
+    setIQReverse(info.getIQReverse());
+    setAGCEnabled(info.getAGC());
   }
 
 
-  this->setBandwidth(info.getBandwidth());
-  this->setPPM(info.getPPM());
+  setBandwidth(info.getBandwidth());
+  setPPM(info.getPPM());
 
   // Populate antennas
-  this->populateAntennaCombo(info);
+  populateAntennaCombo(info);
 
   // What if SoapySDR lies? We consider the case in which the antenna is
   // not reported in the antenna list
-  this->selectAntenna(info.getAntenna());
+  selectAntenna(info.getAntenna());
 
-  if (!this->tryApplyGains(info)) {
+  if (!tryApplyGains(info)) {
     // Recreate gains
-    this->clearGains();
+    clearGains();
 
     info.getGainInfo(gains);
     for (auto p: gains) {
       gain = new DeviceGain(nullptr, p);
-      this->gainControls.push_back(gain);
-      this->ui->gainGridLayout->addWidget(
+      m_gainControls.push_back(gain);
+      m_ui->gainGridLayout->addWidget(
             gain,
-            static_cast<int>(this->gainControls.size() - 1),
+            static_cast<int>(m_gainControls.size() - 1),
             0,
             1,
             1);
@@ -415,39 +415,39 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
     }
   }
 
-  if (this->gainControls.size() == 0)
-    this->ui->gainsFrame->hide();
+  if (m_gainControls.size() == 0)
+    m_ui->gainsFrame->hide();
   else
-    this->ui->gainsFrame->show();
+    m_ui->gainsFrame->show();
 
   // Everything is set, time to decide what is enabled and what is not
-  this->refreshUi();
+  refreshUi();
 
-  this->setBlockingSignals(oldBlocking);
+  setBlockingSignals(oldBlocking);
 }
 
 void
 SourceWidget::applyCurrentAutogain(void)
 {
-  if (this->currentAutoGain != nullptr
-      && this->ui->gainPresetCheck->isChecked()) {
+  if (m_currentAutoGain != nullptr
+      && m_ui->gainPresetCheck->isChecked()) {
     GainPresetSetting agc;
-    agc.driver = this->currentAutoGain->getDriver();
-    agc.name   = this->currentAutoGain->getName();
-    agc.value  = this->ui->autoGainSlider->value();
+    agc.driver = m_currentAutoGain->getDriver();
+    agc.name   = m_currentAutoGain->getName();
+    agc.value  = m_ui->autoGainSlider->value();
 
-    this->panelConfig->agcSettings[agc.driver] = agc;
+    m_panelConfig->agcSettings[agc.driver] = agc;
 
     std::vector<GainConfig> cfg =
-        this->currentAutoGain->translateGain(agc.value);
+        m_currentAutoGain->translateGain(agc.value);
 
     for (auto p = cfg.begin();
          p != cfg.end();
          ++p) {
-      DeviceGain *gain = this->lookupGain(p->name);
+      DeviceGain *gain = lookupGain(p->name);
       if (gain != nullptr) {
         gain->setGain(static_cast<float>(p->value));
-        this->onGainChanged(
+        onGainChanged(
               QString::fromStdString(p->name),
               static_cast<float>(p->value));
       }
@@ -458,18 +458,18 @@ SourceWidget::applyCurrentAutogain(void)
 void
 SourceWidget::applyCurrentProfileGains()
 {
-  if (this->profile != nullptr) {
-    Suscan::Source::Device const &dev = this->profile->getDevice();
+  if (m_profile != nullptr) {
+    Suscan::Source::Device const &dev = m_profile->getDevice();
     for (auto p = dev.getFirstGain();
          p != dev.getLastGain();
          ++p) {
       auto name = p->getName();
-      auto value = this->profile->getGain(name);
+      auto value = m_profile->getGain(name);
 
-      DeviceGain *gain = this->lookupGain(name);
+      DeviceGain *gain = lookupGain(name);
       if (gain != nullptr) {
-        gain->setGain(static_cast<float>(this->profile->getGain(name)));
-        this->onGainChanged(
+        gain->setGain(static_cast<float>(m_profile->getGain(name)));
+        onGainChanged(
               QString::fromStdString(name),
               static_cast<float>(value));
       }
@@ -482,83 +482,83 @@ SourceWidget::refreshCurrentAutoGain(std::string const &driver)
 {
   bool enableGains = true;
 
-  if (this->panelConfig->agcSettings.find(driver) !=
-      this->panelConfig->agcSettings.end()) {
-    GainPresetSetting setting = this->panelConfig->agcSettings[driver];
+  if (m_panelConfig->agcSettings.find(driver) !=
+      m_panelConfig->agcSettings.end()) {
+    GainPresetSetting setting = m_panelConfig->agcSettings[driver];
 
-    if (this->selectAutoGain(setting.name)) {
-      this->ui->autoGainSlider->setValue(setting.value);
+    if (selectAutoGain(setting.name)) {
+      m_ui->autoGainSlider->setValue(setting.value);
       enableGains = false;
     } else {
-      this->selectAutoGain(0);
+      selectAutoGain(0);
     }
   } else {
-    this->selectAutoGain(0);
+    selectAutoGain(0);
   }
 
-  this->ui->gainsFrame->setEnabled(enableGains);
+  m_ui->gainsFrame->setEnabled(enableGains);
 }
 
 void
 SourceWidget::setBandwidth(float bw)
 {
-  this->ui->bwSpin->setValue(static_cast<qreal>(bw));
+  m_ui->bwSpin->setValue(static_cast<qreal>(bw));
 }
 
 void
 SourceWidget::setPPM(float ppm)
 {
-  this->ui->ppmSpinBox->setValue(static_cast<qreal>(ppm));
+  m_ui->ppmSpinBox->setValue(static_cast<qreal>(ppm));
 }
 
 void
 SourceWidget::refreshUi()
 {
-  bool gainPresetEnabled = this->panelConfig->gainPresetEnabled;
-  bool haveAGC = this->currAutoGainSet != nullptr;
+  bool gainPresetEnabled = m_panelConfig->gainPresetEnabled;
+  bool haveAGC = m_currAutoGainSet != nullptr;
 
-  if (this->profile != nullptr) {
-    bool isRemote = this->profile->isRemote();
+  if (m_profile != nullptr) {
+    bool isRemote = m_profile->isRemote();
 
-    this->setThrottleable(!this->profile->isRealTime() || isRemote);
-    this->ui->antennaCombo->setEnabled(this->profile->isRealTime());
-    this->ui->bwSpin->setEnabled(this->profile->isRealTime());
-    this->ui->ppmSpinBox->setEnabled(this->profile->isRealTime() || isRemote);
-    this->saverUI->setEnabled(!isRemote);
+    setThrottleable(!m_profile->isRealTime() || isRemote);
+    m_ui->antennaCombo->setEnabled(m_profile->isRealTime());
+    m_ui->bwSpin->setEnabled(m_profile->isRealTime());
+    m_ui->ppmSpinBox->setEnabled(m_profile->isRealTime() || isRemote);
+    m_saverUI->setEnabled(!isRemote);
   }
 
   // These depend on the source info only
-  this->ui->dcRemoveCheck->setEnabled(
+  m_ui->dcRemoveCheck->setEnabled(
         m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE));
-  this->ui->swapIQCheck->setEnabled(
+  m_ui->swapIQCheck->setEnabled(
         m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE));
-  this->ui->agcEnabledCheck->setEnabled(
+  m_ui->agcEnabledCheck->setEnabled(
         m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_AGC));
 
   // These depend both the profile and source info
-  this->ui->bwSpin->setEnabled(
-        this->ui->bwSpin->isEnabled()
+  m_ui->bwSpin->setEnabled(
+        m_ui->bwSpin->isEnabled()
         && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_BW));
-  this->ui->ppmSpinBox->setEnabled(
-        this->ui->ppmSpinBox->isEnabled()
+  m_ui->ppmSpinBox->setEnabled(
+        m_ui->ppmSpinBox->isEnabled()
         && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_PPM));
-  this->ui->throttleCheck->setEnabled(
-        this->ui->throttleCheck->isEnabled()
+  m_ui->throttleCheck->setEnabled(
+        m_ui->throttleCheck->isEnabled()
         && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE));
-  this->ui->throttleSpin->setEnabled(
-        this->ui->throttleCheck->isChecked()
-        && this->ui->throttleCheck->isEnabled());
-  this->ui->antennaCombo->setEnabled(
-        this->ui->antennaCombo->isEnabled()
+  m_ui->throttleSpin->setEnabled(
+        m_ui->throttleCheck->isChecked()
+        && m_ui->throttleCheck->isEnabled());
+  m_ui->antennaCombo->setEnabled(
+        m_ui->antennaCombo->isEnabled()
         && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_ANTENNA));
-  this->ui->gainsFrame->setEnabled(
+  m_ui->gainsFrame->setEnabled(
         (!gainPresetEnabled || !haveAGC)
         && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
-  this->ui->autoGainFrame->setEnabled(
+  m_ui->autoGainFrame->setEnabled(
         m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
 
-  this->ui->autoGainCombo->setEnabled(gainPresetEnabled);
-  this->ui->autoGainSlider->setEnabled(gainPresetEnabled);
+  m_ui->autoGainCombo->setEnabled(gainPresetEnabled);
+  m_ui->autoGainSlider->setEnabled(gainPresetEnabled);
 }
 
 void
@@ -567,31 +567,31 @@ SourceWidget::selectAntenna(std::string const &name)
   int index;
   QString qNam = QString::fromStdString(name);
 
-  if ((index = this->ui->antennaCombo->findText(qNam)) == -1) {
-    index = this->ui->antennaCombo->count();
-    this->ui->antennaCombo->addItem(qNam);
+  if ((index = m_ui->antennaCombo->findText(qNam)) == -1) {
+    index = m_ui->antennaCombo->count();
+    m_ui->antennaCombo->addItem(qNam);
   }
 
-  this->ui->antennaCombo->setCurrentIndex(index);
+  m_ui->antennaCombo->setCurrentIndex(index);
 }
 
 void
 SourceWidget::setSampleRate(unsigned int rate)
 {
-  if (this->rate != rate) {
+  if (m_rate != rate) {
     float step;
-    this->rate = rate;
+    m_rate = rate;
     if (rate == 0) {
-      this->setProcessRate(0);
-      this->ui->sampleRateLabel->setText("N/A");
+      setProcessRate(0);
+      m_ui->sampleRateLabel->setText("N/A");
     } else {
-      this->ui->sampleRateLabel->setText(
+      m_ui->sampleRateLabel->setText(
             SuWidgetsHelpers::formatQuantity(rate, 4, "sp/s"));
     }
 
-    this->ui->bwSpin->setMaximum(this->rate);
+    m_ui->bwSpin->setMaximum(m_rate);
 
-    step = SU_POW(10., SU_FLOOR(SU_LOG(this->rate)));
+    step = SU_POW(10., SU_FLOOR(SU_LOG(m_rate)));
 
     if (step >= 10.f)
       step /= 10.f;
@@ -603,7 +603,7 @@ SourceWidget::populateAntennaCombo(Suscan::AnalyzerSourceInfo const &info)
 {
   int index = 0;
   int i = 0;
-  QComboBox *combo = this->ui->antennaCombo;
+  QComboBox *combo = m_ui->antennaCombo;
   std::vector<std::string> antennaList;
 
   combo->clear();
@@ -611,11 +611,11 @@ SourceWidget::populateAntennaCombo(Suscan::AnalyzerSourceInfo const &info)
   info.getAntennaList(antennaList);
 
   if (antennaList.empty()) {
-    this->ui->antennaCombo->hide();
-    this->ui->antennaLabel->hide();
+    m_ui->antennaCombo->hide();
+    m_ui->antennaLabel->hide();
   } else {
-    this->ui->antennaCombo->show();
-    this->ui->antennaLabel->show();
+    m_ui->antennaCombo->show();
+    m_ui->antennaLabel->show();
     for (auto p : antennaList) {
       combo->addItem(QString::fromStdString(p));
 
@@ -634,59 +634,59 @@ SourceWidget::setThrottleable(bool val)
 {
   val = val && m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE);
 
-  this->throttleable = val;
-  this->ui->throttleCheck->setEnabled(val);
+  m_throttleable = val;
+  m_ui->throttleCheck->setEnabled(val);
   if (!val)
-    this->ui->throttleCheck->setChecked(false);
+    m_ui->throttleCheck->setChecked(false);
 
-  this->ui->throttleSpin->setEnabled(
-        this->ui->throttleCheck->isChecked()
-        && this->ui->throttleCheck->isEnabled());
+  m_ui->throttleSpin->setEnabled(
+        m_ui->throttleCheck->isChecked()
+        && m_ui->throttleCheck->isEnabled());
 
-  this->ui->bwSpin->setEnabled(!val);
+  m_ui->bwSpin->setEnabled(!val);
 }
 
 unsigned int
 SourceWidget::getEffectiveRate(void) const
 {
-  return this->throttleable && this->panelConfig->throttle
-      ? this->panelConfig->throttleRate
-      : this->rate;
+  return m_throttleable && m_panelConfig->throttle
+      ? m_panelConfig->throttleRate
+      : m_rate;
 }
 
 void
 SourceWidget::setProcessRate(unsigned int rate)
 {
-  if (rate != this->processRate) {
+  if (rate != m_processRate) {
     SUFLOAT percentUsage = 1;
-    this->processRate = rate;
+    m_processRate = rate;
 
-    if (this->rate == 0 || this->processRate == 0) {
-      this->ui->processingRateLabel->setText("N/A");
-      this->ui->deliveryProgress->setEnabled(false);
+    if (m_rate == 0 || m_processRate == 0) {
+      m_ui->processingRateLabel->setText("N/A");
+      m_ui->deliveryProgress->setEnabled(false);
     } else {
-      this->ui->deliveryProgress->setEnabled(true);
-      this->ui->processingRateLabel->setText(
-            SuWidgetsHelpers::formatQuantity(this->processRate, 4, "sp/s"));
+      m_ui->deliveryProgress->setEnabled(true);
+      m_ui->processingRateLabel->setText(
+            SuWidgetsHelpers::formatQuantity(m_processRate, 4, "sp/s"));
       percentUsage =
-          static_cast<SUFLOAT>(this->processRate) /
-          static_cast<SUFLOAT>(this->getEffectiveRate());
+          static_cast<SUFLOAT>(m_processRate) /
+          static_cast<SUFLOAT>(getEffectiveRate());
     }
 
     if (percentUsage <= 1) {
-      this->ui->deliveryProgress->setValue(static_cast<int>(percentUsage * 100));
+      m_ui->deliveryProgress->setValue(static_cast<int>(percentUsage * 100));
     } else {
-      this->ui->deliveryProgress->setValue(100);
+      m_ui->deliveryProgress->setValue(100);
     }
 
     if (percentUsage >= SU_ADDSFX(.95))
-      this->ui->deliveryLabel->setPixmap(
+      m_ui->deliveryLabel->setPixmap(
           QPixmap(QString::fromUtf8(":/icons/transparent.png")));
     else if (percentUsage >= SU_ADDSFX(.85))
-      this->ui->deliveryLabel->setPixmap(
+      m_ui->deliveryLabel->setPixmap(
           QPixmap(QString::fromUtf8(":/icons/warning.png")));
     else
-      this->ui->deliveryLabel->setPixmap(
+      m_ui->deliveryLabel->setPixmap(
           QPixmap(QString::fromUtf8(":/icons/critical.png")));
   }
 }
@@ -697,84 +697,84 @@ SourceWidget::refreshAutoGains(Suscan::Source::Config &config)
   std::string driver = config.getDevice().getDriver();
   bool showFrame = false;
 
-  this->ui->autoGainCombo->clear();
+  m_ui->autoGainCombo->clear();
 
-  if (this->autoGains.find(driver) != this->autoGains.end()) {
-    this->currAutoGainSet = &this->autoGains[driver];
-    this->currentAutoGain = nullptr;
+  if (m_autoGains.find(driver) != m_autoGains.end()) {
+    m_currAutoGainSet = &m_autoGains[driver];
+    m_currentAutoGain = nullptr;
 
-    if (this->currAutoGainSet->size() > 0 && config.isRealTime()) {
-      for (auto p = this->currAutoGainSet->begin();
-           p != this->currAutoGainSet->end(); ++p)
-        this->ui->autoGainCombo->addItem(
+    if (m_currAutoGainSet->size() > 0 && config.isRealTime()) {
+      for (auto p = m_currAutoGainSet->begin();
+           p != m_currAutoGainSet->end(); ++p)
+        m_ui->autoGainCombo->addItem(
               QString::fromStdString(p->getName()));
 
-      if (this->ui->gainPresetCheck->isEnabled())
-        this->refreshCurrentAutoGain(driver);
+      if (m_ui->gainPresetCheck->isEnabled())
+        refreshCurrentAutoGain(driver);
 
       showFrame = true;
     }
   } else {
-    this->currAutoGainSet = nullptr;
-    this->currentAutoGain = nullptr;
+    m_currAutoGainSet = nullptr;
+    m_currentAutoGain = nullptr;
   }
 
-  this->ui->autoGainFrame->setVisible(showFrame);
+  m_ui->autoGainFrame->setVisible(showFrame);
 }
 
 void
 SourceWidget::setCaptureSize(quint64 size)
 {
-  this->saverUI->setCaptureSize(size);
+  m_saverUI->setCaptureSize(size);
 }
 
 void
 SourceWidget::setIORate(qreal rate)
 {
-  this->saverUI->setIORate(rate);
+  m_saverUI->setIORate(rate);
 }
 
 void
 SourceWidget::setRecordState(bool state)
 {
-  this->saverUI->setRecordState(state);
+  m_saverUI->setRecordState(state);
 }
 
 void
 SourceWidget::setDCRemove(bool remove)
 {
-  this->ui->dcRemoveCheck->setChecked(remove);
-  this->panelConfig->dcRemove = remove;
+  m_ui->dcRemoveCheck->setChecked(remove);
+  m_panelConfig->dcRemove = remove;
 }
 
 void
 SourceWidget::setAGCEnabled(bool enabled)
 {
-  this->ui->agcEnabledCheck->setChecked(enabled);
-  this->panelConfig->agcEnabled = enabled;
+  m_ui->agcEnabledCheck->setChecked(enabled);
+  m_panelConfig->agcEnabled = enabled;
 }
 
 void
 SourceWidget::setIQReverse(bool rev)
 {
-  this->ui->swapIQCheck->setChecked(rev);
-  this->panelConfig->iqRev = rev;
+  m_ui->swapIQCheck->setChecked(rev);
+  m_panelConfig->iqRev = rev;
 }
 
 void
 SourceWidget::setSavePath(std::string const &path)
 {
-  this->saverUI->setRecordSavePath(path);
+  m_saverUI->setRecordSavePath(path);
 }
 
 void
 SourceWidget::selectAutoGain(unsigned int gain)
 {
-  if (this->currAutoGainSet != nullptr
-      && gain < this->currAutoGainSet->size()) {
-    this->currentAutoGain = &(*this->currAutoGainSet)[gain];
-    this->ui->autoGainSlider->setMinimum(this->currentAutoGain->getMin());
-    this->ui->autoGainSlider->setMaximum(this->currentAutoGain->getMax());
+  if (m_currAutoGainSet != nullptr
+      && gain < m_currAutoGainSet->size()) {
+    m_currentAutoGain = &(*m_currAutoGainSet)[gain];
+    m_ui->autoGainSlider->setMinimum(m_currentAutoGain->getMin());
+    m_ui->autoGainSlider->setMaximum(m_currentAutoGain->getMax());
   }
 }
 
@@ -783,13 +783,13 @@ SourceWidget::selectAutoGain(std::string const &name)
 {
   int ndx;
 
-  ndx = this->ui->autoGainCombo->findText(QString::fromStdString(name));
+  ndx = m_ui->autoGainCombo->findText(QString::fromStdString(name));
 
   if (ndx == -1)
     return false;
 
-  this->ui->autoGainCombo->setCurrentIndex(ndx);
-  this->selectAutoGain(static_cast<unsigned int>(ndx));
+  m_ui->autoGainCombo->setCurrentIndex(ndx);
+  selectAutoGain(static_cast<unsigned int>(ndx));
 
   return true;
 }
@@ -803,7 +803,7 @@ SourceWidget::deserializeAutoGains(void)
        i != sus->getLastAutoGain();
        i++) {
     AutoGain ag(*i);
-    this->autoGains[ag.getDriver()].push_back(ag);
+    m_autoGains[ag.getDriver()].push_back(ag);
   }
 }
 
@@ -811,34 +811,34 @@ SourceWidget::deserializeAutoGains(void)
 Suscan::Serializable *
 SourceWidget::allocConfig()
 {
-  this->panelConfig = new SourceWidgetConfig();
-  this->panelConfig->dataSaverConfig = this->saverUI->allocConfig();
+  m_panelConfig = new SourceWidgetConfig();
+  m_panelConfig->dataSaverConfig = m_saverUI->allocConfig();
 
-  return this->panelConfig;
+  return m_panelConfig;
 }
 
 void
 SourceWidget::applyConfig()
 {
-  bool blocked = this->ui->throttleSpin->blockSignals(true);
-  this->ui->throttleSpin->setValue(static_cast<int>(this->panelConfig->throttleRate));
-  this->ui->throttleSpin->blockSignals(blocked);
+  bool blocked = m_ui->throttleSpin->blockSignals(true);
+  m_ui->throttleSpin->setValue(static_cast<int>(m_panelConfig->throttleRate));
+  m_ui->throttleSpin->blockSignals(blocked);
 
-  blocked = this->ui->throttleCheck->blockSignals(true);
-  this->ui->throttleCheck->setChecked(this->panelConfig->throttle);
-  this->onThrottleChanged();
-  this->ui->throttleCheck->blockSignals(blocked);
+  blocked = m_ui->throttleCheck->blockSignals(true);
+  m_ui->throttleCheck->setChecked(m_panelConfig->throttle);
+  onThrottleChanged();
+  m_ui->throttleCheck->blockSignals(blocked);
 
-  this->ui->dcRemoveCheck->setChecked(this->panelConfig->dcRemove);
-  this->ui->swapIQCheck->setChecked(this->panelConfig->iqRev);
-  this->ui->agcEnabledCheck->setChecked(this->panelConfig->agcEnabled);
-  this->ui->gainPresetCheck->setChecked(this->panelConfig->gainPresetEnabled);
+  m_ui->dcRemoveCheck->setChecked(m_panelConfig->dcRemove);
+  m_ui->swapIQCheck->setChecked(m_panelConfig->iqRev);
+  m_ui->agcEnabledCheck->setChecked(m_panelConfig->agcEnabled);
+  m_ui->gainPresetCheck->setChecked(m_panelConfig->gainPresetEnabled);
 
-  this->setProperty("collapsed", this->panelConfig->collapsed);
+  setProperty("collapsed", m_panelConfig->collapsed);
 
-  this->saverUI->applyConfig();
+  m_saverUI->applyConfig();
 
-  this->deserializeAutoGains();
+  deserializeAutoGains();
 }
 
 bool
@@ -849,7 +849,7 @@ SourceWidget::event(QEvent *event)
         static_cast<QDynamicPropertyChangeEvent*>(event);
     QString propName = propEvent->propertyName();
     if (propName == "collapsed")
-      this->panelConfig->collapsed = this->property("collapsed").value<bool>();
+      m_panelConfig->collapsed = property("collapsed").value<bool>();
   }
 
   return ToolWidget::event(event);
@@ -860,7 +860,7 @@ SourceWidget::setBlockingSignals(bool blocking)
 {
   bool oldState;
 
-#define SETBLOCKING(widget) this->ui->widget->blockSignals(blocking)
+#define SETBLOCKING(widget) m_ui->widget->blockSignals(blocking)
 
   oldState = SETBLOCKING(agcEnabledCheck);
   SETBLOCKING(throttleCheck);
@@ -874,7 +874,7 @@ SourceWidget::setBlockingSignals(bool blocking)
   SETBLOCKING(agcEnabledCheck);
   SETBLOCKING(antennaCombo);
 
-  for (auto p : this->gainControls)
+  for (auto p : m_gainControls)
     p->blockSignals(blocking);
 
 #undef SETBLOCKING
@@ -886,16 +886,16 @@ void
 SourceWidget::setDelayedAnalyzerOptions()
 {
   if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_THROTTLE))
-    this->onThrottleChanged();
+    onThrottleChanged();
 
   if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_DC_REMOVE))
-    this->onToggleDCRemove();
+    onToggleDCRemove();
 
   if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_IQ_REVERSE))
-    this->onToggleIQReverse();
+    onToggleIQReverse();
 
   if (m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_AGC))
-    this->onToggleAGCEnabled();
+    onToggleAGCEnabled();
 }
 
 // Overriden methods
@@ -904,17 +904,17 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
 {
   if (m_analyzer != analyzer) {
     // Uninstall any datasaver
-    this->uninstallDataSaver();
+    uninstallDataSaver();
     m_filterInstalled = false; // The filter is not installed anymore.
 
     m_analyzer = analyzer;
 
-    this->haveSourceInfo = false;
+    m_haveSourceInfo = false;
 
     if (m_analyzer == nullptr) {
       m_sourceInfo = Suscan::AnalyzerSourceInfo();
-      this->setProcessRate(0);
-      this->refreshUi();
+      setProcessRate(0);
+      refreshUi();
     } else {
       // Switched to running! Then, do the following:
       // 1. Connect source_info_message
@@ -932,7 +932,7 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
             this,
             SLOT(onPSDMessage(const Suscan::PSDMessage &)));
 
-      this->onRecordStartStop();
+      onRecordStartStop();
     }
   }
 
@@ -943,53 +943,53 @@ void
 SourceWidget::setProfile(Suscan::Source::Config &profile)
 {
   SUFLOAT bw;
-  bool presetEnabled = this->ui->gainPresetCheck->isChecked();
+  bool presetEnabled = m_ui->gainPresetCheck->isChecked();
   bool oldBlocking;
 
-  oldBlocking = this->setBlockingSignals(true);
+  oldBlocking = setBlockingSignals(true);
 
   // Setting the profile resets the SourceInfo
   m_sourceInfo = Suscan::AnalyzerSourceInfo();
 
-  this->profile = &profile;
-  this->refreshGains(profile);
-  this->refreshAutoGains(profile);
+  m_profile = &profile;
+  refreshGains(profile);
+  refreshAutoGains(profile);
 
   // TODO: Move this somewhere else!!!!
   SigDiggerHelpers::populateAntennaCombo(
         profile,
-        this->ui->antennaCombo);
+        m_ui->antennaCombo);
 
-  if (this->ui->antennaCombo->count() == 0
+  if (m_ui->antennaCombo->count() == 0
       || !profile.isRealTime()
       || profile.getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
-    this->ui->antennaCombo->hide();
-    this->ui->antennaLabel->hide();
+    m_ui->antennaCombo->hide();
+    m_ui->antennaLabel->hide();
   } else {
-    this->ui->antennaCombo->show();
-    this->ui->antennaLabel->show();
+    m_ui->antennaCombo->show();
+    m_ui->antennaLabel->show();
   }
 
-  this->selectAntenna(profile.getAntenna());
-  this->setSampleRate(profile.getDecimatedSampleRate());
-  this->setDCRemove(profile.getDCRemove());
+  selectAntenna(profile.getAntenna());
+  setSampleRate(profile.getDecimatedSampleRate());
+  setDCRemove(profile.getDCRemove());
 
-  bw = this->profile->getBandwidth();
+  bw = m_profile->getBandwidth();
   if (SU_ABS(bw) < 1e-6f)
     bw = profile.getDecimatedSampleRate();
 
-  this->setBandwidth(bw);
-  this->setPPM(this->profile->getPPM());
+  setBandwidth(bw);
+  setPPM(m_profile->getPPM());
 
   // Reset the autogain configuration if a new profile is chosen
   if (presetEnabled)
-    this->refreshCurrentAutoGain(profile.getDevice().getDriver());
+    refreshCurrentAutoGain(profile.getDevice().getDriver());
   else
-    this->ui->gainsFrame->setEnabled(true);
+    m_ui->gainsFrame->setEnabled(true);
 
-  this->refreshUi();
+  refreshUi();
 
-  this->setBlockingSignals(oldBlocking);
+  setBlockingSignals(oldBlocking);
 }
 
 //////////////////////////////// Data saving ///////////////////////////////////
@@ -1002,7 +1002,7 @@ SourceWidget::openCaptureFile(void)
   time_t unixtime;
   struct tm tm;
 
-  if (this->profile == nullptr)
+  if (m_profile == nullptr)
     return -1;
 
   unixtime = time(nullptr);
@@ -1014,11 +1014,11 @@ SourceWidget::openCaptureFile(void)
         sizeof(baseName),
         "sigdigger_%s_%d_%.0lf_float32_iq.raw",
         datetime,
-        this->profile->getDecimatedSampleRate(),
+        m_profile->getDecimatedSampleRate(),
         m_mediator->getCurrentCenterFreq());
 
   std::string fullPath =
-      this->saverUI->getRecordSavePath() + "/" + baseName;
+      m_saverUI->getRecordSavePath() + "/" + baseName;
 
   if ((fd = creat(fullPath.c_str(), 0600)) == -1) {
     QMessageBox::warning(
@@ -1044,25 +1044,25 @@ SourceWidget::uninstallDataSaver()
 void
 SourceWidget::connectDataSaver()
 {
-  this->connect(
+  connect(
         m_dataSaver,
         SIGNAL(stopped()),
         this,
         SLOT(onSaveError()));
 
-  this->connect(
+  connect(
         m_dataSaver,
         SIGNAL(swamped()),
         this,
         SLOT(onSaveSwamped()));
 
-  this->connect(
+  connect(
         m_dataSaver,
         SIGNAL(dataRate(qreal)),
         this,
         SLOT(onSaveRate(qreal)));
 
-  this->connect(
+  connect(
         m_dataSaver,
         SIGNAL(commit()),
         this,
@@ -1091,16 +1091,16 @@ void
 SourceWidget::installDataSaver(int fd)
 {
   if (m_dataSaver == nullptr) {
-    if (this->profile != nullptr && m_analyzer != nullptr) {
+    if (m_profile != nullptr && m_analyzer != nullptr) {
       m_dataSaver = new FileDataSaver(fd, this);
-      m_dataSaver->setSampleRate(this->profile->getDecimatedSampleRate());
+      m_dataSaver->setSampleRate(m_profile->getDecimatedSampleRate());
 
       if (!m_filterInstalled) {
         m_analyzer->registerBaseBandFilter(onBaseBandData, this);
         m_filterInstalled = true;
       }
 
-      this->connectDataSaver();
+      connectDataSaver();
     }
   }
 }
@@ -1110,23 +1110,23 @@ SourceWidget::installDataSaver(int fd)
 void
 SourceWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
 {
-  this->applySourceInfo(*msg.info());
+  applySourceInfo(*msg.info());
 }
 
 void
 SourceWidget::onPSDMessage(Suscan::PSDMessage const &msg)
 {
-  this->setSampleRate(msg.getSampleRate());
-  this->setProcessRate(msg.getMeasuredSampleRate());
+  setSampleRate(msg.getSampleRate());
+  setProcessRate(msg.getMeasuredSampleRate());
 }
 
 void
 SourceWidget::onGainChanged(QString name, float val)
 {
-  this->setAGCEnabled(false);
+  setAGCEnabled(false);
 
-  if (this->profile != nullptr)
-    this->profile->setGain(name.toStdString(), val);
+  if (m_profile != nullptr)
+    m_profile->setGain(name.toStdString(), val);
 
   if (m_analyzer != nullptr) {
     try {
@@ -1145,18 +1145,18 @@ void
 SourceWidget::onRecordStartStop(void)
 {
   if (m_analyzer != nullptr) {
-    bool recordState =  this->saverUI->isEnabled()
-        && this->saverUI->getRecordState();
+    bool recordState =  m_saverUI->isEnabled()
+        && m_saverUI->getRecordState();
 
     if (recordState) {
-      int fd = this->openCaptureFile();
+      int fd = openCaptureFile();
       if (fd != -1)
-        this->installDataSaver(fd);
-      this->setRecordState(fd != -1);
+        installDataSaver(fd);
+      setRecordState(fd != -1);
     } else {
-      this->uninstallDataSaver();
-      this->setCaptureSize(0);
-      this->setRecordState(false);
+      uninstallDataSaver();
+      setCaptureSize(0);
+      setRecordState(false);
     }
   }
 }
@@ -1164,18 +1164,18 @@ SourceWidget::onRecordStartStop(void)
 void
 SourceWidget::onThrottleChanged(void)
 {
-  bool throttling = this->ui->throttleCheck->isChecked();
+  bool throttling = m_ui->throttleCheck->isChecked();
 
-  this->panelConfig->throttle = throttling;
-  this->panelConfig->throttleRate = static_cast<unsigned>(
-        this->ui->throttleSpin->value());
+  m_panelConfig->throttle = throttling;
+  m_panelConfig->throttleRate = static_cast<unsigned>(
+        m_ui->throttleSpin->value());
 
-  this->ui->throttleSpin->setEnabled(
-        throttling && this->ui->throttleCheck->isChecked());
+  m_ui->throttleSpin->setEnabled(
+        throttling && m_ui->throttleCheck->isChecked());
 
   if (m_analyzer != nullptr) {
     try {
-      m_analyzer->setThrottle(throttling ? this->panelConfig->throttleRate : 0);
+      m_analyzer->setThrottle(throttling ? m_panelConfig->throttleRate : 0);
     } catch (Suscan::Exception &) {
       (void)  QMessageBox::critical(
             this,
@@ -1189,10 +1189,10 @@ SourceWidget::onThrottleChanged(void)
 void
 SourceWidget::onBandwidthChanged(void)
 {
-  float bandwidth = SCAST(float, this->ui->bwSpin->value());
+  float bandwidth = SCAST(float, m_ui->bwSpin->value());
 
-  if (this->profile != nullptr)
-    this->profile->setBandwidth(bandwidth);
+  if (m_profile != nullptr)
+    m_profile->setBandwidth(bandwidth);
 
   if (m_analyzer != nullptr) {
     try {
@@ -1210,10 +1210,10 @@ SourceWidget::onBandwidthChanged(void)
 void
 SourceWidget::onPPMChanged(void)
 {
-  float ppm = SCAST(float, this->ui->ppmSpinBox->value());
+  float ppm = SCAST(float, m_ui->ppmSpinBox->value());
 
-  if (this->profile !=  nullptr)
-    this->profile->setPPM(ppm);
+  if (m_profile !=  nullptr)
+    m_profile->setPPM(ppm);
 
   if (m_analyzer != nullptr) {
     try {
@@ -1232,36 +1232,36 @@ void
 SourceWidget::onChangeAutoGain(void)
 {
   // This is just a shortcut to per-gain settings
-  this->applyCurrentAutogain();
+  applyCurrentAutogain();
 }
 
 void
 SourceWidget::onToggleAutoGain(void)
 {
-  this->panelConfig->gainPresetEnabled = this->ui->gainPresetCheck->isChecked();
+  m_panelConfig->gainPresetEnabled = m_ui->gainPresetCheck->isChecked();
 
-  if (this->panelConfig->gainPresetEnabled)
-    this->applyCurrentAutogain();
+  if (m_panelConfig->gainPresetEnabled)
+    applyCurrentAutogain();
 
-  this->refreshUi();
+  refreshUi();
 }
 
 void
 SourceWidget::onSelectAutoGain(void)
 {
-  this->selectAutoGain(
-        static_cast<unsigned>(this->ui->autoGainCombo->currentIndex()));
-  this->applyCurrentAutogain();
+  selectAutoGain(
+        static_cast<unsigned>(m_ui->autoGainCombo->currentIndex()));
+  applyCurrentAutogain();
 }
 
 void
 SourceWidget::onToggleDCRemove(void)
 {
-  this->setDCRemove(this->ui->dcRemoveCheck->isChecked());
+  setDCRemove(m_ui->dcRemoveCheck->isChecked());
 
   if (m_analyzer != nullptr) {
     try {
-      m_analyzer->setDCRemove(this->panelConfig->dcRemove);
+      m_analyzer->setDCRemove(m_panelConfig->dcRemove);
     } catch (Suscan::Exception &) {
       (void)  QMessageBox::critical(
             this,
@@ -1275,11 +1275,11 @@ SourceWidget::onToggleDCRemove(void)
 void
 SourceWidget::onToggleIQReverse(void)
 {
-  this->setIQReverse(this->ui->swapIQCheck->isChecked());
+  setIQReverse(m_ui->swapIQCheck->isChecked());
 
   if (m_analyzer != nullptr) {
     try {
-      m_analyzer->setIQReverse(this->panelConfig->iqRev);
+      m_analyzer->setIQReverse(m_panelConfig->iqRev);
     } catch (Suscan::Exception &) {
       (void)  QMessageBox::critical(
             this,
@@ -1293,11 +1293,11 @@ SourceWidget::onToggleIQReverse(void)
 void
 SourceWidget::onToggleAGCEnabled(void)
 {
-  this->setAGCEnabled(this->ui->agcEnabledCheck->isChecked());
+  setAGCEnabled(m_ui->agcEnabledCheck->isChecked());
 
   if (m_analyzer != nullptr) {
     try {
-      m_analyzer->setAGC(this->panelConfig->agcEnabled);
+      m_analyzer->setAGC(m_panelConfig->agcEnabled);
     } catch (Suscan::Exception &) {
       (void)  QMessageBox::critical(
             this,
@@ -1306,13 +1306,13 @@ SourceWidget::onToggleAGCEnabled(void)
             QMessageBox::Ok);
     }
 
-    if (!this->panelConfig->agcEnabled &&
+    if (!m_panelConfig->agcEnabled &&
         m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN)) {
       // restore the manual gain settings
-      if (this->panelConfig->gainPresetEnabled)
-        this->applyCurrentAutogain();
+      if (m_panelConfig->gainPresetEnabled)
+        applyCurrentAutogain();
       else
-        this->applyCurrentProfileGains();
+        applyCurrentProfileGains();
     }
   }
 }
@@ -1320,13 +1320,13 @@ SourceWidget::onToggleAGCEnabled(void)
 void
 SourceWidget::onAntennaChanged(int)
 {
-  int i = this->ui->antennaCombo->currentIndex();
+  int i = m_ui->antennaCombo->currentIndex();
 
   if (i >= 0) {
-    std::string antenna = this->ui->antennaCombo->itemText(i).toStdString();
+    std::string antenna = m_ui->antennaCombo->itemText(i).toStdString();
 
-    if (this->profile != nullptr)
-      this->profile->setAntenna(antenna);
+    if (m_profile != nullptr)
+      m_profile->setAntenna(antenna);
 
     if (m_analyzer != nullptr) {
       try {
@@ -1347,7 +1347,7 @@ void
 SourceWidget::onSaveError(void)
 {
   if (m_dataSaver != nullptr) {
-    this->uninstallDataSaver();
+    uninstallDataSaver();
 
     QMessageBox::warning(
               this,
@@ -1355,7 +1355,7 @@ SourceWidget::onSaveError(void)
               "Capture file write error. Disk full?",
               QMessageBox::Ok);
 
-    this->setRecordState(false);
+    setRecordState(false);
   }
 }
 
@@ -1363,19 +1363,19 @@ void
 SourceWidget::onSaveSwamped(void)
 {
   if (m_dataSaver != nullptr) {
-    this->uninstallDataSaver();
+    uninstallDataSaver();
     SU_WARNING("Capture thread swamped. Maybe the selected storage device is too slow.\n");
-    int fd = this->openCaptureFile();
+    int fd = openCaptureFile();
     if (fd != -1) {
       SU_WARNING("Capture restarted.\n");
-      this->installDataSaver(fd);
+      installDataSaver(fd);
     } else {
       QMessageBox::warning(
             this,
             "SigDigger error",
             "Capture swamped, but failed to reopen the capture file.",
             QMessageBox::Ok);
-      this->setRecordState(false);
+      setRecordState(false);
     }
   }
 }
@@ -1384,12 +1384,12 @@ void
 SourceWidget::onSaveRate(qreal rate)
 {
   if (m_dataSaver != nullptr)
-    this->setIORate(rate);
+    setIORate(rate);
 }
 
 void
 SourceWidget::onCommit(void)
 {
   if (m_dataSaver != nullptr)
-    this->setCaptureSize(m_dataSaver->getSize());
+    setCaptureSize(m_dataSaver->getSize());
 }

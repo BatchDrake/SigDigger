@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>372</width>
-    <height>343</height>
+    <width>341</width>
+    <height>443</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,32 +29,6 @@
    <property name="spacing">
     <number>3</number>
    </property>
-   <item row="8" column="1">
-    <widget class="FrequencySpinBox" name="bwSpin"/>
-   </item>
-   <item row="5" column="1">
-    <widget class="QCheckBox" name="throttleCheck">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Throttle override</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="antennaLabel">
-     <property name="text">
-      <string>Antenna</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="0" colspan="2">
     <widget class="QFrame" name="frame">
      <property name="frameShape">
@@ -104,11 +78,117 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap resource="../icons/Icons.qrc">:/icons/transparent.png</pixmap>
+         <pixmap resource="../../icons/Icons.qrc">:/icons/transparent.png</pixmap>
         </property>
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="12" column="1">
+    <widget class="ContextAwareSpinBox" name="ppmSpinBox">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="suffix">
+      <string> ppm</string>
+     </property>
+     <property name="minimum">
+      <double>-100.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>100.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="0" colspan="2">
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>3</number>
+      </property>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Replay time</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>History allocation</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QProgressBar" name="replayTimeProgress">
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="replayButton">
+        <property name="font">
+         <font>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: white;
+background-color: #16448c;</string>
+        </property>
+        <property name="text">
+         <string>&amp;Replay</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="2">
+       <widget class="ContextAwareSpinBox" name="allocSizeSpin">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="suffix">
+         <string> MiB</string>
+        </property>
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>131072.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="antennaLabel">
+     <property name="text">
+      <string>Antenna</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
     </widget>
    </item>
    <item row="3" column="0" colspan="2">
@@ -124,10 +204,23 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QCheckBox" name="agcEnabledCheck">
+   <item row="12" column="0">
+    <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Hardware AGC</string>
+      <string>Freq. correction</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Bandwidth</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -138,7 +231,14 @@
      </property>
     </widget>
    </item>
-   <item row="12" column="0" colspan="2">
+   <item row="4" column="0">
+    <widget class="QCheckBox" name="swapIQCheck">
+     <property name="text">
+      <string>Swap I/Q</string>
+     </property>
+    </widget>
+   </item>
+   <item row="17" column="0" colspan="2">
     <widget class="QFrame" name="dataSaverFrame">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -171,15 +271,24 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QLabel" name="sampleRateLabel">
-     <property name="font">
-      <font>
-       <family>Monospace</family>
-      </font>
-     </property>
+   <item row="13" column="0" colspan="2">
+    <widget class="QCheckBox" name="allocHistoryCheck">
      <property name="text">
-      <string>N/A</string>
+      <string>Allocate replay history</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Processing rate</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="FrequencySpinBox" name="throttleSpin">
+     <property name="enabled">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
@@ -197,14 +306,66 @@
     </widget>
    </item>
    <item row="8" column="0">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Bandwidth</string>
+      <string>Effective rate</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <widget class="QFrame" name="gainsFrame">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QGridLayout" name="gainGridLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QWidget" name="scrollAreaWidgetContents_2" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QCheckBox" name="throttleCheck">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Throttle override</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="1">
+    <widget class="FrequencySpinBox" name="bwSpin"/>
    </item>
    <item row="1" column="1">
     <widget class="QLabel" name="processingRateLabel">
@@ -218,7 +379,29 @@
      </property>
     </widget>
    </item>
-   <item row="11" column="0" colspan="2">
+   <item row="10" column="1">
+    <widget class="QComboBox" name="antennaCombo"/>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLabel" name="sampleRateLabel">
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+      </font>
+     </property>
+     <property name="text">
+      <string>N/A</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QCheckBox" name="agcEnabledCheck">
+     <property name="text">
+      <string>Hardware AGC</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="2">
     <widget class="QFrame" name="autoGainFrame">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -272,102 +455,6 @@
      </layout>
     </widget>
    </item>
-   <item row="10" column="0" colspan="2">
-    <widget class="QFrame" name="gainsFrame">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QGridLayout" name="gainGridLayout">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QWidget" name="scrollAreaWidgetContents_2" native="true"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Effective rate</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Processing rate</string>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>Freq. correction</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QCheckBox" name="swapIQCheck">
-     <property name="text">
-      <string>Swap I/Q</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="QComboBox" name="antennaCombo"/>
-   </item>
-   <item row="9" column="1">
-    <widget class="ContextAwareSpinBox" name="ppmSpinBox">
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-     <property name="suffix">
-      <string> ppm</string>
-     </property>
-     <property name="minimum">
-      <double>-100.000000000000000</double>
-     </property>
-     <property name="maximum">
-      <double>100.000000000000000</double>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="FrequencySpinBox" name="throttleSpin">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -376,14 +463,14 @@
    <extends>QWidget</extends>
    <header>FrequencySpinBox.h</header>
   </customwidget>
-   <customwidget>
-     <class>ContextAwareSpinBox</class>
-     <extends>QDouble</extends>
-     <header>ContextAwareSpinBox.h</header>
-   </customwidget>
+  <customwidget>
+   <class>ContextAwareSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>ContextAwareSpinBox.h</header>
+  </customwidget>
  </customwidgets>
  <resources>
-  <include location="../icons/Icons.qrc"/>
+  <include location="../../icons/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>
