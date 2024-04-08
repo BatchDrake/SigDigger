@@ -394,7 +394,8 @@ UIMediator::refreshTimeToolbarState()
         m_analyzer->getSourceInfo().testPermission(SUSCAN_ANALYZER_PERM_SEEK);
   } else {
     Suscan::Source::Config *config = getProfile();
-    haveToolbar = !config->isRemote() && config->isSeekable();
+    haveToolbar = !config->isRemote()
+        && (config->isSeekable() || m_analyzer->getSourceInfo().replayMode());
   }
 
   m_ui->timeToolbar->setVisible(haveToolbar);
