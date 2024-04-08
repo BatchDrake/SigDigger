@@ -20,12 +20,12 @@
 #include "SourceWidgetFactory.h"
 #include "SourceWidget.h"
 #include "SuWidgetsHelpers.h"
-#include "SigDiggerHelpers.h"
 #include "ui_SourceWidget.h"
 #include <QMessageBox>
 #include <FileDataSaver.h>
 #include <fcntl.h>
 #include <UIMediator.h>
+#include <SigDiggerHelpers.h>
 
 using namespace SigDigger;
 
@@ -70,6 +70,8 @@ SourceWidgetConfig::deserialize(Suscan::Object const &conf)
   LOAD(iqRev);
   LOAD(agcEnabled);
   LOAD(gainPresetEnabled);
+  LOAD(allocHistory);
+  LOAD(replayAllocationMiB);
 
   try {
     Suscan::Object field = conf.getField("dataSaverConfig");
@@ -114,6 +116,8 @@ SourceWidgetConfig::serialize(void)
   STORE(iqRev);
   STORE(agcEnabled);
   STORE(gainPresetEnabled);
+  STORE(allocHistory);
+  STORE(replayAllocationMiB);
 
   dataSaverConfig = this->dataSaverConfig->serialize();
 
@@ -236,6 +240,24 @@ SourceWidget::connectAll(void)
         SIGNAL(valueChanged(qreal)),
         this,
         SLOT(onPPMChanged(void)));
+
+  connect(
+        m_ui->allocHistoryCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onAllocHistoryToggled()));
+
+  connect(
+        m_ui->allocSizeSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onAllocHistorySizeChanged()));
+
+  connect(
+        m_ui->replayButton,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onToggleReplay()));
 }
 
 
@@ -380,6 +402,7 @@ SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
     setAGCEnabled(info.getAGC());
   }
 
+  BLOCKSIG(m_ui->replayButton, setChecked(info.replayMode()));
 
   setBandwidth(info.getBandwidth());
   setPPM(info.getPPM());
@@ -515,6 +538,8 @@ void
 SourceWidget::refreshUi()
 {
   bool gainPresetEnabled = m_panelConfig->gainPresetEnabled;
+  bool replayEnabled = m_panelConfig->allocHistory;
+  bool canReplay = replayEnabled;
   bool haveAGC = m_currAutoGainSet != nullptr;
 
   if (m_profile != nullptr) {
@@ -557,6 +582,27 @@ SourceWidget::refreshUi()
   m_ui->autoGainFrame->setEnabled(
         m_sourceInfo.testPermission(SUSCAN_ANALYZER_PERM_SET_GAIN));
 
+  if (m_analyzer == nullptr) {
+    canReplay = false;
+  } else if (m_haveSourceInfo
+             && (m_sourceInfo.isSeekable() || m_sourceInfo.historyLength() == 0)) {
+    canReplay = false;
+  }
+
+
+  // History
+  m_ui->allocHistoryCheck->setEnabled(
+        m_analyzer == nullptr || !m_sourceInfo.isSeekable());
+  m_ui->replayTimeProgress->setEnabled(m_haveSourceInfo && m_sourceInfo.replayMode());
+
+  if (!m_sourceInfo.replayMode()) {
+    m_ui->replayTimeProgress->setValue(0);
+    m_ui->replayTimeProgress->setFormat("Idle");
+  }
+
+  m_ui->replayButton->setEnabled(canReplay);
+  m_ui->replayButton->setStyleSheet(
+        canReplay ? "color: white;\nbackground-color: #16448c;" : "");
   m_ui->autoGainCombo->setEnabled(gainPresetEnabled);
   m_ui->autoGainSlider->setEnabled(gainPresetEnabled);
 }
@@ -820,19 +866,17 @@ SourceWidget::allocConfig()
 void
 SourceWidget::applyConfig()
 {
-  bool blocked = m_ui->throttleSpin->blockSignals(true);
-  m_ui->throttleSpin->setValue(static_cast<int>(m_panelConfig->throttleRate));
-  m_ui->throttleSpin->blockSignals(blocked);
+  BLOCKSIG(m_ui->throttleSpin, setValue(static_cast<int>(m_panelConfig->throttleRate)));
+  BLOCKSIG(m_ui->throttleCheck, setChecked(m_panelConfig->throttle));
 
-  blocked = m_ui->throttleCheck->blockSignals(true);
-  m_ui->throttleCheck->setChecked(m_panelConfig->throttle);
   onThrottleChanged();
-  m_ui->throttleCheck->blockSignals(blocked);
 
-  m_ui->dcRemoveCheck->setChecked(m_panelConfig->dcRemove);
-  m_ui->swapIQCheck->setChecked(m_panelConfig->iqRev);
-  m_ui->agcEnabledCheck->setChecked(m_panelConfig->agcEnabled);
-  m_ui->gainPresetCheck->setChecked(m_panelConfig->gainPresetEnabled);
+  BLOCKSIG(m_ui->dcRemoveCheck, setChecked(m_panelConfig->dcRemove));
+  BLOCKSIG(m_ui->swapIQCheck, setChecked(m_panelConfig->iqRev));
+  BLOCKSIG(m_ui->agcEnabledCheck, setChecked(m_panelConfig->agcEnabled));
+  BLOCKSIG(m_ui->gainPresetCheck, setChecked(m_panelConfig->gainPresetEnabled));
+  BLOCKSIG(m_ui->allocHistoryCheck, setChecked(m_panelConfig->allocHistory));
+  BLOCKSIG(m_ui->allocSizeSpin, setValue(m_panelConfig->replayAllocationMiB));
 
   setProperty("collapsed", m_panelConfig->collapsed);
 
@@ -914,7 +958,6 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
     if (m_analyzer == nullptr) {
       m_sourceInfo = Suscan::AnalyzerSourceInfo();
       setProcessRate(0);
-      refreshUi();
     } else {
       // Switched to running! Then, do the following:
       // 1. Connect source_info_message
@@ -933,7 +976,13 @@ SourceWidget::setState(int state, Suscan::Analyzer *analyzer)
             SLOT(onPSDMessage(const Suscan::PSDMessage &)));
 
       onRecordStartStop();
+
+      // First presence of analyzer!
+      adjustHistoryConfig();
     }
+
+    m_ui->replayButton->setChecked(false);
+    refreshUi();
   }
 
   m_state = state;
@@ -990,6 +1039,19 @@ SourceWidget::setProfile(Suscan::Source::Config &profile)
   refreshUi();
 
   setBlockingSignals(oldBlocking);
+}
+
+void
+SourceWidget::adjustHistoryConfig()
+{
+  if (m_analyzer != nullptr) {
+    if (m_panelConfig->allocHistory) {
+      m_analyzer->setHistorySize(
+            m_panelConfig->replayAllocationMiB * (1 << 20));
+    } else {
+      m_analyzer->setHistorySize(0);
+    }
+  }
 }
 
 //////////////////////////////// Data saving ///////////////////////////////////
@@ -1393,3 +1455,26 @@ SourceWidget::onCommit(void)
   if (m_dataSaver != nullptr)
     setCaptureSize(m_dataSaver->getSize());
 }
+
+void
+SourceWidget::onAllocHistoryToggled()
+{
+  m_panelConfig->allocHistory = m_ui->allocHistoryCheck->isChecked();
+  adjustHistoryConfig();
+  refreshUi();
+}
+
+void
+SourceWidget::onAllocHistorySizeChanged()
+{
+  m_panelConfig->replayAllocationMiB = m_ui->allocSizeSpin->value();
+  adjustHistoryConfig();
+}
+
+void
+SourceWidget::onToggleReplay()
+{
+  if (m_analyzer != nullptr)
+    m_analyzer->replay(m_ui->replayButton->isChecked());
+}
+

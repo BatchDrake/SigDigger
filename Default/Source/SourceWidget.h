@@ -59,6 +59,9 @@ namespace SigDigger {
       bool agcEnabled = false;
       bool gainPresetEnabled = false;
 
+      bool  allocHistory = false;
+      qreal replayAllocationMiB = 100;
+
       std::map<std::string, GainPresetSetting> agcSettings;
       unsigned int throttleRate = 196000;
 
@@ -138,6 +141,9 @@ namespace SigDigger {
 
     void setDelayedAnalyzerOptions();
 
+    // History
+    void adjustHistoryConfig();
+
     // Data saver
     int openCaptureFile();
     void installDataSaver(int fd);
@@ -180,6 +186,11 @@ namespace SigDigger {
     void onToggleAGCEnabled();
     void onBandwidthChanged();
     void onPPMChanged();
+
+    // History
+    void onAllocHistoryToggled();
+    void onAllocHistorySizeChanged();
+    void onToggleReplay();
 
     // Saver UI
     void onSaveError(void);

@@ -207,6 +207,18 @@ namespace Suscan {
       return this->c_info->seekable != SU_FALSE;
     }
 
+    inline bool
+    replayMode() const
+    {
+      return this->c_info->replay != SU_FALSE;
+    }
+
+    inline SUSCOUNT
+    historyLength() const
+    {
+      return this->c_info->history_length;
+    }
+
     inline struct timeval
     getSourceStartTime() const
     {
