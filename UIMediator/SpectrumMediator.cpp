@@ -109,9 +109,9 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
     }
   }
 
-  this->setSampleRate(msg.getSampleRate());
+  setSampleRate(msg.getSampleRate());
 
-  if (!expired) {
+  if (!expired || msg.hasLooped()) {
     m_averager.feed(msg);
     m_ui->spectrum->feed(
           m_averager.get(),
@@ -174,7 +174,7 @@ UIMediator::onFrequencyChanged(qint64)
   qint64 freq = m_ui->spectrum->getCenterFreq();
   qint64 lnb  = m_ui->spectrum->getLnbFreq();
 
-  if (this->isLive())
+  if (isLive())
     m_appConfig->profile.setFreq(static_cast<SUFREQ>(freq));
 
   m_propFrequency->setValue(freq);
@@ -194,7 +194,7 @@ UIMediator::onLoChanged(qint64)
 void
 UIMediator::onNewBandPlan(QString plan)
 {
-  this->addBandPlan(plan.toStdString());
+  addBandPlan(plan.toStdString());
 }
 
 void
