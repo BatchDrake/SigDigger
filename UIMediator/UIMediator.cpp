@@ -833,6 +833,15 @@ UIMediator::getState() const
 void
 UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
+  if (!info.isSeekable()) {
+    if (info.replayMode())
+      m_ui->spectrum->setCaptureMode(MainSpectrum::HISTORY);
+    else
+      m_ui->spectrum->setCaptureMode(MainSpectrum::CAPTURE);
+  } else {
+    m_ui->spectrum->setCaptureMode(MainSpectrum::REPLAY);
+  }
+
   m_ui->spectrum->setFrequencyLimits(
         static_cast<qint64>(info.getMinFrequency()),
         static_cast<qint64>(info.getMaxFrequency()));

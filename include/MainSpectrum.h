@@ -60,7 +60,8 @@ namespace SigDigger {
     enum CaptureMode {
       UNAVAILABLE,
       CAPTURE,
-      REPLAY
+      REPLAY,
+      HISTORY
     };
 
     enum Skewness {
@@ -71,33 +72,33 @@ namespace SigDigger {
 
   private:
     // UI Objects
-    Ui::MainSpectrum *ui = nullptr;
-    std::vector<FrequencyAllocationTable *> FATs;
-    SuscanBookmarkSource *bookmarkSource = nullptr;
-    AbstractWaterfall *wf = nullptr;
-    ColorConfig  lastColorConfig;
-    QString      infoTextTemplate;
-    QString      infoText;
+    Ui::MainSpectrum *m_ui = nullptr;
+    std::vector<FrequencyAllocationTable *> m_FATs;
+    SuscanBookmarkSource *m_bookmarkSource = nullptr;
+    AbstractWaterfall *m_wf = nullptr;
+    ColorConfig  m_lastColorConfig;
+    QString      m_infoTextTemplate;
+    QString      m_infoText;
 
-    struct timeval lastTimeStamp;
+    struct timeval m_lastTimeStamp;
 
     // UI State
-    CaptureMode mode = UNAVAILABLE;
-    Skewness filterSkewness = SYMMETRIC;
-    bool throttling = false;
-    bool noLimits = false;
-    qint64 minFreq = 0;
-    qint64 maxFreq = 6000000000;
-    QElapsedTimer lastFreqUpdate;
-    qint64 freqGracePeriod =
+    CaptureMode m_mode = UNAVAILABLE;
+    Skewness m_filterSkewness = SYMMETRIC;
+    bool m_throttling = false;
+    bool m_noLimits = false;
+    qint64 m_minFreq = 0;
+    qint64 m_maxFreq = 6000000000;
+    QElapsedTimer m_lastFreqUpdate;
+    qint64 m_freqGracePeriod =
         SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS;
-    int maxToolWidth = 0;
+    int m_maxToolWidth = 0;
 
     // Cached members (for UI update, etc)
-    unsigned int cachedRate = 0;
-    unsigned int bandwidth = 0;
-    unsigned int cachedFftSize = 0;
-    float zoom = 1;
+    unsigned int m_cachedRate = 0;
+    unsigned int m_bandwidth = 0;
+    unsigned int m_cachedFftSize = 0;
+    float m_zoom = 1;
 
     // Private methods
     void connectAll();
