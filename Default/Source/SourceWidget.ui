@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>341</width>
-    <height>369</height>
+    <height>447</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -445,6 +445,9 @@ background-color: #16448c;</string>
         </property>
         <property name="text">
          <string>&amp;Replay</string>
+        </property>
+        <property name="shortcut">
+         <string>Ctrl+H</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
