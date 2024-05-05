@@ -603,9 +603,12 @@ SourceWidget::refreshUi()
     m_ui->replayTimeProgress->setValue(0);
     m_ui->replayTimeProgress->setFormat("Idle");
     m_ui->replayTimeProgress->setEnabled(false);
+    m_ui->maxReplayLabel->setText("N/A");
   } else {
+    auto historyLength = m_sourceInfo.historyLength();
+    m_ui->maxReplayLabel->setText(SuWidgetsHelpers::formatQuantity(historyLength / SCAST(qreal, m_sourceInfo.getSampleRate()), 3));
     m_ui->replayTimeProgress->setEnabled(true);
-    m_ui->replayTimeProgress->setMaximum(m_sourceInfo.historyLength() >> 10);
+    m_ui->replayTimeProgress->setMaximum(historyLength >> 10);
   }
 
   // History

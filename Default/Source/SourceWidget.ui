@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>341</width>
-    <height>447</height>
+    <height>386</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -386,6 +386,20 @@
       <property name="spacing">
        <number>3</number>
       </property>
+      <item row="3" column="1">
+       <widget class="QProgressBar" name="replayTimeProgress">
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="3">
+       <widget class="QCheckBox" name="allocHistoryCheck">
+        <property name="text">
+         <string>Allocate replay history</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1" colspan="2">
        <widget class="ContextAwareSpinBox" name="allocSizeSpin">
         <property name="alignment">
@@ -405,6 +419,16 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Replay time</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
@@ -415,24 +439,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>Replay time</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QProgressBar" name="replayTimeProgress">
-        <property name="value">
-         <number>24</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
+      <item row="3" column="2">
        <widget class="QPushButton" name="replayButton">
         <property name="font">
          <font>
@@ -454,10 +461,23 @@ background-color: #16448c;</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0" colspan="3">
-       <widget class="QCheckBox" name="allocHistoryCheck">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Allocate replay history</string>
+         <string>Max replay time</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QLabel" name="maxReplayLabel">
+        <property name="text">
+         <string>N/A</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>

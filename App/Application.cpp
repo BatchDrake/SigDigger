@@ -679,6 +679,10 @@ Application::onFrequencyChanged(qint64 freq, qint64 lnb)
 
   if (m_mediator->getState() == UIMediator::RUNNING)
     TRYSILENT(m_analyzer->setFrequency(freq, lnb));
+
+  if (errorsOccurred) {
+
+  }
 }
 
 void
