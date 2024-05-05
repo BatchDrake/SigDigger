@@ -283,6 +283,9 @@
      <property name="text">
       <string>Sample rate</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
     </widget>
    </item>
    <item row="5" column="0">
@@ -473,11 +476,16 @@ background-color: #16448c;</string>
       </item>
       <item row="2" column="1" colspan="2">
        <widget class="QLabel" name="maxReplayLabel">
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+         </font>
+        </property>
         <property name="text">
          <string>N/A</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
