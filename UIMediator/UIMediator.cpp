@@ -142,6 +142,12 @@ UIMediator::getSpectrumAverager()
   return &m_averager;
 }
 
+AppUI *
+UIMediator::getAppUI() const
+{
+  return m_ui;
+}
+
 AppConfig *
 UIMediator::getAppConfig() const
 {

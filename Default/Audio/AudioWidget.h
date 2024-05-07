@@ -63,13 +63,13 @@ namespace SigDigger {
   {
     Q_OBJECT
 
-    AudioWidgetConfig *panelConfig = nullptr;
+    AudioWidgetConfig *m_panelConfig = nullptr;
 
     // Data
-    SUFLOAT        bandwidth  = 200000;
-    SUFREQ         demodFreq  = 0;
-    bool           isRealTime = false;
-    struct timeval timeStamp  = {0, 0};
+    SUFLOAT        m_bandwidth  = 200000;
+    SUFREQ         m_demodFreq  = 0;
+    bool           m_isRealTime = false;
+    struct timeval m_timeStamp  = {0, 0};
 
     // Processing members
     AudioProcessor *m_processor  = nullptr;
@@ -80,9 +80,9 @@ namespace SigDigger {
     // UI members
     int m_state = 0;
     MainSpectrum *m_spectrum = nullptr;
-    Ui::AudioPanel *ui = nullptr;
+    Ui::AudioPanel *m_ui = nullptr;
     ColorConfig colorConfig;
-    FrequencyCorrectionDialog *fcDialog = nullptr;
+    FrequencyCorrectionDialog *m_fcDialog = nullptr;
     NamedChannelSetIterator m_namChan;
     bool m_haveNamChan = false;
     qreal m_lastCorrection = 0;

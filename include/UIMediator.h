@@ -156,6 +156,7 @@ namespace SigDigger {
     QMainWindow  *getMainWindow() const;
     MainSpectrum *getMainSpectrum() const;
     Averager     *getSpectrumAverager();
+    AppUI        *getAppUI() const;
     AppConfig    *getAppConfig() const;
     bool          addTabWidget(TabWidget *);
     bool          addUIListener(UIListener *);
