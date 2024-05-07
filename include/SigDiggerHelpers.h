@@ -40,7 +40,8 @@ namespace SigDigger {
     AM,
     FM,
     USB,
-    LSB
+    LSB,
+    RAW
   };
 
   class SigDiggerHelpers

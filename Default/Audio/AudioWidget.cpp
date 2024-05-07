@@ -391,6 +391,15 @@ AudioWidget::refreshUi()
       if (openAudio)
         skewness = MainSpectrum::LOWER;
       break;
+
+    case AudioDemod::RAW:
+      m_ui->sqlLevelSpin->setSuffix(" dB");
+      m_ui->sqlLevelSpin->setMinimum(-120);
+      m_ui->sqlLevelSpin->setMaximum(10);
+      m_ui->sqlLevelSpin->setValue(
+            static_cast<qreal>(
+              SU_POWER_DB(m_panelConfig->ssbSquelch)));
+      break;
   }
 
   m_spectrum->setFilterSkewness(skewness);

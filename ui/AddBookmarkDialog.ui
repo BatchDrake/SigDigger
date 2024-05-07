@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>355</width>
-    <height>114</height>
+    <width>401</width>
+    <height>158</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -40,7 +40,7 @@
     <widget class="QLineEdit" name="nameEdit"/>
    </item>
    <item row="0" column="2">
-    <widget class="ColorChooserButton" name="colorButton" native="true"/>
+    <widget class="ColorChooserButton" name="colorButton"/>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_3">
@@ -53,7 +53,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="FrequencySpinBox" name="frequencySpinBox" native="true"/>
+    <widget class="FrequencySpinBox" name="frequencySpinBox"/>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_2">
@@ -86,7 +86,7 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="FrequencySpinBox" name="bandwidthSpinBox" native="true"/>
+    <widget class="FrequencySpinBox" name="bandwidthSpinBox"/>
    </item>
    <item row="3" column="1">
     <widget class="QComboBox" name="demodCombo">
@@ -111,6 +111,11 @@
      <item>
       <property name="text">
        <string>LSB</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>RAW</string>
       </property>
      </item>
     </widget>

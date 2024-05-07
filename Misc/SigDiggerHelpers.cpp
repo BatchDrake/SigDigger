@@ -144,6 +144,8 @@ SigDiggerHelpers::strToDemod(std::string const &str)
     return AudioDemod::USB;
   else if (str == "LSB")
     return AudioDemod::LSB;
+  else if (str == "RAW")
+    return AudioDemod::RAW;
 
   return AudioDemod::AM;
 }
@@ -163,6 +165,9 @@ SigDiggerHelpers::demodToStr(AudioDemod demod)
 
     case LSB:
       return "LSB";
+
+    case RAW:
+      return "RAW";
   }
 
   return "AM"; // Default

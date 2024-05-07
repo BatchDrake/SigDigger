@@ -123,6 +123,11 @@
           <string>LSB</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>RAW</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="1" column="2" colspan="3">
@@ -419,14 +424,14 @@
     </widget>
    </item>
   </layout>
-</widget>
-<customwidgets>
-   <customwidget>
-     <class>ContextAwareSpinBox</class>
-     <extends>QDouble</extends>
-     <header>ContextAwareSpinBox.h</header>
-   </customwidget>
-  </customwidgets>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ContextAwareSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>ContextAwareSpinBox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../icons/Icons.qrc"/>
  </resources>
