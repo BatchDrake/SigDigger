@@ -136,6 +136,7 @@ FileSourcePage::guessParamsFromFileName()
     if (meta.guessed & SUSCAN_SOURCE_CONFIG_GUESS_FREQ) {
       qreal shiftedFc = meta.frequency + m_config->getLnbFreq();
       if (!sufeq(m_config->getFreq(), shiftedFc, 1)) {
+        m_config->setLnbFreq(0);
         m_config->setFreq(shiftedFc);
         changes = true;
       }

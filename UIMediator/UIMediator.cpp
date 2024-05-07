@@ -1753,9 +1753,9 @@ UIMediator::attemptReplayFile(QString const &path)
     prof.setSampleRate(meta.sample_rate);
 
   if (meta.guessed & SUSCAN_SOURCE_CONFIG_GUESS_FREQ) {
-    qreal shiftedFc = meta.frequency + prof.getLnbFreq();
-    if (!sufeq(prof.getFreq(), shiftedFc, 1)) {
-      prof.setFreq(shiftedFc);
+    if (!sufeq(prof.getFreq(), meta.frequency, 1)) {
+      prof.setLnbFreq(0);
+      prof.setFreq(meta.frequency);
     }
   }
 
