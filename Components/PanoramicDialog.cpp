@@ -753,13 +753,11 @@ PanoramicDialog::redrawMeasures(void)
 {
   this->demodFreq = static_cast<qint64>(
         this->waterfall->getFilterOffset() +
-        .5 * (this->freqStart + this->freqEnd));
+        this->waterfall->getCenterFreq());
 
   this->ui->centerLabel->setText(
         SuWidgetsHelpers::formatQuantity(
-          static_cast<qreal>(
-            this->waterfall->getFilterOffset() +
-            .5 * (this->freqStart + this->freqEnd)),
+          static_cast<qreal>(this->demodFreq),
           6,
           "Hz"));
 
