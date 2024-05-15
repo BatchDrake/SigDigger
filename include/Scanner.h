@@ -136,6 +136,8 @@ namespace SigDigger {
           QObject *parent,
           SUFREQ freqMin,
           SUFREQ freqMax,
+          SUFREQ initFreqMin,
+          SUFREQ initFreqMax,
           Suscan::Source::Config const &cfg);
 
       void setRelativeBw(float ratio);

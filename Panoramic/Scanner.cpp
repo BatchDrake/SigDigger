@@ -296,6 +296,8 @@ Scanner::Scanner(
     QObject *parent,
     SUFREQ freqMin,
     SUFREQ freqMax,
+    SUFREQ initFreqMin,
+    SUFREQ initFreqMax,
     Suscan::Source::Config const &cfg) : QObject(parent)
 {
   Suscan::AnalyzerParams params;
@@ -306,8 +308,20 @@ Scanner::Scanner(
     freqMax = tmp;
   }
 
+  if (initFreqMin > initFreqMax) {
+    SUFREQ tmp = initFreqMin;
+    initFreqMin = initFreqMax;
+    initFreqMax = tmp;
+  }
+
+  if (initFreqMin < freqMin)
+    initFreqMin = freqMin;
+  if (initFreqMax > freqMax)
+    initFreqMax = freqMax;
+
   this->freqMin = freqMin;
   this->freqMax = freqMax;
+  this->getSpectrumView().setRange(initFreqMin, initFreqMax);
 
   // choose an FFT size to achieve the required frequency resolution
   this->fftSize = nextPow2(cfg.getSampleRate() /
@@ -321,9 +335,8 @@ Scanner::Scanner(
   params.windowSize = this->fftSize;
 
   params.mode = Suscan::AnalyzerParams::Mode::WIDE_SPECTRUM;
-  params.minFreq = freqMin;
-  params.maxFreq = freqMax;
-
+  params.minFreq = initFreqMin;
+  params.maxFreq = initFreqMax;
 
   this->analyzer = new Suscan::Analyzer(params, cfg);
 
@@ -484,7 +497,6 @@ Scanner::onPSDMessage(const Suscan::PSDMessage &msg)
     this->analyzer->setBandwidth(this->fs);
     this->fsGuessed = true;
     this->views[0].fftBandwidth = this->views[1].fftBandwidth = this->fs;
-    this->getSpectrumView().setRange(this->freqMin, this->freqMax);
   }
 
   if (msg.size() == this->fftSize) {

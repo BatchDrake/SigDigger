@@ -774,18 +774,16 @@ void
 Application::onPanSpectrumStart()
 {
   if (m_scanner == nullptr) {
-    qint64 freqMin;
-    qint64 freqMax;
+    qint64 freqMin, initFreqMin;
+    qint64 freqMax, initFreqMax;
     Suscan::Source::Device device;
 
-    if (m_mediator->getPanSpectrumRange(freqMin, freqMax)
-        && m_mediator->getPanSpectrumDevice(device)) {
+    if (m_mediator->getPanSpectrumRange(freqMin, freqMax) &&
+        m_mediator->getPanSpectrumZoomRange(initFreqMin, initFreqMax) &&
+        m_mediator->getPanSpectrumDevice(device)) {
       Suscan::Source::Config config(
             "soapysdr",
             SUSCAN_SOURCE_FORMAT_AUTO);
-
-      m_scanMinFreq = static_cast<SUFREQ>(freqMin);
-      m_scanMaxFreq = static_cast<SUFREQ>(freqMax);
 
       config.setDevice(device);
       config.setAntenna(m_mediator->getPanSpectrumAntenna().toStdString());
@@ -795,7 +793,7 @@ Application::onPanSpectrumStart()
       config.setDCRemove(true);
       config.setBandwidth(m_mediator->getPanSpectrumPreferredSampleRate());
       config.setLnbFreq(m_mediator->getPanSpectrumLnbOffset());
-      config.setFreq(.5 * (m_scanMinFreq + m_scanMaxFreq));
+      config.setFreq(.5 * (initFreqMin + initFreqMax));
 
       // default RTL-SDR buffer size results in ~40 ms wait between chunks of data
       // shorter buffer size avoids that being a bottleneck in sweep speed
@@ -804,7 +802,7 @@ Application::onPanSpectrumStart()
 
       try {
         Suscan::Logger::getInstance()->flush();
-        m_scanner = new Scanner(this, freqMin, freqMax, config);
+        m_scanner = new Scanner(this, freqMin, freqMax, initFreqMin, initFreqMax, config);
         m_scanner->setRelativeBw(m_mediator->getPanSpectrumRelBw());
         m_scanner->setRttMs(m_mediator->getPanSpectrumRttMs());
         onPanSpectrumStrategyChanged(

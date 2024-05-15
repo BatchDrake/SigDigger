@@ -416,6 +416,18 @@ PanoramicDialog::getMaxFreq(void) const
 }
 
 void
+PanoramicDialog::getZoomRange(qint64 &minFreq, qint64 &maxFreq) const
+{
+  qint64 fc =
+        this->waterfall->getCenterFreq()
+        + this->waterfall->getFftCenterFreq();
+  qint64 span = static_cast<qint64>(this->waterfall->getSpanFreq());
+
+  minFreq = fc - span / 2;
+  maxFreq = fc + span / 2;
+}
+
+void
 PanoramicDialog::setRunning(bool running)
 {
   if (running && !this->running) {
