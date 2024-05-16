@@ -302,6 +302,7 @@ Scanner::Scanner(
 {
   unsigned int targSampRate = cfg.getSampleRate();
   Suscan::AnalyzerParams params;
+  bool noHop = false;
 
   if (freqMin > freqMax) {
     SUFREQ tmp = freqMin;
@@ -315,10 +316,11 @@ Scanner::Scanner(
     initFreqMax = tmp;
   }
 
-  if (initFreqMax - initFreqMin < targSampRate) {
+  if (initFreqMax - initFreqMin <= targSampRate) {
     SUFREQ centreFreq = (initFreqMin + initFreqMax) / 2;
     initFreqMin = centreFreq - (targSampRate / 2);
     initFreqMax = centreFreq + (targSampRate / 2);
+    noHop = true;
   }
 
   if (initFreqMin < freqMin) {
@@ -346,8 +348,14 @@ Scanner::Scanner(
   params.windowSize = this->fftSize;
 
   params.mode = Suscan::AnalyzerParams::Mode::WIDE_SPECTRUM;
-  params.minFreq = initFreqMin;
-  params.maxFreq = initFreqMax;
+  if (noHop) {
+    SUFREQ centreFreq = (initFreqMin + initFreqMax) / 2;
+    params.minFreq = centreFreq;
+    params.maxFreq = centreFreq;
+  } else {
+    params.minFreq = initFreqMin;
+    params.maxFreq = initFreqMax;
+  }
 
   this->analyzer = new Suscan::Analyzer(params, cfg);
 
