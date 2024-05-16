@@ -1016,6 +1016,9 @@ PanoramicDialog::onToggleScan(void)
 void
 PanoramicDialog::onNewZoomLevel(float)
 {
+  if (!m_running)
+    return;
+
   bool leftBorder = false, rightBorder = false;
   qint64 min, max;
   qint64 fc =
@@ -1073,6 +1076,9 @@ PanoramicDialog::onNewBandwidth(int, int)
 void
 PanoramicDialog::onNewFftCenterFreq(qint64 freq)
 {
+  if (!m_running)
+    return;
+
   // FftCenterFreq is an offset from CenterFreq
   freq += m_waterfall->getCenterFreq();
 
