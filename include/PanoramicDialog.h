@@ -66,46 +66,49 @@ namespace SigDigger {
 
     // Overriden methods
     void deserialize(Suscan::Object const &conf) override;
-    Suscan::Object &&serialize(void) override;
+    Suscan::Object &&serialize() override;
   };
 
   class PanoramicDialog : public QDialog, public PersistentObject
   {
       Q_OBJECT
 
-      PanoramicDialogConfig *dialogConfig = nullptr;
-      bool running = false;
-      QWidget *noGainLabel = nullptr;
-      std::vector<DeviceGain *> gainControls;
-      std::map<std::string, Suscan::Source::Device> deviceMap;
-      std::vector<FrequencyAllocationTable *> FATs;
+      PanoramicDialogConfig *m_dialogConfig = nullptr;
+      bool m_running = false;
+      QWidget *m_noGainLabel = nullptr;
+      std::vector<DeviceGain *> m_gainControls;
+      std::map<std::string, Suscan::Source::Device> m_deviceMap;
+      std::vector<FrequencyAllocationTable *> m_FATs;
 
-      QString bannedDevice;
+      QString m_bannedDevice;
 
-      SavedSpectrum saved;
+      SavedSpectrum m_saved;
 
-      qint64 freqStart = 0;
-      qint64 freqEnd = 0;
-      qint64 currBw = 0;
-      qint64 demodFreq = 0;
-      quint64 frames = 0;
-      quint64 minBwForZoom = 0;
-      QString paletteGradient = "Suscan";
-      std::string currentFAT = "";
+      qint64 m_freqStart = 0;
+      qint64 m_freqEnd = 0;
+      qint64 m_currBw = 0;
+      qint64 m_demodFreq = 0;
+      quint64 m_frames = 0;
+      quint64 m_minBwForZoom = 0;
+      QString m_paletteGradient = "Suscan";
+      std::string m_currentFAT = "";
 
-      bool fixedFreqMode = false;
+      bool m_fixedFreqMode = false;
+      Ui::PanoramicDialog *m_ui = nullptr;
+      AbstractWaterfall *m_waterfall = nullptr;
+      ColorConfig m_colorConfig;
 
-      void connectAll(void);
+      void connectAll();
       void connectWaterfall();
-      void refreshUi(void);
-      void redrawMeasures(void);
+      void refreshUi();
+      void redrawMeasures();
 
       DeviceGain *lookupGain(std::string const &name);
-      void clearGains(void);
+      void clearGains();
       void refreshGains(Suscan::Source::Device &device);
-      void deserializeFATs(void);
+      void deserializeFATs();
       void setRanges(Suscan::Source::Device const &);
-      void adjustRanges(void);
+      void adjustRanges();
 
       static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
       static int getFrequencyUnits(qint64);
@@ -122,67 +125,62 @@ namespace SigDigger {
           size_t size);
 
       void getZoomRange(qint64 &minFreq, qint64 &maxFreq) const;
-      SUFREQ getMinFreq(void) const;
-      SUFREQ getMaxFreq(void) const;
-      SUFREQ getLnbOffset(void) const;
-      SUFLOAT getPreferredSampleRate(void) const;
+      SUFREQ getMinFreq() const;
+      SUFREQ getMaxFreq() const;
+      SUFREQ getLnbOffset() const;
+      SUFLOAT getPreferredSampleRate() const;
 
       void setColors(ColorConfig const &config);
       void setPaletteGradient(QString const &gradient);
-      void populateDeviceCombo(void);
-      unsigned int getRttMs(void) const;
-      float getRelBw(void) const;
+      void populateDeviceCombo();
+      unsigned int getRttMs() const;
+      float getRelBw() const;
       void setRunning(bool);
-      void run(void);
+      void run();
       void setMinBwForZoom(quint64 bw);
-      bool invalidRange(void) const;
+      bool invalidRange() const;
       bool getSelectedDevice(Suscan::Source::Device &) const;
-      QString getAntenna(void) const;
-      QString getStrategy(void) const;
-      QString getPartitioning(void) const;
+      QString getAntenna() const;
+      QString getStrategy() const;
+      QString getPartitioning() const;
       float getGain(QString const &) const;
       void setBannedDevice(QString const &);
-      void saveConfig(void);
+      void saveConfig();
       void setGuiConfig(GuiConfig const &cfg);
 
       // Overriden methods
-      Suscan::Serializable *allocConfig(void) override;
-      void applyConfig(void) override;
+      Suscan::Serializable *allocConfig() override;
+      void applyConfig() override;
 
     signals:
       void detailChanged(qint64 freqMin, qint64 freqMax, bool noHop);
-      void start(void);
-      void stop(void);
-      void reset(void);
+      void start();
+      void stop();
+      void reset();
       void gainChanged(QString, float);
       void strategyChanged(QString);
       void partitioningChanged(QString);
-      void frameSkipChanged(void);
-      void relBandwidthChanged(void);
+      void frameSkipChanged();
+      void relBandwidthChanged();
 
     public slots:
-      void onToggleScan(void);
-      void onDeviceChanged(void);
-      void onFullRangeChanged(void);
-      void onFreqRangeChanged(void);
+      void onToggleScan();
+      void onDeviceChanged();
+      void onFullRangeChanged();
+      void onFreqRangeChanged();
       void onRangeChanged(float, float);
       void onNewZoomLevel(float);
-      void onNewOffset(void);
+      void onNewOffset();
       void onNewBandwidth(int, int);
       void onBandPlanChanged(int);
       void onNewFftCenterFreq(qint64);
       void onPaletteChanged(int);
       void onStrategyChanged(int);
-      void onLnbOffsetChanged(void);
-      void onExport(void);
+      void onLnbOffsetChanged();
+      void onExport();
       void onGainChanged(QString name, float val);
-      void onSampleRateSpinChanged(void);
+      void onSampleRateSpinChanged();
       void onPartitioningChanged(int);
-
-    private:
-      Ui::PanoramicDialog *ui;
-      AbstractWaterfall *waterfall;
-      ColorConfig colorConfig;
   };
 }
 
