@@ -437,6 +437,9 @@ PanoramicDialog::setRunning(bool running)
     m_ui->sampleRateSpin->setValue(m_dialogConfig->sampRate);
   }
 
+  if (m_waterfall)
+    m_waterfall->setRunningState(running);
+
   m_running = running;
   refreshUi();
 }
@@ -998,14 +1001,15 @@ PanoramicDialog::onToggleScan(void)
             QMessageBox::Ok);
       m_ui->scanButton->setChecked(false);
     } else {
+      // first clear any references to old scanner PSD data that will be freed on startup
+      if (m_waterfall)
+        m_waterfall->clearPartialFftData();
       emit start();
     }
   } else {
     emit stop();
   }
 
-  if (m_waterfall)
-    m_waterfall->setRunningState(m_ui->scanButton->isChecked());
   m_ui->scanButton->setText(
         m_ui->scanButton->isChecked()
         ? "Stop"
