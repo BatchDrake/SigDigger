@@ -47,10 +47,10 @@ UIMediator::getPanSpectrumRange(qint64 &min, qint64 &max) const
 }
 
 bool
-UIMediator::getPanSpectrumZoomRange(qint64 &min, qint64 &max) const
+UIMediator::getPanSpectrumZoomRange(qint64 &min, qint64 &max, bool &noHop) const
 {
   if (!this->m_ui->panoramicDialog->invalidRange()) {
-    this->m_ui->panoramicDialog->getZoomRange(min, max);
+    this->m_ui->panoramicDialog->getZoomRange(min, max, noHop);
     return true;
   }
 

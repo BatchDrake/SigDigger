@@ -416,15 +416,36 @@ PanoramicDialog::getMaxFreq(void) const
 }
 
 void
-PanoramicDialog::getZoomRange(qint64 &minFreq, qint64 &maxFreq) const
+PanoramicDialog::getZoomRange(qint64 &min, qint64 &max, bool &noHop) const
 {
+  bool leftBorder = false, rightBorder = false;
   qint64 fc =
         m_waterfall->getCenterFreq()
         + m_waterfall->getFftCenterFreq();
   qint64 span = static_cast<qint64>(m_waterfall->getSpanFreq());
 
-  minFreq = fc - span / 2;
-  maxFreq = fc + span / 2;
+  min = fc - span / 2;
+  max = fc + span / 2;
+
+  if (min <= getMinFreq()) {
+    leftBorder = true;
+    min = static_cast<qint64>(getMinFreq());
+  }
+
+  if (max >= getMaxFreq()) {
+    rightBorder = true;
+    max = static_cast<qint64>(getMaxFreq());
+  }
+
+  if (rightBorder || leftBorder) {
+    if (leftBorder && !rightBorder) {
+      max = min + span;
+    } else if (rightBorder && !leftBorder) {
+      min = max - span;
+    }
+  }
+
+  noHop = max - min <= m_minBwForZoom * getRelBw();
 }
 
 void
@@ -1020,41 +1041,13 @@ PanoramicDialog::onToggleScan(void)
 void
 PanoramicDialog::onNewZoomLevel(float)
 {
-  if (!m_running)
-    return;
-
-  bool leftBorder = false, rightBorder = false;
   qint64 min, max;
-  qint64 fc =
-        m_waterfall->getCenterFreq()
-        + m_waterfall->getFftCenterFreq();
-  qint64 span = static_cast<qint64>(m_waterfall->getSpanFreq());
 
-  min = fc - span / 2;
-  max = fc + span / 2;
-
-  if (min <= getMinFreq()) {
-    leftBorder = true;
-    min = static_cast<qint64>(getMinFreq());
-  }
-
-  if (max >= getMaxFreq()) {
-    rightBorder = true;
-    max = static_cast<qint64>(getMaxFreq());
-  }
-
-  if (rightBorder || leftBorder) {
-    if (leftBorder && !rightBorder) {
-      max = min + span;
-    } else if (rightBorder && !leftBorder) {
-      min = max - span;
-    }
-  }
-
+  getZoomRange(min, max, m_fixedFreqMode);
   m_currBw = max - min;
-  m_fixedFreqMode = m_currBw <= m_minBwForZoom * getRelBw();
 
-  emit detailChanged(min, max, m_fixedFreqMode);
+  if (m_running)
+    emit detailChanged(min, max, m_fixedFreqMode);
 }
 
 void

@@ -298,11 +298,11 @@ Scanner::Scanner(
     SUFREQ freqMax,
     SUFREQ initFreqMin,
     SUFREQ initFreqMax,
+    bool noHop,
     Suscan::Source::Config const &cfg) : QObject(parent)
 {
   unsigned int targSampRate = cfg.getSampleRate();
   Suscan::AnalyzerParams params;
-  bool noHop = false;
 
   if (freqMin > freqMax) {
     SUFREQ tmp = freqMin;
@@ -316,26 +316,8 @@ Scanner::Scanner(
     initFreqMax = tmp;
   }
 
-  if (initFreqMax - initFreqMin <= targSampRate) {
-    SUFREQ centreFreq = (initFreqMin + initFreqMax) / 2;
-    initFreqMin = centreFreq - (targSampRate / 2);
-    initFreqMax = centreFreq + (targSampRate / 2);
-    noHop = true;
-  }
-
-  if (initFreqMin < freqMin) {
-    initFreqMax += freqMin - initFreqMin;
-    initFreqMin = freqMin;
-  }
-
-  if (initFreqMax > freqMax) {
-    initFreqMin -= initFreqMax - freqMax;
-    initFreqMax = freqMax;
-  }
-
   this->freqMin = freqMin;
   this->freqMax = freqMax;
-  this->getSpectrumView().setRange(initFreqMin, initFreqMax);
 
   // choose an FFT size to achieve the required frequency resolution
   this->fftSize = nextPow2(targSampRate / SIGDIGGER_SCANNER_FREQ_RESOLUTION);
@@ -348,13 +330,16 @@ Scanner::Scanner(
   params.windowSize = this->fftSize;
 
   params.mode = Suscan::AnalyzerParams::Mode::WIDE_SPECTRUM;
+
   if (noHop) {
     SUFREQ centreFreq = (initFreqMin + initFreqMax) / 2;
-    params.minFreq = centreFreq;
-    params.maxFreq = centreFreq;
+    params.minFreq = params.maxFreq = centreFreq;
+    this->getSpectrumView().setRange(centreFreq - targSampRate / 2,
+                                     centreFreq + targSampRate / 2);
   } else {
     params.minFreq = initFreqMin;
     params.maxFreq = initFreqMax;
+    this->getSpectrumView().setRange(initFreqMin, initFreqMax);
   }
 
   this->analyzer = new Suscan::Analyzer(params, cfg);

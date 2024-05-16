@@ -776,6 +776,7 @@ Application::onPanSpectrumStart()
   qint64 freqMin, initFreqMin;
   qint64 freqMax, initFreqMax;
   Suscan::Source::Device device;
+  bool noHop;
 
   // we defer deletion of old scanner instances to here to avoid user-after-free of PSD data
   // since the panoramic dialog's waterfall still uses the scanner's PSD data when stopped
@@ -785,7 +786,7 @@ Application::onPanSpectrumStart()
   }
 
   if (m_mediator->getPanSpectrumRange(freqMin, freqMax) &&
-      m_mediator->getPanSpectrumZoomRange(initFreqMin, initFreqMax) &&
+      m_mediator->getPanSpectrumZoomRange(initFreqMin, initFreqMax, noHop) &&
       m_mediator->getPanSpectrumDevice(device)) {
     Suscan::Source::Config config(
           "soapysdr",
@@ -808,7 +809,7 @@ Application::onPanSpectrumStart()
 
     try {
       Suscan::Logger::getInstance()->flush();
-      m_scanner = new Scanner(this, freqMin, freqMax, initFreqMin, initFreqMax, config);
+      m_scanner = new Scanner(this, freqMin, freqMax, initFreqMin, initFreqMax, noHop, config);
       m_scanner->setRelativeBw(m_mediator->getPanSpectrumRelBw());
       m_scanner->setRttMs(m_mediator->getPanSpectrumRttMs());
       onPanSpectrumStrategyChanged(

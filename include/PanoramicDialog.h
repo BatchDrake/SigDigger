@@ -124,7 +124,7 @@ namespace SigDigger {
           float *data,
           size_t size);
 
-      void getZoomRange(qint64 &minFreq, qint64 &maxFreq) const;
+      void getZoomRange(qint64 &min, qint64 &max, bool &noHop) const;
       SUFREQ getMinFreq() const;
       SUFREQ getMaxFreq() const;
       SUFREQ getLnbOffset() const;

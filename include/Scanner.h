@@ -138,6 +138,7 @@ namespace SigDigger {
           SUFREQ freqMax,
           SUFREQ initFreqMin,
           SUFREQ initFreqMax,
+          bool noHop,
           Suscan::Source::Config const &cfg);
 
       void setRelativeBw(float ratio);
