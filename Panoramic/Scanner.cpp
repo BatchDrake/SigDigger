@@ -371,8 +371,7 @@ Scanner::Scanner(
 
 Scanner::~Scanner()
 {
-  if (this->analyzer != nullptr)
-    delete this->analyzer;
+  this->stop();
 }
 
 void
@@ -384,7 +383,8 @@ Scanner::setRelativeBw(float ratio)
     ratio = 2.f / this->fftSize;
 
   this->views[0].fftRelBw = this->views[1].fftRelBw = ratio;
-  this->analyzer->setRelBandwidth(ratio);
+  if (this->analyzer)
+    this->analyzer->setRelBandwidth(ratio);
 }
 
 SpectrumView &
@@ -402,7 +402,10 @@ Scanner::getSpectrumView(void) const
 void
 Scanner::stop(void)
 {
-  this->analyzer->halt();
+  if (this->analyzer) {
+    delete this->analyzer;
+    this->analyzer = nullptr;
+  }
 }
 
 void
@@ -415,19 +418,22 @@ Scanner::flip(void)
 void
 Scanner::setStrategy(Suscan::Analyzer::SweepStrategy strategy)
 {
-  this->analyzer->setSweepStrategy(strategy);
+  if (this->analyzer)
+    this->analyzer->setSweepStrategy(strategy);
 }
 
 void
 Scanner::setPartitioning(Suscan::Analyzer::SpectrumPartitioning partitioning)
 {
-  this->analyzer->setSpectrumPartitioning(partitioning);
+  if (this->analyzer)
+    this->analyzer->setSpectrumPartitioning(partitioning);
 }
 
 void
 Scanner::setGain(QString const &name, float value)
 {
-  this->analyzer->setGain(name.toStdString(), value);
+  if (this->analyzer)
+    this->analyzer->setGain(name.toStdString(), value);
 }
 
 unsigned int
@@ -476,7 +482,8 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
       this->getSpectrumView().feed(previous);
     }
 
-    this->analyzer->setHopRange(searchMin, searchMax);
+    if (this->analyzer)
+      this->analyzer->setHopRange(searchMin, searchMax);
   } catch (Suscan::Exception const &) {
     // Invalid limits, warn?
   }
@@ -487,7 +494,7 @@ Scanner::setRttMs(unsigned int rtt)
 {
   this->rtt = rtt;
 
-  if (this->fs > 0)
+  if (this->fs > 0 && this->analyzer)
     this->analyzer->setBufferingSize(rtt * this->fs / 1000);
 }
 
