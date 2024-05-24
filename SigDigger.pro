@@ -16,9 +16,9 @@ TEMPLATE = app
 DEFINES += QT_DEPRECATED_WARNINGS
 
 equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
-  QMAKE_CXXFLAGS += -std=gnu++14
+  QMAKE_CXXFLAGS += -std=gnu++17
 } else {
-  CONFIG += c++14
+  CONFIG += c++1z
 }
 
 CONFIG(release, debug|release): QMAKE_CXXFLAGS+=-D__FILENAME__=\\\"SigDigger\\\"
