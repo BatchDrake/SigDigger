@@ -272,8 +272,8 @@ function build()
 
     if [ "$SIGDIGGER_SKIPBUILD" == "" ]; then
         locate_sdk
-        export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
-        export LD_LIBRARY_PATH="$DEPLOYROOT/usr/lib:$LD_LIBRARY_PATH"
+        export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$DEPLOYROOT/usr/lib64/pkgconfig:$PKG_CONFIG_PATH"
+        export LD_LIBRARY_PATH="$DEPLOYROOT/usr/lib:$DEPLOYROOT/usr/lib64:$LD_LIBRARY_PATH"
         try "Cleaning deploy directory..." rm -Rfv "$DEPLOYROOT"
         try "Cleaning buildroot..."        rm -Rfv "$BUILDROOT"
         try "Recreating directories..."    mkdir -p "$DEPLOYROOT" "$BUILDROOT"
