@@ -42,6 +42,7 @@ namespace SigDigger {
     // Demodulator state
     Suscan::Orbit   m_orbit;
     bool            m_enabled = false;
+    bool            m_agc = true;
     float           m_volume = 0;
     float           m_cutOff = 0;
     SUFREQ          m_lo = 0;
@@ -100,6 +101,7 @@ namespace SigDigger {
     void setEnabled(bool);
     void setVolume(float);
     void setSquelchEnabled(bool);
+    void setAGCEnabled(bool);
     void setSquelchLevel(float);
     void setAudioCorrection(Suscan::Orbit const &);
     void setCorrectionEnabled(bool);

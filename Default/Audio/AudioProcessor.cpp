@@ -55,7 +55,7 @@ AudioProcessor::AudioProcessor(UIMediator *mediator, QObject *parent)
   assertAudioDevice();
 
   m_tracker = new Suscan::AnalyzerRequestTracker(this);
-  this->connectAll();
+  connectAll();
 
   m_squelchLevel = 1e-2;
 }
@@ -73,19 +73,19 @@ void
 AudioProcessor::connectAll()
 {
   connect(
-        this->m_tracker,
+        m_tracker,
         SIGNAL(opened(Suscan::AnalyzerRequest const &)),
         this,
         SLOT(onOpened(Suscan::AnalyzerRequest const &)));
 
   connect(
-        this->m_tracker,
+        m_tracker,
         SIGNAL(cancelled(Suscan::AnalyzerRequest const &)),
         this,
         SLOT(onCancelled(Suscan::AnalyzerRequest const &)));
 
   connect(
-        this->m_tracker,
+        m_tracker,
         SIGNAL(error(Suscan::AnalyzerRequest const &, const std::string &)),
         this,
         SLOT(onError(Suscan::AnalyzerRequest const &, const std::string &)));
@@ -142,7 +142,7 @@ AudioProcessor::openAudio()
       // Prepare channel
       ch.bw    = m_maxAudioBw;
       ch.ft    = 0;
-      ch.fc    = this->calcTrueLoFreq();
+      ch.fc    = calcTrueLoFreq();
       ch.fLow  = -.5 * m_maxAudioBw;
       ch.fHigh = +.5 * m_maxAudioBw;
 
@@ -187,7 +187,7 @@ AudioProcessor::closeAudio()
   }
 
   // Just in case
-  this->stopRecording();
+  stopRecording();
 
   m_opening = false;
   m_opened  = false;
@@ -217,7 +217,7 @@ SUFREQ
 AudioProcessor::calcTrueLoFreq() const
 {
   SUFREQ delta = 0;
-  SUFREQ bw = this->calcTrueBandwidth();
+  SUFREQ bw = calcTrueBandwidth();
 
   if (m_demod == AudioDemod::USB)
     delta += .5 * bw;
@@ -233,7 +233,7 @@ AudioProcessor::setTrueLoFreq()
   assert(m_analyzer != nullptr);
   assert(m_audioInspectorOpened);
 
-  m_analyzer->setInspectorFreq(m_audioInspHandle, this->calcTrueLoFreq());
+  m_analyzer->setInspectorFreq(m_audioInspHandle, calcTrueLoFreq());
 }
 
 void
@@ -244,7 +244,7 @@ AudioProcessor::setTrueBandwidth()
 
   m_analyzer->setInspectorBandwidth(
         m_audioInspHandle,
-        this->calcTrueBandwidth());
+        calcTrueBandwidth());
 }
 
 void
@@ -261,6 +261,7 @@ AudioProcessor::setParams()
   cfg.set("audio.demodulator", SCAST(uint64_t, m_demod + 1));
   cfg.set("audio.squelch", m_squelch);
   cfg.set("audio.squelch-level", m_squelchLevel);
+  cfg.set("agc.enabled", m_agc);
 
   // Set audio inspector parameters
   m_analyzer->setInspectorConfig(m_audioInspHandle, cfg);
@@ -335,8 +336,8 @@ void
 AudioProcessor::setAnalyzer(Suscan::Analyzer *analyzer)
 {
   if (m_analyzer != nullptr) {
-    this->disconnectAnalyzer();
-    this->closeAudio();
+    disconnectAnalyzer();
+    closeAudio();
   }
 
   m_analyzer = analyzer;
@@ -344,9 +345,9 @@ AudioProcessor::setAnalyzer(Suscan::Analyzer *analyzer)
 
   // Was audio enabled? Open it back
   if (m_analyzer != nullptr) {
-    this->connectAnalyzer();
+    connectAnalyzer();
     if (m_enabled)
-      this->openAudio();
+      openAudio();
   }
 }
 
@@ -359,10 +360,10 @@ AudioProcessor::setEnabled(bool enabled)
     if (m_analyzer != nullptr) {
       if (enabled) {
         if (!m_opened && !m_opening)
-          this->openAudio();
+          openAudio();
       } else {
         if (m_opened || m_opening)
-          this->closeAudio();
+          closeAudio();
       }
     }
   }
@@ -375,7 +376,18 @@ AudioProcessor::setSquelchEnabled(bool enabled)
     m_squelch = enabled;
 
     if (m_audioInspectorOpened)
-      this->setParams();
+      setParams();
+  }
+}
+
+void
+AudioProcessor::setAGCEnabled(bool enabled)
+{
+  if (m_agc != enabled) {
+    m_agc = enabled;
+
+    if (m_audioInspectorOpened)
+      setParams();
   }
 }
 
@@ -386,7 +398,7 @@ AudioProcessor::setSquelchLevel(float level)
     m_squelchLevel = level;
 
     if (m_audioInspectorOpened)
-      this->setParams();
+      setParams();
   }
 }
 
@@ -432,14 +444,14 @@ AudioProcessor::setDemod(AudioDemod demod)
     m_demod = demod;
 
     if (m_audioInspectorOpened) {
-      this->setTrueLoFreq();
-      this->setTrueBandwidth();
-      this->setParams();
+      setTrueLoFreq();
+      setTrueBandwidth();
+      setParams();
     }
 
     if (m_audioFileSaver != nullptr) {
-      this->stopRecording();
-      this->startRecording(m_savedPath);
+      stopRecording();
+      startRecording(m_savedPath);
     }
   }
 }
@@ -455,7 +467,7 @@ AudioProcessor::setSampleRate(unsigned rate)
     // acknowledgment to call setSampleRate
     if (m_audioInspectorOpened) {
       m_settingRate = true;
-      this->setParams();
+      setParams();
       m_analyzer->setInspectorWatermark(
             m_audioInspHandle,
             PlaybackWorker::calcBufferSizeForRate(m_sampleRate) / 2);
@@ -464,8 +476,8 @@ AudioProcessor::setSampleRate(unsigned rate)
     }
 
     if (m_audioFileSaver != nullptr) {
-      this->stopRecording();
-      this->startRecording(m_savedPath);
+      stopRecording();
+      startRecording(m_savedPath);
     }
   }
 }
@@ -477,7 +489,7 @@ AudioProcessor::setCutOff(float cutOff)
     m_cutOff = cutOff;
 
     if (m_audioInspectorOpened)
-      this->setParams();
+      setParams();
   }
 }
 
@@ -496,7 +508,7 @@ AudioProcessor::setLoFreq(SUFREQ lo)
     m_lo = lo;
 
     if (m_audioInspectorOpened)
-      this->setTrueLoFreq();
+      setTrueLoFreq();
   }
 }
 
@@ -508,18 +520,18 @@ AudioProcessor::setBandwidth(SUFREQ bw)
     bw = m_maxAudioBw;
 
   if (!sufeq(m_bw, bw, 1e-8f)) {
-    SUFREQ trueLo = this->calcTrueLoFreq();
+    SUFREQ trueLo = calcTrueLoFreq();
     SUFREQ newLo;
 
     m_bw = bw;
 
-    newLo = this->calcTrueLoFreq();
+    newLo = calcTrueLoFreq();
 
     if (m_audioInspectorOpened) {
-      this->setTrueBandwidth();
+      setTrueBandwidth();
 
       if (!sufeq(trueLo, newLo, 1e-8f))
-        this->setTrueLoFreq();
+        setTrueLoFreq();
     }
   }
 }
@@ -588,7 +600,7 @@ AudioProcessor::startRecording(QString path)
     params.modulation = m_demod;
 
     m_audioFileSaver = new AudioFileSaver(params, nullptr);
-    this->connectAudioFileSaver();
+    connectAudioFileSaver();
 
     opened = true;
   }
@@ -646,7 +658,7 @@ AudioProcessor::onInspectorMessage(Suscan::InspectorMessage const &msg)
       case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_WRONG_OBJECT:
       case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_WRONG_HANDLE:
         if (!m_opened) {
-          this->closeAudio();
+          closeAudio();
           emit audioError("Unexpected error while opening audio channel");
         }
 
@@ -714,9 +726,9 @@ AudioProcessor::onOpened(Suscan::AnalyzerRequest const &req)
     m_audioInspId          = req.inspectorId;
     m_audioInspectorOpened = true;
 
-    this->setTrueBandwidth();
-    this->setTrueLoFreq();
-    this->setParams();
+    setTrueBandwidth();
+    setTrueLoFreq();
+    setParams();
 
     m_analyzer->setInspectorWatermark(
           m_audioInspHandle,

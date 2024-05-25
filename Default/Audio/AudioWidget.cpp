@@ -70,6 +70,7 @@ AudioWidgetConfig::deserialize(Suscan::Object const &conf)
   LOAD(enabled);
   LOAD(collapsed);
   LOAD(lockToFreq);
+  LOAD(agc);
   LOAD(demod);
   LOAD(rate);
   LOAD(cutOff);
@@ -94,6 +95,7 @@ AudioWidgetConfig::serialize()
   STORE(enabled);
   STORE(collapsed);
   STORE(lockToFreq);
+  STORE(agc);
   STORE(demod);
   STORE(rate);
   STORE(cutOff);
@@ -234,6 +236,12 @@ AudioWidget::connectAll()
         SIGNAL(clicked(bool)),
         this,
         SLOT(onOpenDopplerSettings()));
+
+  connect(
+        m_ui->agcButton,
+        SIGNAL(clicked(bool)),
+        this,
+        SLOT(onAGCChanged()));
 
   connect(
         m_fcDialog,
@@ -481,6 +489,12 @@ AudioWidget::isMuted() const
 }
 
 bool
+AudioWidget::isAGCEnabled() const
+{
+  return m_ui->agcButton->isChecked();
+}
+
+bool
 AudioWidget::isCorrectionEnabled() const
 {
   return m_panelConfig->tleCorrection;
@@ -576,6 +590,15 @@ AudioWidget::setVolume(SUFLOAT volume)
         QString::number(m_ui->volumeSlider->value()) + " dB");
 
   m_processor->setVolume(getMuteableVolume());
+}
+
+void
+AudioWidget::setAGCEnabled(bool enabled)
+{
+  m_panelConfig->agc = enabled;
+  BLOCKSIG(m_ui->agcButton, setChecked(enabled));
+
+  m_processor->setAGCEnabled(enabled);
 }
 
 void
@@ -765,6 +788,7 @@ AudioWidget::applyConfig()
   setSampleRate(m_panelConfig->rate);
   setCutOff(m_panelConfig->cutOff);
   setVolume(m_panelConfig->volume);
+  setAGCEnabled(m_panelConfig->agc);
   setDemod(SigDiggerHelpers::strToDemod(m_panelConfig->demod));
   setEnabled(m_panelConfig->enabled);
   setLockToFreq(m_panelConfig->lockToFreq);
@@ -943,6 +967,12 @@ void
 AudioWidget::onVolumeChanged()
 {
   setVolume(getVolume());
+}
+
+void
+AudioWidget::onAGCChanged()
+{
+  setAGCEnabled(isAGCEnabled());
 }
 
 void

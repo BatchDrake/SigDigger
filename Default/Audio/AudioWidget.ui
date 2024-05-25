@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>271</width>
-    <height>276</height>
+    <width>281</width>
+    <height>277</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -194,6 +194,28 @@
          <property name="verticalSpacing">
           <number>0</number>
          </property>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="sqlButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>48</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>&amp;SQL</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="0">
           <widget class="QPushButton" name="muteButton">
            <property name="sizePolicy">
@@ -215,15 +237,21 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QPushButton" name="sqlButton">
+          <widget class="QPushButton" name="agcButton">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="maximumSize">
+            <size>
+             <width>48</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
-            <string>&amp;SQL</string>
+            <string>&amp;AGC</string>
            </property>
            <property name="checkable">
             <bool>true</bool>
