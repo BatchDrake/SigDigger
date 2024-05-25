@@ -28,7 +28,7 @@ ENVFILE="$DEPLOYROOT/env"
 
 function make_envfile() {
     echo "PREFIX=\"$DEPLOYROOT\"" > "$ENVFILE"
-    echo "export PKG_CONFIG_PATH=\"\$PKG_CONFIG_PATH:\$PREFIX/usr/lib/pkgconfig\"" >> "$ENVFILE"
+    echo "export PKG_CONFIG_PATH=\"\$PKG_CONFIG_PATH:\$PREFIX/usr/lib/pkgconfig:\$PREFIX/usr/lib64/pkgconfig\"" >> "$ENVFILE"
     echo "alias qmake_sd=\"qmake SIGDIGGER_PREFIX=\\\"\$PREFIX\\\" SUWIDGETS_PREFIX=\\\"\$PREFIX\\\"\"" >> "$ENVFILE"
 }
 
@@ -36,7 +36,7 @@ if [ "x$DEVEL" != "x" ]; then
     try    "Creating environment file..." make_envfile
     notice "  Environment file for plugin development: $ENVFILE"
 else
-    try "Removing unneeded development files..." rm -Rfv "$DEPLOYROOT"/usr/include "$DEPLOYROOT"/usr/bin/suscan.status "$DEPLOYROOT"/usr/lib/pkgconfig
+    try "Removing unneeded development files..." rm -Rfv "$DEPLOYROOT"/usr/include "$DEPLOYROOT"/usr/bin/suscan.status "$DEPLOYROOT"/usr/lib/pkgconfig "$DEPLOYROOT"/usr/lib64/pkgconfig
 fi
 
 function make_startup_script() {
@@ -45,7 +45,7 @@ function make_startup_script() {
     SELF=$(readlink -f "$0")
     HERE=${SELF%/*}
     export SUSCAN_CONFIG_PATH="${HERE}/share/suscan/config"
-    export LD_LIBRARY_PATH="${HERE}/lib:$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="${HERE}/lib:${HERE}/lib64:$LD_LIBRARY_PATH"
     exec "${HERE}"/bin/'"$1"' "$@"' > "$DEPLOYROOT"/"$1"
     return $?
 }
