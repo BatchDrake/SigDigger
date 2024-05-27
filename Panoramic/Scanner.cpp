@@ -447,9 +447,6 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
 {
   SUFREQ searchMin, searchMax;
 
-  if (fs == 0)
-      return;
-
   if (freqMin > freqMax) {
     SUFREQ tmp = freqMin;
     freqMin = freqMax;
@@ -461,8 +458,10 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
     searchMax = freqMax;
   } else {
     searchMin = searchMax = .5 * (freqMin + freqMax);
-    freqMin = searchMin - fs / 2;
-    freqMax = searchMax + fs / 2;
+    if (fs != 0) {
+      freqMin = searchMin - fs / 2;
+      freqMax = searchMax + fs / 2;
+    }
   }
 
   if (searchMin < this->freqMin)
