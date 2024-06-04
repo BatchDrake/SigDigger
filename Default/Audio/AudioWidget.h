@@ -38,7 +38,7 @@ namespace SigDigger {
     bool enabled        = false;
     bool collapsed      = false;
     bool lockToFreq     = false;
-    bool agc            = true;
+    std::string agc     = "fast";
 
     std::string demod;
     std::string savePath;
@@ -105,7 +105,7 @@ namespace SigDigger {
     void setCutOff(SUFLOAT);
     void setVolume(SUFLOAT);
     void setMuted(bool);
-    void setAGCEnabled(bool);
+    void setAGCConfig(std::string const &);
     void setSquelchEnabled(bool);
     void setSquelchLevel(SUFLOAT);
 
@@ -125,7 +125,6 @@ namespace SigDigger {
     enum AudioDemod getDemod() const;
     bool getLockToFreq() const;
     unsigned int getSampleRate() const;
-    bool    isAGCEnabled() const;
     SUFLOAT getCutOff() const;
     SUFLOAT getVolume() const;
     bool    isMuted() const;
@@ -133,6 +132,7 @@ namespace SigDigger {
     bool    isCorrectionEnabled() const;
     bool    getSquelchEnabled() const;
     SUFLOAT getSquelchLevel() const;
+    std::string getAGCConfig() const;
     Suscan::Orbit getOrbit() const;
     bool getRecordState() const;
     std::string getRecordSavePath() const;

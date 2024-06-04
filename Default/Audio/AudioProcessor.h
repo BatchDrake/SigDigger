@@ -43,6 +43,7 @@ namespace SigDigger {
     Suscan::Orbit   m_orbit;
     bool            m_enabled = false;
     bool            m_agc = true;
+    float           m_agcTimeScale = 1.;
     float           m_volume = 0;
     float           m_cutOff = 0;
     SUFREQ          m_lo = 0;
@@ -102,6 +103,7 @@ namespace SigDigger {
     void setVolume(float);
     void setSquelchEnabled(bool);
     void setAGCEnabled(bool);
+    void setAGCTimeScale(float);
     void setSquelchLevel(float);
     void setAudioCorrection(Suscan::Orbit const &);
     void setCorrectionEnabled(bool);

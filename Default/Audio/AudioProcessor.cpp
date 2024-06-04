@@ -262,6 +262,7 @@ AudioProcessor::setParams()
   cfg.set("audio.squelch", m_squelch);
   cfg.set("audio.squelch-level", m_squelchLevel);
   cfg.set("agc.enabled", m_agc);
+  cfg.set("agc.ts", m_agcTimeScale);
 
   // Set audio inspector parameters
   m_analyzer->setInspectorConfig(m_audioInspHandle, cfg);
@@ -385,6 +386,17 @@ AudioProcessor::setAGCEnabled(bool enabled)
 {
   if (m_agc != enabled) {
     m_agc = enabled;
+
+    if (m_audioInspectorOpened)
+      setParams();
+  }
+}
+
+void
+AudioProcessor::setAGCTimeScale(float ts)
+{
+  if (!sufeq(m_agcTimeScale, ts, 1e-1)) {
+    m_agcTimeScale = ts;
 
     if (m_audioInspectorOpened)
       setParams();

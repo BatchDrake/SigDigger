@@ -238,8 +238,8 @@ AudioWidget::connectAll()
         SLOT(onOpenDopplerSettings()));
 
   connect(
-        m_ui->agcButton,
-        SIGNAL(clicked(bool)),
+        m_ui->agcCombo,
+        SIGNAL(activated(int)),
         this,
         SLOT(onAGCChanged()));
 
@@ -488,10 +488,24 @@ AudioWidget::isMuted() const
   return m_ui->muteButton->isChecked();
 }
 
-bool
-AudioWidget::isAGCEnabled() const
+std::string
+AudioWidget::getAGCConfig() const
 {
-  return m_ui->agcButton->isChecked();
+  switch (m_ui->agcCombo->currentIndex()) {
+    case 0:
+      return "disabled";
+
+    case 1:
+      return "slow";
+
+    case 2:
+      return "normal";
+
+    case 3:
+      return "fast";
+  }
+
+  return "fast";
 }
 
 bool
@@ -593,12 +607,25 @@ AudioWidget::setVolume(SUFLOAT volume)
 }
 
 void
-AudioWidget::setAGCEnabled(bool enabled)
+AudioWidget::setAGCConfig(std::string const &agc)
 {
-  m_panelConfig->agc = enabled;
-  BLOCKSIG(m_ui->agcButton, setChecked(enabled));
+  int index = 2;
+  float scales[] = {1, 10, 3.162f, 1};
+  m_panelConfig->agc = agc;
 
-  m_processor->setAGCEnabled(enabled);
+  if (agc == "disabled")
+    index = 0;
+  else if (agc == "slow")
+    index = 1;
+  else if (agc == "normal")
+    index = 2;
+  else if (agc == "fast")
+    index = 3;
+
+  BLOCKSIG(m_ui->agcCombo, setCurrentIndex(index));
+
+  m_processor->setAGCTimeScale(scales[index]);
+  m_processor->setAGCEnabled(index > 0);
 }
 
 void
@@ -788,7 +815,7 @@ AudioWidget::applyConfig()
   setSampleRate(m_panelConfig->rate);
   setCutOff(m_panelConfig->cutOff);
   setVolume(m_panelConfig->volume);
-  setAGCEnabled(m_panelConfig->agc);
+  setAGCConfig(m_panelConfig->agc);
   setDemod(SigDiggerHelpers::strToDemod(m_panelConfig->demod));
   setEnabled(m_panelConfig->enabled);
   setLockToFreq(m_panelConfig->lockToFreq);
@@ -972,7 +999,7 @@ AudioWidget::onVolumeChanged()
 void
 AudioWidget::onAGCChanged()
 {
-  setAGCEnabled(isAGCEnabled());
+  setAGCConfig(getAGCConfig());
 }
 
 void
