@@ -235,7 +235,7 @@ GenericInspector::inspectorMessage(Suscan::InspectorMessage const &msg)
       p = len / 2;
 
       for (auto i = 0u; i < len; ++i)
-        data[i] = SU_POWER_DB(data[i]);
+        data[i] = SU_POWER_DB_RAW(data[i]);
 
       for (auto i = 0u; i < len / 2; ++i) {
         x = data[i];

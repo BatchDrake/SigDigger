@@ -397,6 +397,22 @@ MainSpectrum::setGracePeriod(qint64 period)
 }
 
 void
+MainSpectrum::setDisplayFreqs(qint64 freq, qint64 lnbFreq)
+{
+  qint64 newLo = m_ui->loLcd->getValue() - freq;
+
+  m_ui->lnbLcd->setValueSilent(lnbFreq);
+  m_ui->fcLcd->setValueSilent(freq);
+
+  WATERFALL_CALL(setFreqUnits(getFrequencyUnits(freq)));
+  WATERFALL_CALL(setCenterFreq(freq));
+
+  updateLimits();
+
+  BLOCKSIG(this, setLoFreq(newLo));
+}
+
+void
 MainSpectrum::setFreqs(qint64 freq, qint64 lnbFreq, bool silent)
 {
   qint64 newLo = m_ui->loLcd->getValue() - freq;

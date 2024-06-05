@@ -151,6 +151,7 @@ namespace SigDigger {
     void setCenterFreq(qint64 freq);
     void setLoFreq(qint64 loFreq);
     void setLnbFreq(qint64 lnbFreq);
+    void setDisplayFreqs(qint64, qint64);
     void setFreqs(qint64 freq, qint64 lnbFreq, bool silent = false);
     void setFilterBandwidth(unsigned int bw);
 

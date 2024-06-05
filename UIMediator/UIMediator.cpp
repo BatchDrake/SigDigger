@@ -852,10 +852,9 @@ UIMediator::notifySourceInfo(Suscan::AnalyzerSourceInfo const &info)
         static_cast<qint64>(info.getMinFrequency()),
         static_cast<qint64>(info.getMaxFrequency()));
 
-  m_ui->spectrum->setFreqs(
+  m_ui->spectrum->setDisplayFreqs(
         static_cast<qint64>(info.getFrequency()),
-        static_cast<qint64>(info.getLnbFrequency()),
-        true); // Silent update (important!)
+        static_cast<qint64>(info.getLnbFrequency()));
 
   m_ui->spectrum->setLocked(
         !info.testPermission(SUSCAN_ANALYZER_PERM_SET_FREQ));
