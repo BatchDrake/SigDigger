@@ -56,6 +56,14 @@ runs:
       shell:  ${{inputs.shell}}
       run: git clone https://github.com/pothosware/SoapySDRPlay3 && cd SoapySDRPlay3 && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release .. && make -j3 && sudo make install && cd ../../
 
+    - name: Build and install SoapySDR module for PlutoSDR
+      shell: ${{inputs.shell}}
+      run: git clone https://github.com/pothosware/SoapyPlutoSDR && cd SoapyPlutoSDR && mkdir build && cd build &&  cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release .. && make && sudo make install && cd ../../
+
+    - name: Making sure all SoapySDR modules are in the right directory
+      shell:  ${{inputs.shell}}
+      run: sudo cp -Rfv /usr/lib/SoapySDR/modules* /usr/lib/x86_64-linux-gnu/SoapySDR/ || true
+      
     - name: Install libxml2
       shell:  ${{inputs.shell}}
       run: sudo apt-get install libxml2-dev
