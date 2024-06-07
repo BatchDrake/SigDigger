@@ -8,7 +8,11 @@ inputs:
 
 runs:
   using: 'composite'
-  steps:  
+  steps:
+    - name: Install libusb
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libusb-1.0-0-dev
+      
     - name: Install libiio
       shell:  ${{inputs.shell}}
       run: sudo apt-get install libiio-dev
