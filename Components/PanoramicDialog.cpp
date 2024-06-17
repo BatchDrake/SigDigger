@@ -383,7 +383,8 @@ PanoramicDialog::preferredRttMs(Suscan::Source::Device const &dev)
   else if (dev.getDriver() == "uhd")
     return 2;
 
-  return 0;
+  // reasonable default for unknown devices
+  return 16;
 }
 
 void
@@ -967,8 +968,7 @@ PanoramicDialog::onDeviceChanged(void)
     unsigned int rtt = preferredRttMs(dev);
     setRanges(dev);
     refreshGains(dev);
-    if (rtt != 0)
-      m_ui->rttSpin->setValue(static_cast<int>(rtt));
+    m_ui->rttSpin->setValue(static_cast<int>(rtt));
     if (m_ui->fullRangeCheck->isChecked()) {
       m_ui->rangeStartSpin->setValue(dev.getMinFreq() + getLnbOffset());
       m_ui->rangeEndSpin->setValue(dev.getMaxFreq() + getLnbOffset());
