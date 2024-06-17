@@ -294,6 +294,12 @@ PanoramicDialog::connectAll(void)
         SIGNAL(frameSkipChanged(void)));
 
   connect(
+        m_ui->rttSpin,
+        SIGNAL(valueChanged(int)),
+        this,
+        SLOT(onFrameSkipChanged(int)));
+
+  connect(
         m_ui->relBwSlider,
         SIGNAL(valueChanged(int)),
         this,
@@ -1203,4 +1209,14 @@ PanoramicDialog::onSampleRateSpinChanged(void)
   if (!m_running)
     m_dialogConfig->sampRate = static_cast<int>(
         m_ui->sampleRateSpin->value());
+}
+
+void
+PanoramicDialog::onFrameSkipChanged(int rttMs)
+{
+    if (!m_waterfall)
+        return;
+
+    // rttMs will always be >= 1 due to the spin box config
+    m_waterfall->setExpectedRate(static_cast<int>(1000 / rttMs));
 }

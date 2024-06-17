@@ -181,6 +181,7 @@ namespace SigDigger {
       void onGainChanged(QString name, float val);
       void onSampleRateSpinChanged();
       void onPartitioningChanged(int);
+      void onFrameSkipChanged(int);
   };
 }
 
