@@ -14,7 +14,7 @@ This is the `master` branch (which contains the latest stable release) and it is
     ```
     % git clone --recursive -b master https://github.com/BatchDrake/sigutils
     % cd sigutils && mkdir -p build && cd build && cmake .. && make && sudo make install && cd ../..
-    % git clone --recursive -b develop https://github.com/BatchDrake/suscan
+    % git clone --recursive -b master https://github.com/BatchDrake/suscan
     % cd suscan && mkdir -p build && cd build && cmake .. && make && sudo make install && cd ../..
     % git clone -b develop https://github.com/BatchDrake/SuWidgets
     % cd SuWidgets && qmake6 SuWidgetsLib.pro && make && sudo make install && cd ..
