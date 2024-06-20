@@ -123,7 +123,7 @@
       <item row="5" column="1">
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Device RTT</string>
+         <string>Settling time</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -157,7 +157,7 @@
        </widget>
       </item>
       <item row="5" column="2">
-       <widget class="QSpinBox" name="rttSpin">
+       <widget class="QSpinBox" name="frameSkipSpin">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>

@@ -288,13 +288,13 @@ PanoramicDialog::connectAll(void)
         SIGNAL(reset(void)));
 
   connect(
-        m_ui->rttSpin,
+        m_ui->frameSkipSpin,
         SIGNAL(valueChanged(int)),
         this,
         SIGNAL(frameSkipChanged(void)));
 
   connect(
-        m_ui->rttSpin,
+        m_ui->frameSkipSpin,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onFrameSkipChanged(int)));
@@ -816,7 +816,7 @@ PanoramicDialog::redrawMeasures(void)
 unsigned int
 PanoramicDialog::getRttMs(void) const
 {
-  return static_cast<unsigned int>(m_ui->rttSpin->value());
+  return static_cast<unsigned int>(m_ui->frameSkipSpin->value());
 }
 
 float
@@ -968,7 +968,7 @@ PanoramicDialog::onDeviceChanged(void)
     unsigned int rtt = preferredRttMs(dev);
     setRanges(dev);
     refreshGains(dev);
-    m_ui->rttSpin->setValue(static_cast<int>(rtt));
+    m_ui->frameSkipSpin->setValue(static_cast<int>(rtt));
     if (m_ui->fullRangeCheck->isChecked()) {
       m_ui->rangeStartSpin->setValue(dev.getMinFreq() + getLnbOffset());
       m_ui->rangeEndSpin->setValue(dev.getMaxFreq() + getLnbOffset());
