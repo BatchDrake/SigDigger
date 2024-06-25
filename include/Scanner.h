@@ -20,15 +20,13 @@
 #define SCANNER_H
 
 #include <QObject>
+#include <QMap>
 #include <Suscan/Analyzer.h>
 
-//
-// It does not make much sense to have different spectrum sizes for the
-// PSD and the panoramic view. We use this size for both thigs.
-//
-#define SIGDIGGER_SCANNER_SPECTRUM_SIZE     16384
+#define SIGDIGGER_SCANNER_SPECTRUM_SIZE     65536
 #define SIGDIGGER_SCANNER_DEFAULT_BIN_VALUE -200.0f
 #define SIGDIGGER_SCANNER_MIN_BIN_VALUE     -150.0f
+#define SIGDIGGER_SCANNER_FREQ_RESOLUTION   1000.0
 
 #define SIGDIGGER_SCANNER_COUNT_MAX         5.0f
 #define SIGDIGGER_SCANNER_COUNT_RESET       1.0f
@@ -66,6 +64,7 @@ namespace SigDigger {
       SUFREQ freqMin = 0;
       SUFREQ freqMax = 0;
       SUFREQ freqRange = 0;
+      unsigned int spectrumSize = SIGDIGGER_SCANNER_SPECTRUM_SIZE;
 
       SUFREQ fftBandwidth = 0;
       SUFLOAT fftRelBw = .5f;
@@ -76,9 +75,6 @@ namespace SigDigger {
       SUFLOAT psdAccum[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
       SUFLOAT psdCount[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
 
-      SUFLOAT scaledPsdAccum[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
-      SUFLOAT scaledPsdCount[SIGDIGGER_SCANNER_SPECTRUM_SIZE];
-
       SpectrumView();
 
       void setRange(SUFREQ freqMin, SUFREQ freqMax);
@@ -86,6 +82,7 @@ namespace SigDigger {
       void feed(
           const SUFLOAT *,
           const SUFLOAT *,
+          SUSCOUNT psdSize,
           SUFREQ freqMin,
           SUFREQ freqMax,
           bool adjustSides = true);
@@ -93,24 +90,27 @@ namespace SigDigger {
       void feed(
           const SUFLOAT *,
           const SUFLOAT *,
+          SUSCOUNT psdSize,
           SUFREQ center,
           bool adjustSides = true);
 
       void feed(SpectrumView const &);
 
-      void reset(void);
-      void interpolate(void); // Interpolate empty bins
+      void reset();
+      void interpolate(); // Interpolate empty bins
 
     private:
       void feedLinearMode(
           const SUFLOAT *,
           const SUFLOAT *,
+          SUSCOUNT psdSize,
           SUFREQ freqMin,
           SUFREQ freqMax,
           bool adjustSides = true);
 
       void feedHistogramMode(
           const SUFLOAT *,
+          SUSCOUNT psdSize,
           SUFREQ freqMin,
           SUFREQ freqMax);
   };
@@ -119,23 +119,36 @@ namespace SigDigger {
   {
       Q_OBJECT
 
-      SUFREQ freqMin;
-      SUFREQ freqMax;
-      SUFREQ lnb;
+      SUFREQ m_freqMin;
+      SUFREQ m_freqMax;
+      SUFREQ m_lnb;
 
-      bool fsGuessed = false;
-      unsigned int fs = 0;
-      unsigned int rtt = 15;
-      SpectrumView views[2];
-      int view = 0;
+      bool m_fsGuessed = false;
+      unsigned int m_fs = 0;
+      unsigned int m_rtt = 15;
+      unsigned int m_fftSize = 8192;
+      SpectrumView m_views[2];
+      bool m_lazyInit = false;
+      int m_view = 0;
 
-      Suscan::Analyzer *analyzer = nullptr;
+      Suscan::Analyzer *m_analyzer = nullptr;
+
+      // Delayed params
+      Suscan::Analyzer::SpectrumPartitioning m_partitioning = Suscan::Analyzer::CONTINUOUS;
+      Suscan::Analyzer::SweepStrategy m_strategy = Suscan::Analyzer::STOCHASTIC;
+      QMap<QString, float> m_gains;
+      float m_relBw = 1.;
+      SUFREQ m_hopFreqMin = 0;
+      SUFREQ m_hopFreqMax = 3e11;
 
     public:
       explicit Scanner(
           QObject *parent,
           SUFREQ freqMin,
           SUFREQ freqMax,
+          SUFREQ initFreqMin,
+          SUFREQ initFreqMax,
+          bool noHop,
           Suscan::Source::Config const &cfg);
 
       void setRelativeBw(float ratio);
@@ -145,21 +158,22 @@ namespace SigDigger {
       void setPartitioning(Suscan::Analyzer::SpectrumPartitioning);
       void setGain(QString const &, float);
 
-      unsigned int getFs(void) const;
-      void flip(void);
-      SpectrumView &getSpectrumView(void);
-      SpectrumView const &getSpectrumView(void) const;
-      void stop(void);
+      unsigned int getFs() const;
+      void flip();
+      SpectrumView &getSpectrumView();
+      SpectrumView const &getSpectrumView() const;
+      void stop();
 
       ~Scanner();
 
     signals:
-      void spectrumUpdated(void);
-      void stopped(void);
+      void spectrumUpdated();
+      void stopped();
 
     public slots:
+      void onInit(const Suscan::StatusMessage &);
       void onPSDMessage(const Suscan::PSDMessage &);
-      void onAnalyzerHalted(void);
+      void onAnalyzerHalted();
 
   };
 }

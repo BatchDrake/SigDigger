@@ -219,6 +219,7 @@ namespace SigDigger {
     bool         getPanSpectrumDevice(Suscan::Source::Device &) const;
     QString      getPanSpectrumAntenna(void) const;
     bool         getPanSpectrumRange(qint64 &min, qint64 &max) const;
+    bool         getPanSpectrumZoomRange(qint64 &min, qint64 &max, bool &noHop) const;
     unsigned int getPanSpectrumRttMs() const;
     float        getPanSpectrumRelBw() const;
     float        getPanSpectrumGain(QString const &) const;

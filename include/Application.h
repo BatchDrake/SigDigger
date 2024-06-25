@@ -72,8 +72,6 @@ namespace SigDigger {
 
     // Panoramic spectrum
     Scanner *m_scanner = nullptr;
-    SUFREQ m_scanMinFreq;
-    SUFREQ m_scanMaxFreq;
 
     // Rediscover devices
     QThread *m_deviceDetectThread;

@@ -773,60 +773,69 @@ Application::onRecentCleared()
 void
 Application::onPanSpectrumStart()
 {
-  if (m_scanner == nullptr) {
-    qint64 freqMin;
-    qint64 freqMax;
-    Suscan::Source::Device device;
+  qint64 freqMin, initFreqMin;
+  qint64 freqMax, initFreqMax;
+  Suscan::Source::Device device;
+  bool noHop;
 
-    if (m_mediator->getPanSpectrumRange(freqMin, freqMax)
-        && m_mediator->getPanSpectrumDevice(device)) {
-      Suscan::Source::Config config(
-            "soapysdr",
-            SUSCAN_SOURCE_FORMAT_AUTO);
+  // we defer deletion of old scanner instances to here to avoid user-after-free of PSD data
+  // since the panoramic dialog's waterfall still uses the scanner's PSD data when stopped
+  if (m_scanner != nullptr) {
+    delete m_scanner;
+    m_scanner = nullptr;
+  }
 
-      m_scanMinFreq = static_cast<SUFREQ>(freqMin);
-      m_scanMaxFreq = static_cast<SUFREQ>(freqMax);
+  if (m_mediator->getPanSpectrumRange(freqMin, freqMax) &&
+      m_mediator->getPanSpectrumZoomRange(initFreqMin, initFreqMax, noHop) &&
+      m_mediator->getPanSpectrumDevice(device)) {
+    Suscan::Source::Config config(
+          "soapysdr",
+          SUSCAN_SOURCE_FORMAT_AUTO);
 
-      config.setDevice(device);
-      config.setAntenna(m_mediator->getPanSpectrumAntenna().toStdString());
-      config.setSampleRate(
-            static_cast<unsigned int>(
-              m_mediator->getPanSpectrumPreferredSampleRate()));
-      config.setDCRemove(true);
-      config.setBandwidth(m_mediator->getPanSpectrumPreferredSampleRate());
-      config.setLnbFreq(m_mediator->getPanSpectrumLnbOffset());
-      config.setFreq(.5 * (m_scanMinFreq + m_scanMaxFreq));
+    config.setDevice(device);
+    config.setAntenna(m_mediator->getPanSpectrumAntenna().toStdString());
+    config.setSampleRate(
+          static_cast<unsigned int>(
+            m_mediator->getPanSpectrumPreferredSampleRate()));
+    config.setDCRemove(true);
+    config.setBandwidth(m_mediator->getPanSpectrumPreferredSampleRate());
+    config.setLnbFreq(m_mediator->getPanSpectrumLnbOffset());
+    config.setFreq(.5 * (initFreqMin + initFreqMax));
 
-      try {
-        Suscan::Logger::getInstance()->flush();
-        m_scanner = new Scanner(this, freqMin, freqMax, config);
-        m_scanner->setRelativeBw(m_mediator->getPanSpectrumRelBw());
-        m_scanner->setRttMs(m_mediator->getPanSpectrumRttMs());
-        onPanSpectrumStrategyChanged(
-              m_mediator->getPanSpectrumStrategy());
-        onPanSpectrumPartitioningChanged(
-              m_mediator->getPanSpectrumPartition());
+    // default RTL-SDR buffer size results in ~40 ms wait between chunks of data
+    // shorter buffer size avoids that being a bottleneck in sweep speed
+    if (device.getDriver() == "rtlsdr")
+      config.setParam("stream:bufflen", "16384");
 
-        for (auto p = device.getFirstGain();
-             p != device.getLastGain();
-             ++p) {
-          m_scanner->setGain(
-                QString::fromStdString(p->getName()),
-                m_mediator->getPanSpectrumGain(
-                  QString::fromStdString(p->getName())));
-        }
+    try {
+      Suscan::Logger::getInstance()->flush();
+      m_scanner = new Scanner(this, freqMin, freqMax, initFreqMin, initFreqMax, noHop, config);
+      m_scanner->setRelativeBw(m_mediator->getPanSpectrumRelBw());
+      m_scanner->setRttMs(m_mediator->getPanSpectrumRttMs());
+      onPanSpectrumStrategyChanged(
+            m_mediator->getPanSpectrumStrategy());
+      onPanSpectrumPartitioningChanged(
+            m_mediator->getPanSpectrumPartition());
 
-        connectScanner();
-        Suscan::Logger::getInstance()->flush();
-      } catch (Suscan::Exception &) {
-        QMessageBox::critical(
-              this,
-              "SigDigger error",
-              "Failed to start capture due to errors:<p /><pre>"
-              + getLogText()
-              + "</pre>",
-              QMessageBox::Ok);
+      for (auto p = device.getFirstGain();
+           p != device.getLastGain();
+           ++p) {
+        m_scanner->setGain(
+              QString::fromStdString(p->getName()),
+              m_mediator->getPanSpectrumGain(
+                QString::fromStdString(p->getName())));
       }
+
+      connectScanner();
+      Suscan::Logger::getInstance()->flush();
+    } catch (Suscan::Exception &) {
+      QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Failed to start capture due to errors:<p /><pre>"
+            + getLogText()
+            + "</pre>",
+            QMessageBox::Ok);
     }
   }
 
@@ -837,11 +846,9 @@ void
 Application::onPanSpectrumStop()
 {
   if (m_scanner != nullptr) {
-    delete m_scanner;
-    m_scanner = nullptr;
+    m_scanner->stop();
   }
-
-  m_mediator->setPanSpectrumRunning(m_scanner != nullptr);
+  m_mediator->setPanSpectrumRunning(false);
 }
 
 void
@@ -908,11 +915,6 @@ Application::onScannerStopped()
 {
   QString messages = getLogText();
 
-  if (m_scanner != nullptr) {
-    delete m_scanner;
-    m_scanner = nullptr;
-  }
-
   if (messages.size() > 0) {
     QMessageBox::warning(
           this,
@@ -923,7 +925,7 @@ Application::onScannerStopped()
           QMessageBox::Ok);
   }
 
-  m_mediator->setPanSpectrumRunning(m_scanner != nullptr);
+  m_mediator->setPanSpectrumRunning(false);
 }
 
 void
@@ -937,7 +939,7 @@ Application::onScannerUpdated()
         static_cast<quint64>(view.freqMin),
         static_cast<quint64>(view.freqMax),
         view.psd,
-        SIGDIGGER_SCANNER_SPECTRUM_SIZE);
+        view.spectrumSize);
 }
 
 void
