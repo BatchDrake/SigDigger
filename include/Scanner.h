@@ -20,6 +20,7 @@
 #define SCANNER_H
 
 #include <QObject>
+#include <QMap>
 #include <Suscan/Analyzer.h>
 
 #define SIGDIGGER_SCANNER_SPECTRUM_SIZE     65536
@@ -95,8 +96,8 @@ namespace SigDigger {
 
       void feed(SpectrumView const &);
 
-      void reset(void);
-      void interpolate(void); // Interpolate empty bins
+      void reset();
+      void interpolate(); // Interpolate empty bins
 
     private:
       void feedLinearMode(
@@ -118,18 +119,27 @@ namespace SigDigger {
   {
       Q_OBJECT
 
-      SUFREQ freqMin;
-      SUFREQ freqMax;
-      SUFREQ lnb;
+      SUFREQ m_freqMin;
+      SUFREQ m_freqMax;
+      SUFREQ m_lnb;
 
-      bool fsGuessed = false;
-      unsigned int fs = 0;
-      unsigned int rtt = 15;
-      unsigned int fftSize = 8192;
-      SpectrumView views[2];
-      int view = 0;
+      bool m_fsGuessed = false;
+      unsigned int m_fs = 0;
+      unsigned int m_rtt = 15;
+      unsigned int m_fftSize = 8192;
+      SpectrumView m_views[2];
+      bool m_lazyInit = false;
+      int m_view = 0;
 
-      Suscan::Analyzer *analyzer = nullptr;
+      Suscan::Analyzer *m_analyzer = nullptr;
+
+      // Delayed params
+      Suscan::Analyzer::SpectrumPartitioning m_partitioning = Suscan::Analyzer::CONTINUOUS;
+      Suscan::Analyzer::SweepStrategy m_strategy = Suscan::Analyzer::STOCHASTIC;
+      QMap<QString, float> m_gains;
+      float m_relBw = 1.;
+      SUFREQ m_hopFreqMin = 0;
+      SUFREQ m_hopFreqMax = 3e11;
 
     public:
       explicit Scanner(
@@ -148,21 +158,22 @@ namespace SigDigger {
       void setPartitioning(Suscan::Analyzer::SpectrumPartitioning);
       void setGain(QString const &, float);
 
-      unsigned int getFs(void) const;
-      void flip(void);
-      SpectrumView &getSpectrumView(void);
-      SpectrumView const &getSpectrumView(void) const;
-      void stop(void);
+      unsigned int getFs() const;
+      void flip();
+      SpectrumView &getSpectrumView();
+      SpectrumView const &getSpectrumView() const;
+      void stop();
 
       ~Scanner();
 
     signals:
-      void spectrumUpdated(void);
-      void stopped(void);
+      void spectrumUpdated();
+      void stopped();
 
     public slots:
+      void onInit(const Suscan::StatusMessage &);
       void onPSDMessage(const Suscan::PSDMessage &);
-      void onAnalyzerHalted(void);
+      void onAnalyzerHalted();
 
   };
 }

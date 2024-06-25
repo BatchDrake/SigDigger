@@ -35,7 +35,7 @@ static inline unsigned int nextPow2(unsigned int n)
 
 SpectrumView::SpectrumView()
 {
-  this->reset();
+  reset();
 }
 
 void
@@ -50,11 +50,11 @@ SpectrumView::setRange(SUFREQ freqMin, SUFREQ freqMax)
   if (this->spectrumSize > SIGDIGGER_SCANNER_SPECTRUM_SIZE)
     this->spectrumSize = SIGDIGGER_SCANNER_SPECTRUM_SIZE;
 
-  this->reset();
+  reset();
 }
 
 void
-SpectrumView::interpolate(void)
+SpectrumView::interpolate()
 {
   unsigned int i, j;
   unsigned int count = 1;
@@ -85,7 +85,7 @@ SpectrumView::interpolate(void)
       } else {
         this->psd[i] = this->psdAccum[i] / this->psdCount[i];
         if (this->psdCount[i] > SIGDIGGER_SCANNER_COUNT_MAX) {
-          this->psdCount[i]    = SIGDIGGER_SCANNER_COUNT_RESET;
+          this->psdCount[i] = SIGDIGGER_SCANNER_COUNT_RESET;
           this->psdAccum[i] = this->psd[i] * SIGDIGGER_SCANNER_COUNT_RESET;
         }
       }
@@ -248,11 +248,11 @@ SpectrumView::feed(
   SUFREQ fftCount = (freqMax - freqMin) / this->freqRange;
 
   if (fftCount * this->spectrumSize >= 2)
-    this->feedLinearMode(psd, count, psdSize, freqMin, freqMax, adjustSides);
+    feedLinearMode(psd, count, psdSize, freqMin, freqMax, adjustSides);
   else
-    this->feedHistogramMode(psd, psdSize, freqMin, freqMax);
+    feedHistogramMode(psd, psdSize, freqMin, freqMax);
 
-  this->interpolate();
+  interpolate();
 }
 
 void
@@ -263,7 +263,7 @@ SpectrumView::feed(
     SUFREQ center,
     bool adjustSides)
 {
-  this->feed(
+  feed(
         psd,
         count,
         psdSize,
@@ -275,7 +275,7 @@ SpectrumView::feed(
 void
 SpectrumView::feed(SpectrumView const &detail)
 {
-  this->feed(
+  feed(
         detail.psdAccum,
         detail.psdCount,
         detail.spectrumSize,
@@ -285,7 +285,7 @@ SpectrumView::feed(SpectrumView const &detail)
 }
 
 void
-SpectrumView::reset(void)
+SpectrumView::reset()
 {
   memset(this->psd, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
   memset(this->psdAccum, 0, SIGDIGGER_SCANNER_SPECTRUM_SIZE * sizeof(SUFLOAT));
@@ -316,62 +316,72 @@ Scanner::Scanner(
     initFreqMax = tmp;
   }
 
-  this->freqMin = freqMin;
-  this->freqMax = freqMax;
+  m_freqMin = freqMin;
+  m_freqMax = freqMax;
+
+  m_hopFreqMin = m_freqMin;
+  m_hopFreqMax = m_freqMax;
 
   // choose an FFT size to achieve the required frequency resolution
-  this->fftSize = nextPow2(targSampRate / SIGDIGGER_SCANNER_FREQ_RESOLUTION);
+  m_fftSize = nextPow2(targSampRate / SIGDIGGER_SCANNER_FREQ_RESOLUTION);
 
   params.channelUpdateInterval = 0;
   params.spectrumAvgAlpha = .001f;
   params.sAvgAlpha = 0.001f;
   params.nAvgAlpha = 0.5;
   params.snr = 2;
-  params.windowSize = this->fftSize;
+  params.windowSize = m_fftSize;
 
   params.mode = Suscan::AnalyzerParams::Mode::WIDE_SPECTRUM;
 
   if (noHop) {
     SUFREQ centreFreq = (initFreqMin + initFreqMax) / 2;
     params.minFreq = params.maxFreq = centreFreq;
-    this->getSpectrumView().setRange(centreFreq - targSampRate / 2,
+    getSpectrumView().setRange(centreFreq - targSampRate / 2,
                                      centreFreq + targSampRate / 2);
   } else {
     params.minFreq = initFreqMin;
     params.maxFreq = initFreqMax;
-    this->getSpectrumView().setRange(initFreqMin, initFreqMax);
+    getSpectrumView().setRange(initFreqMin, initFreqMax);
   }
 
-  this->analyzer = new Suscan::Analyzer(params, cfg);
+  m_analyzer = new Suscan::Analyzer(params, cfg);
+  m_lazyInit = false;
 
   connect(
-        this->analyzer,
-        SIGNAL(halted(void)),
+        m_analyzer,
+        SIGNAL(halted()),
         this,
-        SLOT(onAnalyzerHalted(void)));
+        SLOT(onAnalyzerHalted()));
 
   connect(
-        this->analyzer,
-        SIGNAL(eos(void)),
+        m_analyzer,
+        SIGNAL(eos()),
         this,
-        SLOT(onAnalyzerHalted(void)));
+        SLOT(onAnalyzerHalted()));
 
   connect(
-        this->analyzer,
-        SIGNAL(read_error(void)),
+        m_analyzer,
+        SIGNAL(read_error()),
         this,
-        SLOT(onAnalyzerHalted(void)));
+        SLOT(onAnalyzerHalted()));
 
   connect(
-        this->analyzer,
+        m_analyzer,
         SIGNAL(psd_message(const Suscan::PSDMessage &)),
         this,
         SLOT(onPSDMessage(const Suscan::PSDMessage &)));
+
+  connect(
+        m_analyzer,
+        SIGNAL(status_message(const Suscan::StatusMessage &)),
+        this,
+        SLOT(onInit(const Suscan::StatusMessage &)));
 }
 
 Scanner::~Scanner()
 {
-  this->stop();
+  stop();
 }
 
 void
@@ -379,67 +389,76 @@ Scanner::setRelativeBw(float ratio)
 {
   if (ratio > 1)
     ratio = 1;
-  else if (ratio < 2.f / this->fftSize)
-    ratio = 2.f / this->fftSize;
+  else if (ratio < 2.f / m_fftSize)
+    ratio = 2.f / m_fftSize;
 
-  this->views[0].fftRelBw = this->views[1].fftRelBw = ratio;
-  if (this->analyzer)
-    this->analyzer->setRelBandwidth(ratio);
+  m_views[0].fftRelBw = m_views[1].fftRelBw = ratio;
+
+  m_relBw = ratio;
+
+  if (m_analyzer)
+    m_analyzer->setRelBandwidth(ratio);
 }
 
 SpectrumView &
-Scanner::getSpectrumView(void)
+Scanner::getSpectrumView()
 {
-  return this->views[this->view];
+  return m_views[m_view];
 }
 
 SpectrumView const &
-Scanner::getSpectrumView(void) const
+Scanner::getSpectrumView() const
 {
-  return this->views[this->view];
+  return m_views[m_view];
 }
 
 void
-Scanner::stop(void)
+Scanner::stop()
 {
-  if (this->analyzer) {
-    delete this->analyzer;
-    this->analyzer = nullptr;
+  if (m_analyzer) {
+    delete m_analyzer;
+    m_analyzer = nullptr;
   }
 }
 
 void
-Scanner::flip(void)
+Scanner::flip()
 {
-  this->view = 1 - this->view;
-  this->getSpectrumView().reset();
+  m_view = 1 - m_view;
+  getSpectrumView().reset();
 }
 
 void
 Scanner::setStrategy(Suscan::Analyzer::SweepStrategy strategy)
 {
-  if (this->analyzer)
-    this->analyzer->setSweepStrategy(strategy);
+  m_strategy = strategy;
+
+  if (m_analyzer)
+    m_analyzer->setSweepStrategy(strategy);
 }
 
 void
 Scanner::setPartitioning(Suscan::Analyzer::SpectrumPartitioning partitioning)
 {
-  if (this->analyzer)
-    this->analyzer->setSpectrumPartitioning(partitioning);
+  m_partitioning = partitioning;
+
+  if (m_analyzer)
+    m_analyzer->setSpectrumPartitioning(partitioning);
 }
 
 void
 Scanner::setGain(QString const &name, float value)
 {
-  if (this->analyzer)
-    this->analyzer->setGain(name.toStdString(), value);
+  m_gains[name] = value;
+
+  if (m_analyzer)
+    m_analyzer->setGain(name.toStdString(), value);
 }
 
 unsigned int
-Scanner::getFs(void) const
+Scanner::getFs() const
 {
-  return this->fs;
+  return m_fs;
 }
 
 void
@@ -458,31 +477,34 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
     searchMax = freqMax;
   } else {
     searchMin = searchMax = .5 * (freqMin + freqMax);
-    if (fs != 0) {
-      freqMin = searchMin - fs / 2;
-      freqMax = searchMax + fs / 2;
+    if (m_fs != 0) {
+      freqMin = searchMin - m_fs / 2;
+      freqMax = searchMax + m_fs / 2;
     }
   }
 
-  if (searchMin < this->freqMin)
-    searchMin = this->freqMin;
+  if (searchMin < m_freqMin)
+    searchMin = m_freqMin;
 
-  if (searchMax > this->freqMax)
-    searchMax = this->freqMax;
+  if (searchMax > m_freqMax)
+    searchMax = m_freqMax;
 
   // Scanner in zoom mode, copy this view back to mainView
   try {
     // Limits adjusted.
-    if (std::fabs(this->getSpectrumView().freqMin - freqMin) > 1 ||
-        std::fabs(this->getSpectrumView().freqMax - freqMax) > 1) {
-      SpectrumView &previous = this->getSpectrumView();
-      this->flip();
-      this->getSpectrumView().setRange(freqMin, freqMax);
-      this->getSpectrumView().feed(previous);
+    if (std::fabs(getSpectrumView().freqMin - freqMin) > 1 ||
+        std::fabs(getSpectrumView().freqMax - freqMax) > 1) {
+      SpectrumView &previous = getSpectrumView();
+      flip();
+      getSpectrumView().setRange(freqMin, freqMax);
+      getSpectrumView().feed(previous);
     }
 
-    if (this->analyzer)
-      this->analyzer->setHopRange(searchMin, searchMax);
+    m_hopFreqMin = searchMin;
+    m_hopFreqMax = searchMax;
+
+    if (m_analyzer)
+      m_analyzer->setHopRange(searchMin, searchMax);
   } catch (Suscan::Exception const &) {
     // Invalid limits, warn?
   }
@@ -491,29 +513,29 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
 void
 Scanner::setRttMs(unsigned int rtt)
 {
-  this->rtt = rtt;
+  m_rtt = rtt;
 
-  if (this->fs > 0 && this->analyzer)
-    this->analyzer->setBufferingSize(rtt * this->fs / 1000);
+  if (m_fs > 0 && m_analyzer)
+    m_analyzer->setBufferingSize(rtt * m_fs / 1000);
 }
 
 ////////////////////////////// Slots /////////////////////////////////////
 void
 Scanner::onPSDMessage(const Suscan::PSDMessage &msg)
 {
-  if (!this->fsGuessed) {
-    this->fs = msg.getSampleRate();
-    this->analyzer->setBufferingSize(this->rtt * this->fs / 1000);
-    this->analyzer->setBandwidth(this->fs);
-    this->fsGuessed = true;
-    this->views[0].fftBandwidth = this->views[1].fftBandwidth = this->fs;
+  if (!m_fsGuessed) {
+    m_fs = msg.getSampleRate();
+    m_analyzer->setBufferingSize(m_rtt * m_fs / 1000);
+    m_analyzer->setBandwidth(m_fs);
+    m_fsGuessed = true;
+    m_views[0].fftBandwidth = m_views[1].fftBandwidth = m_fs;
   }
 
-  if (msg.size() == this->fftSize) {
-    this->getSpectrumView().feed(
+  if (msg.size() == m_fftSize) {
+    getSpectrumView().feed(
           msg.get(),
           nullptr,
-          this->fftSize,
+          m_fftSize,
           msg.getFrequency());
   }
 
@@ -521,7 +543,23 @@ Scanner::onPSDMessage(const Suscan::PSDMessage &msg)
 }
 
 void
-Scanner::onAnalyzerHalted(void)
+Scanner::onAnalyzerHalted()
 {
   emit stopped();
+}
+
+void
+Scanner::onInit(const Suscan::StatusMessage &msg)
+{
+  if (msg.getCode() == 0 && m_analyzer != nullptr && !m_lazyInit) {
+    for (auto gain : m_gains.keys())
+      m_analyzer->setGain(gain.toStdString(), m_gains[gain]);
+
+    m_analyzer->setSweepStrategy(m_strategy);
+    m_analyzer->setSpectrumPartitioning(m_partitioning);
+    m_analyzer->setHopRange(m_hopFreqMin, m_hopFreqMax);
+    m_analyzer->setRelBandwidth(m_relBw);
+
+    m_lazyInit = true;
+  }
 }
