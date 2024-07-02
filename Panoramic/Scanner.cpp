@@ -112,7 +112,7 @@ SpectrumView::interpolate()
   // Deal with trailing zeroes, if any
   if (inGap)
     for (j = 0; j < count; ++j)
-      this->psd[j + zero_pos] = right;
+      this->psd[j + zero_pos] = left;
 }
 
 void
