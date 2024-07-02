@@ -498,6 +498,7 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
       flip();
       getSpectrumView().setRange(freqMin, freqMax);
       getSpectrumView().feed(previous);
+      emit spectrumUpdated();
     }
 
     m_hopFreqMin = searchMin;
