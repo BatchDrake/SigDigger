@@ -128,18 +128,9 @@ namespace SigDigger {
       unsigned int m_rtt = 15;
       unsigned int m_fftSize = 8192;
       SpectrumView m_views[2];
-      bool m_lazyInit = false;
       int m_view = 0;
 
       Suscan::Analyzer *m_analyzer = nullptr;
-
-      // Delayed params
-      Suscan::Analyzer::SpectrumPartitioning m_partitioning = Suscan::Analyzer::CONTINUOUS;
-      Suscan::Analyzer::SweepStrategy m_strategy = Suscan::Analyzer::STOCHASTIC;
-      QMap<QString, float> m_gains;
-      float m_relBw = 1.;
-      SUFREQ m_hopFreqMin = 0;
-      SUFREQ m_hopFreqMax = 3e11;
 
     public:
       explicit Scanner(
@@ -171,7 +162,6 @@ namespace SigDigger {
       void stopped();
 
     public slots:
-      void onInit(const Suscan::StatusMessage &);
       void onPSDMessage(const Suscan::PSDMessage &);
       void onAnalyzerHalted();
 

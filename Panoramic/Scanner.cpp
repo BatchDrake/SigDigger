@@ -319,9 +319,6 @@ Scanner::Scanner(
   m_freqMin = freqMin;
   m_freqMax = freqMax;
 
-  m_hopFreqMin = m_freqMin;
-  m_hopFreqMax = m_freqMax;
-
   // choose an FFT size to achieve the required frequency resolution
   m_fftSize = nextPow2(targSampRate / SIGDIGGER_SCANNER_FREQ_RESOLUTION);
 
@@ -346,7 +343,6 @@ Scanner::Scanner(
   }
 
   m_analyzer = new Suscan::Analyzer(params, cfg);
-  m_lazyInit = false;
 
   connect(
         m_analyzer,
@@ -371,12 +367,6 @@ Scanner::Scanner(
         SIGNAL(psd_message(const Suscan::PSDMessage &)),
         this,
         SLOT(onPSDMessage(const Suscan::PSDMessage &)));
-
-  connect(
-        m_analyzer,
-        SIGNAL(status_message(const Suscan::StatusMessage &)),
-        this,
-        SLOT(onInit(const Suscan::StatusMessage &)));
 }
 
 Scanner::~Scanner()
@@ -393,8 +383,6 @@ Scanner::setRelativeBw(float ratio)
     ratio = 2.f / m_fftSize;
 
   m_views[0].fftRelBw = m_views[1].fftRelBw = ratio;
-
-  m_relBw = ratio;
 
   if (m_analyzer)
     m_analyzer->setRelBandwidth(ratio);
@@ -431,8 +419,6 @@ Scanner::flip()
 void
 Scanner::setStrategy(Suscan::Analyzer::SweepStrategy strategy)
 {
-  m_strategy = strategy;
-
   if (m_analyzer)
     m_analyzer->setSweepStrategy(strategy);
 }
@@ -440,8 +426,6 @@ Scanner::setStrategy(Suscan::Analyzer::SweepStrategy strategy)
 void
 Scanner::setPartitioning(Suscan::Analyzer::SpectrumPartitioning partitioning)
 {
-  m_partitioning = partitioning;
-
   if (m_analyzer)
     m_analyzer->setSpectrumPartitioning(partitioning);
 }
@@ -449,8 +433,6 @@ Scanner::setPartitioning(Suscan::Analyzer::SpectrumPartitioning partitioning)
 void
 Scanner::setGain(QString const &name, float value)
 {
-  m_gains[name] = value;
-
   if (m_analyzer)
     m_analyzer->setGain(name.toStdString(), value);
 }
@@ -501,9 +483,6 @@ Scanner::setViewRange(SUFREQ freqMin, SUFREQ freqMax, bool noHop)
       emit spectrumUpdated();
     }
 
-    m_hopFreqMin = searchMin;
-    m_hopFreqMax = searchMax;
-
     if (m_analyzer)
       m_analyzer->setHopRange(searchMin, searchMax);
   } catch (Suscan::Exception const &) {
@@ -547,20 +526,4 @@ void
 Scanner::onAnalyzerHalted()
 {
   emit stopped();
-}
-
-void
-Scanner::onInit(const Suscan::StatusMessage &msg)
-{
-  if (msg.getCode() == 0 && m_analyzer != nullptr && !m_lazyInit) {
-    for (auto gain : m_gains.keys())
-      m_analyzer->setGain(gain.toStdString(), m_gains[gain]);
-
-    m_analyzer->setSweepStrategy(m_strategy);
-    m_analyzer->setSpectrumPartitioning(m_partitioning);
-    m_analyzer->setHopRange(m_hopFreqMin, m_hopFreqMax);
-    m_analyzer->setRelBandwidth(m_relBw);
-
-    m_lazyInit = true;
-  }
 }
