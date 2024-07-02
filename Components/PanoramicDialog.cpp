@@ -933,7 +933,7 @@ PanoramicDialog::applyConfig(void)
   setPaletteGradient(QString::fromStdString(m_dialogConfig->palette));
   m_ui->lnbDoubleSpinBox->setValue(
         static_cast<SUFREQ>(m_dialogConfig->lnbFreq));
-  m_ui->rangeStartSpin->setValue(m_dialogConfig->rangeMin);
+  BLOCKSIG(m_ui->rangeStartSpin, setValue(m_dialogConfig->rangeMin));
   m_ui->rangeEndSpin->setValue(m_dialogConfig->rangeMax);
   m_ui->fullRangeCheck->setChecked(m_dialogConfig->fullRange);
   m_ui->sampleRateSpin->setValue(m_dialogConfig->sampRate);
