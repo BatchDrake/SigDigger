@@ -113,6 +113,7 @@ namespace SigDigger {
     void connectAll();
     void populateUnits();
     void updateRbw();
+    void updateCoverage();
 
     void refreshPalettes();
 

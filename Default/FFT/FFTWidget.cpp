@@ -183,6 +183,7 @@ FFTWidget::setProfile(Suscan::Source::Config &config)
 {
   m_rate = config.getDecimatedSampleRate();
   updateRbw();
+  updateCoverage();
 }
 
 void
@@ -536,7 +537,7 @@ void
 FFTWidget::updateRbw()
 {
   if (m_rate == 0 || m_fftSize == 0) {
-    m_ui->rbwLabel->setText("RBW: N/A");
+    m_ui->rbwLabel->setText("N/A");
   } else {
     qreal rbw = static_cast<qreal>(m_rate) / m_fftSize;
     QString rbwString = SuWidgetsHelpers::formatQuantity(
@@ -544,7 +545,20 @@ FFTWidget::updateRbw()
           2,
           QStringLiteral("Hz"));
 
-    m_ui->rbwLabel->setText("RBW: " + rbwString);
+    m_ui->rbwLabel->setText(rbwString);
+  }
+}
+
+void
+FFTWidget::updateCoverage()
+{
+  if (m_rate == 0 || m_fftSize == 0 || m_refreshRate == 0) {
+    m_ui->coverageLabel->setText("N/A");
+  } else {
+    qreal coverage = static_cast<qreal>(m_refreshRate * m_fftSize) / m_rate;
+    QString coverageString = QString("%1\%").arg(100 * coverage, 0, 'f', 1);
+
+    m_ui->coverageLabel->setText(coverageString);
   }
 }
 
@@ -844,6 +858,7 @@ FFTWidget::setFftSize(unsigned int size)
 {
   m_fftSize = size;
   updateRbw();
+  updateCoverage();
   updateFftSizes();
 }
 
@@ -852,6 +867,7 @@ FFTWidget::setRefreshRate(unsigned int rate)
 {
   m_refreshRate = rate;
   updateRefreshRates();
+  updateCoverage();
 }
 
 void
@@ -881,6 +897,7 @@ FFTWidget::setSampleRate(unsigned int rate)
 {
   m_rate = rate;
   updateRbw();
+  updateCoverage();
 }
 
 void
@@ -1164,6 +1181,7 @@ FFTWidget::onFftSizeChanged()
     m_fftSize = m_defaultFftSize;
 
   updateRbw();
+  updateCoverage();
 
   params->windowSize = getFftSize();
 
@@ -1181,6 +1199,8 @@ FFTWidget::onRefreshRateChanged()
 
   if (m_refreshRate == 0)
     m_refreshRate = m_defaultRefreshRate;
+
+  updateCoverage();
 
   params->psdUpdateInterval = 1.f / getRefreshRate();
 
@@ -1324,6 +1344,7 @@ FFTWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
 {
   m_rate = SCAST(unsigned, msg.info()->getSampleRate());
   updateRbw();
+  updateCoverage();
 }
 
 void
