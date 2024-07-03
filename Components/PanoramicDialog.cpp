@@ -211,6 +211,8 @@ PanoramicDialog::setGuiConfig(GuiConfig const &cfg)
     m_waterfall->setWaterfallSpan(30 * 1000); // 30 seconds
     m_waterfall->setFreqDragLocked(true);
 
+    m_waterfall->setMaxBlending(false);
+
     if (m_dialogConfig) {
       m_waterfall->setPandapterRange(
             m_dialogConfig->panRangeMin,

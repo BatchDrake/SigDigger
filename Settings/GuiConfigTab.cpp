@@ -46,6 +46,7 @@ GuiConfigTab::refreshUi()
         this->ui->useGLWaterfallCheck->isChecked());
   this->ui->useGlWfInWindowsCheck->setEnabled(
         this->ui->useGLWaterfallCheck->isChecked());
+  this->ui->useGlWfInWindowsCheck->setChecked(this->guiConfig.useGlInWindows);
   this->ui->useMaxBlendingCheck->setChecked(this->guiConfig.useMaxBlending);
   this->ui->ttlCheck->setChecked(this->guiConfig.enableMsgTTL);
   this->ui->ttlLabel->setEnabled(this->ui->ttlCheck->isChecked());
