@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>323</width>
-    <height>452</height>
+    <height>563</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,7 +82,10 @@
    <item row="2" column="1">
     <widget class="QLabel" name="rbwLabel">
      <property name="text">
-      <string>RBW: N/A</string>
+      <string>N/A</string>
+     </property>
+     <property name="indent">
+      <number>2</number>
      </property>
     </widget>
    </item>
@@ -814,6 +817,16 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_16">
+     <property name="text">
+      <string>RBW</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
     </widget>
    </item>
   </layout>

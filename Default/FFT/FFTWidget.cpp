@@ -536,7 +536,7 @@ void
 FFTWidget::updateRbw()
 {
   if (m_rate == 0 || m_fftSize == 0) {
-    m_ui->rbwLabel->setText("RBW: N/A");
+    m_ui->rbwLabel->setText("N/A");
   } else {
     qreal rbw = static_cast<qreal>(m_rate) / m_fftSize;
     QString rbwString = SuWidgetsHelpers::formatQuantity(
@@ -544,7 +544,7 @@ FFTWidget::updateRbw()
           2,
           QStringLiteral("Hz"));
 
-    m_ui->rbwLabel->setText("RBW: " + rbwString);
+    m_ui->rbwLabel->setText(rbwString);
   }
 }
 
