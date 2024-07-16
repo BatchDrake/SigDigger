@@ -404,7 +404,6 @@ GenericInspector::setTimeLimits(
 
 GenericInspector::~GenericInspector()
 {
-
 }
 
 /////////////////////////////////// Slots /////////////////////////////////////

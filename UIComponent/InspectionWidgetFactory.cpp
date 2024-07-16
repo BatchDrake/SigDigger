@@ -62,7 +62,7 @@ InspectionWidget::InspectionWidget(
     QWidget *parent) :
   TabWidget(factory, mediator, parent),
   m_request(request),
-  m_config(m_request.config)
+  m_config(static_cast<const suscan_config_t *>(m_request.config))
 {
   QAction *newColor = new QAction("Change &color", this);
   newColor->setShortcut(QString("CTRL+SHIFT+C"));
