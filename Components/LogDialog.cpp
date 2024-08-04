@@ -34,13 +34,13 @@ LogDialog::LogDialog(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::LogDialog)
 {
-  this->logger = Suscan::Logger::getInstance();
+  m_logger = Suscan::Logger::getInstance();
 
   ui->setupUi(this);
 
-  this->setWindowTitle("Message log");
+  setWindowTitle("Message log");
 
-  this->connectAll();
+  connectAll();
 }
 
 void
@@ -49,7 +49,7 @@ LogDialog::saveLog(QString path)
   FILE *fp;
 
   if ((fp = fopen(path.toStdString().c_str(), "w")) == nullptr) {
-    QString error(errno);
+    QString error(strerror(errno));
 
     QMessageBox::critical(
           this,
@@ -58,17 +58,17 @@ LogDialog::saveLog(QString path)
     return;
   }
 
-  for (int i = 0; i < this->msgVec.size(); ++i) {
+  for (int i = 0; i < m_msgVec.size(); ++i) {
     fprintf(
           fp,
           "%ld.%d,%s,%s,%s:%d,%s",
-          this->msgVec[i].time.tv_sec,
-          static_cast<int>(this->msgVec[i].time.tv_usec),
-          su_log_severity_to_string(this->msgVec[i].severity),
-          this->msgVec[i].domain.c_str(),
-          this->msgVec[i].function.c_str(),
-          this->msgVec[i].line,
-          this->msgVec[i].message.c_str());
+          m_msgVec[i].time.tv_sec,
+          static_cast<int>(m_msgVec[i].time.tv_usec),
+          su_log_severity_to_string(m_msgVec[i].severity),
+          m_msgVec[i].domain.c_str(),
+          m_msgVec[i].function.c_str(),
+          m_msgVec[i].line,
+          m_msgVec[i].message.c_str());
   }
 
   fclose(fp);
@@ -78,19 +78,19 @@ void
 LogDialog::connectAll(void)
 {
   connect(
-        this->logger,
+        m_logger,
         SIGNAL(messageEmitted(Suscan::LoggerMessage)),
         this,
         SLOT(onMessage(Suscan::LoggerMessage)));
 
   connect(
-        this->ui->saveButton,
+        ui->saveButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSave(void)));
 
   connect(
-        this->ui->clearButton,
+        ui->clearButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onClear(void)));
@@ -130,7 +130,7 @@ LogDialog::getErrorHtml(void) const
 {
   QString errText = "<ul>";
 
-  for (auto &p: this->msgVec) {
+  for (auto &p: m_msgVec) {
     if (p.severity == SU_LOG_SEVERITY_CRITICAL ||
         p.severity == SU_LOG_SEVERITY_ERROR)
       errText += "<li>" + QString::fromStdString(p.message).trimmed() + "</li>";
@@ -139,61 +139,79 @@ LogDialog::getErrorHtml(void) const
   return errText + "</ul>";
 }
 
+bool
+LogDialog::isRepeated(std::string const &msg) const
+{
+  if (m_msgVec.empty())
+    return false;
+
+  return m_msgVec.last().message == msg;
+}
+
 void
 LogDialog::onMessage(Suscan::LoggerMessage msg)
 {
-  int newRow = this->ui->logTableWidget->rowCount();
+  int row;
+  bool newMessage = !isRepeated(msg.message);
 
-  this->msgVec.push_back(msg);
-  this->ui->logTableWidget->insertRow(newRow);
+  // New message
+  if (newMessage) {
+    row = ui->logTableWidget->rowCount();
+    m_msgVec.push_back(msg);
+    ui->logTableWidget->insertRow(row);
+    m_repeat = 1;
+  } else {
+    row = ui->logTableWidget->rowCount() - 1;
+    msg.message = msg.message + " (" + std::to_string(++m_repeat) + ")";
+  }
 
-  this->ui->logTableWidget->setItem(
-        newRow,
+  ui->logTableWidget->setItem(
+        row,
         1,
         new QTableWidgetItem(
-          QDateTime::fromTime_t(
-            static_cast<unsigned int>(msg.time.tv_sec)).toString()));
+          QDateTime::fromSecsSinceEpoch(
+            static_cast<qint64>(msg.time.tv_sec)).toString()));
 
-  this->ui->logTableWidget->setItem(
-        newRow,
+  ui->logTableWidget->setItem(
+        row,
         0,
         LogDialog::makeSeverityItem(msg.severity));
 
-  this->ui->logTableWidget->setItem(
-        newRow,
+  ui->logTableWidget->setItem(
+        row,
         3,
         new QTableWidgetItem(QString::fromStdString(msg.domain)));
 
-  this->ui->logTableWidget->setItem(
-        newRow,
+  ui->logTableWidget->setItem(
+        row,
         2,
         new QTableWidgetItem(QString::fromStdString(msg.message).trimmed()));
 
-  this->ui->logTableWidget->setItem(
-        newRow,
+  ui->logTableWidget->setItem(
+        row,
         4,
         new QTableWidgetItem(QString::fromStdString(msg.function)));
 
-  this->ui->logTableWidget->setItem(
-        newRow,
+  ui->logTableWidget->setItem(
+        row,
         5,
         new QTableWidgetItem(QString::number(msg.line)));
 
-  this->ui->logTableWidget->resizeColumnsToContents();
+  ui->logTableWidget->resizeColumnsToContents();
 
-  if (this->ui->autoScrollButton->isChecked())
-    this->ui->logTableWidget->scrollToBottom();
+  if (newMessage && ui->autoScrollButton->isChecked())
+    ui->logTableWidget->scrollToBottom();
 
   if (msg.severity == SU_LOG_SEVERITY_CRITICAL ||
       msg.severity == SU_LOG_SEVERITY_ERROR)
-    this->errorFound = true;
+    m_errorFound = true;
 }
 
 void
 LogDialog::onClear(void)
 {
-  this->ui->logTableWidget->setRowCount(0);
-  this->msgVec.clear();
+  ui->logTableWidget->setRowCount(0);
+  m_msgVec.clear();
 }
 
 void
@@ -213,7 +231,7 @@ LogDialog::onSave(void)
 
   if (dialog.exec()) {
     QString path = dialog.selectedFiles().first();
-    this->saveLog(path);
+    saveLog(path);
   }
 }
 

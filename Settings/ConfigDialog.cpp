@@ -17,15 +17,14 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include <QFileDialog>
-#include <QMessageBox>
-
 #include <SuWidgetsHelpers.h>
 #include <ProfileConfigTab.h>
 #include <ColorConfigTab.h>
+#include <AudioConfigTab.h>
 #include <GuiConfigTab.h>
 #include <TLESourceTab.h>
 #include <LocationConfigTab.h>
+#include <RemoteControlTab.h>
 #include <time.h>
 #include "ConfigDialog.h"
 
@@ -35,13 +34,13 @@ Q_DECLARE_METATYPE(Suscan::Source::Config); // Unicorns
 Q_DECLARE_METATYPE(Suscan::Source::Device); // More unicorns
 
 void
-ConfigDialog::connectAll(void)
+ConfigDialog::connectAll()
 {
   connect(
          this,
-         SIGNAL(accepted(void)),
+         SIGNAL(accepted()),
          this,
-         SLOT(onAccepted(void)));
+         SLOT(onAccepted()));
 }
 
 void
@@ -63,13 +62,13 @@ ConfigDialog::setFrequency(qint64 val)
 }
 
 void
-ConfigDialog::notifySingletonChanges(void)
+ConfigDialog::notifySingletonChanges()
 {
   this->profileTab->notifySingletonChanges();
 }
 
 bool
-ConfigDialog::remoteSelected(void) const
+ConfigDialog::remoteSelected() const
 {
   return this->profileTab->remoteSelected();
 }
@@ -87,13 +86,13 @@ ConfigDialog::getGain(std::string const &name) const
 }
 
 Suscan::AnalyzerParams
-ConfigDialog::getAnalyzerParams(void) const
+ConfigDialog::getAnalyzerParams() const
 {
   return this->analyzerParams;
 }
 
 Suscan::Source::Config
-ConfigDialog::getProfile(void) const
+ConfigDialog::getProfile() const
 {
   return this->profileTab->getProfile();
 }
@@ -112,7 +111,7 @@ ConfigDialog::setTleSourceConfig(const TLESourceConfig &config)
 
 
 ColorConfig
-ConfigDialog::getColors(void) const
+ConfigDialog::getColors() const
 {
   return this->colorTab->getColorConfig();
 }
@@ -130,43 +129,55 @@ ConfigDialog::getGuiConfig() const
 }
 
 TLESourceConfig
-ConfigDialog::getTleSourceConfig(void) const
+ConfigDialog::getTleSourceConfig() const
 {
   return this->tleSourceTab->getTleSourceConfig();
 }
 
 bool
-ConfigDialog::profileChanged(void) const
+ConfigDialog::profileChanged() const
 {
   return this->profileTab->hasChanged();
 }
 
 bool
-ConfigDialog::colorsChanged(void) const
+ConfigDialog::colorsChanged() const
 {
   return this->colorTab->hasChanged();
 }
 
 bool
-ConfigDialog::guiChanged(void) const
+ConfigDialog::guiChanged() const
 {
   return this->guiTab->hasChanged();
 }
 
 bool
-ConfigDialog::tleSourceConfigChanged(void) const
+ConfigDialog::audioChanged() const
+{
+  return this->audioTab->hasChanged();
+}
+
+bool
+ConfigDialog::remoteControlChanged() const
+{
+  return this->remCtlTab->hasChanged();
+}
+
+bool
+ConfigDialog::tleSourceConfigChanged() const
 {
   return this->tleSourceTab->hasChanged();
 }
 
 bool
-ConfigDialog::locationChanged(void) const
+ConfigDialog::locationChanged() const
 {
   return this->locationTab->hasChanged();
 }
 
 Suscan::Location
-ConfigDialog::getLocation(void) const
+ConfigDialog::getLocation() const
 {
   return this->locationTab->getLocation();
 }
@@ -177,14 +188,38 @@ ConfigDialog::setLocation(Suscan::Location const &loc)
   this->locationTab->setLocation(loc);
 }
 
+void
+ConfigDialog::setAudioConfig(AudioConfig const &config)
+{
+  this->audioTab->setAudioConfig(config);
+}
+
+AudioConfig
+ConfigDialog::getAudioConfig() const
+{
+  return this->audioTab->getAudioConfig();
+}
+
+void
+ConfigDialog::setRemoteControlConfig(RemoteControlConfig const &config)
+{
+  this->remCtlTab->setRemoteControlConfig(config);
+}
+
+RemoteControlConfig
+ConfigDialog::getRemoteControlConfig() const
+{
+  return this->remCtlTab->getRemoteControlConfig();
+}
+
 bool
-ConfigDialog::sourceNeedsRestart(void) const
+ConfigDialog::sourceNeedsRestart() const
 {
   return this->profileTab->shouldRestart();
 }
 
 bool
-ConfigDialog::run(void)
+ConfigDialog::run()
 {
   this->accepted = false;
   this->setWindowTitle("Settings");
@@ -201,9 +236,9 @@ ConfigDialog::appendConfigTab(ConfigTab *tab)
 
   connect(
         tab,
-        SIGNAL(changed(void)),
+        SIGNAL(changed()),
         this,
-        SLOT(onTabConfigChanged(void)));
+        SLOT(onTabConfigChanged()));
 }
 
 ConfigDialog::ConfigDialog(QWidget *parent) :
@@ -217,15 +252,19 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
 
   this->profileTab   = new ProfileConfigTab(this);
   this->colorTab     = new ColorConfigTab(this);
+  this->audioTab     = new AudioConfigTab(this);
   this->guiTab       = new GuiConfigTab(this);
   this->locationTab  = new LocationConfigTab(this);
   this->tleSourceTab = new TLESourceTab(this);
+  this->remCtlTab    = new RemoteControlTab(this);
 
   this->appendConfigTab(this->profileTab);
   this->appendConfigTab(this->colorTab);
+  this->appendConfigTab(this->audioTab);
   this->appendConfigTab(this->guiTab);
   this->appendConfigTab(this->tleSourceTab);
   this->appendConfigTab(this->locationTab);
+  this->appendConfigTab(this->remCtlTab);
 
   this->connectAll();
 }
@@ -237,7 +276,7 @@ ConfigDialog::~ConfigDialog()
 
 
 void
-ConfigDialog::onAccepted(void)
+ConfigDialog::onAccepted()
 {
   int i;
 
@@ -251,7 +290,7 @@ ConfigDialog::onAccepted(void)
 }
 
 void
-ConfigDialog::onTabConfigChanged(void)
+ConfigDialog::onTabConfigChanged()
 {
   this->setWindowTitle("Settings [changed]");
 }

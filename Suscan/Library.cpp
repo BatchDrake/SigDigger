@@ -30,6 +30,7 @@
 #include <TabWidgetFactory.h>
 #include <UIListenerFactory.h>
 #include <InspectionWidgetFactory.h>
+#include <SourceConfigWidgetFactory.h>
 
 using namespace Suscan;
 
@@ -56,7 +57,7 @@ Location::deserialize(Suscan::Object const &conf)
 }
 
 Suscan::Object &&
-Location::serialize(void)
+Location::serialize()
 {
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
@@ -79,7 +80,7 @@ TLESource::deserialize(Suscan::Object const &conf)
 }
 
 Suscan::Object &&
-TLESource::serialize(void)
+TLESource::serialize()
 {
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
@@ -102,6 +103,8 @@ Suscan::qHash(const Suscan::Source::Device &dev)
 
 Singleton::Singleton()
 {
+  suscan_sigutils_init(SUSCAN_MODE_NOLOG);
+  
   this->sources_initd = false;
   this->estimators_initd = false;
   this->spectrum_sources_initd = false;
@@ -112,7 +115,7 @@ Singleton::Singleton()
   // Define some read-only units. We may let the user add customized
   // units too.
 
-  this->registerSpectrumUnit("dBFS",     1.0, 0.0f);
+  this->registerSpectrumUnit("dBFS/Hz",  1.0, 0.0f);
   this->registerSpectrumUnit("dBK",      1.0, -228.60f);
   this->registerSpectrumUnit("dBW/Hz",   1.0, 0.0f);
   this->registerSpectrumUnit("dBm/Hz",   1.0, -30.0f);
@@ -134,7 +137,7 @@ Singleton::~Singleton()
 }
 
 Singleton *
-Singleton::get_instance(void)
+Singleton::get_instance()
 {
   if (Singleton::instance == nullptr) {
     try {
@@ -148,14 +151,14 @@ Singleton::get_instance(void)
 }
 
 std::string
-Singleton::sigutilsVersion(void)
+Singleton::sigutilsVersion()
 {
   return std::string(sigutils_api_version())
       + " (" + std::string(sigutils_pkgversion()) + ")";
 }
 
 std::string
-Singleton::suscanVersion(void)
+Singleton::suscanVersion()
 {
   return std::string(suscan_api_version())
       + " (" + std::string(suscan_pkgversion()) + ")";
@@ -196,7 +199,7 @@ walk_all_remote_devices(
 }
 
 void
-Singleton::init_sources(void)
+Singleton::init_sources()
 {
   if (!this->sources_initd) {
     SU_ATTEMPT(suscan_init_sources());
@@ -207,7 +210,7 @@ Singleton::init_sources(void)
 }
 
 void
-Singleton::init_estimators(void)
+Singleton::init_estimators()
 {
   if (!this->estimators_initd) {
     SU_ATTEMPT(suscan_init_estimators());
@@ -216,7 +219,7 @@ Singleton::init_estimators(void)
 }
 
 void
-Singleton::init_spectrum_sources(void)
+Singleton::init_spectrum_sources()
 {
   if (!this->spectrum_sources_initd) {
     SU_ATTEMPT(suscan_init_spectsrcs());
@@ -225,7 +228,7 @@ Singleton::init_spectrum_sources(void)
 }
 
 void
-Singleton::init_inspectors(void)
+Singleton::init_inspectors()
 {
   if (!this->inspectors_initd) {
     SU_ATTEMPT(suscan_init_inspectors());
@@ -285,7 +288,7 @@ Singleton::havePalette(std::string const &name)
 }
 
 void
-Singleton::init_palettes(void)
+Singleton::init_palettes()
 {
   unsigned int i, count;
   ConfigContext ctx("palettes");
@@ -304,7 +307,7 @@ Singleton::init_palettes(void)
 }
 
 void
-Singleton::init_autogains(void)
+Singleton::init_autogains()
 {
   unsigned int i, count;
   ConfigContext ctx("autogains");
@@ -323,7 +326,7 @@ Singleton::init_autogains(void)
 }
 
 void
-Singleton::init_fats(void)
+Singleton::init_fats()
 {
   unsigned int i, count;
   ConfigContext ctx("frequency_allocations");
@@ -342,7 +345,7 @@ Singleton::init_fats(void)
 }
 
 void
-Singleton::init_bookmarks(void)
+Singleton::init_bookmarks()
 {
   unsigned int i, count;
   ConfigContext ctx("bookmarks");
@@ -401,7 +404,7 @@ Singleton::initLocationsFromContext(ConfigContext &ctx, bool user)
 }
 
 void
-Singleton::init_locations(void)
+Singleton::init_locations()
 {
   ConfigContext globalCtx("locations");
   ConfigContext userCtx("user_locations");
@@ -442,7 +445,7 @@ Singleton::initTLESourcesFromContext(ConfigContext &ctx, bool user)
 }
 
 void
-Singleton::init_tle_sources(void)
+Singleton::init_tle_sources()
 {
   ConfigContext globalCtx("tle");
   ConfigContext userCtx("user_tle");
@@ -456,7 +459,7 @@ Singleton::init_tle_sources(void)
 
 
 void
-Singleton::init_tle(void)
+Singleton::init_tle()
 {
   const char *userTLEDir;
 
@@ -477,7 +480,7 @@ Singleton::init_tle(void)
 }
 
 void
-Singleton::init_plugins(void)
+Singleton::init_plugins()
 {
   Plugin *defPlug = Plugin::getDefaultPlugin();
   QStringList plugins;
@@ -517,14 +520,14 @@ Singleton::init_plugins(void)
 }
 
 void
-Singleton::refreshDevices(void)
+Singleton::refreshDevices()
 {
   this->devices.clear();
   suscan_source_device_walk(walk_all_devices, static_cast<void *>(this));
 }
 
 void
-Singleton::refreshNetworkProfiles(void)
+Singleton::refreshNetworkProfiles()
 {
   this->networkProfiles.clear();
   suscan_discovered_remote_device_walk(
@@ -539,7 +542,7 @@ Singleton::haveQth() const
 }
 
 Location
-Singleton::getQth(void) const
+Singleton::getQth() const
 {
   return this->qth;
 }
@@ -553,14 +556,21 @@ Singleton::setQth(Location const &loc)
 }
 
 void
-Singleton::detect_devices(void)
+Singleton::detect_devices()
 {
   suscan_source_detect_devices();
   this->refreshDevices();
 }
 
 void
-Singleton::init_ui_config(void)
+Singleton::trigger_delayed()
+{
+  for (auto p : pluginCallbacks)
+    (p.first)(p.second);
+}
+
+void
+Singleton::init_ui_config()
 {
   unsigned int i, count;
   ConfigContext ctx("uiconfig");
@@ -577,7 +587,7 @@ Singleton::init_ui_config(void)
 }
 
 void
-Singleton::init_recent_list(void)
+Singleton::init_recent_list()
 {
   unsigned int i, count;
   ConfigContext ctx("recent");
@@ -596,7 +606,7 @@ Singleton::init_recent_list(void)
 }
 
 void
-Singleton::syncRecent(void)
+Singleton::syncRecent()
 {
   ConfigContext ctx("recent");
   Object list = ctx.listObject();
@@ -613,7 +623,7 @@ Singleton::syncRecent(void)
 }
 
 void
-Singleton::syncLocations(void)
+Singleton::syncLocations()
 {
   ConfigContext ctx("user_locations");
   Object list = ctx.listObject();
@@ -640,7 +650,7 @@ Singleton::syncLocations(void)
 }
 
 void
-Singleton::syncTLESources(void)
+Singleton::syncTLESources()
 {
   ConfigContext ctx("user_tle");
   Object list = ctx.listObject();
@@ -659,7 +669,7 @@ Singleton::syncTLESources(void)
 }
 
 void
-Singleton::syncUI(void)
+Singleton::syncUI()
 {
   unsigned int i, count;
   ConfigContext ctx("uiconfig");
@@ -680,7 +690,7 @@ Singleton::syncUI(void)
 }
 
 void
-Singleton::syncBookmarks(void)
+Singleton::syncBookmarks()
 {
   ConfigContext ctx("bookmarks");
   Object list = ctx.listObject();
@@ -706,7 +716,7 @@ Singleton::syncBookmarks(void)
 }
 
 void
-Singleton::killBackgroundTaskController(void)
+Singleton::killBackgroundTaskController()
 {
   if (this->backgroundTaskController != nullptr) {
     delete this->backgroundTaskController;
@@ -715,7 +725,7 @@ Singleton::killBackgroundTaskController(void)
 }
 
 void
-Singleton::sync(void)
+Singleton::sync()
 {
   this->syncRecent();
   this->syncUI();
@@ -725,6 +735,12 @@ Singleton::sync(void)
 }
 
 // Singleton methods
+void
+Singleton::registerDelayedCallback(DelayedPluginCallback cb, Plugin *plugin)
+{
+  pluginCallbacks.push_back(std::pair<DelayedPluginCallback, Plugin *>(cb, plugin));
+}
+
 void
 Singleton::registerSourceConfig(suscan_source_config_t *config)
 {
@@ -746,19 +762,19 @@ Singleton::registerNetworkProfile(const suscan_source_config_t *config)
 }
 
 MultitaskController *
-Singleton::getBackgroundTaskController(void) const
+Singleton::getBackgroundTaskController() const
 {
   return this->backgroundTaskController;
 }
 
 ConfigMap::const_iterator
-Singleton::getFirstProfile(void) const
+Singleton::getFirstProfile() const
 {
   return this->profiles.begin();
 }
 
 ConfigMap::const_iterator
-Singleton::getLastProfile(void) const
+Singleton::getLastProfile() const
 {
   return this->profiles.end();
 }
@@ -843,7 +859,9 @@ Singleton::normalizeTLEName(QString const &name)
 {
   QString normalized = name;
 
-  return name.trimmed().replace(QRegExp("[^-a-zA-Z0-9()]"), "_");
+  return name.trimmed().replace(
+        QRegularExpression(QStringLiteral("[^-a-zA-Z0-9()]")),
+        "_");
 }
 
 bool
@@ -967,61 +985,61 @@ Singleton::registerSourceDevice(const suscan_source_device_t *dev)
 }
 
 std::vector<Source::Device>::const_iterator
-Singleton::getFirstDevice(void) const
+Singleton::getFirstDevice() const
 {
   return this->devices.begin();
 }
 
 std::vector<Source::Device>::const_iterator
-Singleton::getLastDevice(void) const
+Singleton::getLastDevice() const
 {
   return this->devices.end();
 }
 
 std::vector<Object>::const_iterator
-Singleton::getFirstPalette(void) const
+Singleton::getFirstPalette() const
 {
   return this->palettes.begin();
 }
 
 std::vector<Object>::const_iterator
-Singleton::getLastPalette(void) const
+Singleton::getLastPalette() const
 {
   return this->palettes.end();
 }
 
 std::vector<Object>::const_iterator
-Singleton::getFirstAutoGain(void) const
+Singleton::getFirstAutoGain() const
 {
   return this->autoGains.begin();
 }
 
 std::vector<Object>::const_iterator
-Singleton::getLastAutoGain(void) const
+Singleton::getLastAutoGain() const
 {
   return this->autoGains.end();
 }
 
 std::vector<Object>::iterator
-Singleton::getFirstUIConfig(void)
+Singleton::getFirstUIConfig()
 {
   return this->uiConfig.begin();
 }
 
 std::vector<Object>::iterator
-Singleton::getLastUIConfig(void)
+Singleton::getLastUIConfig()
 {
   return this->uiConfig.end();
 }
 
 std::vector<Object>::const_iterator
-Singleton::getFirstFAT(void) const
+Singleton::getFirstFAT() const
 {
   return this->FATs.begin();
 }
 
 std::vector<Object>::const_iterator
-Singleton::getLastFAT(void) const
+Singleton::getLastFAT() const
 {
   return this->FATs.end();
 }
@@ -1045,31 +1063,31 @@ Singleton::getDeviceAt(unsigned int index) const
 }
 
 std::list<std::string>::const_iterator
-Singleton::getFirstRecent(void) const
+Singleton::getFirstRecent() const
 {
   return this->recentProfiles.cbegin();
 }
 
 std::list<std::string>::const_iterator
-Singleton::getLastRecent(void) const
+Singleton::getLastRecent() const
 {
   return this->recentProfiles.cend();
 }
 
 QMap<qint64,Bookmark> const &
-Singleton::getBookmarkMap(void) const
+Singleton::getBookmarkMap() const
 {
   return this->bookmarks;
 }
 
 QMap<qint64,Bookmark>::const_iterator
-Singleton::getFirstBookmark(void) const
+Singleton::getFirstBookmark() const
 {
   return this->bookmarks.cbegin();
 }
 
 QMap<qint64,Bookmark>::const_iterator
-Singleton::getLastBookmark(void) const
+Singleton::getLastBookmark() const
 {
   return this->bookmarks.cend();
 }
@@ -1081,74 +1099,74 @@ Singleton::getBookmarkFrom(qint64 freq) const
 }
 
 QMap<QString, Location> const &
-Singleton::getLocationMap(void) const
+Singleton::getLocationMap() const
 {
   return this->locations;
 }
 
 QMap<QString, Location>::const_iterator
-Singleton::getFirstLocation(void) const
+Singleton::getFirstLocation() const
 {
   return this->locations.cbegin();
 }
 
 QMap<QString, Location>::const_iterator
-Singleton::getLastLocation(void) const
+Singleton::getLastLocation() const
 {
   return this->locations.cend();
 }
 
 QMap<QString, Orbit> const &
-Singleton::getSatelliteMap(void) const
+Singleton::getSatelliteMap() const
 {
   return this->satellites;
 }
 
 
 QMap<QString, Orbit>::const_iterator
-Singleton::getFirstSatellite(void) const
+Singleton::getFirstSatellite() const
 {
   return this->satellites.cbegin();
 }
 
 QMap<QString, Orbit>::const_iterator
-Singleton::getLastSatellite(void) const
+Singleton::getLastSatellite() const
 {
 return this->satellites.cend();
 }
 
 QMap<std::string, TLESource> const &
-Singleton::getTLESourceMap(void) const
+Singleton::getTLESourceMap() const
 {
   return this->tleSources;
 }
 
 QMap<std::string, TLESource>::const_iterator
-Singleton::getFirstTLESource(void) const
+Singleton::getFirstTLESource() const
 {
   return this->tleSources.cbegin();
 }
 
 QMap<std::string, TLESource>::const_iterator
-Singleton::getLastTLESource(void) const
+Singleton::getLastTLESource() const
 {
   return this->tleSources.cend();
 }
 
 QMap<std::string, SpectrumUnit> const &
-Singleton::getSpectrumUnitMap(void) const
+Singleton::getSpectrumUnitMap() const
 {
   return this->spectrumUnits;
 }
 
 QMap<std::string, SpectrumUnit>::const_iterator
-Singleton::getFirstSpectrumUnit(void) const
+Singleton::getFirstSpectrumUnit() const
 {
   return this->spectrumUnits.cbegin();
 }
 
 QMap<std::string, SpectrumUnit>::const_iterator
-Singleton::getLastSpectrumUnit(void) const
+Singleton::getLastSpectrumUnit() const
 {
   return this->spectrumUnits.cend();
 }
@@ -1161,19 +1179,19 @@ Singleton::getSpectrumUnitFrom(std::string const &name) const
 
 
 QHash<QString, Source::Config> const &
-Singleton::getNetworkProfileMap(void) const
+Singleton::getNetworkProfileMap() const
 {
   return this->networkProfiles;
 }
 
 QHash<QString, Source::Config>::const_iterator
-Singleton::getFirstNetworkProfile(void) const
+Singleton::getFirstNetworkProfile() const
 {
   return this->networkProfiles.cbegin();
 }
 
 QHash<QString, Source::Config>::const_iterator
-Singleton::getLastNetworkProfile(void) const
+Singleton::getLastNetworkProfile() const
 {
   return this->networkProfiles.cend();
 }
@@ -1318,6 +1336,55 @@ Singleton::getLastInspectionWidgetFactory() const
 }
 
 bool
+Singleton::registerSourceConfigWidgetFactory(SigDigger::SourceConfigWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->sourceConfigWidgetFactories.contains(factory))
+    return true;
+
+  this->sourceConfigWidgetFactories.push_back(factory);
+  this->sourceConfigWidgetFactoryTable[factory->name()] = factory;
+
+  return true;
+}
+
+bool
+Singleton::unregisterSourceConfigWidgetFactory(SigDigger::SourceConfigWidgetFactory *factory)
+{
+  int index = this->sourceConfigWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->sourceConfigWidgetFactories.removeAt(index);
+  this->sourceConfigWidgetFactoryTable.remove(factory->name());
+
+  return true;
+}
+
+SigDigger::SourceConfigWidgetFactory *
+Singleton::findSourceConfigWidgetFactory(QString const &name) const
+{
+  if (!this->sourceConfigWidgetFactoryTable.contains(name))
+    return nullptr;
+
+  return this->sourceConfigWidgetFactoryTable[name];
+}
+
+QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator
+Singleton::getFirstSourceConfigWidgetFactory() const
+{
+  return this->sourceConfigWidgetFactories.begin();
+}
+
+QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator
+Singleton::getLastSourceConfigWidgetFactory() const
+{
+  return this->sourceConfigWidgetFactories.end();
+}
+
+
+bool
 Singleton::registerUIListenerFactory(SigDigger::UIListenerFactory *factory)
 {
   // Not a bug. The plugin got ahead of ourselves.
@@ -1388,7 +1455,7 @@ Singleton::removeRecent(std::string const &name)
 }
 
 void
-Singleton::clearRecent(void)
+Singleton::clearRecent()
 {
   this->recentProfiles.clear();
 }

@@ -38,7 +38,7 @@ if [ "x$PKGVERSION" == "x" ]; then
 fi
 
 if [ "x$BRANCH" == "x" ]; then
-    BRANCH=develop
+    BRANCH=master
 fi
 
 if [ "x$BUILDTYPE" == "x" ]; then
@@ -55,7 +55,7 @@ function help()
 {
   echo "$1: SigDigger's build script"
   echo "Usage:"
-  echo "  $1 [OPTIONS]"
+  echo "  $1 [OPTIONS] [PLUGINS]"
   echo
   echo "Options:"
   echo "  --disable-alsa:      Explicitly disable ALSA support"
@@ -67,6 +67,7 @@ function help()
 
 opt=$1
 SCRIPTNAME="$0"
+PLUGINS=""
 
 while [ "$opt" != "" ]; do
     case "$opt" in
@@ -85,17 +86,20 @@ while [ "$opt" != "" ]; do
         exit 0
       ;;
 
-      *)
-        echo "$SCRIPTNAME: unrecognized option $"
+      -*)
+        echo "$SCRIPTNAME: unrecognized option $opt"
         help "$SCRIPTNAME"
         exit 1
+      ;;
+
+      *)
+      PLUGINS="$PLUGINS $opt"
       ;;
     esac
 
     shift
     opt="$1"
 done
-
 
 if [ "$OSTYPE" == "Linux" ]; then
     SCRIPTPATH=`realpath "$0"`
@@ -146,7 +150,12 @@ function try()
 	    echo ''
 	    echo 'Deploy root filelist: '
 	    echo '--------------8<----------------------------------------'
-	    find "$DEPLOYROOT"
+	    ls -lR "$DEPLOYROOT"
+	    echo '--------------8<----------------------------------------'
+
+   	    echo 'Build root filelist: '
+	    echo '--------------8<----------------------------------------'
+	    find "$BUILDROOT"
 	    echo '--------------8<----------------------------------------'
 	    echo ''
 	fi
@@ -222,45 +231,91 @@ function locate_sdk()
   try "Locating CMake..." which cmake 
 }
 
+function build_plugins()
+{
+  PLUGINDIR="$BUILDROOT/plugins"
+  PLUGINTARGET="$DEPLOYROOT/usr/share/suscan/plugins"
+  try "Creating plugin source dir..." mkdir -p "$PLUGINDIR"
+  try "Creating plugin dir..." mkdir -p "$PLUGINTARGET"
+
+  for plugin in $PLUGINS; do
+    cd "$PLUGINDIR"
+    
+    if [ -d "$plugin" ]; then
+      cd "$plugin"
+      try "Attempting to pull latest changes from $plugin" git pull origin master
+    else
+      try "Attempting to clone plugin: $plugin..." git clone https://github.com/BatchDrake/"$plugin"
+      cd "$plugin"
+    fi
+    
+    if [ ! -f "$plugin".pro ]; then
+      notice "Project does not look like a SigDigger plugin, skipped"
+      continue
+    fi
+
+    try "  Running qmake ($plugin)..." qmake "$plugin".pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" SIGDIGGER_PREFIX="$DEPLOYROOT/usr" PLUGIN_DIRECTORY="$PLUGINTARGET"
+    try "  Building ($plugin)... " $MAKE -j $THREADS
+    try "  Installing ($plugin)... " $MAKE install
+
+  done
+}
+
 function build()
 {
     if [ "$BUILDTYPE" == "Debug" ]; then
-	notice 'Build with debug symbols is ON!'
-	CMAKE_BUILDTYPE=Debug
-	QMAKE_BUILDTYPE=debug
+      notice 'Build with debug symbols is ON!'
+      CMAKE_BUILDTYPE=Debug
+      QMAKE_BUILDTYPE=debug
+      export VERBOSE=1
     else
-	CMAKE_BUILDTYPE=Release
-	QMAKE_BUILDTYPE=release
+      CMAKE_BUILDTYPE=Release
+      QMAKE_BUILDTYPE=release
     fi
 
     if [ "$SIGDIGGER_SKIPBUILD" == "" ]; then
         locate_sdk
-    
+        export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$DEPLOYROOT/usr/lib64/pkgconfig:$PKG_CONFIG_PATH"
+        export LD_LIBRARY_PATH="$DEPLOYROOT/usr/lib:$DEPLOYROOT/usr/lib64:$LD_LIBRARY_PATH"
         try "Cleaning deploy directory..." rm -Rfv "$DEPLOYROOT"
         try "Cleaning buildroot..."        rm -Rfv "$BUILDROOT"
         try "Recreating directories..."    mkdir -p "$DEPLOYROOT" "$BUILDROOT"
 
         cd "$BUILDROOT"
-        export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
-        export LD_LIBRARY_PATH="$DEPLOYROOT/usr/lib:$LD_LIBRARY_PATH"
 
-        try "Cloning sigutils..."          git clone -b "$BRANCH" https://github.com/BatchDrake/sigutils
-        try "Cloning suscan..."            git clone -b "$BRANCH" https://github.com/BatchDrake/suscan
-        try "Cloning SuWidgets..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SuWidgets
-        try "Cloning SigDigger..."         git clone -b "$BRANCH" https://github.com/BatchDrake/SigDigger
+	# The latest sigutils is now on master
+        try "Cloning sigutils (master)..."          git clone --recurse-submodules https://github.com/BatchDrake/sigutils
+        try "Cloning suscan (master)..."            git clone --recurse-submodules https://github.com/BatchDrake/suscan
+        try "Cloning SuWidgets (${BRANCH})..."      git clone --recurse-submodules https://github.com/BatchDrake/SuWidgets
+        try "Cloning SigDigger (${BRANCH})..."      git clone --recurse-submodules -b "$BRANCH" https://github.com/BatchDrake/SigDigger
         try "Creating builddirs..."        mkdir -p sigutils/build suscan/build
         cd sigutils/build
         try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
         cd ../../
         try "Building sigutils..."         $MAKE -j $THREADS -C sigutils/build
         try "Deploying sigutils..."        $MAKE -j $THREADS -C sigutils/build install
-
+        if [ "$BUILDTYPE" == "Debug" ]; then
+            try "Testing deplyment of sigutils..." pkg-config sigutils
+            _headers=`pkg-config sigutils --cflags`
+            _libs=`pkg-config sigutils --libs`
+            notice "Sigutils headers:   ${_headers}"
+            notice "Sigutils libraries: ${_libs}"
+        fi
+	
         cd suscan/build
         try "Running CMake (suscan)..."    cmake .. $CMAKE_SUSCAN_EXTRA_ARGS -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
         cd ../../
         try "Building suscan..."           $MAKE -j $THREADS -C suscan/build
         try "Deploying suscan..."          $MAKE -j $THREADS -C suscan/build install
 
+        if [ "$BUILDTYPE" == "Debug" ]; then
+            try "Testing deplyment of suscan..." pkg-config suscan
+            _headers=`pkg-config suscan --cflags`
+            _libs=`pkg-config suscan --libs`
+            notice "Suscan headers:   ${_headers}"
+            notice "Suscan libraries: ${_libs}"
+        fi
+	
         cd SuWidgets
         try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += $QMAKE_BUILDTYPE" PREFIX="$DEPLOYROOT/usr" PKGVERSION="$PKGVERSION"
         try "Building SuWidgets..."        $MAKE -j $THREADS
@@ -275,7 +330,10 @@ function build()
     else
         skip "Skipping build..."
     fi
+
+    build_plugins
 }
+
 
 ESCAPE=`echo -en '\033'`
 echo -en '\033[0;1m'

@@ -17,7 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include <QTimeSlider.h>
-#include <util/compat-time.h>
+#include <sigutils/util/compat-time.h>
 #include <QPainter>
 #include <stdlib.h>
 #include <cmath>
@@ -26,6 +26,10 @@
 #include <QStyleOptionSlider>
 #include "SigDiggerHelpers.h"
 #include <QProxyStyle>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  define MidButton MiddleButton
+#endif
 
 using namespace SigDigger;
 

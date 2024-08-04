@@ -52,18 +52,20 @@ namespace SigDigger {
     float wfRangeMax = -10;
 
     unsigned int timeSpan = 0;
+    unsigned int clickResolution = 1;
 
     bool rangeLock = true;
+    bool channels = true;
     bool timeStamps = false;
     bool bookmarks = true;
-
+    bool utcTimeStamps = true;
     std::string palette = "Magma (Feely)";
 
     std::string unitName;
     float zeroPoint;
     float gain = 50;
 
-    int zoom = 1;
+    float zoom = 1;
 
     // Overriden methods·
     void deserialize(Suscan::Object const &conf) override;
@@ -76,33 +78,35 @@ namespace SigDigger {
     Q_OBJECT
 
     // Convenience pointer
-    FFTWidgetConfig *panelConfig = nullptr;
+    FFTWidgetConfig *m_panelConfig = nullptr;
 
     // UI Objects
-    Ui::FftPanel *ui = nullptr;
+    Ui::FftPanel *m_ui = nullptr;
     MainSpectrum *m_spectrum = nullptr;
     UIMediator   *m_mediator = nullptr;
     Suscan::Analyzer *m_analyzer = nullptr;
 
     // UI Data
-    unsigned int rate = 0;
-    unsigned int defaultFftSize = 0;
-    unsigned int fftSize = 0;
-    unsigned int refreshRate = 0;
-    unsigned int defaultRefreshRate = 0;
+    unsigned int m_rate = 0;
+    unsigned int m_defaultFftSize = 0;
+    unsigned int m_fftSize = 0;
+    unsigned int m_refreshRate = 0;
+    unsigned int m_defaultRefreshRate = 0;
 
-    std::vector<unsigned int> sizes;
-    std::vector<unsigned int> refreshRates;
-    std::vector<unsigned int> timeSpans;
+    std::vector<unsigned int> m_sizes;
+    std::vector<unsigned int> m_refreshRates;
+    std::vector<unsigned int> m_timeSpans;
+    std::vector<unsigned int> m_clickResolutions;
 
-    Suscan::SpectrumUnit currentUnit;
+    Suscan::SpectrumUnit m_currentUnit;
 
-    const Palette *selected = nullptr;
+    const Palette *m_selected = nullptr;
 
     // Private methods
     void addFftSize(unsigned int sz);
     void addTimeSpan(unsigned int timeSpan);
     void addRefreshRate(unsigned int rate);
+    void addClickResolution(unsigned int res);
     void updateRefreshRates();
     void updateFftSizes();
     void updateTimeSpans();
@@ -121,13 +125,15 @@ namespace SigDigger {
     float getWfRangeMax() const;
     float getAveraging() const;
     float getPanWfRatio() const;
-    unsigned int getFreqZoom() const;
+    float getFreqZoom() const;
     unsigned int getFftSize() const;
     unsigned int getTimeSpan() const;
     unsigned int getRefreshRate() const;
+    unsigned int getClickResolution() const;
     bool getPeakHold() const;
     bool getPeakDetect() const;
     bool getRangeLock() const;
+    bool getShowChannels() const;
     bool getTimeStamps() const;
     bool getBookmarks() const;
     bool getFilled() const;
@@ -146,6 +152,7 @@ namespace SigDigger {
     void setPeakHold(bool);
     void setPeakDetect(bool);
     void setRangeLock(bool);
+    void setShowChannels(bool);
     bool setPalette(std::string const &);
     void setPandRangeMin(float);
     void setPandRangeMax(float);
@@ -153,22 +160,23 @@ namespace SigDigger {
     void setWfRangeMax(float);
     void setAveraging(float);
     void setPanWfRatio(float);
-    void setFreqZoom(int);
+    void setFreqZoom(float);
     void setDefaultFftSize(unsigned int);
     void setFftSize(unsigned int);
     void setDefaultRefreshRate(unsigned int);
     void setRefreshRate(unsigned int);
     void setTimeSpan(unsigned int);
     void setTimeStamps(bool);
+    void setTimeStampsUTC(bool);
     void setBookmarks(bool);
 
     bool setUnitName(QString);
     void setZeroPoint(float);
     void setGain(float);
-
     void setFilled(bool);
     void setSampleRate(unsigned int);
     void setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func);
+    void setClickResolution(unsigned int);
 
     // Refresh logic
     void refreshSpectrumSettings();
@@ -183,13 +191,13 @@ namespace SigDigger {
     float
     zeroPointToDb() const
     {
-      return this->getZeroPoint() * this->currentUnit.dBPerUnit;
+      return this->getZeroPoint() * this->m_currentUnit.dBPerUnit;
     }
 
     float
     dbToZeroPoint(float dB) const
     {
-      return dB / this->currentUnit.dBPerUnit;
+      return dB / this->m_currentUnit.dBPerUnit;
     }
 
   public:
@@ -208,7 +216,7 @@ namespace SigDigger {
   public slots:
     void onPandRangeChanged(int min, int max);
     void onWfRangeChanged(int min, int max);
-    void onAveragingChanged(int val);
+    void onAveragingChanged(qreal val);
     void onAspectRatioChanged(int val);
     void onPaletteChanged(int);
     void onFreqZoomChanged(int);
@@ -221,6 +229,9 @@ namespace SigDigger {
     void onWindowFunctionChanged();
     void onTimeStampsChanged();
     void onBookmarksChanged();
+    void onUTCChanged();
+    void onChannelsChanged();
+    void onClickResolutionChanged();
 
     // Unit handling slots
     void onUnitChanged();

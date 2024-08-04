@@ -18,13 +18,14 @@
 //
 
 #include "Averager.h"
+#include <sigutils/types.h>
 
 using namespace SigDigger;
 
 void
 Averager::feed(Suscan::PSDMessage const &m)
 {
-  bool blend = this->alpha != 1.f;
+  bool blend = this->alpha < 1.f;
 
   if (this->last == nullptr || m.size() != this->bufsiz) {
     try {

@@ -24,6 +24,8 @@
 #include <QTcpSocket>
 #include <sigutils/types.h>
 #include <vector>
+#include <ColorConfig.h>
+#include <Waveform.h>
 
 namespace Ui {
   class RMSViewTab;
@@ -43,19 +45,69 @@ namespace SigDigger {
       qreal first;
       qreal last;
 
+      qreal m_time = 0;
+
+      bool m_running = true;
+      bool m_haveCurrSamplePoint = false;
+      QMap<qreal, WavePoint>::iterator m_currSampleIterator;
+
+      bool  m_haveMarker = false;
+      qreal m_markerLinear = 0;
+      qreal m_markerDb = 0;
+
+      bool  m_haveDeltaMarker = false;
+      qreal m_markerDeltaLinear = 0;
+      qreal m_markerDeltaDb = 0;
+
+      int   m_extraIntegration = 0;
+
       int     accum_ctr = 0;
       SUFLOAT energy_accum = 0;
 
+      void refreshUi();
       void refreshSampleRate();
       void connectAll();
       void integrateMeasure(qreal timestamp, SUFLOAT mag);
-      bool parseLine(void);
-      void processSocketData(void);
+      bool parseLine();
+      void processSocketData();
       bool saveToMatlab(QString const &);
-      void disconnectSocket(void);
-      void fitVertical(void);
+      void disconnectSocket();
+      void fitVertical();
+      void toggleModes(QObject *sender);
+
+      bool userClear(QString const &);
+      qreal getCurrentTimeDelta() const;
+      bool  intTimeMode() const;
+
+      qreal getEffectiveRate() const;
 
     public:
+      void setVerticalLimitsLinear(qreal min, qreal max);
+      void setVerticalLimitsDb(qreal min, qreal max);
+      qreal getMin() const;
+      qreal getMax() const;
+
+      bool isLogScale() const;
+      bool isAutoFit() const;
+      bool isAutoScroll() const;
+
+      int  getTimeScaleSelection() const;
+      void setTimeScaleSelection(int);
+
+      void setLogScale(bool);
+      void setAutoFit(bool);
+      void setAutoScroll(bool);
+
+      void setIntegrationTimeMode(qreal, qreal);
+      void setIntegrationTimeHint(qreal);
+      qreal getIntegrationTimeHint() const;
+
+      void setSampleRate(qreal);
+      void feed(qreal, qreal);
+      void setColorConfig(ColorConfig const &);
+
+      bool running() const;
+
       explicit RMSViewTab(QWidget *parent, QTcpSocket *socket);
       ~RMSViewTab();
 
@@ -64,15 +116,23 @@ namespace SigDigger {
 
     signals:
       void titleChanged(QString);
+      void viewTypeChanged();
+      void integrationTimeChanged(qreal);
+      void toggleState();
 
     public slots:
+      void onTimeChanged(qreal, qreal);
       void onTimeout();
-      void onStop(void);
-      void onSave(void);
-      void onToggleModes(void);
-      void onResetZoom(void);
-      void onSocketDisconnected(void);
+      void onToggleStartStop();
+      void onSave();
+      void onToggleModes();
+      void onResetZoom();
+      void onSocketDisconnected();
       void onValueChanged(int);
+      void onPointClicked(qreal, qreal, Qt::KeyboardModifiers);
+      void onToolTip(int, int, qreal, qreal);
+      void onTimeScaleChanged();
+      void onAverageTimeChanged();
   };
 
 }

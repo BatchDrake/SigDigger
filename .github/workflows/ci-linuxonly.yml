@@ -1,0 +1,47 @@
+name: CILinuxOnly
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Build and run interactive shell'
+        required: false
+        default: false
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  # Installation of dependencies is too OS-dependent now, we don't
+  # miss that much by particularizing this in a per-OS basis.
+  
+  build-linux-appimage:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup interactive shell session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
+    - name: Install dependencies
+      uses: "./.github/actions/linuxdeps"
+      
+    - name: Build & Distribute (SigDigger)
+      run: |
+        cd Scripts
+        chmod a+x dist-appimage.sh
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-appimage.sh 
+        cd ..
+
+    - name: Archive AppImage files
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-latest-appimage
+        path: Scripts/*.AppImage
+

@@ -149,7 +149,7 @@ DopplerCalculator::work(void)
         psd = SU_C_REAL(asSuComplex[j]);
         SUFLOAT nFreq = 2.f * j / static_cast<SUFLOAT>(this->allocation);
 
-        acc += psd * SU_C_EXP(I * SU_ASFLOAT(M_PI) * nFreq);
+        acc += psd * SU_C_EXP(SU_I * SU_ASFLOAT(M_PI) * nFreq);
 
         // Correct j to make it centered around 0
         j = i;

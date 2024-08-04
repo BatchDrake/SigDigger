@@ -42,6 +42,8 @@ namespace SigDigger {
     // Demodulator state
     Suscan::Orbit   m_orbit;
     bool            m_enabled = false;
+    bool            m_agc = true;
+    float           m_agcTimeScale = 1.;
     float           m_volume = 0;
     float           m_cutOff = 0;
     SUFREQ          m_lo = 0;
@@ -60,6 +62,7 @@ namespace SigDigger {
     AudioPlayback  *m_playBack = nullptr;
     Suscan::AnalyzerRequestTracker *m_tracker = nullptr;
     QString         m_audioError;
+    std::string     m_audioDevice;
 
     // Audio inspector state
     bool              m_opened = false;
@@ -74,6 +77,7 @@ namespace SigDigger {
 
     // Other references
     MainSpectrum     *m_spectrum = nullptr;
+    UIMediator       *m_mediator = nullptr;
 
     // Private methods
     void connectAll();
@@ -85,17 +89,21 @@ namespace SigDigger {
     void setParams();
     void setTrueLoFreq();
     void setTrueBandwidth();
-    SUFREQ calcTrueLoFreq();
-    SUFREQ calcTrueBandwidth();
+    void assertAudioDevice();
 
   public:
     explicit AudioProcessor(UIMediator *, QObject *parent = nullptr);
     virtual ~AudioProcessor() override;
 
+    SUFREQ calcTrueLoFreq() const;
+    SUFREQ calcTrueBandwidth() const;
+
     void setAnalyzer(Suscan::Analyzer *);
     void setEnabled(bool);
     void setVolume(float);
     void setSquelchEnabled(bool);
+    void setAGCEnabled(bool);
+    void setAGCTimeScale(float);
     void setSquelchLevel(float);
     void setAudioCorrection(Suscan::Orbit const &);
     void setCorrectionEnabled(bool);
@@ -104,8 +112,11 @@ namespace SigDigger {
     void setCutOff(float);
     void setTunerFreq(SUFREQ);
     void setLoFreq(SUFREQ);
-
     void setBandwidth(SUFREQ);
+
+    SUFREQ getTrueChannelFreq() const;
+    SUFREQ getChannelFreq() const;
+    SUFREQ getChannelBandwidth() const;
 
     bool isAudioAvailable() const;
     QString getAudioError() const;

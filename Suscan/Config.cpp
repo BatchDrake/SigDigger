@@ -29,12 +29,40 @@ FieldValue::FieldValue(struct suscan_field_value *inst)
 Config::Config()
 {
   this->instance = nullptr;
+  this->owned = false;
+}
+
+Config::Config(Config const &orig) : Config()
+{
+  if (orig.instance != nullptr)
+    replace(orig);
 }
 
 Config::~Config()
 {
   if (this->owned)
     suscan_config_destroy(this->instance);
+}
+
+void
+Config::replace(Config const &orig)
+{
+  if (this->owned) {
+    suscan_config_destroy(this->instance);
+    this->fields.clear();
+  }
+
+  SU_ATTEMPT(this->instance = suscan_config_dup(orig.instance));
+  this->owned = true;
+  this->populate();
+}
+
+Config &
+Config::operator = (const Config &orig)
+{
+  replace(orig);
+
+  return *this;
 }
 
 void

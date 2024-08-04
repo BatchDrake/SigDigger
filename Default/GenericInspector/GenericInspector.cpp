@@ -178,9 +178,7 @@ GenericInspector::setProfile(Suscan::Source::Config &profile)
   bool isRealTime = false;
   struct timeval tv, start, end;
 
-  isRealTime = !profile.isRemote()
-      && profile.getType() == SUSCAN_SOURCE_TYPE_SDR;
-
+  isRealTime = !profile.isRemote() && profile.isRealTime();
 
   if (isRealTime) {
     gettimeofday(&tv, nullptr);
@@ -237,7 +235,7 @@ GenericInspector::inspectorMessage(Suscan::InspectorMessage const &msg)
       p = len / 2;
 
       for (auto i = 0u; i < len; ++i)
-        data[i] = SU_POWER_DB(data[i]);
+        data[i] = SU_POWER_DB_RAW(data[i] + 1e-20f);
 
       for (auto i = 0u; i < len / 2; ++i) {
         x = data[i];
@@ -262,6 +260,10 @@ GenericInspector::inspectorMessage(Suscan::InspectorMessage const &msg)
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_SET_TLE:
       if (!msg.isTLEEnabled())
         this->disableCorrection();
+      break;
+
+    case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_ESTIMATOR:
+      this->updateEstimator(msg.getEstimatorId(), msg.getEstimation());
       break;
 
     default:
@@ -369,6 +371,7 @@ GenericInspector::disableCorrection(void)
 void
 GenericInspector::setTunerFrequency(SUFREQ freq)
 {
+  m_tunerFreq = static_cast<qint64>(freq);
   this->ui->setTunerFrequency(freq);
 }
 
@@ -401,7 +404,6 @@ GenericInspector::setTimeLimits(
 
 GenericInspector::~GenericInspector()
 {
-
 }
 
 /////////////////////////////////// Slots /////////////////////////////////////
@@ -430,21 +432,34 @@ GenericInspector::onSetSpectrumSource(unsigned int index)
 void
 GenericInspector::onLoChanged(void)
 {
-  if (this->analyzer() != nullptr)
+  if (this->analyzer() != nullptr) {
     this->analyzer()->setInspectorFreq(
         this->request().handle,
         this->ui->getLo(),
         0);
+
+    if (m_haveNamedChannel) {
+      m_namedChannel.value()->frequency = m_tunerFreq + this->ui->getLo();
+      this->refreshNamedChannel();
+    }
+  }
 }
 
 void
 GenericInspector::onBandwidthChanged(void)
 {
-  if (this->analyzer() != nullptr)
+  if (this->analyzer() != nullptr) {
     this->analyzer()->setInspectorBandwidth(
         this->request().handle,
         this->ui->getBandwidth(),
         0);
+    if (m_haveNamedChannel) {
+      auto halfBw = this->ui->getBandwidth() / 2;
+      m_namedChannel.value()->lowFreqCut  = -halfBw;
+      m_namedChannel.value()->highFreqCut = +halfBw;
+      this->refreshNamedChannel();
+    }
+  }
 }
 
 void
@@ -510,5 +525,5 @@ GenericInspector::onOpenInspector(
 void
 GenericInspector::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
 {
-  this->ui->setTunerFrequency(msg.info()->getFrequency());
+  this->setTunerFrequency(msg.info()->getFrequency());
 }

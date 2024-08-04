@@ -75,13 +75,8 @@ Object::copyFrom(const Object &obj)
     }
   }
 
-  if (obj.isHollow()) {
-    this->borrowed = true;
-    this->instance = nullptr;
-  } else {
-    this->borrowed = false;
-    SU_ATTEMPT(this->instance = suscan_object_copy(obj.instance));
-  }
+  this->borrowed = false;
+  SU_ATTEMPT(this->instance = suscan_object_copy(obj.instance));
 }
 
 void

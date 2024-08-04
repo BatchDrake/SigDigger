@@ -165,7 +165,7 @@ color: white;</string>
     </widget>
    </item>
    <item row="2" column="6" colspan="2">
-    <widget class="QDoubleSpinBox" name="sigmaSpin">
+    <widget class="ContextAwareSpinBox" name="sigmaSpin">
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
@@ -183,6 +183,11 @@ color: white;</string>
   </layout>
  </widget>
  <customwidgets>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDouble</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
   <customwidget>
    <class>Waveform</class>
    <extends>QFrame</extends>

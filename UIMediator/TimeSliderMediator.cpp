@@ -25,27 +25,27 @@ using namespace SigDigger;
 void
 UIMediator::setSourceTimeStart(struct timeval const &tv)
 {
-  this->ui->timeSlider->setStartTime(tv);
+  m_ui->timeSlider->setStartTime(tv);
 }
 
 void
 UIMediator::setSourceTimeEnd(struct timeval const &tv)
 {
-  this->ui->timeSlider->setEndTime(tv);
+  m_ui->timeSlider->setEndTime(tv);
 }
 
 void
 UIMediator::setTimeStamp(struct timeval const &tv)
 {
   m_lastTimeStamp = tv;
-  this->ui->timeSlider->setTimeStamp(tv);
+  m_ui->timeSlider->setTimeStamp(tv);
 }
 
 void
 UIMediator::connectTimeSlider(void)
 {
   connect(
-        this->ui->timeSlider,
+        m_ui->timeSlider,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTimeStampChanged(void)));
@@ -54,6 +54,6 @@ UIMediator::connectTimeSlider(void)
 void
 UIMediator::onTimeStampChanged(void)
 {
-  emit seek(this->ui->timeSlider->getTimeStamp());
+  emit seek(m_ui->timeSlider->getTimeStamp());
 }
 

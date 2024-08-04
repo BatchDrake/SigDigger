@@ -78,7 +78,6 @@ namespace SigDigger {
     void connectAll(void);
     void refreshUiState(void);
     void refreshOrbit(void);
-    void findNewSatellites(void);
 
     void setCurrentOrbit(const orbit_t *);
     void paintTextAt(
@@ -88,6 +87,8 @@ namespace SigDigger {
         bool center = false);
 
   public:
+    void findNewSatellites(void);
+
     // Setters
     void setColorConfig(ColorConfig const &colors);
     void setFrequency(SUFREQ freq);

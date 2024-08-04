@@ -32,90 +32,90 @@ SamplerDialog::SamplerDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  this->setWindowFlags(
-        this->windowFlags() | Qt::Window | Qt::WindowMaximizeButtonHint);
-  this->setModal(true);
+  setWindowFlags(
+        windowFlags() | Qt::Window | Qt::WindowMaximizeButtonHint);
+  setModal(true);
 
-  this->connectAll();
+  connectAll();
 }
 
 void
 SamplerDialog::connectAll(void)
 {
   connect(
-        this->ui->buttonBox,
+        ui->buttonBox,
         SIGNAL(clicked(QAbstractButton *)),
         this,
         SLOT(onClose()));
 
   connect(
-        this->ui->bpsSpin,
+        ui->bpsSpin,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onBpsChanged(void)));
 
   connect(
-        this->ui->rowSize,
+        ui->rowSize,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onRowSizeChanged(void)));
 
   connect(
-        this->ui->zoomSpin,
+        ui->zoomSpin,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onZoomChanged(void)));
 
   connect(
-        this->ui->histogram,
+        ui->histogram,
         SIGNAL(blanked(void)),
         this,
         SIGNAL(resample(void)));
 
   connect(
-        this->ui->horizontalScrollBar,
+        ui->horizontalScrollBar,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onHScroll(int)));
 
   connect(
-        this->ui->verticalScrollBar,
+        ui->verticalScrollBar,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onVScroll(int)));
 
   connect(
-        this->ui->symView,
+        ui->symView,
         SIGNAL(zoomChanged(unsigned int)),
         this,
         SLOT(onSymViewZoomChanged(unsigned int)));
 
   connect(
-        this->ui->symView,
+        ui->symView,
         SIGNAL(offsetChanged(unsigned int)),
         this,
         SLOT(onOffsetChanged(unsigned int)));
 
   connect(
-        this->ui->symView,
+        ui->symView,
         SIGNAL(hOffsetChanged(int)),
         this,
         SLOT(onHOffsetChanged(int)));
 
   connect(
-        this->ui->symView,
+        ui->symView,
         SIGNAL(strideChanged(unsigned int)),
         this,
         SLOT(onStrideChanged(unsigned int)));
 
   connect(
-        this->ui->symView,
+        ui->symView,
         SIGNAL(hoverSymbol(unsigned int)),
         this,
         SLOT(onHoverSymbol(unsigned int)));
 
   connect(
-        this->ui->saveButton,
+        ui->saveButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSaveSymView()));
@@ -124,184 +124,184 @@ SamplerDialog::connectAll(void)
 void
 SamplerDialog::setAmplitudeLimits(SUFLOAT min, SUFLOAT max)
 {
-  this->minAmp = min;
-  this->maxAmp = max;
+  m_minAmp = min;
+  m_maxAmp = max;
 }
 
 void
 SamplerDialog::setProperties(SamplingProperties const &prop)
 {
-  this->properties = prop;
+  m_properties = prop;
 
   switch (prop.space) {
     case AMPLITUDE:
-      this->decider.setDecisionMode(Decider::MODULUS);
-      this->decider.setMinimum(this->minAmp);
-      this->decider.setMaximum(this->maxAmp);
+      m_decider.setDecisionMode(Decider::MODULUS);
+      m_decider.setMinimum(m_minAmp);
+      m_decider.setMaximum(m_maxAmp);
 
-      this->ui->histogram->overrideDisplayRange(std::fmax(this->maxAmp, this->minAmp));
-      this->ui->histogram->overrideUnits("");
-      this->ui->histogram->overrideDataRange(std::fmax(this->maxAmp, this->minAmp));
+      ui->histogram->overrideDisplayRange(std::fmax(m_maxAmp, m_minAmp));
+      ui->histogram->overrideUnits("");
+      ui->histogram->overrideDataRange(std::fmax(m_maxAmp, m_minAmp));
       break;
 
     case PHASE:
-      this->decider.setDecisionMode(Decider::ARGUMENT);
-      this->decider.setMinimum(-PI);
-      this->decider.setMaximum(PI);
+      m_decider.setDecisionMode(Decider::ARGUMENT);
+      m_decider.setMinimum(-PI);
+      m_decider.setMaximum(PI);
 
-      this->ui->histogram->overrideDataRange(2 * M_PI);
-      this->ui->histogram->overrideDisplayRange(360);
-      this->ui->histogram->overrideUnits("º");
+      ui->histogram->overrideDataRange(2 * M_PI);
+      ui->histogram->overrideDisplayRange(360);
+      ui->histogram->overrideUnits("º");
       break;
 
     case FREQUENCY:
-      this->decider.setDecisionMode(Decider::ARGUMENT);
-      this->decider.setMinimum(-PI);
-      this->decider.setMaximum(PI);
+      m_decider.setDecisionMode(Decider::ARGUMENT);
+      m_decider.setMinimum(-PI);
+      m_decider.setMaximum(PI);
 
-      this->ui->histogram->overrideDataRange(2 * M_PI);
-      this->ui->histogram->overrideDisplayRange(this->properties.fs);
-      this->ui->histogram->overrideUnits("Hz");
+      ui->histogram->overrideDataRange(2 * M_PI);
+      ui->histogram->overrideDisplayRange(m_properties.fs);
+      ui->histogram->overrideUnits("Hz");
       break;
   }
 
-  this->ui->histogram->setDecider(&this->decider);
+  ui->histogram->setDecider(&m_decider);
 }
 
 void
 SamplerDialog::reset(void)
 {
-  this->ui->symView->clear();
-  this->ui->histogram->reset();
+  ui->symView->clear();
+  ui->histogram->reset();
 
-  this->minVal = +INFINITY;
-  this->maxVal = -INFINITY;
+  m_minVal = +INFINITY;
+  maxVal = -INFINITY;
 }
 
 void
 SamplerDialog::setColorConfig(ColorConfig const &cfg)
 {
-  this->ui->histogram->setForegroundColor(cfg.histogramForeground);
-  this->ui->histogram->setBackgroundColor(cfg.histogramBackground);
-  this->ui->histogram->setAxesColor(cfg.histogramAxes);
+  ui->histogram->setForegroundColor(cfg.histogramForeground);
+  ui->histogram->setBackgroundColor(cfg.histogramBackground);
+  ui->histogram->setAxesColor(cfg.histogramAxes);
 
-  this->ui->symView->setBackgroundColor(cfg.symViewBackground);
-  this->ui->symView->setLoColor(cfg.symViewLow);
-  this->ui->symView->setHiColor(cfg.symViewHigh);
+  ui->symView->setBackgroundColor(cfg.symViewBackground);
+  ui->symView->setLoColor(cfg.symViewLow);
+  ui->symView->setHiColor(cfg.symViewHigh);
 }
 
 void
 SamplerDialog::fitToSamples(void)
 {
-  if (isfinite(this->minVal) && isfinite(this->maxVal)) {
-    this->decider.setMinimum(this->minVal);
-    this->decider.setMaximum(this->maxVal);
+  if (isfinite(m_minVal) && isfinite(maxVal)) {
+    m_decider.setMinimum(m_minVal);
+    m_decider.setMaximum(maxVal);
 
-    this->ui->histogram->setDecider(&this->decider);
+    ui->histogram->setDecider(&m_decider);
   }
 }
 
 void
 SamplerDialog::feedSet(WaveSampleSet const &set)
 {
-  if (this->decider.getDecisionMode() == Decider::MODULUS) {
+  if (m_decider.getDecisionMode() == Decider::MODULUS) {
     for (SUSCOUNT i = 0; i < set.len; ++i) {
       SUFLOAT amp = SU_C_ABS(set.block[i]);
-      if (amp > this->maxVal)
-        this->maxVal = SU_C_ABS(set.block[i]);
-      if (amp < this->minVal)
-        this->minVal = SU_C_ABS(set.block[i]);
+      if (amp > maxVal)
+        maxVal = SU_C_ABS(set.block[i]);
+      if (amp < m_minVal)
+        m_minVal = SU_C_ABS(set.block[i]);
     }
   } else {
     for (SUSCOUNT i = 0; i < set.len; ++i) {
       SUFLOAT arg = SU_C_ARG(set.block[i]);
-      if (arg > this->maxVal)
-        this->maxVal = SU_C_ARG(set.block[i]);
-      if (arg < this->minVal)
-        this->minVal = SU_C_ARG(set.block[i]);
+      if (arg > maxVal)
+        maxVal = SU_C_ARG(set.block[i]);
+      if (arg < m_minVal)
+        m_minVal = SU_C_ARG(set.block[i]);
     }
   }
 
-  this->ui->histogram->feed(set.block, set.len);
-  this->ui->symView->feed(set.symbols, set.len);
+  ui->histogram->feed(set.block, set.len);
+  ui->symView->feed(set.symbols, set.len);
 
-  this->refreshHScrollBar();
-  this->refreshVScrollBar();
+  refreshHScrollBar();
+  refreshVScrollBar();
 }
 
 WaveSampler *
 SamplerDialog::makeSampler(void)
 {
-  return new WaveSampler(this->properties, &this->decider);
+  return new WaveSampler(m_properties, &m_decider);
 }
 
 unsigned int
 SamplerDialog::getVScrollPageSize(void) const
 {
   return
-      (this->ui->symView->getStride()
-       * static_cast<unsigned>(this->ui->symView->height()))
-      / this->ui->symView->getZoom();
+      (ui->symView->getStride()
+       * static_cast<unsigned>(ui->symView->height()))
+      / ui->symView->getZoom();
 }
 
 unsigned int
 SamplerDialog::getHScrollOffset(void) const
 {
-  return static_cast<unsigned>(this->ui->horizontalScrollBar->value());
+  return static_cast<unsigned>(ui->horizontalScrollBar->value());
 }
 
 void
 SamplerDialog::refreshHScrollBar(void) const
 {
   unsigned int visible =
-      static_cast<unsigned>(this->ui->symView->width()) /
-      this->ui->symView->getZoom();
+      static_cast<unsigned>(ui->symView->width()) /
+      ui->symView->getZoom();
 
-  if (visible < this->ui->symView->getStride()) {
-    unsigned int max = this->ui->symView->getStride() - visible;
-    this->ui->horizontalScrollBar->setPageStep(static_cast<int>(visible));
-    this->ui->horizontalScrollBar->setMaximum(static_cast<int>(max));
-    this->ui->horizontalScrollBar->setVisible(true);
+  if (visible < ui->symView->getStride()) {
+    unsigned int max = ui->symView->getStride() - visible;
+    ui->horizontalScrollBar->setPageStep(static_cast<int>(visible));
+    ui->horizontalScrollBar->setMaximum(static_cast<int>(max));
+    ui->horizontalScrollBar->setVisible(true);
   } else {
-    this->ui->horizontalScrollBar->setPageStep(static_cast<int>(0));
-    this->ui->horizontalScrollBar->setMaximum(static_cast<int>(0));
-    this->ui->horizontalScrollBar->setVisible(false);
+    ui->horizontalScrollBar->setPageStep(static_cast<int>(0));
+    ui->horizontalScrollBar->setMaximum(static_cast<int>(0));
+    ui->horizontalScrollBar->setVisible(false);
   }
 
-  if (!this->ui->symView->getAutoStride())
-    this->ui->horizontalScrollBar->setEnabled(
-          this->ui->symView->getLength() >= visible);
+  if (!ui->symView->getAutoStride())
+    ui->horizontalScrollBar->setEnabled(
+          ui->symView->getLength() >= visible);
   else
-    this->ui->horizontalScrollBar->setEnabled(false);
+    ui->horizontalScrollBar->setEnabled(false);
 }
 
 void
 SamplerDialog::refreshVScrollBar(void) const
 {
-  unsigned int pageSize = this->getVScrollPageSize();
+  unsigned int pageSize = getVScrollPageSize();
   unsigned long lines =
-      (this->ui->symView->getLength() + this->ui->symView->getStride() - 1) /
-      this->ui->symView->getStride();
-  unsigned long max = lines * this->ui->symView->getStride();
+      (ui->symView->getLength() + ui->symView->getStride() - 1) /
+      ui->symView->getStride();
+  unsigned long max = lines * ui->symView->getStride();
 
   if (max > pageSize) {
-    this->ui->verticalScrollBar->setPageStep(static_cast<int>(pageSize));
-    this->ui->verticalScrollBar->setMaximum(static_cast<int>(max - pageSize));
-    this->ui->verticalScrollBar->setVisible(true);
+    ui->verticalScrollBar->setPageStep(static_cast<int>(pageSize));
+    ui->verticalScrollBar->setMaximum(static_cast<int>(max - pageSize));
+    ui->verticalScrollBar->setVisible(true);
   } else {
-    this->ui->verticalScrollBar->setPageStep(0);
-    this->ui->verticalScrollBar->setMaximum(0);
-    this->ui->verticalScrollBar->setVisible(false);
+    ui->verticalScrollBar->setPageStep(0);
+    ui->verticalScrollBar->setMaximum(0);
+    ui->verticalScrollBar->setVisible(false);
   }
 
-  this->ui->verticalScrollBar->setSingleStep(
-        static_cast<int>(this->ui->symView->getStride()));
+  ui->verticalScrollBar->setSingleStep(
+        static_cast<int>(ui->symView->getStride()));
 
-  if (!this->ui->symView->getAutoScroll())
-    this->ui->verticalScrollBar->setEnabled(
-          this->ui->symView->getLength() >= pageSize);
+  if (!ui->symView->getAutoScroll())
+    ui->verticalScrollBar->setEnabled(
+          ui->symView->getLength() >= pageSize);
   else
-    this->ui->verticalScrollBar->setEnabled(false);
+    ui->verticalScrollBar->setEnabled(false);
 }
 
 
@@ -321,17 +321,17 @@ void
 SamplerDialog::onClose(void)
 {
   emit stopTask();
-  this->hide();
+  hide();
 }
 
 void
 SamplerDialog::onBpsChanged(void)
 {
-  unsigned int bps = static_cast<unsigned>(this->ui->bpsSpin->value());
+  unsigned int bps = static_cast<unsigned>(ui->bpsSpin->value());
 
-  this->decider.setBps(bps);
-  this->ui->histogram->setOrderHint(bps);
-  this->ui->symView->setBitsPerSymbol(bps);
+  m_decider.setBps(bps);
+  ui->histogram->setOrderHint(bps);
+  ui->symView->setBitsPerSymbol(bps);
 
   emit resample();
 }
@@ -339,82 +339,82 @@ SamplerDialog::onBpsChanged(void)
 void
 SamplerDialog::onZoomChanged(void)
 {
-  this->ui->symView->setZoom(this->ui->zoomSpin->value());
+  ui->symView->setZoom(ui->zoomSpin->value());
 }
 
 void
 SamplerDialog::onRowSizeChanged(void)
 {
-  this->ui->symView->setAutoStride(false);
-  this->ui->symView->setStride(this->ui->rowSize->value());
+  ui->symView->setAutoStride(false);
+  ui->symView->setStride(ui->rowSize->value());
 }
 
 void
 SamplerDialog::onVScroll(int offset)
 {
-  int relStart = this->ui->symView->getOffset() % this->ui->symView->getStride();
-  int alignedOffset = this->ui->symView->getStride() * (
-        offset / this->ui->symView->getStride());
+  int relStart = ui->symView->getOffset() % ui->symView->getStride();
+  int alignedOffset = ui->symView->getStride() * (
+        offset / ui->symView->getStride());
 
-  this->scrolling = true;
+  m_scrolling = true;
 
-  this->ui->symView->setOffset(
+  ui->symView->setOffset(
         static_cast<unsigned int>(alignedOffset + relStart));
 
-  this->scrolling = false;
+  m_scrolling = false;
 }
 
 void
 SamplerDialog::onHScroll(int offset)
 {
-  this->scrolling = true;
-  this->ui->symView->setHOffset(offset);
-  this->scrolling = false;
+  m_scrolling = true;
+  ui->symView->setHOffset(offset);
+  m_scrolling = false;
 }
 
 void
 SamplerDialog::onOffsetChanged(unsigned int offset)
 {
-  if (!this->scrolling) {
-    this->refreshVScrollBar();
-    this->ui->verticalScrollBar->setValue(static_cast<int>(offset));
+  if (!m_scrolling) {
+    refreshVScrollBar();
+    ui->verticalScrollBar->setValue(static_cast<int>(offset));
   }
 }
 
 void
 SamplerDialog::onHOffsetChanged(int offset)
 {
-  if (!this->scrolling)
-    this->ui->horizontalScrollBar->setValue(offset);
+  if (!m_scrolling)
+    ui->horizontalScrollBar->setValue(offset);
 }
 
 void
 SamplerDialog::onStrideChanged(unsigned int stride)
 {
-  this->ui->rowSize->setValue(static_cast<int>(stride));
-  this->refreshHScrollBar();
+  ui->rowSize->setValue(static_cast<int>(stride));
+  refreshHScrollBar();
 }
 
 
 void
 SamplerDialog::onSymViewZoomChanged(unsigned int zoom)
 {
-  this->ui->zoomSpin->setValue(static_cast<int>(zoom));
-  this->refreshVScrollBar();
-  this->refreshHScrollBar();
+  ui->zoomSpin->setValue(static_cast<int>(zoom));
+  refreshVScrollBar();
+  refreshHScrollBar();
 }
 
 void
 SamplerDialog::onHoverSymbol(unsigned int index)
 {
-  this->ui->positionLabel->setText(
+  ui->positionLabel->setText(
         "Position: " + QString::number(index));
 }
 
 void
 SamplerDialog::onSaveSymView(void)
 {
-  QFileDialog dialog(this->ui->symView);
+  QFileDialog dialog(ui->symView);
   QStringList filters;
   enum SymView::FileFormat fmt = SymView::FILE_FORMAT_TEXT;
 
@@ -456,12 +456,12 @@ SamplerDialog::onSaveSymView(void)
       fmt = SymView::FILE_FORMAT_PPM;
 
     try {
-      this->ui->symView->save(
+      ui->symView->save(
             SuWidgetsHelpers::ensureExtension(path, ext),
             fmt);
     } catch (std::ios_base::failure const &) {
       (void) QMessageBox::critical(
-            this->ui->symView,
+            ui->symView,
             "Save symbol file",
             "Failed to save file in the specified location. Please try again.",
             QMessageBox::Close);

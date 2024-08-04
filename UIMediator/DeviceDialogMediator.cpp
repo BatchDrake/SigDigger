@@ -26,7 +26,7 @@ void
 UIMediator::connectDeviceDialog(void)
 {
   connect(
-        this->ui->deviceDialog,
+        this->m_ui->deviceDialog,
         SIGNAL(refreshRequest(void)),
         this,
         SLOT(onRefreshDevices(void)));

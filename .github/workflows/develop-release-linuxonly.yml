@@ -2,7 +2,11 @@ name: DevelopReleaseLinuxOnly
 
 on:
   workflow_dispatch:
-
+    inputs:
+      plugin_list:
+        description: 'Plugins to include'
+        required: false
+        default: ''
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -12,66 +16,22 @@ jobs:
   # miss that much by particularizing this in a per-OS basis.
   
   build-linux-appimage:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
-
-    - name: Install sndfile
-      run: sudo apt-get install libsndfile1-dev
-
-    # libvolk2-dev is not available in Ubuntu 18.04
-    - name: Install Volk
-      run: sudo apt-get install libvolk1-dev
-
-    - name: Install cURL
-      run: sudo apt-get install libcurl4-openssl-dev
+    - name: Install dependencies
+      uses: "./.github/actions/linuxdeps"
       
-    - name: Install FFTW3
-      run: sudo apt-get install libfftw3-dev
-
-    - name: Install SoapySDR modules
-      run: sudo apt-get install soapysdr-module-all
-
-    - name: Install SoapySDR development files
-      run: sudo apt-get install libsoapysdr-dev
-
-    - name: Install libxml2
-      run: sudo apt-get install libxml2-dev
-
-    - name: Install portaudio
-      run: sudo apt-get install portaudio19-dev
-
-    - name: Install ALSA libraries
-      run: sudo apt-get install libasound2-dev
-    
-    - name: Download linuxdeployqt AppImage
-      run: wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-    
-    - name: Install linuxdeployqt system-wide
-      run: |
-        sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
-        sudo chmod a+x /usr/bin/linuxdeployqt
-
-    - name: Download appimagetool
-      run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-    
-    - name: Install appimagetool system-wide
-      run: |
-        sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
-        sudo chmod a+x /usr/bin/appimagetool
-    
     - name: Build & Distribute (SigDigger)
       run: |
         cd Scripts
         chmod a+x dist-appimage.sh
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
-        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-appimage.sh 
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-appimage.sh ${{ github.event.inputs.plugin_list }}
         cd ..
 
     - name: Archive AppImage files

@@ -31,8 +31,8 @@ using namespace SigDigger;
 
 ///////////////////////////// Fft panel cnfig ////////////////////////////
 #define STRINGFY(x) #x
-#define STORE(field) obj.set(STRINGFY(field), this->field)
-#define LOAD(field) this->field = conf.get(STRINGFY(field), this->field)
+#define STORE(field) obj.set(STRINGFY(field), field)
+#define LOAD(field) field = conf.get(STRINGFY(field), field)
 
 void
 FFTWidgetConfig::deserialize(Suscan::Object const &conf)
@@ -50,16 +50,19 @@ FFTWidgetConfig::deserialize(Suscan::Object const &conf)
   LOAD(palette);
   LOAD(zoom);
   LOAD(rangeLock);
+  LOAD(channels);
   LOAD(timeSpan);
   LOAD(timeStamps);
+  LOAD(utcTimeStamps);
   LOAD(bookmarks);
   LOAD(unitName);
   LOAD(zeroPoint);
   LOAD(gain);
+  LOAD(clickResolution);
 }
 
 Suscan::Object &&
-FFTWidgetConfig::serialize(void)
+FFTWidgetConfig::serialize()
 {
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
@@ -78,60 +81,66 @@ FFTWidgetConfig::serialize(void)
   STORE(palette);
   STORE(zoom);
   STORE(rangeLock);
+  STORE(channels);
   STORE(timeSpan);
   STORE(timeStamps);
+  STORE(utcTimeStamps);
   STORE(bookmarks);
   STORE(unitName);
   STORE(zeroPoint);
   STORE(gain);
+  STORE(clickResolution);
 
-  return this->persist(obj);
+  return persist(obj);
 }
 
 ///////////////////////////// Fft Panel Config /////////////////////////////////
 Suscan::Serializable *
-FFTWidget::allocConfig(void)
+FFTWidget::allocConfig()
 {
-  return this->panelConfig = new FFTWidgetConfig();
+  return m_panelConfig = new FFTWidgetConfig();
 }
 
 void
-FFTWidget::applyConfig(void)
+FFTWidget::applyConfig()
 {
-  FFTWidgetConfig savedConfig = *this->panelConfig;
+  FFTWidgetConfig savedConfig = *m_panelConfig;
 
   // Analyzer params are kept by the UIMediator, which provides information on
   // how to start up the analyzer.
   auto params = m_mediator->getAnalyzerParams();
-  this->refreshParamControls(*params);
+  refreshParamControls(*params);
 
   // Refreshing the current palette config involves having the palette
   // list up to date.
-  this->refreshPalettes();
+  refreshPalettes();
 
-  this->setAveraging(savedConfig.averaging);
-  this->setPanWfRatio(savedConfig.panWfRatio);
-  this->setPandRangeMax(savedConfig.panRangeMax);
-  this->setPandRangeMin(savedConfig.panRangeMin);
-  this->setWfRangeMax(savedConfig.wfRangeMax);
-  this->setWfRangeMin(savedConfig.wfRangeMin);
-  this->setPalette(savedConfig.palette);
-  this->setFreqZoom(savedConfig.zoom);
-  this->setPeakHold(savedConfig.peakHold);
-  this->setPeakDetect(savedConfig.peakDetect);
-  this->setFilled(savedConfig.filled);
-  this->setRangeLock(savedConfig.rangeLock);
-  this->setTimeSpan(savedConfig.timeSpan);
-  this->setTimeStamps(savedConfig.timeStamps);
-  this->setBookmarks(savedConfig.bookmarks);
-  this->setUnitName(QString::fromStdString(savedConfig.unitName));
-  this->setZeroPoint(savedConfig.zeroPoint);
-  this->setGain(savedConfig.gain);
+  setAveraging(savedConfig.averaging);
+  setPanWfRatio(savedConfig.panWfRatio);
+  setPandRangeMax(savedConfig.panRangeMax);
+  setPandRangeMin(savedConfig.panRangeMin);
+  setWfRangeMax(savedConfig.wfRangeMax);
+  setWfRangeMin(savedConfig.wfRangeMin);
+  setPalette(savedConfig.palette);
+  setFreqZoom(savedConfig.zoom);
+  setPeakHold(savedConfig.peakHold);
+  setPeakDetect(savedConfig.peakDetect);
+  setFilled(savedConfig.filled);
+  setRangeLock(savedConfig.rangeLock);
+  setShowChannels(savedConfig.channels);
+  setTimeSpan(savedConfig.timeSpan);
+  setTimeStamps(savedConfig.timeStamps);
+  setTimeStampsUTC(savedConfig.utcTimeStamps);
+  setBookmarks(savedConfig.bookmarks);
+  setUnitName(QString::fromStdString(savedConfig.unitName));
+  setZeroPoint(savedConfig.zeroPoint);
+  setGain(savedConfig.gain);
+  setClickResolution(savedConfig.clickResolution);
 
-  this->setProperty("collapsed", savedConfig.collapsed);
+  setProperty("collapsed", savedConfig.collapsed);
 
   // Apply all spectrum settings, all at once
-  this->refreshSpectrumSettings();
+  refreshSpectrumSettings();
 }
 
 bool
@@ -142,7 +151,7 @@ FFTWidget::event(QEvent *event)
         static_cast<QDynamicPropertyChangeEvent*>(event);
     QString propName = propEvent->propertyName();
     if (propName == "collapsed")
-      this->panelConfig->collapsed = this->property("collapsed").value<bool>();
+      m_panelConfig->collapsed = property("collapsed").value<bool>();
   }
 
   return ToolWidget::event(event);
@@ -172,126 +181,132 @@ FFTWidget::setState(int, Suscan::Analyzer *analyzer)
 void
 FFTWidget::setProfile(Suscan::Source::Config &config)
 {
-  this->rate = config.getDecimatedSampleRate();
-  this->updateRbw();
+  m_rate = config.getDecimatedSampleRate();
+  updateRbw();
 }
 
 void
-FFTWidget::connectAll(void)
+FFTWidget::connectAll()
 {
   connect(
-        this->ui->paletteCombo,
+        m_ui->paletteCombo,
         SIGNAL(activated(int)),
         this,
         SLOT(onPaletteChanged(int)));
 
   connect(
-        this->ui->wfRange,
+        m_ui->wfRange,
         SIGNAL(valuesChanged(int, int)),
         this,
         SLOT(onWfRangeChanged(int, int)));
 
   connect(
-        this->ui->pandRange,
+        m_ui->pandRange,
         SIGNAL(valuesChanged(int, int)),
         this,
         SLOT(onPandRangeChanged(int, int)));
 
   connect(
-        this->ui->fftAvgSlider,
-        SIGNAL(valueChanged(int)),
+        m_ui->avgSpinBox,
+        SIGNAL(valueChanged(qreal)),
         this,
-        SLOT(onAveragingChanged(int)));
+        SLOT(onAveragingChanged(qreal)));
 
   connect(
-        this->ui->fftAspectSlider,
+        m_ui->fftAspectSlider,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onAspectRatioChanged(int)));
 
   connect(
-        this->ui->freqZoomSlider,
+        m_ui->freqZoomSlider,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onFreqZoomChanged(int)));
 
   connect(
-        this->ui->fftSizeCombo,
+        m_ui->fftSizeCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onFftSizeChanged(void)));
+        SLOT(onFftSizeChanged()));
 
   connect(
-        this->ui->rateCombo,
+        m_ui->rateCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onRefreshRateChanged(void)));
+        SLOT(onRefreshRateChanged()));
 
   connect(
-        this->ui->timeSpanCombo,
+        m_ui->timeSpanCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onTimeSpanChanged(void)));
+        SLOT(onTimeSpanChanged()));
 
   connect(
-        this->ui->lockButton,
+        m_ui->lockButton,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onRangeLockChanged()));
+
+  connect(
+        m_ui->channelButton,
         SIGNAL(clicked(bool)),
         this,
-        SLOT(onRangeLockChanged(void)));
+        SLOT(onChannelsChanged()));
 
   connect(
-        this->ui->detectPeakButton,
+        m_ui->detectPeakButton,
         SIGNAL(clicked(bool)),
         this,
-        SLOT(onPeakChanged(void)));
+        SLOT(onPeakChanged()));
 
   connect(
-        this->ui->holdPeakButton,
+        m_ui->holdPeakButton,
         SIGNAL(clicked(bool)),
         this,
-        SLOT(onPeakChanged(void)));
+        SLOT(onPeakChanged()));
 
   connect(
-        this->ui->filledButton,
+        m_ui->filledButton,
         SIGNAL(clicked(bool)),
         this,
-        SLOT(onFilledChanged(void)));
+        SLOT(onFilledChanged()));
 
   connect(
-        this->ui->timeStampsButton,
+        m_ui->timeStampsButton,
         SIGNAL(clicked(bool)),
         this,
-        SLOT(onTimeStampsChanged(void)));
+        SLOT(onTimeStampsChanged()));
 
   connect(
-        this->ui->windowCombo,
+        m_ui->windowCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onWindowFunctionChanged(void)));
+        SLOT(onWindowFunctionChanged()));
 
   connect(
-        this->ui->bookmarksButton,
+        m_ui->bookmarksButton,
         SIGNAL(clicked(bool)),
         this,
-        SLOT(onBookmarksChanged(void)));
+        SLOT(onBookmarksChanged()));
 
   connect(
-        this->ui->unitsCombo,
+        m_ui->unitsCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onUnitChanged(void)));
+        SLOT(onUnitChanged()));
 
   connect(
-        this->ui->zeroPointSpin,
+        m_ui->zeroPointSpin,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onZeroPointChanged(void)));
+        SLOT(onZeroPointChanged()));
 
   connect(
-        this->ui->gainSpinBox,
+        m_ui->gainSpinBox,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onGainChanged(void)));
+        SLOT(onGainChanged()));
 
   connect(
         m_spectrum,
@@ -304,121 +319,153 @@ FFTWidget::connectAll(void)
         SIGNAL(zoomChanged(float)),
         this,
         SLOT(onZoomChanged(float)));
+
+  connect(
+        m_ui->timeZoneCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onUTCChanged()));
+
+  connect(
+        m_ui->clickResCombo,
+        SIGNAL(activated(int)),
+        this,
+        SLOT(onClickResolutionChanged()));
 }
 
 FFTWidget::FFTWidget(FFTWidgetFactory *factory, UIMediator *mediator, QWidget *parent) :
   ToolWidget(factory, mediator, parent),
-  ui(new Ui::FftPanel)
+  m_ui(new Ui::FftPanel)
 {
   unsigned int i;
 
-  ui->setupUi(this);
+  m_ui->setupUi(this);
 
   m_mediator = mediator;
   m_spectrum = mediator->getMainSpectrum();
 
-  this->assertConfig();
+  assertConfig();
 
   for (i = 9; i < 21; ++i)
-    this->addFftSize(1 << i);
+    addFftSize(1 << i);
 
   // Add refresh rates
-  this->addRefreshRate(1);
-  this->addRefreshRate(2);
-  this->addRefreshRate(5);
-  this->addRefreshRate(10);
-  this->addRefreshRate(25);
-  this->addRefreshRate(30);
-  this->addRefreshRate(50);
-  this->addRefreshRate(60);
+  addRefreshRate(1);
+  addRefreshRate(2);
+  addRefreshRate(5);
+  addRefreshRate(10);
+  addRefreshRate(25);
+  addRefreshRate(30);
+  addRefreshRate(50);
+  addRefreshRate(60);
+  addRefreshRate(90);
+  addRefreshRate(120);
 
   // Add Gqrx time spans
-  this->addTimeSpan(0);
-  this->addTimeSpan(5 * 60);
-  this->addTimeSpan(10 * 60);
-  this->addTimeSpan(15 * 60);
-  this->addTimeSpan(20 * 60);
-  this->addTimeSpan(30 * 60);
+  addTimeSpan(0);
+  addTimeSpan(15);
+  addTimeSpan(30);
+  addTimeSpan(1 * 60);
+  addTimeSpan(2 * 60);
+  addTimeSpan(5 * 60);
+  addTimeSpan(10 * 60);
+  addTimeSpan(15 * 60);
+  addTimeSpan(20 * 60);
+  addTimeSpan(30 * 60);
 
-  this->addTimeSpan(3600);
-  this->addTimeSpan(2 * 3600);
-  this->addTimeSpan(5 * 3600);
-  this->addTimeSpan(10 * 3600);
-  this->addTimeSpan(16 * 3600);
-  this->addTimeSpan(24 * 3600);
-  this->addTimeSpan(48 * 3600);
+  addTimeSpan(3600);
+  addTimeSpan(2 * 3600);
+  addTimeSpan(5 * 3600);
+  addTimeSpan(10 * 3600);
+  addTimeSpan(16 * 3600);
+  addTimeSpan(24 * 3600);
+  addTimeSpan(48 * 3600);
 
-  this->populateUnits();
+  // Add click resolutions
+  addClickResolution(1);
+  addClickResolution(10);
+  addClickResolution(100);
+  addClickResolution(1000);
+  addClickResolution(2500);
+  addClickResolution(10000);
+  addClickResolution(25000);
+  addClickResolution(100000);
+  addClickResolution(250000);
+  addClickResolution(1000000);
+  addClickResolution(2500000);
+  addClickResolution(10000000);
 
-  this->connectAll();
+  populateUnits();
 
-  this->setProperty("collapsed", this->panelConfig->collapsed);
+  connectAll();
+
+  setProperty("collapsed", m_panelConfig->collapsed);
 }
 
 void
-FFTWidget::populateUnits(void)
+FFTWidget::populateUnits()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
-  this->ui->unitsCombo->clear();
+  m_ui->unitsCombo->clear();
 
   for (auto p: sus->getSpectrumUnitMap())
-    this->ui->unitsCombo->addItem(QString::fromStdString(p.name));
+    m_ui->unitsCombo->addItem(QString::fromStdString(p.name));
 
-  this->ui->unitsCombo->setCurrentIndex(0);
-  this->ui->zeroPointSpin->setValue(0.0);
+  m_ui->unitsCombo->setCurrentIndex(0);
+  m_ui->zeroPointSpin->setValue(0.0);
 }
 
 void
-FFTWidget::refreshPalettes(void)
+FFTWidget::refreshPalettes()
 {
-  SigDiggerHelpers::instance()->populatePaletteCombo(this->ui->paletteCombo);
+  SigDiggerHelpers::instance()->populatePaletteCombo(m_ui->paletteCombo);
 }
 
 void
-FFTWidget::updateFftSizes(void)
+FFTWidget::updateFftSizes()
 {
   int index = 0;
-  this->ui->fftSizeCombo->clear();
+  m_ui->fftSizeCombo->clear();
 
-  for (auto p = this->sizes.begin(); p != this->sizes.end(); ++p) {
+  for (auto p = m_sizes.begin(); p != m_sizes.end(); ++p) {
     if (*p == 0) {
-      QString defString = this->defaultFftSize == 0
+      QString defString = m_defaultFftSize == 0
           ? ""
-          : "  (" + QString::number(this->fftSize) + ")";
-      this->ui->fftSizeCombo->addItem("Default" + defString);
+          : "  (" + QString::number(m_fftSize) + ")";
+      m_ui->fftSizeCombo->addItem("Default" + defString);
     } else {
-      this->ui->fftSizeCombo->addItem(QString::number(*p));
+      m_ui->fftSizeCombo->addItem(QString::number(*p));
     }
 
-    if (*p == this->fftSize)
-      this->ui->fftSizeCombo->setCurrentIndex(index);
+    if (*p == m_fftSize)
+      m_ui->fftSizeCombo->setCurrentIndex(index);
 
     ++index;
   }
 }
 
 void
-FFTWidget::updateRefreshRates(void)
+FFTWidget::updateRefreshRates()
 {
   int index = 0;
   int selectedIndex = 0;
   unsigned int diff;
   unsigned int bestMatch = 1 << 20; /* Just a big number */
-  this->ui->rateCombo->clear();
+  m_ui->rateCombo->clear();
 
-  for (auto p = this->refreshRates.begin(); p != this->refreshRates.end(); ++p) {
+  for (auto p = m_refreshRates.begin(); p != m_refreshRates.end(); ++p) {
     if (*p == 0) {
-      QString defString = this->defaultRefreshRate == 0
+      QString defString = m_defaultRefreshRate == 0
           ? ""
-          : "  (" + QString::number(this->refreshRate) + " fps)";
-      this->ui->rateCombo->addItem("Default" + defString);
+          : "  (" + QString::number(m_refreshRate) + " fps)";
+      m_ui->rateCombo->addItem("Default" + defString);
     } else {
-      this->ui->rateCombo->addItem(QString::number(*p) + " fps");
+      m_ui->rateCombo->addItem(QString::number(*p) + " fps");
     }
 
     diff = SCAST(unsigned,
-          std::abs(SCAST(int, *p) - SCAST(int, this->refreshRate)));
+          std::abs(SCAST(int, *p) - SCAST(int, m_refreshRate)));
     if (diff < bestMatch) {
       selectedIndex = index;
       bestMatch = diff;
@@ -427,7 +474,7 @@ FFTWidget::updateRefreshRates(void)
     ++index;
   }
 
-  this->ui->rateCombo->setCurrentIndex(selectedIndex);
+  m_ui->rateCombo->setCurrentIndex(selectedIndex);
 }
 
 static QString
@@ -442,20 +489,20 @@ secondsToString(unsigned int seconds)
 }
 
 void
-FFTWidget::updateTimeSpans(void)
+FFTWidget::updateTimeSpans()
 {
   int index = 0;
-  this->ui->timeSpanCombo->clear();
+  m_ui->timeSpanCombo->clear();
 
-  for (auto p = this->timeSpans.begin(); p != this->timeSpans.end(); ++p) {
+  for (auto p = m_timeSpans.begin(); p != m_timeSpans.end(); ++p) {
     if (*p == 0) {
-      this->ui->timeSpanCombo->addItem("Auto");
+      m_ui->timeSpanCombo->addItem("Auto");
     } else {
-      this->ui->timeSpanCombo->addItem(secondsToString(*p));
+      m_ui->timeSpanCombo->addItem(secondsToString(*p));
     }
 
-    if (*p == this->panelConfig->timeSpan)
-      this->ui->timeSpanCombo->setCurrentIndex(index);
+    if (*p == m_panelConfig->timeSpan)
+      m_ui->timeSpanCombo->setCurrentIndex(index);
 
     ++index;
   }
@@ -464,203 +511,220 @@ FFTWidget::updateTimeSpans(void)
 void
 FFTWidget::addFftSize(unsigned int size)
 {
-  this->sizes.push_back(size);
+  m_sizes.push_back(size);
 }
 
 void
 FFTWidget::addTimeSpan(unsigned int span)
 {
-  this->timeSpans.push_back(span);
+  m_timeSpans.push_back(span);
 }
 
 void
 FFTWidget::addRefreshRate(unsigned int rate)
 {
-  this->refreshRates.push_back(rate);
+  m_refreshRates.push_back(rate);
 }
 
 void
-FFTWidget::updateRbw(void)
+FFTWidget::addClickResolution(unsigned int res)
 {
-  if (this->rate == 0 || this->fftSize == 0) {
-    this->ui->rbwLabel->setText("RBW: N/A");
+  m_clickResolutions.push_back(res);
+}
+
+void
+FFTWidget::updateRbw()
+{
+  if (m_rate == 0 || m_fftSize == 0) {
+    m_ui->rbwLabel->setText("RBW: N/A");
   } else {
-    qreal rbw = static_cast<qreal>(this->rate) / this->fftSize;
+    qreal rbw = static_cast<qreal>(m_rate) / m_fftSize;
     QString rbwString = SuWidgetsHelpers::formatQuantity(
           rbw,
           2,
           QStringLiteral("Hz"));
 
-    this->ui->rbwLabel->setText("RBW: " + rbwString);
+    m_ui->rbwLabel->setText("RBW: " + rbwString);
   }
 }
 
 FFTWidget::~FFTWidget()
 {
-  delete ui;
+  delete m_ui;
 }
 
 //////////////////////////////////// Getters //////////////////////////////////
 std::string
-FFTWidget::getPalette(void) const
+FFTWidget::getPalette() const
 {
-  if (this->selected != nullptr)
-    return this->selected->getName();
+  if (m_selected != nullptr)
+    return m_selected->getName();
 
   return SigDiggerHelpers::instance()->getPalette(0)->getName();
 }
 
 float
-FFTWidget::getPandRangeMin(void) const
+FFTWidget::getPandRangeMin() const
 {
-  return this->ui->pandRange->minimumValue();
+  return m_ui->pandRange->minimumValue();
 }
 
 float
-FFTWidget::getPandRangeMax(void) const
+FFTWidget::getPandRangeMax() const
 {
-  return this->ui->pandRange->maximumValue();
+  return m_ui->pandRange->maximumValue();
 }
 
 float
-FFTWidget::getWfRangeMin(void) const
+FFTWidget::getWfRangeMin() const
 {
-  return this->ui->wfRange->minimumValue();
+  return m_ui->wfRange->minimumValue();
 }
 
 float
-FFTWidget::getWfRangeMax(void) const
+FFTWidget::getWfRangeMax() const
 {
-  return this->ui->wfRange->maximumValue();
+  return m_ui->wfRange->maximumValue();
 }
 
 float
-FFTWidget::getAveraging(void) const
+FFTWidget::getAveraging() const
 {
-  float avg = (1000 - this->ui->fftAvgSlider->value()) / 1000.f;
-  return avg;
+  return m_ui->avgSpinBox->value();
 }
 
 float
-FFTWidget::getPanWfRatio(void) const
+FFTWidget::getPanWfRatio() const
 {
-  return this->ui->fftAspectSlider->value() / 100.f;
+  return m_ui->fftAspectSlider->value() / 100.f;
 }
 
 const QColor *
-FFTWidget::getPaletteGradient(void) const
+FFTWidget::getPaletteGradient() const
 {
-  if (this->selected != nullptr)
-    return this->selected->getGradient();
+  if (m_selected != nullptr)
+    return m_selected->getGradient();
 
   return SigDiggerHelpers::instance()->getPalette(0)->getGradient();
 }
 
-unsigned int
-FFTWidget::getFreqZoom(void) const
+float
+FFTWidget::getFreqZoom() const
 {
-  return static_cast<unsigned int>(this->ui->freqZoomSlider->value());
+  return m_panelConfig->zoom;
 }
 
 unsigned int
-FFTWidget::getFftSize(void) const
+FFTWidget::getFftSize() const
 {
-  return this->fftSize;
+  return m_fftSize;
 }
 
 unsigned int
-FFTWidget::getTimeSpan(void) const
+FFTWidget::getTimeSpan() const
 {
-  return this->panelConfig->timeSpan;
+  return m_panelConfig->timeSpan;
 }
 
 unsigned int
-FFTWidget::getRefreshRate(void) const
+FFTWidget::getRefreshRate() const
 {
-  return this->refreshRate;
+  return m_refreshRate;
+}
+
+unsigned int
+FFTWidget::getClickResolution() const
+{
+  return m_panelConfig->clickResolution;
 }
 
 bool
-FFTWidget::getPeakDetect(void) const
+FFTWidget::getPeakDetect() const
 {
-  return this->ui->detectPeakButton->isChecked();
+  return m_ui->detectPeakButton->isChecked();
 }
 
 bool
-FFTWidget::getPeakHold(void) const
+FFTWidget::getPeakHold() const
 {
-  return this->ui->holdPeakButton->isChecked();
+  return m_ui->holdPeakButton->isChecked();
 }
 
 bool
-FFTWidget::getRangeLock(void) const
+FFTWidget::getRangeLock() const
 {
-  return this->ui->lockButton->isChecked();
+  return m_ui->lockButton->isChecked();
 }
 
 bool
-FFTWidget::getTimeStamps(void) const
+FFTWidget::getShowChannels() const
 {
-  return this->ui->timeStampsButton->isChecked();
+  return m_ui->channelButton->isChecked();
 }
 
 bool
-FFTWidget::getBookmarks(void) const
+FFTWidget::getTimeStamps() const
 {
-  return this->ui->bookmarksButton->isChecked();
+  return m_ui->timeStampsButton->isChecked();
 }
 
 bool
-FFTWidget::getFilled(void) const
+FFTWidget::getBookmarks() const
 {
-  return this->ui->filledButton->isChecked();
+  return m_ui->bookmarksButton->isChecked();
+}
+
+bool
+FFTWidget::getFilled() const
+{
+  return m_ui->filledButton->isChecked();
 }
 
 enum Suscan::AnalyzerParams::WindowFunction
-FFTWidget::getWindowFunction(void) const
+FFTWidget::getWindowFunction() const
 {
   return static_cast<enum Suscan::AnalyzerParams::WindowFunction>(
-        this->ui->windowCombo->currentIndex());
+        m_ui->windowCombo->currentIndex());
 }
 
 void
 FFTWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
-  this->ui->fftSizeCombo->setEnabled(
+  m_ui->fftSizeCombo->setEnabled(
         info.testPermission(SUSCAN_ANALYZER_PERM_SET_FFT_SIZE));
 
-  this->ui->rateCombo->setEnabled(
+  m_ui->rateCombo->setEnabled(
         info.testPermission(SUSCAN_ANALYZER_PERM_SET_FFT_FPS));
 
-  this->ui->windowCombo->setEnabled(
+  m_ui->windowCombo->setEnabled(
         info.testPermission(SUSCAN_ANALYZER_PERM_SET_FFT_WINDOW));
 }
 
 QString
-FFTWidget::getUnitName(void) const
+FFTWidget::getUnitName() const
 {
-  return this->ui->unitsCombo->currentText();
+  return m_ui->unitsCombo->currentText();
 }
 
 float
-FFTWidget::getZeroPoint(void) const
+FFTWidget::getZeroPoint() const
 {
-  return SCAST(float, this->ui->zeroPointSpin->value());
+  return SCAST(float, m_ui->zeroPointSpin->value());
 }
 
 float
-FFTWidget::getGain(void) const
+FFTWidget::getGain() const
 {
-  return SCAST(float, this->ui->gainSpinBox->value());
+  return SCAST(float, m_ui->gainSpinBox->value());
 }
 
 float
-FFTWidget::getCompleteZeroPoint(void) const
+FFTWidget::getCompleteZeroPoint() const
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  float currZP = SCAST(float, this->ui->zeroPointSpin->value());
+  float currZP = SCAST(float, m_ui->zeroPointSpin->value());
 
-  std::string name = this->ui->unitsCombo->currentText().toStdString();
+  std::string name = m_ui->unitsCombo->currentText().toStdString();
   auto it = sus->getSpectrumUnitFrom(name);
 
   if (it != sus->getLastSpectrumUnit())
@@ -670,10 +734,10 @@ FFTWidget::getCompleteZeroPoint(void) const
 }
 
 float
-FFTWidget::getdBPerUnit(void) const
+FFTWidget::getdBPerUnit() const
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  std::string name = this->ui->unitsCombo->currentText().toStdString();
+  std::string name = m_ui->unitsCombo->currentText().toStdString();
   auto it = sus->getSpectrumUnitFrom(name);
 
   if (it != sus->getLastSpectrumUnit())
@@ -690,168 +754,209 @@ FFTWidget::setPalette(std::string const &str)
   if (index < 0)
     return false;
 
-  this->ui->paletteCombo->setCurrentIndex(index);
-  this->selected = SigDiggerHelpers::instance()->getPalette(index);
-  this->panelConfig->palette = str;
+  m_ui->paletteCombo->setCurrentIndex(index);
+  m_selected = SigDiggerHelpers::instance()->getPalette(index);
+  m_panelConfig->palette = str;
 
   return true;
 }
 
 void
-FFTWidget::setFreqZoom(int zoom)
+FFTWidget::setFreqZoom(float zoom)
 {
-  this->ui->freqZoomSlider->setValue(zoom);
-  this->ui->freqZoomLabel->setText(
-        zoom < 1 ? "<1x" : QString::number(zoom) + "x");
-  this->panelConfig->zoom = zoom;
+  float logZoom = SU_LOG(zoom) / SU_LOG(2);
+  int sliderPos = SCAST(int, 100 * logZoom);
+
+  m_ui->freqZoomSlider->setValue(sliderPos);
+  if (zoom > 0.5f && zoom < 2) {
+    m_ui->freqZoomLabel->setText(
+          zoom <= 0.5f
+          ? "/" + QString::number(SCAST(qreal, 1 / zoom), 'g', 2)
+          : QString::number(SCAST(qreal, zoom), 'g', 2) + "x");
+  } else {
+    m_ui->freqZoomLabel->setText(
+          zoom <= 0.5f
+          ? "/" + QString::number(SCAST(int, 1 / zoom))
+          : QString::number(SCAST(int, zoom)) + "x");
+  }
+
+  m_panelConfig->zoom = zoom;
 }
 
 void
 FFTWidget::setPandRangeMin(float min)
 {
-  this->ui->pandRange->setMinimumValue(SCAST(int, min));
-  this->panelConfig->panRangeMin = min;
+  m_ui->pandRange->setMinimumValue(SCAST(int, min));
+  m_panelConfig->panRangeMin = min;
 }
 
 void
 FFTWidget::setPandRangeMax(float max)
 {
-  this->ui->pandRange->setMaximumValue(SCAST(int, max));
-  this->panelConfig->panRangeMax = max;
+  m_ui->pandRange->setMaximumValue(SCAST(int, max));
+  m_panelConfig->panRangeMax = max;
 }
 
 void
 FFTWidget::setWfRangeMin(float min)
 {
-  this->ui->wfRange->setMinimumValue(SCAST(int, min));
-  this->panelConfig->wfRangeMin = min;
+  m_ui->wfRange->setMinimumValue(SCAST(int, min));
+  m_panelConfig->wfRangeMin = min;
 }
 
 void
 FFTWidget::setWfRangeMax(float max)
 {
-  this->ui->wfRange->setMaximumValue(SCAST(int, max));
-  this->panelConfig->wfRangeMax = max;
+  m_ui->wfRange->setMaximumValue(SCAST(int, max));
+  m_panelConfig->wfRangeMax = max;
 }
 
 void
 FFTWidget::setAveraging(float avg)
 {
-  int val = 1000 - SCAST(int, avg * 1000.f);
-
-  this->ui->fftAvgSlider->setValue(val);
-  this->panelConfig->averaging = avg;
+  m_ui->avgSpinBox->setValue(avg);
+  m_panelConfig->averaging = avg;
 }
 
 void
 FFTWidget::setPanWfRatio(float ratio)
 {
-  this->ui->fftAspectSlider->setValue(SCAST(int, ratio * 100.f));
-  this->panelConfig->panWfRatio = ratio;
+  m_ui->fftAspectSlider->setValue(SCAST(int, ratio * 100.f));
+  m_panelConfig->panWfRatio = ratio;
 }
 
 void
 FFTWidget::setDefaultFftSize(unsigned int size)
 {
-  this->defaultFftSize = size;
-  this->updateFftSizes();
+  m_defaultFftSize = size;
+  updateFftSizes();
 }
 
 void
 FFTWidget::setDefaultRefreshRate(unsigned int rate)
 {
-  this->defaultRefreshRate = rate;
-  this->updateFftSizes();
+  m_defaultRefreshRate = rate;
+  updateFftSizes();
 }
 
 void
 FFTWidget::setFftSize(unsigned int size)
 {
-  this->fftSize = size;
-  this->updateRbw();
-  this->updateFftSizes();
+  m_fftSize = size;
+  updateRbw();
+  updateFftSizes();
 }
 
 void
 FFTWidget::setRefreshRate(unsigned int rate)
 {
-  this->refreshRate = rate;
-  this->updateRefreshRates();
+  m_refreshRate = rate;
+  updateRefreshRates();
 }
 
 void
 FFTWidget::setTimeSpan(unsigned int span)
 {
-  this->panelConfig->timeSpan = span;
-  this->updateTimeSpans();
+  m_panelConfig->timeSpan = span;
+  updateTimeSpans();
+}
+
+void
+FFTWidget::setClickResolution(unsigned int res)
+{
+  int index = 0;
+  m_panelConfig->clickResolution = res;
+
+  for (auto p = m_clickResolutions.begin(); p != m_clickResolutions.end(); ++p) {
+    if (*p >= m_panelConfig->clickResolution) {
+      m_ui->clickResCombo->setCurrentIndex(index);
+      break;
+    }
+    ++index;
+  }
 }
 
 void
 FFTWidget::setSampleRate(unsigned int rate)
 {
-  this->rate = rate;
-  this->updateRbw();
+  m_rate = rate;
+  updateRbw();
 }
 
 void
 FFTWidget::setPeakHold(bool hold)
 {
-  this->ui->holdPeakButton->setChecked(hold);
-  this->panelConfig->peakHold = hold;
+  m_ui->holdPeakButton->setChecked(hold);
+  m_panelConfig->peakHold = hold;
 }
 
 void
 FFTWidget::setFilled(bool filled)
 {
-  this->ui->filledButton->setChecked(filled);
-  this->panelConfig->filled = filled;
+  m_ui->filledButton->setChecked(filled);
+  m_panelConfig->filled = filled;
 }
 
 void
 FFTWidget::setPeakDetect(bool detect)
 {
-  this->ui->detectPeakButton->setChecked(detect);
-  this->panelConfig->peakDetect = detect;
+  m_ui->detectPeakButton->setChecked(detect);
+  m_panelConfig->peakDetect = detect;
 }
 
 void
 FFTWidget::setTimeStamps(bool value)
 {
-  this->ui->timeStampsButton->setChecked(value);
-  this->panelConfig->timeStamps = value;
+  m_ui->timeStampsButton->setChecked(value);
+  m_panelConfig->timeStamps = value;
+}
+
+void
+FFTWidget::setTimeStampsUTC(bool utc)
+{
+  m_ui->timeZoneCombo->setCurrentIndex(utc ? 1 : 0);
+  m_panelConfig->utcTimeStamps = utc;
 }
 
 void
 FFTWidget::setBookmarks(bool value)
 {
-  this->ui->bookmarksButton->setChecked(value);
-  this->panelConfig->bookmarks = value;
+  m_ui->bookmarksButton->setChecked(value);
+  m_panelConfig->bookmarks = value;
 }
 
 void
 FFTWidget::setRangeLock(bool lock)
 {
   if (lock) {
-    this->setWfRangeMin(this->getPandRangeMin());
-    this->setWfRangeMax(this->getPandRangeMax());
+    setWfRangeMin(getPandRangeMin());
+    setWfRangeMax(getPandRangeMax());
   }
 
-  this->ui->lockButton->setChecked(lock);
-  this->panelConfig->rangeLock = lock;
+  m_ui->lockButton->setChecked(lock);
+  m_panelConfig->rangeLock = lock;
 }
+
+void
+FFTWidget::setShowChannels(bool show)
+{
+  m_ui->channelButton->setChecked(show);
+  m_panelConfig->channels = show;
+}
+
 
 bool
 FFTWidget::setUnitName(QString name)
 {
-  int index = this->ui->unitsCombo->findText(name);
+  int index = m_ui->unitsCombo->findText(name);
 
   if (index == -1)
     return false;
 
-  this->ui->unitsCombo->setCurrentIndex(index);
-  this->ui->zeroPointSpin->setSuffix(" " + name);
+  m_ui->unitsCombo->setCurrentIndex(index);
+  m_ui->zeroPointSpin->setSuffix(" " + name);
 
-  this->panelConfig->unitName = name.toStdString();
+  m_panelConfig->unitName = name.toStdString();
 
   return true;
 }
@@ -859,22 +964,22 @@ FFTWidget::setUnitName(QString name)
 void
 FFTWidget::setZeroPoint(float zp)
 {
-  this->ui->zeroPointSpin->setValue(static_cast<double>(zp));
-  this->panelConfig->zeroPoint = zp;
+  m_ui->zeroPointSpin->setValue(static_cast<double>(zp));
+  m_panelConfig->zeroPoint = zp;
 }
 
 void
 FFTWidget::setGain(float gain)
 {
-  this->ui->gainSpinBox->setValue(static_cast<double>(gain));
-  this->panelConfig->gain = gain;
+  m_ui->gainSpinBox->setValue(static_cast<double>(gain));
+  m_panelConfig->gain = gain;
 }
 
 void
 FFTWidget::setWindowFunction(enum Suscan::AnalyzerParams::WindowFunction func)
 {
   // I'm sorry.
-  this->ui->windowCombo->setCurrentIndex(SCAST(int, func));
+  m_ui->windowCombo->setCurrentIndex(SCAST(int, func));
 }
 
 void
@@ -883,16 +988,17 @@ FFTWidget::refreshSpectrumScaleSettings()
   bool blocking = m_spectrum->blockSignals(true);
 
   m_spectrum->setPandapterRange(
-        this->getPandRangeMin(),
-        this->getPandRangeMax());
+        getPandRangeMin(),
+        getPandRangeMax());
 
   m_spectrum->setWfRange(
-        this->getWfRangeMin(),
-        this->getWfRangeMax());
+        getWfRangeMin(),
+        getWfRangeMax());
 
-  m_spectrum->setPanWfRatio(this->getPanWfRatio());
-  m_spectrum->setZoom(this->getFreqZoom());
-  m_spectrum->setTimeSpan(this->getTimeSpan());
+  m_spectrum->setPanWfRatio(getPanWfRatio());
+  m_spectrum->setZoom(getFreqZoom());
+  m_spectrum->setTimeSpan(getTimeSpan());
+  m_spectrum->setClickResolution(getClickResolution());
 
   m_spectrum->blockSignals(blocking);
 }
@@ -902,7 +1008,7 @@ FFTWidget::refreshSpectrumAxesSettings()
 {
   bool blocking = m_spectrum->blockSignals(true);
 
-  m_spectrum->setGain(this->panelConfig->gain);
+  m_spectrum->setGain(m_panelConfig->gain);
 
   m_spectrum->blockSignals(blocking);
 }
@@ -912,11 +1018,12 @@ FFTWidget::refreshSpectrumRepresentationSettings()
 {
   bool blocking = m_spectrum->blockSignals(true);
 
-  m_spectrum->setPeakDetect(this->getPeakDetect());
-  m_spectrum->setPeakHold(this->getPeakHold());
-  m_spectrum->setFilled(this->getFilled());
+  m_spectrum->setPeakDetect(getPeakDetect());
+  m_spectrum->setPeakHold(getPeakHold());
+  m_spectrum->setFilled(getFilled());
 
-  m_spectrum->setBookmarks(this->getBookmarks());
+  m_spectrum->setBookmarks(getBookmarks());
+  m_spectrum->setShowChannels(getShowChannels());
   m_spectrum->blockSignals(blocking);
 }
 
@@ -925,8 +1032,8 @@ FFTWidget::refreshSpectrumWaterfallSettings()
 {
   bool blocking = m_spectrum->blockSignals(true);
 
-  m_spectrum->setTimeStamps(this->getTimeStamps());
-  m_spectrum->setPaletteGradient(this->getPaletteGradient());
+  m_spectrum->setTimeStamps(getTimeStamps());
+  m_spectrum->setPaletteGradient(getPaletteGradient());
 
   m_spectrum->blockSignals(blocking);
 }
@@ -935,23 +1042,23 @@ void
 FFTWidget::refreshSpectrumUnits()
 {
   m_spectrum->setUnits(
-        this->getUnitName(),
-        this->getdBPerUnit(),
-        this->getCompleteZeroPoint());
+        getUnitName(),
+        getdBPerUnit(),
+        getCompleteZeroPoint());
 }
 
 void
-FFTWidget::refreshSpectrumSettings(void)
+FFTWidget::refreshSpectrumSettings()
 {
-  this->refreshSpectrumScaleSettings();
-  this->refreshSpectrumAxesSettings();
-  this->refreshSpectrumRepresentationSettings();
-  this->refreshSpectrumUnits();
-  this->refreshSpectrumWaterfallSettings();
+  refreshSpectrumScaleSettings();
+  refreshSpectrumAxesSettings();
+  refreshSpectrumRepresentationSettings();
+  refreshSpectrumUnits();
+  refreshSpectrumWaterfallSettings();
 }
 
 void
-FFTWidget::updateAnalyzerParams(void)
+FFTWidget::updateAnalyzerParams()
 {
   if (m_analyzer != nullptr) {
     auto params = m_mediator->getAnalyzerParams();
@@ -962,268 +1069,299 @@ FFTWidget::updateAnalyzerParams(void)
 void
 FFTWidget::refreshParamControls(Suscan::AnalyzerParams const &params)
 {
-  bool blockSignals = this->blockSignals(true);
+  bool old = blockSignals(true);
 
-  this->setWindowFunction(params.windowFunction);
-  this->setFftSize(params.windowSize);
-  this->setRefreshRate(SCAST(unsigned, 1.f / params.psdUpdateInterval));
-  this->blockSignals(blockSignals);
+  setWindowFunction(params.windowFunction);
+  setFftSize(params.windowSize);
+  setRefreshRate(SCAST(unsigned, 1.f / params.psdUpdateInterval));
+  blockSignals(old);
 }
 
 ///////////////////////////////// Slots ///////////////////////////////////////
 void
 FFTWidget::onPandRangeChanged(int min, int max)
 {
-  this->setPandRangeMin(min);
-  this->setPandRangeMax(max);
+  setPandRangeMin(min);
+  setPandRangeMax(max);
 
-  if (this->getRangeLock()) {
-    this->setWfRangeMin(min);
-    this->setWfRangeMax(max);
+  if (getRangeLock()) {
+    setWfRangeMin(min);
+    setWfRangeMax(max);
   }
 
-  this->refreshSpectrumScaleSettings();
+  refreshSpectrumScaleSettings();
 }
 
 void
 FFTWidget::onWfRangeChanged(int min, int max)
 {
-  this->setWfRangeMin(min);
-  this->setWfRangeMax(max);
+  setWfRangeMin(min);
+  setWfRangeMax(max);
 
-  if (this->getRangeLock()) {
-    this->setPandRangeMin(min);
-    this->setPandRangeMax(max);
+  if (getRangeLock()) {
+    setPandRangeMin(min);
+    setPandRangeMax(max);
   }
 
-  this->refreshSpectrumScaleSettings();
+  refreshSpectrumScaleSettings();
 }
 
 void
-FFTWidget::onAveragingChanged(int)
+FFTWidget::onAveragingChanged(qreal)
 {
-  float avg = this->getAveraging();
+  float avg = getAveraging();
 
   auto averager = m_mediator->getSpectrumAverager();
 
-  this->setAveraging(avg);
+  setAveraging(avg);
 
-  averager->setAlpha(avg);
+  if (avg <= 1.f)
+    averager->setAlpha(1.);
+  else
+    averager->setAlpha(SU_SPLPF_ALPHA(avg - 1));
 }
 
 void
 FFTWidget::onAspectRatioChanged(int)
 {
-  this->setPanWfRatio(this->getPanWfRatio());
+  setPanWfRatio(getPanWfRatio());
 
-  this->refreshSpectrumScaleSettings();
+  refreshSpectrumScaleSettings();
 }
 
 void
 FFTWidget::onFreqZoomChanged(int)
 {
-  this->setFreqZoom(this->getFreqZoom());
+  float newLogZoom =
+      SCAST(float, m_ui->freqZoomSlider->value()) / 100.f;
+  float newZoom = SU_POW(2.f, newLogZoom);
 
-  this->refreshSpectrumScaleSettings();
+  if (!sufreleq(m_panelConfig->zoom, newZoom, 1e-4f)) {
+    setFreqZoom(newZoom);
+    refreshSpectrumScaleSettings();
+  }
 }
 
 void
 FFTWidget::onPaletteChanged(int index)
 {
-  this->selected = SigDiggerHelpers::instance()->getPalette(index);
-  this->panelConfig->palette = this->selected->getName();
+  m_selected = SigDiggerHelpers::instance()->getPalette(index);
+  m_panelConfig->palette = m_selected->getName();
 
-  this->refreshSpectrumWaterfallSettings();
+  refreshSpectrumWaterfallSettings();
 }
 
 void
-FFTWidget::onFftSizeChanged(void)
+FFTWidget::onFftSizeChanged()
 {
   auto params = m_mediator->getAnalyzerParams();
 
-  this->fftSize =
-      this->sizes[
-        SCAST(unsigned, this->ui->fftSizeCombo->currentIndex())];
+  m_fftSize =
+      m_sizes[
+        SCAST(unsigned, m_ui->fftSizeCombo->currentIndex())];
 
-  if (this->fftSize == 0)
-    this->fftSize = this->defaultFftSize;
+  if (m_fftSize == 0)
+    m_fftSize = m_defaultFftSize;
 
-  this->updateRbw();
+  updateRbw();
 
-  params->windowSize = this->getFftSize();
+  params->windowSize = getFftSize();
 
-  this->updateAnalyzerParams();
+  updateAnalyzerParams();
 }
 
 void
-FFTWidget::onRefreshRateChanged(void)
+FFTWidget::onRefreshRateChanged()
 {
   auto params = m_mediator->getAnalyzerParams();
 
-  this->refreshRate =
-      this->refreshRates[
-        SCAST(unsigned, this->ui->rateCombo->currentIndex())];
+  m_refreshRate =
+      m_refreshRates[
+        SCAST(unsigned, m_ui->rateCombo->currentIndex())];
 
-  if (this->refreshRate == 0)
-    this->refreshRate = this->defaultRefreshRate;
+  if (m_refreshRate == 0)
+    m_refreshRate = m_defaultRefreshRate;
 
-  params->psdUpdateInterval = 1.f / this->getRefreshRate();
+  params->psdUpdateInterval = 1.f / getRefreshRate();
 
-  m_spectrum->setExpectedRate(this->getRefreshRate());
+  m_spectrum->setExpectedRate(getRefreshRate());
 
-  this->updateAnalyzerParams();
+  updateAnalyzerParams();
 }
 
 void
-FFTWidget::onTimeSpanChanged(void)
+FFTWidget::onTimeSpanChanged()
 {
-  this->panelConfig->timeSpan =
-      this->timeSpans[
-        SCAST(unsigned, this->ui->timeSpanCombo->currentIndex())];
+  m_panelConfig->timeSpan =
+      m_timeSpans[
+        SCAST(unsigned, m_ui->timeSpanCombo->currentIndex())];
 
-  this->refreshSpectrumScaleSettings();
+  refreshSpectrumScaleSettings();
 }
 
 void
-FFTWidget::onRangeLockChanged(void)
+FFTWidget::onClickResolutionChanged()
 {
-  this->setRangeLock(this->getRangeLock());
+  m_panelConfig->clickResolution =
+      m_clickResolutions[
+        SCAST(unsigned, m_ui->clickResCombo->currentIndex())];
+
+  refreshSpectrumScaleSettings();
 }
 
 void
-FFTWidget::onPeakChanged(void)
+FFTWidget::onRangeLockChanged()
 {
-  this->setPeakHold(this->getPeakHold());
-  this->setPeakDetect(this->getPeakDetect());
-
-  this->refreshSpectrumRepresentationSettings();
+  setRangeLock(getRangeLock());
 }
 
 void
-FFTWidget::onFilledChanged(void)
+FFTWidget::onChannelsChanged()
 {
-  this->setFilled(this->getFilled());
-
-  this->refreshSpectrumRepresentationSettings();
+  setShowChannels(getShowChannels());
+  refreshSpectrumRepresentationSettings();
 }
 
 void
-FFTWidget::onWindowFunctionChanged(void)
+FFTWidget::onPeakChanged()
+{
+  setPeakHold(getPeakHold());
+  setPeakDetect(getPeakDetect());
+
+  refreshSpectrumRepresentationSettings();
+}
+
+void
+FFTWidget::onFilledChanged()
+{
+  setFilled(getFilled());
+
+  refreshSpectrumRepresentationSettings();
+}
+
+void
+FFTWidget::onWindowFunctionChanged()
 {
   auto params = m_mediator->getAnalyzerParams();
-  params->windowFunction = this->getWindowFunction();
+  params->windowFunction = getWindowFunction();
 
-  this->updateAnalyzerParams();
+  updateAnalyzerParams();
 }
 
 void
-FFTWidget::onTimeStampsChanged(void)
+FFTWidget::onTimeStampsChanged()
 {
-  this->setTimeStamps(this->getTimeStamps());
+  setTimeStamps(getTimeStamps());
 
-  this->refreshSpectrumWaterfallSettings();
+  refreshSpectrumWaterfallSettings();
 }
 
 void
-FFTWidget::onBookmarksChanged(void)
+FFTWidget::onBookmarksChanged()
 {
-  this->setBookmarks(this->getBookmarks());
+  setBookmarks(getBookmarks());
 
-  this->refreshSpectrumRepresentationSettings();
+  refreshSpectrumRepresentationSettings();
 }
 
 void
-FFTWidget::onUnitChanged(void)
+FFTWidget::onUnitChanged()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  float currZPdB = this->zeroPointToDb();
+  float currZPdB = zeroPointToDb();
   float newZp;
-  std::string name = this->ui->unitsCombo->currentText().toStdString();
+  std::string name = m_ui->unitsCombo->currentText().toStdString();
   auto it = sus->getSpectrumUnitFrom(name);
 
-  this->ui->zeroPointSpin->setSuffix(" " + QString::fromStdString(name));
+  m_ui->zeroPointSpin->setSuffix(" " + QString::fromStdString(name));
 
   if (it != sus->getLastSpectrumUnit()) {
-    this->currentUnit = *it;
+    m_currentUnit = *it;
   } else {
-    this->currentUnit.name      = "dBFS";
-    this->currentUnit.dBPerUnit = 1.f;
-    this->currentUnit.zeroPoint = 0;
+    m_currentUnit.name      = "dBFS";
+    m_currentUnit.dBPerUnit = 1.f;
+    m_currentUnit.zeroPoint = 0;
   }
 
-  this->panelConfig->unitName = this->currentUnit.name;
+  m_panelConfig->unitName = m_currentUnit.name;
 
-  newZp = this->dbToZeroPoint(currZPdB);
+  newZp = dbToZeroPoint(currZPdB);
 
   m_spectrum->setUnits(
-        QString::fromStdString(this->currentUnit.name),
-        this->currentUnit.dBPerUnit,
-        this->currentUnit.zeroPoint + newZp);
+        QString::fromStdString(m_currentUnit.name),
+        m_currentUnit.dBPerUnit,
+        m_currentUnit.zeroPoint + newZp);
 
-  this->setZeroPoint(newZp);
+  setZeroPoint(newZp);
 }
 
 void
-FFTWidget::onZeroPointChanged(void)
+FFTWidget::onZeroPointChanged()
 {
-  float currZP = SCAST(float, this->ui->zeroPointSpin->value());
+  float currZP = SCAST(float, m_ui->zeroPointSpin->value());
 
-  this->panelConfig->zeroPoint = currZP;
+  m_panelConfig->zeroPoint = currZP;
 
-  m_spectrum->setZeroPoint(this->currentUnit.zeroPoint + currZP);
+  m_spectrum->setZeroPoint(m_currentUnit.zeroPoint + currZP);
 }
 
 void
-FFTWidget::onGainChanged(void)
+FFTWidget::onGainChanged()
 {
-  this->panelConfig->gain = SCAST(float, this->ui->gainSpinBox->value());
+  m_panelConfig->gain = SCAST(float, m_ui->gainSpinBox->value());
 
-  this->refreshSpectrumAxesSettings();
+  refreshSpectrumAxesSettings();
 }
 
 void
 FFTWidget::onAnalyzerParams(const Suscan::AnalyzerParams &params)
 {
-  this->refreshParamControls(params);
+  refreshParamControls(params);
 }
 
 void
 FFTWidget::onSourceInfoMessage(Suscan::SourceInfoMessage const &msg)
 {
-  this->rate = SCAST(unsigned, msg.info()->getSampleRate());
-  this->updateRbw();
+  m_rate = SCAST(unsigned, msg.info()->getSampleRate());
+  updateRbw();
 }
 
 void
 FFTWidget::onRangeChanged(float min, float max)
 {
   bool specState = m_spectrum->signalsBlocked();
-  bool fftState  = this->ui->pandRange->signalsBlocked();
+  bool fftState  = m_ui->pandRange->signalsBlocked();
 
   m_spectrum->blockSignals(true);
-  this->ui->pandRange->blockSignals(true);
-  this->ui->wfRange->blockSignals(true);
+  m_ui->pandRange->blockSignals(true);
+  m_ui->wfRange->blockSignals(true);
 
   m_spectrum->setPandapterRange(min, max);
-  this->setPandRangeMin(std::floor(min));
-  this->setPandRangeMax(std::floor(max));
+  setPandRangeMin(std::floor(min));
+  setPandRangeMax(std::floor(max));
 
-  if (this->getRangeLock()) {
+  if (getRangeLock()) {
     m_spectrum->setWfRange(min, max);
-    this->setWfRangeMin(std::floor(min));
-    this->setWfRangeMax(std::floor(max));
+    setWfRangeMin(std::floor(min));
+    setWfRangeMax(std::floor(max));
   }
 
   m_spectrum->blockSignals(specState);
-  this->ui->pandRange->blockSignals(fftState);
-  this->ui->wfRange->blockSignals(fftState);
+  m_ui->pandRange->blockSignals(fftState);
+  m_ui->wfRange->blockSignals(fftState);
 }
 
 void
 FFTWidget::onZoomChanged(float level)
 {
-  bool oldState = this->ui->freqZoomSlider->blockSignals(true);
-  this->setFreqZoom(SCAST(int, level));
-  this->ui->freqZoomSlider->blockSignals(oldState);
+  bool oldState = m_ui->freqZoomSlider->blockSignals(true);
+  setFreqZoom(level);
+  m_ui->freqZoomSlider->blockSignals(oldState);
 }
 
+void
+FFTWidget::onUTCChanged()
+{
+  setTimeStampsUTC(m_ui->timeZoneCombo->currentIndex() != 0);
+  m_spectrum->setTimeStampsUTC(m_panelConfig->utcTimeStamps);
+}

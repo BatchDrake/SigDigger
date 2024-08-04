@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>375</width>
-    <height>593</height>
+    <height>663</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -116,6 +116,16 @@ font-weight: bold;</string>
         </property>
        </widget>
       </item>
+      <item row="8" column="0" colspan="2">
+       <widget class="QRadioButton" name="rawRadio">
+        <property name="text">
+         <string>Pass-through (no demodulation)</string>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup</string>
+        </attribute>
+       </widget>
+      </item>
       <item row="2" column="0" colspan="2">
        <widget class="QRadioButton" name="pskRadio">
         <property name="text">
@@ -129,10 +139,20 @@ font-weight: bold;</string>
         </attribute>
        </widget>
       </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QRadioButton" name="askRadio">
+      <item row="6" column="0">
+       <widget class="QRadioButton" name="audioRadio">
         <property name="text">
-         <string>Digital &amp;AM demodulator (ASK)</string>
+         <string>&amp;Audio demodulator</string>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup</string>
+        </attribute>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QRadioButton" name="fskRadio">
+        <property name="text">
+         <string>Digital &amp;FM demodulator (FSK)</string>
         </property>
         <attribute name="buttonGroup">
          <string notr="true">buttonGroup</string>
@@ -146,20 +166,20 @@ font-weight: bold;</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QRadioButton" name="fskRadio">
+      <item row="4" column="0" colspan="2">
+       <widget class="QRadioButton" name="askRadio">
         <property name="text">
-         <string>Digital &amp;FM demodulator (FSK)</string>
+         <string>Digital &amp;AM demodulator (ASK)</string>
         </property>
         <attribute name="buttonGroup">
          <string notr="true">buttonGroup</string>
         </attribute>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QRadioButton" name="audioRadio">
+      <item row="7" column="0">
+       <widget class="QRadioButton" name="powerRadio">
         <property name="text">
-         <string>&amp;Audio demodulator</string>
+         <string>&amp;Power meter</string>
         </property>
         <attribute name="buttonGroup">
          <string notr="true">buttonGroup</string>
@@ -233,9 +253,12 @@ font-weight: bold;</string>
        </widget>
       </item>
       <item row="9" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="maxMemSpin">
+       <widget class="ContextAwareSpinBox" name="maxMemSpin">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
         </property>
         <property name="suffix">
          <string> MiB</string>
@@ -258,7 +281,6 @@ font-weight: bold;</string>
        <widget class="QLabel" name="label">
         <property name="font">
          <font>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -349,7 +371,6 @@ font-weight: bold;</string>
            </property>
            <property name="font">
             <font>
-             <weight>75</weight>
              <bold>true</bold>
             </font>
            </property>
@@ -368,7 +389,6 @@ font-weight: bold;</string>
            </property>
            <property name="font">
             <font>
-             <weight>75</weight>
              <bold>true</bold>
             </font>
            </property>
@@ -416,6 +436,9 @@ font-weight: bold;</string>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string> ms</string>
         </property>
@@ -438,9 +461,12 @@ font-weight: bold;</string>
        </widget>
       </item>
       <item row="7" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="triggerSpin">
+       <widget class="ContextAwareSpinBox" name="triggerSpin">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
         </property>
         <property name="suffix">
          <string> dB</string>
@@ -467,6 +493,11 @@ font-weight: bold;</string>
    <extends>QWidget</extends>
    <header>FrequencySpinBox.h</header>
   </customwidget>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDoubleSpinBox</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
  </customwidgets>
  <resources/>
  <connections/>

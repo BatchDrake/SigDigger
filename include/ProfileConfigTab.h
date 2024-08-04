@@ -25,6 +25,7 @@
 
 #include <QComboBox>
 #include <SaveProfileDialog.h>
+#include <QHash>
 
 #define SIGDIGGER_MIN_RADIO_FREQ  -3e11
 #define SIGDIGGER_MAX_RADIO_FREQ   3e11
@@ -34,95 +35,98 @@ namespace Ui {
 }
 
 namespace SigDigger {
-  class DeviceTweaks;
+  class SourceConfigWidget;
+
+  enum SampleRateCtlHint {
+    SAMPLE_RATE_CTL_HINT_LIST,
+    SAMPLE_RATE_CTL_HINT_MANUAL
+  };
+
   class ProfileConfigTab : public ConfigTab
   {
     Q_OBJECT
 
-    Ui::ProfileConfigTab *ui;
-    DeviceTweaks         *tweaks = nullptr;
-    bool modified      = false;
-    bool needsRestart  = false;
-    bool refreshing    = true;
-    bool hasTweaks     = false;
+    Ui::ProfileConfigTab  *ui;
+    bool                   m_modified      = false;
+    bool                   m_needsRestart  = false;
+    SampleRateCtlHint      m_rateHint = SAMPLE_RATE_CTL_HINT_LIST;
 
-    Suscan::Source::Config profile;
-    Suscan::Source::Device remoteDevice;
+    QHash<QString, SourceConfigWidget *> m_configWidgets;
+    SourceConfigWidget    *m_currentConfigWidget = nullptr;
+    int                    m_currentConfigIndex  = -1;
 
-    int savedLocalDeviceIndex = 0;
+    Suscan::Source::Config m_profile;
+    Suscan::Source::Device m_remoteDevice;
 
-    SaveProfileDialog saveProfileDialog;
+    SaveProfileDialog     *m_saveProfileDialog;
 
-    void connectAll(void);
+    void connectAll();
 
-    void populateProfileCombo(void);
-    void populateDeviceCombo(void);
-    void populateRemoteDeviceCombo(void);
+    void makeConfigWidgets();
+    void populateProfileCombo();
+    void populateRemoteDeviceCombo();
 
-    void populateCombos(void);
-    void refreshAntennas(void);
-    void refreshSampRates(void);
-    void refreshProfileUi(void);
-    void refreshFrequencyLimits(void);
-    void refreshUi(void);
-    void refreshAnalyzerTypeUi(void);
-    void refreshUiState(void);
-    void sampRateCtlHint(int);
-    void refreshTrueSampleRate(void);
-    void loadProfile(Suscan::Source::Config &config);
-    void guessParamsFromFileName(void);
-    void updateRemoteParams(void);
+    void populateCombos();
+    void refreshSampRates();
+    void refreshFrequencyLimits();
+    void refreshUi();
+    void refreshAnalyzerTypeUi();
+    void refreshUiState();
+    void refreshSampRateCtl();
+    void sampRateCtlHint(SampleRateCtlHint);
+    void refreshTrueSampleRate();
+    void loadProfile(Suscan::Source::Config const &config);
+    bool tryLeaveCurrentConfigWidget();
+    void updateRemoteParams();
     void configChanged(bool restart = false);
-    bool shouldDisregardTweaks(void);
+    bool selectSourceType(std::string const &);
 
-    int  findRemoteProfileIndex(void);
-    unsigned int getSelectedSampleRate(void) const;
+    unsigned getDecimation() const;
+    void     setDecimation(unsigned);
+
+    int  findRemoteProfileIndex();
+    unsigned int getSelectedSampleRate() const;
     void setSelectedSampleRate(unsigned int);
 
     static QString getSampRateString(qreal rate);
     static QString getBaseName(const QString &string);
 
   public:
-    void save(void) override;
+    void save() override;
 
-    void setUnchanged(void);
-    bool hasChanged(void) const override;
-    bool shouldRestart(void) const;
+    void setUnchanged();
+    bool hasChanged() const override;
+    bool shouldRestart() const;
 
     void setProfile(const Suscan::Source::Config &profile);
     void setAnalyzerParams(const Suscan::AnalyzerParams &params);
     void setGain(std::string const &name, float value);
     void setFrequency(qint64 freq);
-    void notifySingletonChanges(void);
+    void notifySingletonChanges();
 
-    bool remoteSelected(void) const;
+    bool remoteSelected() const;
 
     float getGain(std::string const &name) const;
-    Suscan::Source::Config getProfile(void) const;
-    Suscan::AnalyzerParams getAnalyzerParams(void);
+    Suscan::Source::Config getProfile() const;
+    Suscan::AnalyzerParams getAnalyzerParams();
 
     explicit ProfileConfigTab(QWidget *parent = nullptr);
     ~ProfileConfigTab();
 
   public slots:
-    void onLoadProfileClicked(void);
-    void onToggleSourceType(bool);
-    void onDeviceChanged(int);
-    void onFormatChanged(int);
-    void onAntennaChanged(int);
+    void onLoadProfileClicked();
+    void onChangeSourceType(int);
+    void onSourceConfigWidgetChanged();
     void onAnalyzerTypeChanged(int);
     void onCheckButtonsToggled(bool);
-    void onSpinsChanged(void);
-    void onBandwidthChanged(double);
-    void onBrowseCaptureFile(void);
-    void onSaveProfile(void);
-    void onChangeConnectionType(void);
-    void onRemoteParamsChanged(void);
-    void onRefreshRemoteDevices(void);
-    void onRemoteProfileSelected(void);
-    void onChangeSourceTimeUTC(void);
-    void onDeviceTweaksClicked(void);
-    void onDeviceTweaksAccepted(void);
+    void onSpinsChanged();
+    void onSaveProfile();
+    void onChangeConnectionType();
+    void onRemoteParamsChanged();
+    void onRefreshRemoteDevices();
+    void onRemoteProfileSelected();
+    void onChangeSourceTimeUTC();
+    void onOverrideSampleRate();
   };
 }
 

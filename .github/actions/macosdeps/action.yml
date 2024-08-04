@@ -1,0 +1,84 @@
+oname: Build
+description: 'Install macOS specific dependencies'
+
+inputs:
+  shell:
+    required: false
+    default: bash
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+
+    - name: Remove spurious symlinks
+      shell:  ${{inputs.shell}}
+      run: sudo rm -f /usr/local/bin/2to3 /usr/local/bin/2to3-3.11
+      
+    - name: Add custom Homebrew repos
+      shell:  ${{inputs.shell}}
+      run: brew tap pothosware/homebrew-pothos && brew update
+
+    - name: Force-install of Python 3.11
+      shell:  ${{inputs.shell}}
+      run:  brew install --force --overwrite python@3.11
+
+    - name: Force-install of Python 3.12 
+      shell:  ${{inputs.shell}}
+      run: |
+        brew install --force --overwrite python@3.12
+        python3 -Im pip install setuptools
+
+    - name: Force-install of Node 18
+      shell:  ${{inputs.shell}}
+      run:  brew install --force --overwrite node@18
+
+    # Reinstall step needed to fix the problem with @loader_path
+    - name: (Re) Install libsndfile
+      shell: ${{inputs.shell}}
+      run: brew reinstall libsndfile
+    
+    - name: Install Volk
+      shell: ${{inputs.shell}}
+      run: brew install volk
+
+    - name: Install JSON-C
+      shell: ${{inputs.shell}}
+      run: brew install json-c
+    
+    - name: Install FFTW
+      shell: ${{inputs.shell}}
+      run: brew install fftw
+    
+    - name: Install SoapySDR
+      shell: ${{inputs.shell}}
+      run: brew install soapysdr
+    
+    - name: Install libxml2
+      shell: ${{inputs.shell}}
+      run: brew install libxml2
+    
+    - name: Install portaudio
+      shell: ${{inputs.shell}}
+      run: brew install portaudio
+    
+    - name: Install SoapySDR modules
+      shell: ${{inputs.shell}}
+      run: |
+        brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
+        brew install --head soapyuhd
+
+    - name: Install SDRPlay
+      shell: ${{inputs.shell}}
+      run: |
+        wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg
+        sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /
+        # SoapySDRPlay3 from source
+        git clone https://github.com/pothosware/SoapySDRPlay3
+        cd SoapySDRPlay3
+        cmake -DCMAKE_BUILD_TYPE=Release -B build .
+        cmake --build build
+        cd build
+        sudo make install
+        cd ../..

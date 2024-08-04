@@ -21,12 +21,16 @@
 
 #include <TabWidgetFactory.h>
 #include <Suscan/AnalyzerRequestTracker.h>
+#include <WFHelpers.h>
+
+class QColorDialog;
 
 namespace SigDigger {
   class InspectionWidgetFactory;
-
   class InspectionWidget : public TabWidget {
     Q_OBJECT
+
+    QColorDialog           *m_colorDialog = nullptr;
 
   protected:
     Suscan::AnalyzerRequest m_request;
@@ -34,9 +38,13 @@ namespace SigDigger {
     int                     m_state = 0;
     Suscan::Analyzer       *m_analyzer = nullptr;
     bool                    m_onceAttached = false;
+    NamedChannelSetIterator m_namedChannel;
+    bool                    m_haveNamedChannel = false;
 
     int               state() const;
     Suscan::Analyzer *analyzer() const;
+    NamedChannelSetIterator &namedChannel();
+    void refreshNamedChannel();
 
   public:
     Suscan::AnalyzerRequest const &request() const;
@@ -58,6 +66,11 @@ namespace SigDigger {
     // Overriden methods
     virtual void setState(int, Suscan::Analyzer *) override;
     virtual void closeRequested() override;
+
+    public slots:
+      void onNameChanged(QString name);
+      void onRequestChangeColor();
+      void onColorSelected(const QColor &);
   };
 
   class InspectionWidgetFactory : public TabWidgetFactory
@@ -71,6 +84,7 @@ namespace SigDigger {
         UIMediator *) = 0;
 
     // Overriden methods
+    virtual bool worksWith(QString) const;
     bool registerGlobally() override;
     bool unregisterGlobally() override;
 

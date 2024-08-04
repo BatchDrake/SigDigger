@@ -1,0 +1,109 @@
+name: Build
+description: 'Install GNU/Linux specific dependencies'
+
+inputs:
+  shell:
+    required: false
+    default: bash
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install libusb
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libusb-1.0-0-dev
+      
+    - name: Install libiio
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libiio-dev
+
+    - name: Install libad9361
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libad9361-dev
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+
+    - name: Install sndfile
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libsndfile1-dev
+
+    - name: Install json-c
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libjson-c-dev
+
+    - name: Install Volk
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libvolk2-dev
+
+    - name: Install cURL
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libcurl4-openssl-dev
+      
+    - name: Install FFTW3
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libfftw3-dev
+
+    - name: Install SoapySDR modules
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install soapysdr-module-all
+
+    - name: Install SoapySDR development files
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libsoapysdr-dev
+
+    - name: Install SDRPlay API
+      shell:  ${{inputs.shell}}
+      run: wget https://www.sdrplay.com/software/SDRplay_RSP_API-Linux-3.15.1.run && 7z x ./SDRplay_RSP_API-Linux-3.15.1.run && 7z x ./SDRplay_RSP_API-Linux-3.15.1 && sudo cp x86_64/libsdrplay_api.so.3.15 /usr/lib/libsdrplay_api.so && sudo cp inc/* /usr/include/
+
+    - name: Build and install SoapySDR module for SDRPlay
+      shell:  ${{inputs.shell}}
+      run: git clone https://github.com/pothosware/SoapySDRPlay3 && cd SoapySDRPlay3 && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release .. && make -j3 && sudo make install && cd ../../
+
+    - name: Build and install SoapySDR module for PlutoSDR
+      shell: ${{inputs.shell}}
+      run: git clone https://github.com/pothosware/SoapyPlutoSDR && cd SoapyPlutoSDR && mkdir build && cd build &&  cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release .. && make && sudo make install && cd ../../
+
+    - name: Making sure all SoapySDR modules are in the right directory
+      shell:  ${{inputs.shell}}
+      run: sudo cp -Rfv /usr/lib/SoapySDR/modules* /usr/lib/x86_64-linux-gnu/SoapySDR/ || true
+      
+    - name: Install libxml2
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libxml2-dev
+
+    - name: Install ZeroMQ development files
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libzmq3-dev
+
+    - name: Install KFWidgets Addons
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libkf5widgetsaddons-dev
+
+    - name: Install portaudio
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install portaudio19-dev
+
+    - name: Install ALSA libraries
+      shell:  ${{inputs.shell}}
+      run: sudo apt-get install libasound2-dev
+    
+    - name: Download linuxdeployqt AppImage
+      shell:  ${{inputs.shell}}
+      run: wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+    
+    - name: Install linuxdeployqt system-wide
+      shell:  ${{inputs.shell}}
+      run: |
+        sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
+        sudo chmod a+x /usr/bin/linuxdeployqt
+
+    - name: Download appimagetool
+      shell:  ${{inputs.shell}}
+      run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+    
+    - name: Install appimagetool system-wide
+      shell:  ${{inputs.shell}}
+      run: |
+        sudo mv appimagetool-x86_64.AppImage /usr/bin/appimagetool
+        sudo chmod a+x /usr/bin/appimagetool

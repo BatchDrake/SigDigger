@@ -117,7 +117,7 @@
        </widget>
       </item>
       <item row="3" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="gainSpin">
+       <widget class="ContextAwareSpinBox" name="gainSpin">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
@@ -179,6 +179,11 @@
    <extends>QWidget</extends>
    <header>FrequencySpinBox.h</header>
   </customwidget>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDouble</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
  </customwidgets>
  <resources/>
  <connections/>

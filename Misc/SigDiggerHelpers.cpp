@@ -20,6 +20,7 @@
 #include "SigDiggerHelpers.h"
 #include "DefaultGradient.h"
 #include "Version.h"
+#include "GlobalProperty.h"
 #include <QComboBox>
 #include <fstream>
 #include <QMessageBox>
@@ -27,34 +28,39 @@
 #include <SuWidgetsHelpers.h>
 #include <Suscan/MultitaskController.h>
 #include <ExportSamplesTask.h>
-#include <util/compat-stdlib.h>
+#include <ExportCSVTask.h>
+#include <sigutils/util/compat-stdlib.h>
 
 #ifndef SIGDIGGER_PKGVERSION
 #  define SIGDIGGER_PKGVERSION \
   "custom build on " __DATE__ " at " __TIME__ " (" __VERSION__ ")"
 #endif /* SUSCAN_BUILD_STRING */
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+#  define sliced(...) mid(__VA_ARGS__)
+#endif
+
 using namespace SigDigger;
 
-SigDiggerHelpers *SigDiggerHelpers::currInstance = nullptr;
+SigDiggerHelpers *SigDiggerHelpers::m_currInstance = nullptr;
 
 SigDiggerHelpers *
-SigDiggerHelpers::instance(void)
+SigDiggerHelpers::instance()
 {
-  if (currInstance == nullptr)
-    currInstance = new SigDiggerHelpers();
+  if (m_currInstance == nullptr)
+    m_currInstance = new SigDiggerHelpers();
 
-  return currInstance;
+  return m_currInstance;
 }
 
 QString
-SigDiggerHelpers::version(void)
+SigDiggerHelpers::version()
 {
   return QString(SIGDIGGER_VERSION_STRING);
 }
 
 QString
-SigDiggerHelpers::pkgversion(void)
+SigDiggerHelpers::pkgversion()
 {
   return QString(SIGDIGGER_PKGVERSION);
 }
@@ -70,6 +76,63 @@ SigDiggerHelpers::timerdup(struct timeval *tv)
   }
 }
 
+bool
+SigDiggerHelpers::tokenize(QString const &command, QStringList &out)
+{
+  QStringList result;
+  int len = SCAST(int, command.size());
+  bool qot = false, sqot = false;
+  qsizetype argLen;
+
+  for (int i = 0; i < len; i++) {
+    int start = i;
+
+    if (command[i] == '\"')
+      qot = true;
+    else if (command[i] == '\'')
+      sqot = true;
+
+    if (qot) {
+      ++i;
+      ++start;
+
+      while (i < len && command[i] != '\"')
+        ++i;
+
+      if (i < len)
+        qot = false;
+
+      argLen = i - start;
+      ++i;
+    } else if (sqot) {
+      ++i;
+      ++start;
+
+      while (i < len && command[i] != '\'')
+        ++i;
+
+      if (i < len)
+        sqot = false;
+      argLen = i - start;
+      ++i;
+    } else {
+      while(i<len && command[i] != ' ')
+        i++;
+      argLen = i - start;
+    }
+
+    result.append(command.sliced(start, argLen));
+  }
+
+  if (qot || sqot)
+    return false;
+
+  out.clear();
+  out.append(result);
+
+  return true;
+}
+
 AudioDemod
 SigDiggerHelpers::strToDemod(std::string const &str)
 {
@@ -81,6 +144,8 @@ SigDiggerHelpers::strToDemod(std::string const &str)
     return AudioDemod::USB;
   else if (str == "LSB")
     return AudioDemod::LSB;
+  else if (str == "RAW")
+    return AudioDemod::RAW;
 
   return AudioDemod::AM;
 }
@@ -100,6 +165,9 @@ SigDiggerHelpers::demodToStr(AudioDemod demod)
 
     case LSB:
       return "LSB";
+
+    case RAW:
+      return "RAW";
   }
 
   return "AM"; // Default
@@ -154,8 +222,67 @@ SigDiggerHelpers::openSaveSamplesDialog(
       if (!task->attemptOpen()) {
         QMessageBox::critical(
               root,
-              task->getLastError(),
-              "Save samples to file");
+              "Save samples to file",
+              task->getLastError());
+        delete task;
+      } else {
+        QFileInfo info(path);
+
+        // TODO: Decide whether to send to multitask controller or to
+        // run in the current thread according to data size.
+
+        mt->pushTask(task, "Save samples to " + info.fileName());
+        done = true;
+      }
+    } else {
+      done = true;
+    }
+  } while (!done);
+}
+
+void
+SigDiggerHelpers::openSaveCoherentSamplesDialog(
+    QWidget *root,
+    const SUCOMPLEX *channel1,
+    const SUCOMPLEX *channel2,
+    size_t length,
+    qreal fs,
+    int start,
+    int end,
+    Suscan::MultitaskController *mt)
+{
+  bool done = false;
+
+  do {
+    QFileDialog dialog(root);
+    QStringList filters;
+    QString format;
+
+    dialog.setFileMode(QFileDialog::FileMode::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setWindowTitle(QString("Save coherent capture"));
+
+    filters << "Comma separated values (*.csv)";
+
+    dialog.setNameFilters(filters);
+
+    if (dialog.exec()) {
+      QString path = dialog.selectedFiles().first();
+      QString filter = dialog.selectedNameFilter();
+      ExportCSVTask *task;
+
+      path = SuWidgetsHelpers::ensureExtension(path, "csv");
+
+      const char *names[]     = {"H", "V"};
+      const SUCOMPLEX *data[] = {channel1, channel2};
+
+      task = new ExportCSVTask(path, 2,  names, data, length, start, end);
+
+      if (!task->attemptOpen()) {
+        QMessageBox::critical(
+              root,
+              "Save samples to file",
+              task->getLastError());
         delete task;
       } else {
         QFileInfo info(path);
@@ -174,10 +301,10 @@ SigDiggerHelpers::openSaveSamplesDialog(
 
 
 Palette *
-SigDiggerHelpers::getGqrxPalette(void)
+SigDiggerHelpers::getGqrxPalette()
 {
   static qreal color[256][3];
-  if (this->gqrxPalette == nullptr) {
+  if (this->m_gqrxPalette == nullptr) {
     for (int i = 0; i < 256; i++) {
       if (i < 20) { // level 0: black background
         color[i][0] = color[i][1] = color[i][2] = 0;
@@ -203,27 +330,27 @@ SigDiggerHelpers::getGqrxPalette(void)
       }
     }
 
-    gqrxPalette = new Palette("Gqrx", color);
+    m_gqrxPalette = new Palette("Gqrx", color);
   }
 
-  return gqrxPalette;
+  return m_gqrxPalette;
 }
 
 void
-SigDiggerHelpers::deserializePalettes(void)
+SigDiggerHelpers::deserializePalettes()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
-  if (this->palettes.size() == 0) {
-    this->palettes.push_back(Palette("Suscan", wf_gradient));
-    this->palettes.push_back(*this->getGqrxPalette());
+  if (this->m_palettes.size() == 0) {
+    this->m_palettes.push_back(Palette("Suscan", wf_gradient));
+    this->m_palettes.push_back(*this->getGqrxPalette());
   }
 
   // Fill palette vector
   for (auto i = sus->getFirstPalette();
        i != sus->getLastPalette();
        i++)
-    this->palettes.push_back(Palette(*i));
+    this->m_palettes.push_back(Palette(*i));
 }
 
 void
@@ -234,7 +361,7 @@ SigDiggerHelpers::populatePaletteCombo(QComboBox *cb)
   cb->clear();
 
   // Populate combo
-  for (auto p : this->palettes) {
+  for (auto p : this->m_palettes) {
     cb->insertItem(
           ndx,
           QIcon(QPixmap::fromImage(p.getThumbnail())),
@@ -262,16 +389,18 @@ SigDiggerHelpers::populateAntennaCombo(
             i - profile.getDevice().getFirstAntenna());
   }
 
-  combo->setCurrentIndex(index);
+  combo->setEnabled(combo->count() > 0);
+  if (combo->count() > 0)
+    combo->setCurrentIndex(index);
 }
 
 const Palette *
 SigDiggerHelpers::getPalette(int index) const
 {
-  if (index < 0 || index >= static_cast<int>(this->palettes.size()))
+  if (index < 0 || index >= static_cast<int>(this->m_palettes.size()))
     return nullptr;
 
-  return &this->palettes[static_cast<size_t>(index)];
+  return &this->m_palettes[static_cast<size_t>(index)];
 }
 
 int
@@ -279,8 +408,8 @@ SigDiggerHelpers::getPaletteIndex(std::string const &name) const
 {
   unsigned int i;
 
-  for (i = 0; i < this->palettes.size(); ++i)
-    if (this->palettes[i].getName().compare(name) == 0)
+  for (i = 0; i < this->m_palettes.size(); ++i)
+    if (this->m_palettes[i].getName().compare(name) == 0)
       return static_cast<int>(i);
 
   return -1;
@@ -292,7 +421,7 @@ SigDiggerHelpers::getPalette(std::string const &name) const
   int index = this->getPaletteIndex(name);
 
   if (index >= 0)
-    return &this->palettes[index];
+    return &this->m_palettes[index];
 
   return nullptr;
 }
@@ -301,9 +430,9 @@ SigDiggerHelpers::SigDiggerHelpers()
 {
   const char *localTZ = getenv("TZ");
 
-  this->haveTZvar = localTZ != nullptr;
+  this->m_haveTZvar = localTZ != nullptr;
   if (localTZ != nullptr)
-    this->tzVar = localTZ;
+    this->m_tzVar = localTZ;
 
   this->deserializePalettes();
 }
@@ -317,12 +446,12 @@ SigDiggerHelpers::pushTZ(const char *tz)
 
   // Non-null TZ, push in saving stack
   if (prev != nullptr) {
-    this->tzs.push_front(prev);
-    front = &this->tzs.front();
+    this->m_tzs.push_front(prev);
+    front = &this->m_tzs.front();
   }
 
   // Push this one nonetheless
-  this->tzStack.push_front(front);
+  this->m_tzStack.push_front(front);
 
   if (tz != nullptr)
     setenv("TZ", tz, 1);
@@ -333,19 +462,19 @@ SigDiggerHelpers::pushTZ(const char *tz)
 }
 
 bool
-SigDiggerHelpers::popTZ(void)
+SigDiggerHelpers::popTZ()
 {
   const std::string *front;
 
-  if (this->tzStack.empty())
+  if (this->m_tzStack.empty())
     return false;
 
-  front = this->tzStack.front();
+  front = this->m_tzStack.front();
 
   if (front != nullptr) {
     setenv("TZ", front->c_str(), 1);
     // Non-null TZ, pop from the saving stack
-    this->tzs.pop_front();
+    this->m_tzs.pop_front();
   } else {
     unsetenv("TZ");
   }
@@ -353,22 +482,58 @@ SigDiggerHelpers::popTZ(void)
   tzset();
 
   // Pop it
-  this->tzStack.pop_front();
+  this->m_tzStack.pop_front();
 
   return true;
 }
 
 void
-SigDiggerHelpers::pushLocalTZ(void)
+SigDiggerHelpers::pushLocalTZ()
 {
-  if (this->haveTZvar)
-    this->pushTZ(this->tzVar.c_str());
+  if (this->m_haveTZvar)
+    this->pushTZ(this->m_tzVar.c_str());
   else
     this->pushTZ(nullptr);
 }
 
 void
-SigDiggerHelpers::pushUTCTZ(void)
+SigDiggerHelpers::pushUTCTZ()
 {
   this->pushTZ("");
+}
+
+QString
+SigDiggerHelpers::expandGlobalProperties(QString const &original)
+{
+  QString result = "";
+  qsizetype p = 0, len = original.size();
+  qsizetype propStart, propEnd;
+
+  while (p < len) {
+    QString propName;
+    GlobalProperty *prop;
+
+    propStart = original.indexOf('%', p);
+    if (propStart == -1)
+      break;
+    propEnd = original.indexOf('%', propStart + 1);
+    if (propEnd == -1)
+      break;
+
+    result += original.sliced(p, propStart - p);
+
+    propName = original.sliced(propStart + 1, propEnd - propStart - 1);
+
+    prop = GlobalProperty::lookupProperty(propName.toLower());
+    if (prop != nullptr)
+      result += prop->toString();
+    else
+      result += "<unknown prop " + propName + ">";
+    p = propEnd + 1;
+  }
+
+  if (p < len)
+    result += original.sliced(p);
+
+  return result;
 }

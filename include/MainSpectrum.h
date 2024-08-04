@@ -24,20 +24,30 @@
 #include <ColorConfig.h>
 #include <GuiConfig.h>
 #include <WFHelpers.h>
+#include <AbstractWaterfall.h>
 #include <Palette.h>
 #include <QElapsedTimer>
 #include <QToolBar>
 
 #define SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS 1000
 
+#define MS_VAR_FFT_SIZE  "%FFT_SIZE%"
+#define MS_VAR_RBW       "%RBW%"
+#define MS_VAR_SAMP_RATE "%SAMP_RATE%"
+#define MS_VAR_DATE      "%DATE%"
+#define MS_VAR_TIME      "%TIME%"
+#define MS_VAR_DATETIME  "%DATETIME%"
+#define MS_VAR_CITY      "%CITY%"
+#define MS_VAR_LAT       "%LAT%"
+#define MS_VAR_LON       "%LON%"
+#define MS_VAR_LOCATOR   "%LOCATOR%"
+
+
 class QTimeSlider;
 
 namespace Ui {
   class MainSpectrum;
 }
-
-class Waterfall;
-class GLWaterfall;
 
 // Does it make sense to turn this into a PersistentWidget, anyways?
 namespace SigDigger {
@@ -50,7 +60,8 @@ namespace SigDigger {
     enum CaptureMode {
       UNAVAILABLE,
       CAPTURE,
-      REPLAY
+      REPLAY,
+      HISTORY
     };
 
     enum Skewness {
@@ -61,37 +72,42 @@ namespace SigDigger {
 
   private:
     // UI Objects
-    Ui::MainSpectrum *ui = nullptr;
-    std::vector<FrequencyAllocationTable *> FATs;
-    SuscanBookmarkSource *bookmarkSource = nullptr;
-    Waterfall   *wf   = nullptr;
-    GLWaterfall *glWf = nullptr;
-    ColorConfig  lastColorConfig;
+    Ui::MainSpectrum *m_ui = nullptr;
+    std::vector<FrequencyAllocationTable *> m_FATs;
+    SuscanBookmarkSource *m_bookmarkSource = nullptr;
+    AbstractWaterfall *m_wf = nullptr;
+    ColorConfig  m_lastColorConfig;
+    QString      m_infoTextTemplate;
+    QString      m_infoText;
+
+    struct timeval m_lastTimeStamp;
 
     // UI State
-    CaptureMode mode = UNAVAILABLE;
-    Skewness filterSkewness = SYMMETRIC;
-    bool throttling = false;
-    bool resAdjusted = false;
-    bool noLimits = false;
-    qint64 minFreq = 0;
-    qint64 maxFreq = 6000000000;
-    QElapsedTimer lastFreqUpdate;
-    qint64 freqGracePeriod =
+    CaptureMode m_mode = UNAVAILABLE;
+    Skewness m_filterSkewness = SYMMETRIC;
+    bool m_throttling = false;
+    bool m_noLimits = false;
+    qint64 m_minFreq = 0;
+    qint64 m_maxFreq = 6000000000;
+    QElapsedTimer m_lastFreqUpdate;
+    qint64 m_freqGracePeriod =
         SIGDIGGER_MAIN_SPECTRUM_GRACE_PERIOD_MS;
-    int maxToolWidth = 0;
+    int m_maxToolWidth = 0;
 
     // Cached members (for UI update, etc)
-    unsigned int cachedRate = 0;
-    unsigned int bandwidth = 0;
-    unsigned int zoom = 1;
+    unsigned int m_cachedRate = 0;
+    unsigned int m_bandwidth = 0;
+    unsigned int m_cachedFftSize = 0;
+    float m_zoom = 1;
 
     // Private methods
-    void connectAll(void);
-    void connectWf(void);
-    void connectGLWf(void);
-    void refreshUi(void);
-    void updateLimits(void);
+    void connectAll();
+    void connectWf();
+    void connectGLWf();
+    void refreshUi();
+    void updateLimits();
+    void refreshFFTProperties();
+    void refreshInfoText();
 
     // Static members
     static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
@@ -107,15 +123,35 @@ namespace SigDigger {
         struct timeval const &tv,
         bool looped = false);
 
-    void deserializeFATs(void);
+    void deserializeFATs();
+
+    // Named channel API
+    NamedChannelSetIterator addChannel(
+        QString name,
+        qint64 frequency,
+        qint32 fMin,
+        qint32 fMax,
+        QColor boxColor,
+        QColor markerColor,
+        QColor cutOffColor);
+
+    void removeChannel(NamedChannelSetIterator);
+    void refreshChannel(NamedChannelSetIterator &);
+    NamedChannelSetIterator findChannel(qint64 freq);
+
+    NamedChannelSetIterator channelCBegin() const;
+    NamedChannelSetIterator channelCEnd() const;
+
 
     // Setters
+    void setTimeStamp(struct timeval const &);
     void setThrottling(bool);
     void setFrequencyLimits(qint64 min, qint64 max);
     void setCaptureMode(CaptureMode mode);
     void setCenterFreq(qint64 freq);
     void setLoFreq(qint64 loFreq);
     void setLnbFreq(qint64 lnbFreq);
+    void setDisplayFreqs(qint64, qint64);
     void setFreqs(qint64 freq, qint64 lnbFreq, bool silent = false);
     void setFilterBandwidth(unsigned int bw);
 
@@ -131,17 +167,19 @@ namespace SigDigger {
     void setFilled(bool);
     void setTimeStamps(bool);
     void setBookmarks(bool);
-    void setZoom(unsigned int zoom);
+    void setZoom(float zoom);
     void setSampleRate(unsigned int rate);
     void setTimeSpan(quint64 ms);
     void setGracePeriod(qint64 ms);
+    void setClickResolution(unsigned int res);
 
+    void setShowChannels(bool);
     void setShowFATs(bool);
     void pushFAT(FrequencyAllocationTable *);
     void removeFAT(QString const &name);
-    void notifyHalt(void);
+    void notifyHalt();
     void setFilterSkewness(enum Skewness); // TODO: Return *actual* bw
-    void updateOverlay(void);
+    void updateOverlay();
 
     void setGain(float);
     void setZeroPoint(float);
@@ -151,27 +189,31 @@ namespace SigDigger {
     void setSidePanelWidth(int);
     void setSidePanelRatio(qreal);
     void setLocked(bool);
+    void setTimeStampsUTC(bool);
 
     // Getters
-    bool getThrottling(void) const;
-    CaptureMode getCaptureMode(void) const;
-    qint64 getCenterFreq(void) const;
-    qint64 getLoFreq(void) const;
-    qint64 getLnbFreq(void) const;
-    unsigned int getBandwidth(void) const;
-    unsigned int getZoom(void) const;
+    bool getThrottling() const;
+    CaptureMode getCaptureMode() const;
+    qint64 getCenterFreq() const;
+    qint64 getLoFreq() const;
+    qint64 getLnbFreq() const;
+    unsigned int getBandwidth() const;
+    unsigned int getZoom() const;
+    Skewness getFilterSkewness() const;
     FrequencyAllocationTable *getFAT(QString const &) const;
-    void adjustSizes(void);
-    int sidePanelWidth(void) const;
-    qreal sidePanelRatio(void) const;
+    void adjustSizes();
+    int sidePanelWidth() const;
+    qreal sidePanelRatio() const;
 
+    bool canChangeFrequency(qint64) const;
+    bool canChangeFrequency(qint64, qint64) const;
     static int getFrequencyUnits(qint64 frew);
 
     qint32 computeLowCutFreq(int bw) const;
     qint32 computeHighCutFreq(int bw) const;
 
   signals:
-    void bandwidthChanged(void);
+    void bandwidthChanged();
     void frequencyChanged(qint64);
     void lnbFrequencyChanged(qint64);
     void loChanged(qint64);
@@ -184,14 +226,14 @@ namespace SigDigger {
   public slots:
     void onRangeChanged(float, float);
     void onWfBandwidthChanged(int, int);
-    void onWfLoChanged(void);
-    void onFrequencyChanged(void);
+    void onWfLoChanged();
+    void onFrequencyChanged();
     void onNewCenterFreq(qint64);
-    void onLoChanged(void);
+    void onLoChanged();
     void onNewZoomLevel(float);
     void onNewModulation(QString);
-    void onLnbFrequencyChanged(void);
-    void onLockStateChanged(void);
+    void onLnbFrequencyChanged();
+    void onLockStateChanged();
   };
 }
 

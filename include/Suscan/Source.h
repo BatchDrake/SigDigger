@@ -27,8 +27,6 @@
 #include <QPair>
 #include <analyzer/source.h>
 
-struct suscan_analyzer_gain_info;
-
 namespace Suscan {
   class Source
   {
@@ -55,34 +53,34 @@ namespace Suscan {
 
   public:
     GainDescription(const struct suscan_source_gain_desc *desc);
-    GainDescription(const struct suscan_analyzer_gain_info *info);
+    GainDescription(const struct suscan_source_gain_info *info);
 
     std::string
-    getName(void) const
+    getName() const
     {
       return this->name;
     }
 
     SUFLOAT
-    getMin(void) const
+    getMin() const
     {
       return this->min;
     }
 
     SUFLOAT
-    getMax(void) const
+    getMax() const
     {
       return this->max;
     }
 
     SUFLOAT
-    getStep(void) const
+    getStep() const
     {
       return this->step;
     }
 
     SUFLOAT
-    getDefault(void) const
+    getDefault() const
     {
       return this->def;
     }
@@ -149,7 +147,7 @@ namespace Suscan {
     }
 
     const suscan_source_device_t *
-    getInstance(void) const
+    getInstance() const
     {
       return this->instance;
     }
@@ -195,7 +193,7 @@ namespace Suscan {
     }
 
     std::string
-    getDriver(void) const
+    getDriver() const
     {
       if (this->instance == nullptr)
         return "<Invalid device>";
@@ -203,7 +201,7 @@ namespace Suscan {
     }
 
     std::string
-    getDesc(void) const
+    getDesc() const
     {
       if (this->instance == nullptr)
         return "<Invalid device>";
@@ -211,7 +209,7 @@ namespace Suscan {
     }
 
     int
-    getIndex(void) const
+    getIndex() const
     {
       if (this->instance == nullptr)
         return -1;
@@ -219,7 +217,7 @@ namespace Suscan {
     }
 
     bool
-    isPopulated(void) const
+    isPopulated() const
     {
       if (this->instance == nullptr)
         return false;
@@ -227,7 +225,7 @@ namespace Suscan {
     }
 
     bool
-    isRemote(void) const
+    isRemote() const
     {
       if (this->instance == nullptr)
         return false;
@@ -236,7 +234,7 @@ namespace Suscan {
     }
 
     bool
-    isAvailable(void) const
+    isAvailable() const
     {
       if (this->instance == nullptr)
         return false;
@@ -244,13 +242,13 @@ namespace Suscan {
     }
 
     std::vector<std::string>::const_iterator
-    getFirstAntenna(void) const
+    getFirstAntenna() const
     {
       return this->antennas.begin();
     }
 
     std::vector<std::string>::const_iterator
-    getLastAntenna(void) const
+    getLastAntenna() const
     {
       return this->antennas.end();
     }
@@ -266,37 +264,37 @@ namespace Suscan {
     }
 
     std::vector<Source::GainDescription>::const_iterator
-    getFirstGain(void) const
+    getFirstGain() const
     {
       return this->gains.begin();
     }
 
     std::vector<Source::GainDescription>::const_iterator
-    getLastGain(void) const
+    getLastGain() const
     {
       return this->gains.end();
     }
 
     std::vector<double>::const_iterator
-    getFirstSampRate(void) const
+    getFirstSampRate() const
     {
       return this->rates.begin();
     }
 
     std::vector<double>::const_iterator
-    getLastSampRate(void) const
+    getLastSampRate() const
     {
       return this->rates.end();
     }
 
     SUFREQ
-    getMinFreq(void) const
+    getMinFreq() const
     {
       return this->freqMin;
     }
 
     SUFREQ
-    getMaxFreq(void) const
+    getMaxFreq() const
     {
       return this->freqMax;
     }
@@ -319,32 +317,36 @@ namespace Suscan {
 
   public:
     suscan_source_config_t *instance;
-    std::string label(void) const;
-    SUFREQ getFreq(void) const;
-    SUFREQ getLnbFreq(void) const;
-    unsigned int getSampleRate(void) const;
-    unsigned int getDecimatedSampleRate(void) const;
-    unsigned int getDecimation(void) const;
-    enum suscan_source_type getType(void) const;
-    bool getLoop(void) const;
-    std::string getPath(void) const;
-    std::string getAntenna(void) const;
-    bool getDCRemove(void) const;
-    bool getIQBalance(void) const;
-    struct timeval getStartTime(void) const;
-    struct timeval getEndTime(void) const;
-    bool fileIsValid(void) const;
-    std::string getInterface(void) const;
-    SUFLOAT getBandwidth(void) const;
+    std::string label() const;
+    SUFREQ getFreq() const;
+    SUFREQ getLnbFreq() const;
+    unsigned int getSampleRate() const;
+    unsigned int getDecimatedSampleRate() const;
+    unsigned int getDecimation() const;
+    std::string getType() const;
+    bool getLoop() const;
+    std::string getPath() const;
+    std::string getAntenna() const;
+    bool getDCRemove() const;
+    bool getIQBalance() const;
+    struct timeval getStartTime() const;
+    struct timeval getEndTime() const;
+    bool fileIsValid() const;
+    std::string getInterface() const;
+    SUFLOAT getBandwidth() const;
     SUFLOAT getGain(const std::string &) const;
     std::string getParam(const std::string &key) const;
     bool hasParam(const std::string &key) const;
-    QList<QPair<std::string, std::string>> getParamList(void) const;
-    bool isRemote(void) const;
-    SUFLOAT getPPM(void) const;
+    QList<QPair<std::string, std::string>> getParamList() const;
+    bool isRemote() const;
+    SUFLOAT getPPM() const;
+    bool isRealTime() const;
+    bool isSeekable() const;
+    bool getFreqLimits(SUFREQ &, SUFREQ &) const;
+    bool guessMetadata(struct suscan_source_metadata &) const;
 
-    const Source::Device &getDevice(void);
-    enum suscan_source_format getFormat(void) const;
+    const Source::Device &getDevice();
+    enum suscan_source_format getFormat() const;
 
     void setFreq(SUFREQ freq);
     void setLnbFreq(SUFREQ freq);
@@ -354,7 +356,7 @@ namespace Suscan {
     void setIQBalance(bool);
     void setStartTime(struct timeval const &tv);
     void setFormat(enum suscan_source_format fmt);
-    void setType(enum suscan_source_type type);
+    void setType(const std::string &);
     void setLabel(const std::string &);
     void setPath(const std::string &);
     void setSampleRate(unsigned int value);
@@ -364,21 +366,23 @@ namespace Suscan {
     void setAntenna(const std::string &);    
     void setInterface(std::string const &interface);
     void setParam(std::string const &key, std::string const &param);
-    void clearParams(void);
+    void clearParams();
+
+    void debugGains(std::string const &) const;
 
     void setPPM(SUFLOAT);
 
     Config& operator=(const Config &);
     Config& operator=(Config &&);
 
-    Suscan::Object serialize(void);
+    Suscan::Object serialize();
 
     Config();
     Config(const Suscan::Object &obj);
     Config(suscan_source_config_t *);
     Config(const Config &);
     Config(Config &&);
-    Config(enum suscan_source_type type, enum suscan_source_format format);
+    Config(const std::string &type, enum suscan_source_format format);
     ~Config();
 
     static Source::Config wrap(suscan_source_config_t *config);

@@ -76,7 +76,6 @@
        <widget class="QToolButton" name="recordButton">
         <property name="font">
          <font>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -101,7 +100,7 @@ color: white;</string>
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../icons/Icons.qrc">
+         <iconset>
           <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
         </property>
         <property name="autoRaise">
@@ -118,7 +117,7 @@ color: white;</string>
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../icons/Icons.qrc">
+         <iconset>
           <normaloff>:/icons/view-restore.png</normaloff>:/icons/view-restore.png</iconset>
         </property>
         <property name="autoRaise">
@@ -135,7 +134,7 @@ color: white;</string>
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../icons/Icons.qrc">
+         <iconset>
           <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
         </property>
         <property name="autoRaise">
@@ -152,7 +151,7 @@ color: white;</string>
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../icons/Icons.qrc">
+         <iconset>
           <normaloff>:/icons/zoom-original.png</normaloff>:/icons/zoom-original.png</iconset>
         </property>
         <property name="autoRaise">
@@ -194,7 +193,7 @@ color: white;</string>
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../icons/Icons.qrc">
+         <iconset>
           <normaloff>:/icons/zoom-fit.png</normaloff>:/icons/zoom-fit.png</iconset>
         </property>
         <property name="autoRaise">
@@ -348,7 +347,6 @@ color: white;</string>
             <font>
              <family>Monospace</family>
              <pointsize>10</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -369,7 +367,6 @@ color: white;</string>
             <font>
              <family>Monospace</family>
              <pointsize>10</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -421,7 +418,6 @@ color: white;</string>
             <font>
              <family>Monospace</family>
              <pointsize>10</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -449,7 +445,6 @@ color: white;</string>
             <font>
              <family>Monospace</family>
              <pointsize>10</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -572,6 +567,9 @@ color: white;</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="keyboardTracking">
+            <bool>false</bool>
            </property>
            <property name="suffix">
             <string> cycles</string>
@@ -861,7 +859,6 @@ color: white;</string>
             <font>
              <family>Monospace</family>
              <pointsize>10</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -895,7 +892,6 @@ color: white;</string>
             <font>
              <family>Monospace</family>
              <pointsize>10</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -929,7 +925,6 @@ color: white;</string>
             <font>
              <family>Monospace</family>
              <pointsize>10</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -966,7 +961,6 @@ color: white;</string>
             <font>
              <family>Monospace</family>
              <pointsize>10</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -1003,7 +997,6 @@ color: white;</string>
             <font>
              <family>Monospace</family>
              <pointsize>10</pointsize>
-             <weight>50</weight>
              <bold>false</bold>
             </font>
            </property>
@@ -1117,8 +1110,6 @@ color: white;</string>
    <header>QVerticalLabel.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../icons/Icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

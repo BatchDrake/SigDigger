@@ -96,12 +96,12 @@ function embed_suscli_deps()
 
 function build_fixups()
 {
-  if [ "$OSTYPE" == "Linux" ]; then
-    cp -f "$BUILDROOT/"sigutils/build/libsigutils.so.* "$DEPLOYROOT/usr/lib"
-    cp -f "$BUILDROOT/"suscan/build/libsuscan.so.*     "$DEPLOYROOT/usr/lib"
-  fi
+    if [ "$OSTYPE" == "Linux" ]; then	
+	cp -f "$BUILDROOT/"sigutils/build/libsigutils.so.* "$DEPLOYROOT/usr/lib"
+	cp -f "$BUILDROOT/"suscan/build/libsuscan.so.*     "$DEPLOYROOT/usr/lib"
+    fi
 
-  return 0
+    return 0
 }
 
 function embed_soapysdr()
@@ -157,11 +157,15 @@ if [ -f "$DEPLOYROOT"/usr/bin/SigDigger.app ]; then
     try "Restoring old SigDigger executable..." cp "$DEPLOYROOT"/usr/bin/SigDigger.app "$DEPLOYROOT"/usr/bin/SigDigger
 fi
 
+if [ "x$SUFFIX" == "x" ]; then
+    SUFFIX=-`date -u '+%Y%m%d-%H%M%SZ'`
+fi
+
 if [ "$SIGDIGGER_EMBED_SOAPYSDR" != "" ]; then
-    APPIMAGE_NAME="$DISTFILENAME-full".AppImage
+    APPIMAGE_NAME="$DISTFILENAME-full$SUFFIX".AppImage
     embed_soapysdr
 else
-    APPIMAGE_NAME="$DISTFILENAME-lite".AppImage
+    APPIMAGE_NAME="$DISTFILENAME-lite$SUFFIX".AppImage
 fi
 
 embed_suscli_deps

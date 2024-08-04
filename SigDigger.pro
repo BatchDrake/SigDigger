@@ -4,10 +4,11 @@
 #
 #-------------------------------------------------
 
-QT           += core gui network
-unix: QMAKE_LFLAGS += -rdynamic
+QT           += core gui network widgets opengl
+unix: QMAKE_LFLAGS   += -rdynamic
+darwin: QMAKE_LFLAGS += -Wl,-export_dynamic
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
+greaterThan(QT_MAJOR_VERSION, 5): QT += openglwidgets
 
 TARGET   = SigDigger
 TEMPLATE = app
@@ -15,9 +16,9 @@ TEMPLATE = app
 DEFINES += QT_DEPRECATED_WARNINGS
 
 equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
-  QMAKE_CXXFLAGS += -std=gnu++14
+  QMAKE_CXXFLAGS += -std=gnu++17
 } else {
-  CONFIG += c++14
+  CONFIG += c++1z
 }
 
 CONFIG(release, debug|release): QMAKE_CXXFLAGS+=-D__FILENAME__=\\\"SigDigger\\\"
@@ -68,9 +69,12 @@ SOURCES += \
     App/AppConfig.cpp \
     App/Application.cpp \
     App/AppUI.cpp \
+    App/AudioConfig.cpp \
     App/ColorConfig.cpp \
     App/GuiConfig.cpp \
     App/Loader.cpp \
+    App/RemoteControlConfig.cpp \
+    App/RemoteControlServer.cpp \
     App/TLESourceConfig.cpp \
     Audio/AudioFileSaver.cpp \
     Audio/AudioPlayback.cpp \
@@ -79,7 +83,6 @@ SOURCES += \
     Components/AddTLESourceDialog.cpp \
     Components/DataSaverUI.cpp \
     Components/DeviceGain.cpp \
-    Components/DeviceTweaks.cpp \
     Components/DopplerDialog.cpp \
     Components/FrequencyCorrectionDialog.cpp \
     Components/GainSlider.cpp \
@@ -119,20 +122,35 @@ SOURCES += \
     Default/GenericInspector/WaveformTab.cpp \
     Default/Inspection/InspToolWidget.cpp \
     Default/Inspection/InspToolWidgetFactory.cpp \
+    Default/RMSInspector/RMSInspector.cpp \
+    Default/RMSInspector/RMSInspectorFactory.cpp \
     Default/Registration.cpp \
     Default/Source/SourceWidget.cpp \
     Default/Source/SourceWidgetFactory.cpp \
+    Default/SourceConfig/DeviceTweaks.cpp \
+    Default/SourceConfig/FileSourcePage.cpp \
+    Default/SourceConfig/FileSourcePageFactory.cpp \
+    Default/SourceConfig/SoapySDRSourcePage.cpp  \
+    Default/SourceConfig/SoapySDRSourcePageFactory.cpp \
+    Default/SourceConfig/StdinSourcePage.cpp \
+    Default/SourceConfig/StdinSourcePageFactory.cpp \
+    Default/SourceConfig/ToneGenSourcePage.cpp \
+    Default/SourceConfig/ToneGenSourcePageFactory.cpp \
     Misc/AutoGain.cpp \
     Misc/Averager.cpp \
+    Misc/FileViewer.cpp \
+    Misc/GlobalProperty.cpp \
     Misc/Palette.cpp \
     Misc/SNREstimator.cpp \
     Misc/SigDiggerHelpers.cpp \
+    Settings/AudioConfigTab.cpp \
     Settings/ColorConfigTab.cpp \
     Settings/ConfigDialog.cpp \
     Settings/ConfigTab.cpp \
     Settings/GuiConfigTab.cpp \
     Settings/LocationConfigTab.cpp \
     Settings/ProfileConfigTab.cpp \
+    Settings/RemoteControlTab.cpp \
     Settings/TLESourceTab.cpp \
     Suscan/AnalyzerRequestTracker.cpp \
     Suscan/CancellableTask.cpp \
@@ -163,16 +181,19 @@ SOURCES += \
     Tasks/CostasRecoveryTask.cpp \
     Tasks/DelayedConjTask.cpp \
     Tasks/DopplerCalculator.cpp \
+    Tasks/ExportCSVTask.cpp \
     Tasks/HistogramFeeder.cpp \
     Tasks/LPFTask.cpp \
     Tasks/PLLSyncTask.cpp \
     Tasks/QuadDemodTask.cpp \
     Tasks/WaveSampler.cpp \
     UIComponent/InspectionWidgetFactory.cpp \
+    UIComponent/SourceConfigWidgetFactory.cpp \
     UIComponent/TabWidgetFactory.cpp \
     UIComponent/ToolWidgetFactory.cpp \
     UIComponent/UIComponentFactory.cpp \
     UIComponent/UIListenerFactory.cpp \
+    UIMediator/FloatingTabWindow.cpp \
     UIMediator/InspectorMediator.cpp \
     UIMediator/PanoramicDialogMediator.cpp \
     UIMediator/SpectrumMediator.cpp \
@@ -204,6 +225,7 @@ INSTALL_HEADERS += \
     include/AppConfig.h \
     include/Application.h \
     include/AppUI.h \
+    include/AudioConfig.h \
     include/AudioFileSaver.h \
     include/AudioPlayback.h \
     include/Averager.h \
@@ -211,12 +233,15 @@ INSTALL_HEADERS += \
     include/ConfigTab.h \
     include/FeatureFactory.h \
     include/GuiConfig.h \
+    include/GlobalProperty.h \
     include/InspectionWidgetFactory.h \
     include/SigDiggerHelpers.h \
     include/MainSpectrum.h \
     include/MainWindow.h \
     include/Palette.h \
     include/PersistentWidget.h \
+    include/RemoteControlConfig.h \
+    include/SourceConfigWidgetFactory.h \
     include/TabWidgetFactory.h \
     include/TLESourceConfig.h \
     include/ToolWidgetFactory.h \
@@ -297,20 +322,35 @@ HEADERS += \
     Default/GenericInspector/WaveformTab.h \
     Default/Inspection/InspToolWidget.h \
     Default/Inspection/InspToolWidgetFactory.h \
+    Default/RMSInspector/RMSInspector.h \
+    Default/RMSInspector/RMSInspectorFactory.h \
     Default/Registration.h \
     Default/Source/SourceWidget.h \
     Default/Source/SourceWidgetFactory.h \
+    Default/SourceConfig/DeviceTweaks.h \
+    Default/SourceConfig/FileSourcePage.h \
+    Default/SourceConfig/FileSourcePageFactory.h \
+    Default/SourceConfig/SoapySDRSourcePage.h \
+    Default/SourceConfig/SoapySDRSourcePageFactory.h \
+    Default/SourceConfig/StdinSourcePage.h \
+    Default/SourceConfig/StdinSourcePageFactory.h \
+    Default/SourceConfig/ToneGenSourcePage.h \
+    Default/SourceConfig/ToneGenSourcePageFactory.h \
+    ExportCSVTask.h \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
+    include/AudioConfig.h \
+    include/AudioConfigTab.h \
     include/CarrierDetector.h \
     include/CarrierXlator.h \
     include/ColorConfigTab.h \
     include/CostasRecoveryTask.h \
     include/DelayedConjTask.h \
-    include/DeviceTweaks.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
+    include/FileViewer.h \
+    include/FloatingTabWindow.h \
     include/FrequencyCorrectionDialog.h \
     include/GenericAudioPlayer.h \
     include/GenericDataSaverUI.h \
@@ -325,6 +365,8 @@ HEADERS += \
     include/QTimeSlider.h \
     include/QuadDemodTask.h \
     include/QuickConnectDialog.h \
+    include/RemoteControlServer.h \
+    include/RemoteControlTab.h \
     include/SamplerDialog.h \
     include/SamplingProperties.h \
     include/AboutDialog.h \
@@ -370,19 +412,26 @@ FORMS += \
     Default/GenericInspector/TVProcessorTab.ui \
     Default/GenericInspector/WaveformTab.ui \
     Default/Inspection/InspToolWidget.ui \
+    Default/RMSInspector/RMSInspector.ui \
     Default/Source/SourceWidget.ui \
+    Default/SourceConfig/DeviceTweaks.ui \
+    Default/SourceConfig/FileSourcePage.ui \
+    Default/SourceConfig/SoapySDRSourcePage.ui \
+    Default/SourceConfig/StdinSourcePage.ui \
+    Default/SourceConfig/ToneGenSourcePage.ui \
     ui/AboutDialog.ui \
     ui/AddTLESourceDialog.ui \
     ui/AfcControl.ui \
     ui/AskControl.ui \
+    ui/AudioConfigTab.ui \
     ui/ClockRecovery.ui \
     ui/ColorConfigTab.ui \
     ui/Config.ui \
     ui/DataSaverUI.ui \
     ui/DeviceGain.ui \
-    ui/DeviceTweaks.ui \
     ui/DopplerDialog.ui \
     ui/EqualizerControl.ui \
+    ui/FloatingTabWindow.ui \
     ui/FrequencyCorrectionDialog.ui \
     ui/GainControl.ui \
     ui/GainSlider.ui \
@@ -394,6 +443,7 @@ FORMS += \
     ui/MfControl.ui \
     ui/ProfileConfigTab.ui \
     ui/QuickConnectDialog.ui \
+    ui/RemoteControlTab.ui \
     ui/SamplerDialog.ui \
     ui/TLESourceTab.ui \
     ui/TimeWindow.ui \

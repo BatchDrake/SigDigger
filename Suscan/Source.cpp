@@ -18,7 +18,7 @@
 //
 
 #include <Suscan/Source.h>
-#include <Suscan/Analyzer.h>
+#include <QList>
 
 using namespace Suscan;
 
@@ -32,7 +32,7 @@ Source::GainDescription::GainDescription(const struct suscan_source_gain_desc *d
   this->name = std::string(desc->name);
 }
 
-Source::GainDescription::GainDescription(const struct suscan_analyzer_gain_info *desc)
+Source::GainDescription::GainDescription(const struct suscan_source_gain_info *desc)
 {
   this->def  = desc->value;
   this->max  = desc->max;
@@ -152,10 +152,10 @@ Source::Config::Config()
 }
 
 Source::Config::Config(
-    enum suscan_source_type type,
+    const std::string &type,
     enum suscan_source_format fmt)
 {
-  SU_ATTEMPT(this->instance = suscan_source_config_new(type, fmt));
+  SU_ATTEMPT(this->instance = suscan_source_config_new(type.c_str(), fmt));
 
   this->borrowed = false;
 }
@@ -409,11 +409,11 @@ Source::Config::getFormat(void) const
   return suscan_source_config_get_format(this->instance);
 }
 
-enum suscan_source_type
+std::string
 Source::Config::getType(void) const
 {
   if (this->instance == nullptr)
-    return SUSCAN_SOURCE_TYPE_SDR;
+    return "soapysdr";
 
   return suscan_source_config_get_type(this->instance);
 }
@@ -490,6 +490,43 @@ Source::Config::getParamList(void) const
           &list));
 
   return list;
+}
+
+bool
+Source::Config::isRealTime() const
+{
+  if (this->instance == nullptr)
+    return false;
+
+  return suscan_source_config_is_real_time(this->instance) == SU_TRUE;
+}
+
+bool
+Source::Config::isSeekable() const
+{
+  if (this->instance == nullptr)
+    return false;
+
+  return suscan_source_config_is_seekable(this->instance) == SU_TRUE;
+}
+
+bool
+Source::Config::getFreqLimits(SUFREQ &min, SUFREQ &max) const
+{
+  if (this->instance == nullptr)
+    return false;
+
+  return
+     suscan_source_config_get_freq_limits(this->instance, &min, &max) == SU_TRUE;
+}
+
+bool
+Source::Config::guessMetadata(struct suscan_source_metadata &meta) const
+{
+  if (this->instance == nullptr)
+    return false;
+
+  return suscan_source_config_guess_metadata(this->instance, &meta) == SU_TRUE;
 }
 
 bool
@@ -596,6 +633,21 @@ Source::Config::clearParams(void)
 }
 
 void
+Source::Config::debugGains(std::string const &prefix) const
+{
+  SU_INFO("%s: Debug gains\n", prefix.c_str());
+  Suscan::Source::Device const &dev = const_cast<Suscan::Source::Config *>(this)->getDevice();
+  for (auto p = dev.getFirstGain();
+       p != dev.getLastGain();
+       ++p) {
+    auto name = p->getName();
+    auto value = this->getGain(name);
+
+    SU_INFO("%s:   %s = %g dB\n", prefix.c_str(), name.c_str(), value);
+  }
+}
+
+void
 Source::Config::setPPM(SUFLOAT ppm)
 {
   if (this->instance == nullptr)
@@ -657,14 +709,14 @@ Source::Config::setIQBalance(bool value)
 }
 
 void
-Source::Config::setType(enum suscan_source_type type)
+Source::Config::setType(const std::string &type)
 {
   if (this->instance == nullptr)
     return;
 
   suscan_source_config_set_type_format(
         this->instance,
-        type,
+        type.c_str(),
         suscan_source_config_get_format(this->instance));
 }
 

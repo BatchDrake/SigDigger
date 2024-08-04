@@ -32,6 +32,8 @@ GuiConfigTab::save()
   this->guiConfig.enableMsgTTL   = this->ui->ttlCheck->isChecked();
   this->guiConfig.msgTTL         = static_cast<unsigned>(
         this->ui->ttlSpin->value());
+  this->guiConfig.infoText       = this->ui->infoTextEdit->toPlainText().toStdString();
+  this->guiConfig.infoTextColor  = this->ui->infoTextColor->getColor();
 }
 
 void
@@ -44,12 +46,14 @@ GuiConfigTab::refreshUi()
         this->ui->useGLWaterfallCheck->isChecked());
   this->ui->useGlWfInWindowsCheck->setEnabled(
         this->ui->useGLWaterfallCheck->isChecked());
+  this->ui->useGlWfInWindowsCheck->setChecked(this->guiConfig.useGlInWindows);
   this->ui->useMaxBlendingCheck->setChecked(this->guiConfig.useMaxBlending);
   this->ui->ttlCheck->setChecked(this->guiConfig.enableMsgTTL);
   this->ui->ttlLabel->setEnabled(this->ui->ttlCheck->isChecked());
   this->ui->ttlSpin->setEnabled(this->ui->ttlCheck->isChecked());
   this->ui->ttlSpin->setValue(static_cast<int>(this->guiConfig.msgTTL));
-
+  this->ui->infoTextEdit->setPlainText(QString::fromStdString(this->guiConfig.infoText));
+  this->ui->infoTextColor->setColor(this->guiConfig.infoTextColor);
 }
 
 void
@@ -61,61 +65,73 @@ GuiConfigTab::setGuiConfig(GuiConfig const &config)
 }
 
 GuiConfig
-GuiConfigTab::getGuiConfig(void) const
+GuiConfigTab::getGuiConfig() const
 {
   return this->guiConfig;
 }
 
 bool
-GuiConfigTab::hasChanged(void) const
+GuiConfigTab::hasChanged() const
 {
   return this->modified;
 }
 
 void
-GuiConfigTab::connectAll(void)
+GuiConfigTab::connectAll()
 {
   connect(
         this->ui->reverseDragBehaviorCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->noLimitsCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->useGLWaterfallCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->useMaxBlendingCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->useGlWfInWindowsCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->ttlCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
 
   connect(
         this->ui->ttlSpin,
         SIGNAL(valueChanged(int)),
         this,
-        SLOT(onConfigChanged(void)));
+        SLOT(onConfigChanged()));
+
+  connect(
+        this->ui->infoTextEdit,
+        SIGNAL(textChanged()),
+        this,
+        SLOT(onConfigChanged()));
+
+  connect(
+        this->ui->infoTextColor,
+        SIGNAL(colorChanged(QColor)),
+        this,
+        SLOT(onConfigChanged()));
 }
 
 GuiConfigTab::GuiConfigTab(QWidget *parent) :
@@ -134,7 +150,7 @@ GuiConfigTab::~GuiConfigTab()
 
 ////////////////////////////////// Slots ///////////////////////////////////////
 void
-GuiConfigTab::onConfigChanged(void)
+GuiConfigTab::onConfigChanged()
 {
   this->ui->useMaxBlendingCheck->setEnabled(
         this->ui->useGLWaterfallCheck->isChecked());

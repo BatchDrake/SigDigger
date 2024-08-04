@@ -18,6 +18,7 @@
 //
 #include <UIComponentFactory.h>
 #include <UIMediator.h>
+#include <cassert>
 
 using namespace SigDigger;
 

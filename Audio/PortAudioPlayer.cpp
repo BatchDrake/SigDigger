@@ -29,7 +29,7 @@ using namespace SigDigger;
 bool PortAudioPlayer::initialized = false;
 
 bool
-PortAudioPlayer::assertPaInitialization(void)
+PortAudioPlayer::assertPaInitialization()
 {
   if (!initialized) {
     PaError err = Pa_Initialize();
@@ -43,25 +43,30 @@ PortAudioPlayer::assertPaInitialization(void)
 }
 
 void
-PortAudioPlayer::paFinalizer(void)
+PortAudioPlayer::paFinalizer()
 {
   if (initialized)
     Pa_Terminate();
 }
 
 PortAudioPlayer::PortAudioPlayer(
-    std::string const &,
+    std::string const &devStr,
     unsigned int rate,
     size_t bufSiz)
   : GenericAudioPlayer(rate)
 {
   PaStreamParameters outputParameters;
   PaError pErr;
+  PaDeviceIndex index;
 
   if (!assertPaInitialization())
     throw std::runtime_error("Failed to initialize PortAudio library");
 
-  outputParameters.device = Pa_GetDefaultOutputDevice(); /* default output device */
+  index = strToDeviceIndex(devStr);
+  if (index == paNoDevice)
+    throw std::runtime_error("Failed to initialize PortAudio library: playback device not found");
+
+  outputParameters.device = index;
   outputParameters.channelCount = 1;
   outputParameters.sampleFormat = paFloat32;
   outputParameters.suggestedLatency =
@@ -89,6 +94,93 @@ PortAudioPlayer::PortAudioPlayer(
       throw std::runtime_error(
           std::string("Failed to start PortAudio stream: ")
           + Pa_GetErrorText(pErr));
+}
+
+GenericAudioDevice
+PortAudioPlayer::deviceIndexToDevice(PaDeviceIndex index)
+{
+  GenericAudioDevice dev;
+  const PaDeviceInfo  *deviceInfo;
+  const PaHostApiInfo *apiInfo;
+
+  if (index == paNoDevice)
+    goto done;
+
+  if (!assertPaInitialization())
+    goto done;
+
+  deviceInfo = Pa_GetDeviceInfo(index);
+  if (deviceInfo == nullptr)
+    goto done;
+
+  apiInfo    = Pa_GetHostApiInfo(deviceInfo->hostApi);
+  if (apiInfo == nullptr)
+    goto done;
+
+  dev.devStr      = std::string(apiInfo->name) + ":" + std::string(deviceInfo->name);
+  dev.description = std::string(deviceInfo->name) + " (" + std::string(apiInfo->name) + ")";
+
+done:
+  return dev;
+}
+
+GenericAudioDevice
+PortAudioPlayer::getDefaultDevice()
+{
+  return deviceIndexToDevice(Pa_GetDefaultOutputDevice());
+}
+
+PaDeviceIndex
+PortAudioPlayer::strToDeviceIndex(std::string const &string)
+{
+  const PaDeviceInfo  *deviceInfo;
+  const PaHostApiInfo *apiInfo;
+  std::string devStr;
+  int numDevices;
+
+  if (string.size() == 0)
+    return Pa_GetDefaultOutputDevice();
+
+  numDevices = Pa_GetDeviceCount();
+  for (int i = 0; i < numDevices; ++i) {
+    deviceInfo = Pa_GetDeviceInfo(i);
+    apiInfo    = Pa_GetHostApiInfo(deviceInfo->hostApi);
+
+    devStr     = std::string(apiInfo->name) + ":" + std::string(deviceInfo->name);
+    if (string == devStr)
+      return i;
+  }
+
+  return paNoDevice;
+}
+
+bool
+PortAudioPlayer::enumerateDevices(std::vector<GenericAudioDevice> &list)
+{
+  GenericAudioDevice   dev;
+  const PaDeviceInfo  *deviceInfo;
+  const PaHostApiInfo *apiInfo;
+
+  int numDevices;
+
+  if (!assertPaInitialization())
+    return false;
+
+  numDevices = Pa_GetDeviceCount();
+
+  list.clear();
+
+  for (int i = 0; i < numDevices; ++i) {
+    deviceInfo = Pa_GetDeviceInfo(i);
+    apiInfo    = Pa_GetHostApiInfo(deviceInfo->hostApi);
+
+    dev.devStr      = std::string(apiInfo->name) + ":" + std::string(deviceInfo->name);
+    dev.description = std::string(deviceInfo->name) + " (" + std::string(apiInfo->name) + ")";
+
+    list.push_back(dev);
+  }
+
+  return true;
 }
 
 bool

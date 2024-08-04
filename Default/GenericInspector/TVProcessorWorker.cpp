@@ -188,7 +188,7 @@ TVProcessorWorker::start(void)
   if (this->processor == nullptr) {
     this->processor = su_tv_processor_new(&this->defaultParams);
     if (this->processor == nullptr)
-      emit error("TV processor failed to initialize: invalid parameters");
+      emit error("TV processor failed to initialize: invalid parameters. Please verify that the sample rate / baud rate is sufficiently high for this configuration.");
   }
 }
 

@@ -44,12 +44,16 @@ namespace SigDigger {
   class TabWidget;
   class InspectionWidget;
   class UIListener;
+  class FloatingTabWindow;
+  class RemoteControlServer;
+  class GlobalProperty;
 
   class UIMediator : public PersistentWidget {
     Q_OBJECT
 
   public:
     enum State {
+      INVALID,
       HALTED,
       HALTING,
       RUNNING,
@@ -58,34 +62,48 @@ namespace SigDigger {
 
   private:
     // Static part of the configuration
-    AppConfig *appConfig = nullptr;
+    AppConfig *m_appConfig = nullptr;
 
     // Static part of UI
-    QMainWindow *owner = nullptr;
-    AppUI *ui = nullptr;
+    QMainWindow *m_owner = nullptr;
+    AppUI *m_ui = nullptr;
+    RemoteControlServer *m_remoteControl = nullptr;
 
-    QMessageBox *laggedMsgBox = nullptr;
-    std::map<std::string, QAction *> bandPlanMap;
+    QMessageBox *m_laggedMsgBox = nullptr;
+    std::map<std::string, QAction *> m_bandPlanMap;
 
     // Cached members
-    struct timeval profileStart;
-    struct timeval profileEnd;
-    Suscan::Source::Device remoteDevice;
+    struct timeval m_profileStart;
+    struct timeval m_profileEnd;
+    Suscan::Source::Device m_remoteDevice;
+
+    GlobalProperty *m_propSampRate  = nullptr;
+    GlobalProperty *m_propFftSize   = nullptr;
+    GlobalProperty *m_propRBW       = nullptr;
+    GlobalProperty *m_propDate      = nullptr;
+    GlobalProperty *m_propTime      = nullptr;
+    GlobalProperty *m_propDateTime  = nullptr;
+    GlobalProperty *m_propLat       = nullptr;
+    GlobalProperty *m_propLon       = nullptr;
+    GlobalProperty *m_propCity      = nullptr;
+    GlobalProperty *m_propLocator   = nullptr;
+    GlobalProperty *m_propFrequency = nullptr;
+    GlobalProperty *m_propLNB       = nullptr;
 
     // UI Data
-    Averager averager;
-    unsigned int rate = 0;
-    unsigned int recentCount = 0;
+    Averager m_averager;
+    unsigned int m_rate = 0;
+    unsigned int m_recentCount = 0;
 
     // UI State
-    bool settingRanges = false;
-    struct timeval rtMaxDelta = {0, 10000};
-    struct timeval lastPsd;
-    qreal psdDelta = 0;
-    qreal psdAdj   = 0;
-    bool haveRtDelta = false;
-    unsigned int rtCalibrations = 0;
-    qreal rtDeltaReal = 0;
+    bool m_settingRanges = false;
+    struct timeval m_rtMaxDelta = {0, 10000};
+    struct timeval m_lastPsd;
+    qreal m_psdDelta = 0;
+    qreal m_psdAdj   = 0;
+    bool m_haveRtDelta = false;
+    unsigned int m_rtCalibrations = 0;
+    qreal m_rtDeltaReal = 0;
 
     // Private methods
     void connectMainWindow();
@@ -99,7 +117,9 @@ namespace SigDigger {
     // Behavioral methods
     void setSampleRate(unsigned int rate);
     void setBandwidth(unsigned int bandwidth);
+    void refreshQthProperties();
     void refreshProfile(bool updateFreqs = true);
+    void refreshTimeToolbarState();
     void setCurrentAutoGain();
 
     // Other setters
@@ -107,11 +127,11 @@ namespace SigDigger {
     void setSourceTimeEnd(struct timeval const &);
 
     // Refactored UI State
-    State                              m_state = HALTED;
+    State                              m_state = INVALID;
     Suscan::Analyzer                  *m_analyzer = nullptr;
     QList<UIComponent *>               m_components;
     QList<TabWidget *>                 m_tabWidgets;
-    QMap<TabWidget *, QDialog *>       m_floatingTabs;
+    QMap<TabWidget *, FloatingTabWindow *> m_floatingTabs;
     struct timeval                     m_lastTimeStamp;
     Suscan::Object                     m_hollowConfig;
 
@@ -136,15 +156,18 @@ namespace SigDigger {
     QMainWindow  *getMainWindow() const;
     MainSpectrum *getMainSpectrum() const;
     Averager     *getSpectrumAverager();
+    AppUI        *getAppUI() const;
     AppConfig    *getAppConfig() const;
     bool          addTabWidget(TabWidget *);
     bool          addUIListener(UIListener *);
     bool          closeTabWidget(TabWidget *);
     bool          floatTabWidget(TabWidget *);
+    bool          unFloatTabWidget(TabWidget *);
     void          detachInspectionWidget(InspectionWidget *);
 
     // Shortcut methods
     SUFREQ        getCurrentCenterFreq() const;
+    bool          isLive() const;
 
     // Request the opening an inspector tab
     bool          openInspectorTab(
@@ -161,6 +184,7 @@ namespace SigDigger {
     State getState() const;
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
     void notifyTimeStamp(struct timeval const &timestamp);
+    void setUIBusy(bool);
 
     // Recent list handling
     void clearRecent();
@@ -193,7 +217,9 @@ namespace SigDigger {
 
     // panSpectrum functions
     bool         getPanSpectrumDevice(Suscan::Source::Device &) const;
+    QString      getPanSpectrumAntenna(void) const;
     bool         getPanSpectrumRange(qint64 &min, qint64 &max) const;
+    bool         getPanSpectrumZoomRange(qint64 &min, qint64 &max, bool &noHop) const;
     unsigned int getPanSpectrumRttMs() const;
     float        getPanSpectrumRelBw() const;
     float        getPanSpectrumGain(QString const &) const;
@@ -209,6 +235,9 @@ namespace SigDigger {
     void saveUIConfig();
     void setProfile(Suscan::Source::Config const &config, bool restart = false);
     void setTimeStamp(struct timeval const &);
+
+    bool openSettingsDialog(Suscan::Source::Config *prof = nullptr);
+    bool attemptReplayFile(QString const &path);
 
     // Overriden methods
     Suscan::Serializable *allocConfig() override;
@@ -227,6 +256,7 @@ namespace SigDigger {
     void recentCleared();
     void profileChanged(bool);
     void frequencyChanged(qint64, qint64);
+    void triggerSaveConfig();
 
     // Panspectrum signals
     void panSpectrumStart();
@@ -247,6 +277,7 @@ namespace SigDigger {
     void onToggleAbout(bool);
     void onQuickConnect();
     void onQuickConnectAccepted();
+    void onTriggerReplayFile(bool);
     void onTriggerStart(bool);
     void onTriggerStop(bool);
     void onTriggerImport(bool);
@@ -284,6 +315,7 @@ namespace SigDigger {
 
     // UI Components
     void onCloseTabWindow();
+    void onReattachTabWindow();
     void onTabCloseRequested(int i);
     void onTabMenuRequested(const QPoint &);
     void onTabRename(QString);
@@ -294,6 +326,10 @@ namespace SigDigger {
     void onOpened(Suscan::AnalyzerRequest const &);
     void onCancelled(Suscan::AnalyzerRequest const &);
     void onError(Suscan::AnalyzerRequest const &, std::string const &);
+
+    // Property listenets
+    void onPropFrequencyChanged();
+    void onPropLNBChanged();
   };
 };
 

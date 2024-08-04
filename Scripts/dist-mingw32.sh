@@ -46,6 +46,9 @@ function fetch_dll()
     elif [ -f "/mingw64/bin/$1" ]; then
 	    try "Fetching $1 (bin)..." cp "/mingw64/bin/$1" "$STAGINGDIR/$2"
     else
+            echo "$DEPLOYROOT/usr/lib/*.dll"
+            echo /mingw64/bin/*.dll
+            echo /mingw64/lib/*.dll
 	    try "$1 NOT FOUND!" false
     fi
 }
@@ -67,9 +70,10 @@ function gather_dlls()
     fetch_dll libgcc_s_seh-1.dll
     fetch_dll libwinpthread-1.dll
     fetch_dll libdouble-conversion.dll
-    fetch_dll libicuin69.dll
-    fetch_dll libicuuc69.dll
-    fetch_dll libicudt69.dll
+    fetch_dll libicuin72.dll
+    fetch_dll libicuuc72.dll
+    fetch_dll libicudt72.dll
+    fetch_dll libpcre2-8-0.dll
     fetch_dll libpcre2-16-0.dll
     fetch_dll zlib1.dll
     fetch_dll libzstd.dll
@@ -84,18 +88,16 @@ function gather_dlls()
     fetch_dll libglib-2.0-0.dll
     fetch_dll libintl-8.dll
     fetch_dll libiconv-2.dll
-    fetch_dll libpcre-1.dll
     fetch_dll libgraphite2.dll
     fetch_dll libmd4c.dll
-    fetch_dll libcrypto-1_1-x64.dll
+    fetch_dll libcrypto-3-x64.dll
     fetch_dll libidn2-0.dll
-    fetch_dll libunistring-2.dll
+    fetch_dll libunistring-5.dll
     fetch_dll libnghttp2-14.dll
     fetch_dll libpsl-5.dll
     fetch_dll libssh2-1.dll
-    fetch_dll libssl-1_1-x64.dll
+    fetch_dll libssl-3-x64.dll
     fetch_dll libFLAC.dll
-    fetch_dll libssp-0.dll
     fetch_dll libogg-0.dll
     fetch_dll libopus-0.dll
     fetch_dll libvorbis-0.dll
@@ -104,6 +106,8 @@ function gather_dlls()
     fetch_dll libvolk.dll
     fetch_dll liblzma-5.dll
     fetch_dll liborc-0.4-0.dll
+    fetch_dll libsystre-0.dll
+    fetch_dll libtre-5.dll
 }
 
 function create_bundle()

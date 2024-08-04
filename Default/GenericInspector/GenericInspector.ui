@@ -1095,7 +1095,7 @@ font-family: Monospace;</string>
                </widget>
               </item>
               <item row="1" column="5">
-               <widget class="QDoubleSpinBox" name="gainSpinBox">
+               <widget class="ContextAwareSpinBox" name="gainSpinBox">
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
@@ -1219,7 +1219,7 @@ font-family: Monospace;</string>
                </widget>
               </item>
               <item row="4" column="5">
-               <widget class="QDoubleSpinBox" name="zeroPointSpin">
+               <widget class="ContextAwareSpinBox" name="zeroPointSpin">
                 <property name="minimumSize">
                  <size>
                   <width>140</width>
@@ -1316,6 +1316,11 @@ font-family: Monospace;</string>
    <extends>QWidget</extends>
    <header>FrequencySpinBox.h</header>
   </customwidget>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDouble</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
   <customwidget>
    <class>MultiToolBox</class>
    <extends>QWidget</extends>

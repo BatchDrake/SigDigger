@@ -69,41 +69,42 @@ namespace SigDigger {
 
   private:
     // Convenience pointer
-    InspToolWidgetConfig *panelConfig = nullptr;
+    InspToolWidgetConfig *m_panelConfig = nullptr;
 
     // UI objects
-    Ui::InspectorPanel *ui = nullptr;
+    Ui::InspectorPanel *m_ui = nullptr;
+    bool m_stateSet = false;
 
     // TODO: Allow multiple TimeWindows
-    TimeWindow *timeWindow = nullptr;
-    qreal timeWindowFs = 1;
-    qint64 demodFreq = 0;
-    SUFLOAT squelch = 0;
-    SUFLOAT hangLevel = 0;
-    bool autoSquelch = false;
-    bool autoSquelchTriggered = false;
+    TimeWindow *m_timeWindow = nullptr;
+    qreal m_timeWindowFs = 1;
+    qint64 m_demodFreq = 0;
+    SUFLOAT m_squelch = 0;
+    SUFLOAT m_hangLevel = 0;
+    bool m_autoSquelch = false;
+    bool m_autoSquelchTriggered = false;
 
     Suscan::AnalyzerRequestTracker *m_tracker = nullptr;
     Suscan::Analyzer               *m_analyzer = nullptr;
     bool                            m_opened = false;
     Suscan::AnalyzerRequest         m_request;
     // UI State
-    State state = DETACHED;
-    Suscan::AnalyzerSourceInfo sourceInfo =
+    State m_state = DETACHED;
+    Suscan::AnalyzerSourceInfo m_sourceInfo =
         Suscan::AnalyzerSourceInfo();
 
-    std::vector<SUCOMPLEX> data;
-    std::vector<SUCOMPLEX> history;
-    unsigned int historyPtr = 0;
-    SUFLOAT  currEnergy = 0;
-    SUFLOAT  powerAccum = 0;
-    SUFLOAT  powerError = 0;
-    SUSCOUNT hangCounter = 0;
-    SUSCOUNT maxSamples = 0;
-    SUSCOUNT hangLength = 0;
-    SUSCOUNT powerSamples = 0;
-    SUSCOUNT totalSamples = 0;
-    SUSCOUNT uiRefreshSamples = 0;
+    std::vector<SUCOMPLEX> m_data;
+    std::vector<SUCOMPLEX> m_history;
+    unsigned int m_historyPtr = 0;
+    SUFLOAT  m_currEnergy = 0;
+    SUFLOAT  m_powerAccum = 0;
+    SUFLOAT  m_powerError = 0;
+    SUSCOUNT m_hangCounter = 0;
+    SUSCOUNT m_maxSamples = 0;
+    SUSCOUNT m_hangLength = 0;
+    SUSCOUNT m_powerSamples = 0;
+    SUSCOUNT m_totalSamples = 0;
+    SUSCOUNT m_uiRefreshSamples = 0;
 
     // Private methods
     void connectAll(void);
@@ -152,11 +153,13 @@ namespace SigDigger {
 
   public slots:
     // UI slots
+    void onInspClassChanged();
     void onOpenInspector(void);
     void onBandwidthChanged(double);
     void onPreciseChanged(void);
     void onPressHold(void);
     void onReleaseHold(void);
+
 
     void onPressAutoSquelch(void);
     void onReleaseAutoSquelch(void);

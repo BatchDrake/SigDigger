@@ -35,8 +35,9 @@ namespace SigDigger {
   SUBOOL onBaseBandData(
       void *privdata,
       suscan_analyzer_t *,
-      const SUCOMPLEX *samples,
-      SUSCOUNT length);
+      SUCOMPLEX *samples,
+      SUSCOUNT length,
+      SUSCOUNT offset);
 
   struct GainPresetSetting : public Suscan::Serializable {
     std::string driver;
@@ -58,6 +59,9 @@ namespace SigDigger {
       bool agcEnabled = false;
       bool gainPresetEnabled = false;
 
+      bool  allocHistory = false;
+      qreal replayAllocationMiB = 100;
+
       std::map<std::string, GainPresetSetting> agcSettings;
       unsigned int throttleRate = 196000;
 
@@ -72,33 +76,32 @@ namespace SigDigger {
     Q_OBJECT
 
     // Convenience pointer
-    SourceWidgetConfig *panelConfig = nullptr;
+    SourceWidgetConfig *m_panelConfig = nullptr;
 
     // Managed objects
-    Suscan::Source::Config *profile = nullptr;
+    Suscan::Source::Config    *m_profile = nullptr;
     Suscan::AnalyzerSourceInfo m_sourceInfo =
         Suscan::AnalyzerSourceInfo();
 
     // UI objects
-    int m_state;
-    Suscan::Analyzer *m_analyzer = nullptr; // Borrowed
-    bool m_haveSourceInfo = false;
-    Ui::SourcePanel *ui = nullptr;
-    std::vector<DeviceGain *> gainControls;
-    DataSaverUI *saverUI = nullptr;
+    int                       m_state;
+    Suscan::Analyzer         *m_analyzer = nullptr; // Borrowed
+    bool                      m_haveSourceInfo = false;
+    Ui::SourcePanel          *m_ui = nullptr;
+    std::vector<DeviceGain *> m_gainControls;
+    DataSaverUI              *m_saverUI = nullptr;
 
     // UI State
-    unsigned int rate = 0;
-    unsigned int processRate = 0;
-    bool haveSourceInfo = false;
-    std::map<std::string, std::vector<AutoGain>> autoGains;
-    bool throttleable = false;
-    std::vector<AutoGain> *currAutoGainSet = nullptr;
-    AutoGain *currentAutoGain = nullptr;
+    unsigned int              m_rate = 0;
+    unsigned int              m_processRate = 0;
+    std::map<std::string, std::vector<AutoGain>> m_autoGains;
+    bool                      m_throttleable = false;
+    std::vector<AutoGain>    *m_currAutoGainSet = nullptr;
+    AutoGain                 *m_currentAutoGain = nullptr;
 
     // Data saving state
-    bool m_filterInstalled = false;
-    FileDataSaver *m_dataSaver = nullptr;
+    bool                      m_filterInstalled = false;
+    FileDataSaver            *m_dataSaver = nullptr;
 
     // Private methods
     DeviceGain *lookupGain(std::string const &name);
@@ -111,6 +114,7 @@ namespace SigDigger {
     void refreshAutoGains(Suscan::Source::Config &config);
     void refreshCurrentAutoGain(std::string const &);
     void applyCurrentAutogain();
+    void applyCurrentProfileGains();
     void selectAntenna(std::string const &name);
     void setBandwidth(float bw);
     void setPPM(float ppm);
@@ -137,6 +141,9 @@ namespace SigDigger {
 
     void setDelayedAnalyzerOptions();
 
+    // History
+    void adjustHistoryConfig();
+
     // Data saver
     int openCaptureFile();
     void installDataSaver(int fd);
@@ -160,8 +167,9 @@ namespace SigDigger {
     onBaseBandData(
         void *privdata,
         suscan_analyzer_t *,
-        const SUCOMPLEX *samples,
-        SUSCOUNT length);
+        SUCOMPLEX *samples,
+        SUSCOUNT length,
+        SUSCOUNT offset);
 
   public slots:
     void onSourceInfoMessage(Suscan::SourceInfoMessage const &msg);
@@ -178,6 +186,11 @@ namespace SigDigger {
     void onToggleAGCEnabled();
     void onBandwidthChanged();
     void onPPMChanged();
+
+    // History
+    void onAllocHistoryToggled();
+    void onAllocHistorySizeChanged();
+    void onToggleReplay();
 
     // Saver UI
     void onSaveError(void);

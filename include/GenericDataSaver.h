@@ -26,7 +26,7 @@
 #include <QMutex>
 #include <vector>
 #include <sigutils/types.h>
-#include <util/compat-time.h>
+#include <sigutils/util/compat-time.h>
 #include <stdint.h>
 
 namespace SigDigger {
@@ -83,7 +83,7 @@ namespace SigDigger {
       std::vector<uint8_t>buffers[2];
       QString lastError;
 
-      unsigned int rateHint;
+      unsigned int rateHint = 0;
       size_t allocation;
 
       unsigned int buffer = 0;

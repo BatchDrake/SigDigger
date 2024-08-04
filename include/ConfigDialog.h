@@ -25,6 +25,8 @@
 #include <Suscan/Source.h>
 #include <ColorConfig.h>
 #include <GuiConfig.h>
+#include <AudioConfig.h>
+#include <RemoteControlConfig.h>
 #include <TLESourceConfig.h>
 #include <SaveProfileDialog.h>
 #include <Suscan/Library.h>
@@ -33,9 +35,13 @@
 namespace SigDigger {
   class ProfileConfigTab;
   class ColorConfigTab;
+  class AudioConfigTab;
   class GuiConfigTab;
   class LocationConfigTab;
   class TLESourceTab;
+  class RemoteControlTab;
+
+  class UIMediator;
 
   class ConfigDialog : public QDialog
   {
@@ -46,17 +52,19 @@ namespace SigDigger {
     Suscan::AnalyzerParams analyzerParams;
 
     // UI elements
-    ProfileConfigTab  *profileTab  = nullptr;
-    ColorConfigTab    *colorTab    = nullptr;
-    GuiConfigTab      *guiTab      = nullptr;
-    LocationConfigTab *locationTab = nullptr;
-    TLESourceTab      *tleSourceTab   = nullptr;
+    ProfileConfigTab  *profileTab   = nullptr;
+    ColorConfigTab    *colorTab     = nullptr;
+    AudioConfigTab    *audioTab     = nullptr;
+    GuiConfigTab      *guiTab       = nullptr;
+    LocationConfigTab *locationTab  = nullptr;
+    TLESourceTab      *tleSourceTab = nullptr;
+    RemoteControlTab  *remCtlTab    = nullptr;
     bool accepted = false;
 
     Ui_Config *ui = nullptr;
 
     void appendConfigTab(ConfigTab *);
-    void connectAll(void);
+    void connectAll();
 
   public:
     // The public API remains.
@@ -66,35 +74,41 @@ namespace SigDigger {
     void setTleSourceConfig(const TLESourceConfig &config);
     void setGuiConfig(const GuiConfig &config);
     void setGain(std::string const &name, float value);
+    void setAudioConfig(const AudioConfig &);
+    void setRemoteControlConfig(const RemoteControlConfig &);
     void setFrequency(qint64 freq);
-    void notifySingletonChanges(void);
+    void notifySingletonChanges();
 
-    bool profileChanged(void) const;
-    bool locationChanged(void) const;
-    bool colorsChanged(void) const;
-    bool tleSourceConfigChanged(void) const;
-    bool guiChanged(void) const;
+    bool profileChanged() const;
+    bool locationChanged() const;
+    bool colorsChanged() const;
+    bool tleSourceConfigChanged() const;
+    bool guiChanged() const;
+    bool audioChanged() const;
+    bool remoteControlChanged() const;
 
-    Suscan::Location getLocation(void) const;
+    Suscan::Location getLocation() const;
     void setLocation(Suscan::Location const &);
-    bool sourceNeedsRestart(void) const;
-    bool remoteSelected(void) const;
+    bool sourceNeedsRestart() const;
+    bool remoteSelected() const;
 
     float getGain(std::string const &name) const;
-    Suscan::Source::Config getProfile(void) const;
-    ColorConfig getColors(void) const;
-    GuiConfig getGuiConfig(void) const;
-    TLESourceConfig getTleSourceConfig(void) const;
-    Suscan::AnalyzerParams getAnalyzerParams(void) const;
+    Suscan::Source::Config getProfile() const;
+    ColorConfig getColors() const;
+    GuiConfig getGuiConfig() const;
+    AudioConfig getAudioConfig() const;
+    TLESourceConfig getTleSourceConfig() const;
+    Suscan::AnalyzerParams getAnalyzerParams() const;
+    RemoteControlConfig getRemoteControlConfig() const;
 
-    bool run(void);
+    bool run();
 
     explicit ConfigDialog(QWidget *parent = nullptr);
     ~ConfigDialog();
 
   public slots:
-    void onAccepted(void);
-    void onTabConfigChanged(void);
+    void onAccepted();
+    void onTabConfigChanged();
   };
 };
 

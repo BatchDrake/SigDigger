@@ -97,7 +97,7 @@
        </widget>
       </item>
       <item row="6" column="2">
-       <widget class="QDoubleSpinBox" name="pllCutoffSpin">
+       <widget class="ContextAwareSpinBox" name="pllCutoffSpin">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -113,7 +113,7 @@
        </widget>
       </item>
       <item row="7" column="2">
-       <widget class="QDoubleSpinBox" name="pllOffsetSpin">
+       <widget class="ContextAwareSpinBox" name="pllOffsetSpin">
         <property name="prefix">
          <string/>
         </property>
@@ -169,7 +169,14 @@
     </widget>
    </item>
   </layout>
- </widget>
+</widget>
+<customwidgets>
+   <customwidget>
+     <class>ContextAwareSpinBox</class>
+     <extends>QDouble</extends>
+     <header>ContextAwareSpinBox.h</header>
+   </customwidget>
+  </customwidgets>
  <resources/>
  <connections/>
 </ui>

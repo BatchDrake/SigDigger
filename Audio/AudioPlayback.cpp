@@ -20,7 +20,7 @@
 #include <iostream>
 #include "AudioPlayback.h"
 #include <stdexcept>
-#include <util/compat-mman.h>
+#include <sigutils/util/compat-mman.h>
 #include <QCoreApplication>
 #include <GenericAudioPlayer.h>
 
@@ -29,6 +29,11 @@
 #elif defined(SIGDIGGER_HAVE_PORTAUDIO)
 #  include "PortAudioPlayer.h"
 #endif // SIGIDGGER_HAVE_ALSA
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  define QMutexLocker QMutexLocker<QRecursiveMutex>
+#endif
+
 
 using namespace SigDigger;
 
@@ -137,6 +142,42 @@ PlaybackWorker::startPlayback()
   }
 }
 
+bool
+AudioPlayback::enumerateDevices(std::vector<GenericAudioDevice> &list)
+{
+#ifdef SIGDIGGER_HAVE_ALSA
+  return AlsaPlayer::enumerateDevices(list);
+#elif defined(SIGDIGGER_HAVE_PORTAUDIO)
+  return PortAudioPlayer::enumerateDevices(list);
+#else
+  return false;
+#endif // SIGDIGER_HAVE_ALSA
+}
+
+std::string
+AudioPlayback::getDefaultDevice()
+{
+#ifdef SIGDIGGER_HAVE_ALSA
+  return AlsaPlayer::getDefaultDevice().devStr;
+#elif defined(SIGDIGGER_HAVE_PORTAUDIO)
+  return PortAudioPlayer::getDefaultDevice().devStr;
+#else
+  return "";
+#endif // SIGDIGER_HAVE_ALSA
+}
+
+const char *
+AudioPlayback::audioLibrary()
+{
+#ifdef SIGDIGGER_HAVE_ALSA
+  return "alsa";
+#elif defined(SIGDIGGER_HAVE_PORTAUDIO)
+  return "portaudio";
+#else
+  return nullptr;
+#endif // SIGDIGER_HAVE_ALSA
+}
+
 void
 PlaybackWorker::stopPlayback()
 {
@@ -195,7 +236,10 @@ AudioBuffer::~AudioBuffer()
 }
 
 ////////////////////////////// AudioBufferList /////////////////////////////////
-AudioBufferList::AudioBufferList(unsigned int num) : listMutex(QMutex::Recursive)
+AudioBufferList::AudioBufferList(unsigned int num)
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+  : listMutex(QMutex::Recursive)
+#endif
 {
   unsigned int i;
 
@@ -213,7 +257,7 @@ AudioBufferList::AudioBufferList(unsigned int num) : listMutex(QMutex::Recursive
 void
 AudioBufferList::reset(void)
 {
-  QMutexLocker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   if (this->current != nullptr) {
     AudioBuffer *buffer = this->current;
@@ -247,7 +291,7 @@ AudioBufferList::reset(void)
 float *
 AudioBufferList::reserve(void)
 {
-  QMutexLocker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   // You cannot reserve a buffer before committing int
   if (this->current != nullptr) {
@@ -268,7 +312,7 @@ AudioBufferList::reserve(void)
 void
 AudioBufferList::commit(void)
 {
-  QMutexLocker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   // You cannot commit if the current buffer is null
   if (this->current == nullptr) {
@@ -293,7 +337,7 @@ AudioBufferList::commit(void)
 float *
 AudioBufferList::next(void)
 {
-  QMutexLocker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   if (this->playBuffer != nullptr) {
     std::cerr << "Invalid next(), please call release() first!" << std::endl;
@@ -318,7 +362,7 @@ AudioBufferList::next(void)
 void
 AudioBufferList::release(void)
 {
-  QMutexLocker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   if (this->playBuffer == nullptr) {
     std::cerr << "Invalid release(), please call next() first!" << std::endl;
@@ -335,7 +379,7 @@ AudioBufferList::release(void)
 void
 AudioBufferList::clear(void)
 {
-  QMutexLocker(&this->listMutex);
+  QMutexLocker locker(&this->listMutex);
 
   // You cannot commit if the current buffer is null
   if (this->current != nullptr) {

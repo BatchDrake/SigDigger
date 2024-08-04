@@ -39,7 +39,7 @@ PSDMessage::PSDMessage(struct suscan_analyzer_psd_msg *msg) :
 }
 
 SUSCOUNT
-PSDMessage::size(void) const
+PSDMessage::size() const
 {
   const struct suscan_analyzer_psd_msg *msg
       = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
@@ -47,7 +47,7 @@ PSDMessage::size(void) const
 }
 
 unsigned int
-PSDMessage::getSampleRate(void) const
+PSDMessage::getSampleRate() const
 {
   const struct suscan_analyzer_psd_msg *msg
       = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
@@ -55,7 +55,7 @@ PSDMessage::getSampleRate(void) const
 }
 
 unsigned int
-PSDMessage::getMeasuredSampleRate(void) const
+PSDMessage::getMeasuredSampleRate() const
 {
   const struct suscan_analyzer_psd_msg *msg
       = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
@@ -63,7 +63,7 @@ PSDMessage::getMeasuredSampleRate(void) const
 }
 
 struct timeval
-PSDMessage::getTimeStamp(void) const
+PSDMessage::getTimeStamp() const
 {
   const struct suscan_analyzer_psd_msg *msg
       = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
@@ -71,7 +71,7 @@ PSDMessage::getTimeStamp(void) const
 }
 
 struct timeval
-PSDMessage::getRealTimeStamp(void) const
+PSDMessage::getRealTimeStamp() const
 {
   const struct suscan_analyzer_psd_msg *msg
       = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
@@ -79,7 +79,7 @@ PSDMessage::getRealTimeStamp(void) const
 }
 
 bool
-PSDMessage::hasLooped(void) const
+PSDMessage::hasLooped() const
 {
   const struct suscan_analyzer_psd_msg *msg
       = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
@@ -88,7 +88,7 @@ PSDMessage::hasLooped(void) const
 }
 
 SUFREQ
-PSDMessage::getFrequency(void) const
+PSDMessage::getFrequency() const
 {
   const struct suscan_analyzer_psd_msg *msg
       = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
@@ -96,8 +96,16 @@ PSDMessage::getFrequency(void) const
   return msg->fc;
 }
 
+SUSCOUNT
+PSDMessage::getHistorySize() const
+{
+  const struct suscan_analyzer_psd_msg *msg
+      = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());
+  return msg->history_size;
+}
+
 const SUFLOAT *
-PSDMessage::get(void) const
+PSDMessage::get() const
 {
   const struct suscan_analyzer_psd_msg *msg
       = static_cast<struct suscan_analyzer_psd_msg *>(this->c_message.get());

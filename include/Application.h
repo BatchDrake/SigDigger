@@ -23,10 +23,13 @@
 #include <Suscan/Source.h>
 #include <Suscan/Analyzer.h>
 #include <QTimer>
+#include <QElapsedTimer>
 
 /* Local includes */
 #include "AppConfig.h"
 #include "UIMediator.h"
+
+#define SIGDIGGER_AUTOSAVE_INTERVAL_MS (1800 * 1000)
 
 namespace SigDigger {
   class Scanner;
@@ -46,7 +49,7 @@ namespace SigDigger {
       void finished();
 
   private:
-      Suscan::Singleton *instance = nullptr;
+      Suscan::Singleton *m_instance = nullptr;
   };
 
 
@@ -54,50 +57,49 @@ namespace SigDigger {
     Q_OBJECT
 
     // Suscan core object
-    std::unique_ptr<Suscan::Analyzer> analyzer = nullptr;
+    std::unique_ptr<Suscan::Analyzer> m_analyzer = nullptr;
 
-    bool profileSelected = false;
-    unsigned int currSampleRate;
-    bool filterInstalled = false;
+    bool m_profileSelected = false;
+    unsigned int m_currSampleRate;
+    bool m_filterInstalled = false;
 
     // UI
-    AppUI ui;
-    UIMediator *mediator = nullptr;
-    QTimer uiTimer;
-    bool sourceInfoReceived = false;
+    AppUI m_ui;
+    UIMediator *m_mediator = nullptr;
+    QTimer m_uiTimer;
+    QElapsedTimer m_cfgTimer;
+    bool m_sourceInfoReceived = false;
 
     // Panoramic spectrum
-    Scanner *scanner = nullptr;
-    SUFREQ scanMinFreq;
-    SUFREQ scanMaxFreq;
+    Scanner *m_scanner = nullptr;
 
     // Rediscover devices
-    QThread *deviceDetectThread;
-    DeviceDetectWorker *deviceDetectWorker;
+    QThread *m_deviceDetectThread;
+    DeviceDetectWorker *m_deviceDetectWorker;
 
     // Private methods
-    QString getLogText(void);
-    void connectUI(void);
-    void connectAnalyzer(void);
-    void connectDeviceDetect(void);
-    void connectScanner(void);
+    QString getLogText(int howMany = -1);
+    void connectUI();
+    void connectAnalyzer();
+    void connectDeviceDetect();
+    void connectScanner();
 
     void hotApplyProfile(Suscan::Source::Config const *);
-    void orderedHalt(void);
+    void orderedHalt();
 
   public:
     // Application methods
-    Suscan::Object &&getConfig(void);
-    void refreshConfig(void);
+    Suscan::Object &&getConfig();
+    void refreshConfig();
     void run(Suscan::Object const &config);
 
-    void updateRecent(void);
-    void startCapture(void);
-    void restartCapture(void);
-    void stopCapture(void);
+    void updateRecent();
+    void startCapture();
+    void restartCapture();
+    void stopCapture();
     void setThrottleEnabled(bool);
 
-    FileDataSaver *getSaver(void) const;
+    FileDataSaver *getSaver() const;
 
     explicit Application(QWidget *parent = nullptr);
     ~Application() override;
@@ -105,47 +107,52 @@ namespace SigDigger {
 
   protected:
     void closeEvent(QCloseEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 
   signals:
-    void detectDevices(void);
+    void detectDevices();
+    void triggerSaveConfig();
 
   public slots:
     // UI Slots
-    void onCaptureStart(void);
-    void onCaptureStop(void);
+    void onCaptureStart();
+    void onCaptureStop();
     void onProfileChanged(bool);
     void onFrequencyChanged(qint64, qint64);
     void onSeek(struct timeval);
-    void onDeviceRefresh(void);
+    void onDeviceRefresh();
     void onRecentSelected(QString profile);
-    void onRecentCleared(void);
-    void onTick(void);
-    void quit(void);
+    void onRecentCleared();
+    void onTick();
+    void quit();
 
     // Analyzer slots
-    void onAnalyzerHalted(void);
-    void onAnalyzerReadError(void);
-    void onAnalyzerEos(void);
+    void onAnalyzerHalted();
+    void onAnalyzerReadError();
+    void onAnalyzerEos();
     void onPSDMessage(const Suscan::PSDMessage &);
     void onSourceInfoMessage(const Suscan::SourceInfoMessage &);
     void onStatusMessage(const Suscan::StatusMessage &);
     void onAnalyzerParams(const Suscan::AnalyzerParams &);
 
     // Device detect slots
-    void onDetectFinished(void);
+    void onDetectFinished();
 
     // Panoramic spectrum slots
-    void onPanSpectrumStart(void);
-    void onPanSpectrumStop(void);
+    void onPanSpectrumStart();
+    void onPanSpectrumStop();
     void onPanSpectrumRangeChanged(qint64, qint64, bool);
-    void onPanSpectrumSkipChanged(void);
-    void onPanSpectrumRelBwChanged(void);
-    void onPanSpectrumReset(void);
+    void onPanSpectrumSkipChanged();
+    void onPanSpectrumRelBwChanged();
+    void onPanSpectrumReset();
     void onPanSpectrumStrategyChanged(QString);
     void onPanSpectrumPartitioningChanged(QString);
     void onPanSpectrumGainChanged(QString, float);
-    void onScannerUpdated(void);
-    void onScannerStopped(void);
+    void onScannerUpdated();
+    void onScannerStopped();
   };
 }
 

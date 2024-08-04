@@ -22,7 +22,7 @@
 
 #include <Suscan/Compat.h>
 
-#include <util/object.h>
+#include <suscan/util/object.h>
 #include <vector>
 
 namespace Suscan {
@@ -179,7 +179,7 @@ namespace Suscan {
       setField(std::string const &field, Object &&obj)
       {
         if (obj.isBorrowed())
-          throw Suscan::Exception("Cannot set borrowed objects as object fields");
+          throw Suscan::Exception("Field " + field + ": Cannot set borrowed objects as object fields");
 
         SU_ATTEMPT(suscan_object_set_field(this->instance, field.c_str(), obj.instance));
 
@@ -190,7 +190,7 @@ namespace Suscan {
       setField(std::string const &field, Object &obj)
       {
         if (obj.isBorrowed())
-          throw Suscan::Exception("Cannot set borrowed objects as object fields");
+          throw Suscan::Exception("Field " + field + ": Cannot set borrowed objects as object fields");
 
         SU_ATTEMPT(suscan_object_set_field(this->instance, field.c_str(), obj.instance));
 

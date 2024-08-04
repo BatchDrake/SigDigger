@@ -41,6 +41,7 @@ AppConfig::serialize(void)
   Suscan::Object profileObj = this->profile.serialize();
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
   Suscan::Object bandPlans(SUSCAN_OBJECT_TYPE_SET);
+  Suscan::Object componentConfigCopy;
 
   obj.setClass("qtui");
 
@@ -54,17 +55,21 @@ AppConfig::serialize(void)
   obj.set("disableHighRateWarning", this->disableHighRateWarning);
   obj.set("loFreq", this->loFreq);
   obj.set("bandwidth", this->bandwidth);
+  obj.set("lastLoadedFile", this->lastLoadedFile);
 
   obj.setField("source", profileObj);
   obj.setField("analyzerParams", this->analyzerParams.serialize());
   obj.setField("colors", this->colors.serialize());
+  obj.setField("audio", this->audioConfig.serialize());
+  obj.setField("remoteCtl", this->rcConfig.serialize());
   obj.setField("guiConfig", this->guiConfig.serialize());
   obj.setField("tleSourceConfig", this->tleSourceConfig.serialize());
   obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
 
   obj.setField("bandPlans", bandPlans);
 
-  obj.setField("Components", this->cachedComponentConfig);
+  componentConfigCopy.copyFrom(this->cachedComponentConfig);
+  obj.setField("Components", componentConfigCopy);
 
   for (auto p : this->enabledBandPlans) {
     Suscan::Object entry(SUSCAN_OBJECT_TYPE_FIELD);
@@ -85,9 +90,7 @@ AppConfig::loadDefaults(void)
   if ((config = sus->getProfile(SUSCAN_SOURCE_DEFAULT_NAME)) != nullptr) {
     this->profile = *config;
   } else {
-    this->profile = Suscan::Source::Config(
-          SUSCAN_SOURCE_TYPE_SDR,
-          SUSCAN_SOURCE_FORMAT_AUTO);
+    this->profile = Suscan::Source::Config("soapysdr", SUSCAN_SOURCE_FORMAT_AUTO);
     this->profile.setFreq(SUSCAN_SOURCE_DEFAULT_FREQ);
     this->profile.setSampleRate(SUSCAN_SOURCE_DEFAULT_SAMP_RATE);
     this->profile.setBandwidth(SUSCAN_SOURCE_DEFAULT_BANDWIDTH);
@@ -121,6 +124,8 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->profile = Suscan::Source::Config(conf.getField("source")));
     TRYSILENT(this->analyzerParams.deserialize(conf.getField("analyzerParams")));
     TRYSILENT(this->colors.deserialize(conf.getField("colors")));
+    TRYSILENT(this->audioConfig.deserialize(conf.getField("audio")));
+    TRYSILENT(this->rcConfig.deserialize(conf.getField("remoteCtl")));
     TRYSILENT(this->guiConfig.deserialize(conf.getField("guiConfig")));
     TRYSILENT(this->tleSourceConfig.deserialize(conf.getField("tleSourceConfig")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
@@ -135,6 +140,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->disableHighRateWarning = conf.get("disableHighRateWarning", this->disableHighRateWarning));
     TRYSILENT(this->loFreq     = conf.get("loFreq", this->loFreq));
     TRYSILENT(this->bandwidth  = conf.get("bandwidth", this->bandwidth));
+    TRYSILENT(this->lastLoadedFile = conf.get("lastLoadedFile", this->lastLoadedFile));
 
     try {
       Suscan::Object set = conf.getField("bandPlans");

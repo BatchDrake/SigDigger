@@ -32,19 +32,19 @@ void
 UIMediator::connectRequestTracker()
 {
   connect(
-        this->m_requestTracker,
+        m_requestTracker,
         SIGNAL(opened(Suscan::AnalyzerRequest const &)),
         this,
         SLOT(onOpened(Suscan::AnalyzerRequest const &)));
 
   connect(
-        this->m_requestTracker,
+        m_requestTracker,
         SIGNAL(cancelled(Suscan::AnalyzerRequest const &)),
         this,
         SLOT(onCancelled(Suscan::AnalyzerRequest const &)));
 
   connect(
-        this->m_requestTracker,
+        m_requestTracker,
         SIGNAL(error(Suscan::AnalyzerRequest const &, const std::string &)),
         this,
         SLOT(onError(Suscan::AnalyzerRequest const &, const std::string &)));
@@ -104,6 +104,8 @@ UIMediator::openInspectorTab(
     return false;
   }
 
+  this->setUIBusy(true);
+
   // And the opening procedure must succeed
   return m_requestTracker->requestOpen(
         inspClass,
@@ -128,7 +130,13 @@ UIMediator::detachInspectionWidget(InspectionWidget *widget)
 SUFREQ
 UIMediator::getCurrentCenterFreq() const
 {
-  return this->ui->spectrum->getCenterFreq();
+  return this->m_ui->spectrum->getCenterFreq();
+}
+
+bool
+UIMediator::isLive() const
+{
+  return this->m_appConfig->profile.isRealTime();
 }
 
 void
@@ -161,6 +169,8 @@ UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
   InspectionWidgetFactory *factory;
   Suscan::Singleton *s = Suscan::Singleton::get_instance();
 
+  this->setUIBusy(false);
+
   if ((factory = s->findInspectionWidgetFactory(factoryName)) == nullptr) {
     QMessageBox::critical(
           this,
@@ -172,6 +182,7 @@ UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
   } else {
     InspectionWidget *widget = factory->make(request, this);
 
+    widget->setColorConfig(m_appConfig->colors);
     m_inspectors.push_back(widget);
     m_inspTable[request.inspectorId] = widget;
 
@@ -182,12 +193,14 @@ UIMediator::onOpened(Suscan::AnalyzerRequest const &request)
 void
 UIMediator::onCancelled(Suscan::AnalyzerRequest const &)
 {
-
+  this->setUIBusy(false);
 }
 
 void
 UIMediator::onError(Suscan::AnalyzerRequest const &r, std::string const &error)
 {
+  this->setUIBusy(false);
+
   QMessageBox::critical(
         this,
         "Cannot open inspector",

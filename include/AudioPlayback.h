@@ -25,7 +25,8 @@
 #include <QThread>
 #include <string>
 #include <Suscan/Library.h>
-#include <util/compat-unistd.h>
+#include <GenericAudioPlayer.h>
+#include <sigutils/util/compat-unistd.h>
 
 #define SIGDIGGER_AUDIO_BUFFER_ALLOC static_cast<size_t>(1 << 14)
 #define SIGDIGGER_AUDIO_BUFFER_SIZE (SIGDIGGER_AUDIO_BUFFER_ALLOC / sizeof (float))
@@ -37,9 +38,12 @@
 #define SIGDIGGER_AUDIO_BUFFER_SIZE_MIN     256
 #define SIGDIGGER_AUDIO_BUFFER_DELAY_MS     20
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+#  define QRecursiveMutex QMutex
+#endif
+
 namespace SigDigger {
   class AudioBufferList;
-  class GenericAudioPlayer;
 
   class PlaybackWorker : public QObject {
       Q_OBJECT
@@ -106,7 +110,7 @@ namespace SigDigger {
     AudioBuffer *playBuffer = nullptr;
 
     // Mutex to ensure ordered access
-    QMutex listMutex;
+    QRecursiveMutex listMutex;
 
   public:
     AudioBufferList(unsigned int num);
@@ -163,6 +167,10 @@ namespace SigDigger {
     void startWorker(void);
 
     public:
+      static bool enumerateDevices(std::vector<GenericAudioDevice> &);
+      static std::string getDefaultDevice();
+      static const char *audioLibrary();
+
       AudioPlayback(
           std::string const &,
           unsigned int rate = SIGDIGGER_AUDIO_SAMPLE_RATE);

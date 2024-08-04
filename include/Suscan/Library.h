@@ -27,6 +27,7 @@
 #include <Suscan/Logger.h>
 #include <Suscan/Config.h>
 #include <Suscan/Serializable.h>
+#include <SuWidgetsHelpers.h>
 
 #include <analyzer/source.h>
 #include <analyzer/estimator.h>
@@ -46,6 +47,7 @@ namespace SigDigger {
   class ToolWidgetFactory;
   class TabWidgetFactory;
   class InspectionWidgetFactory;
+  class SourceConfigWidgetFactory;
   class UIListenerFactory;
 };
 
@@ -53,6 +55,7 @@ namespace Suscan {
   uint qHash(const Suscan::Source::Device &dev);
 
   class MultitaskController;
+  class Plugin;
 
   typedef std::map<std::string, Source::Config> ConfigMap;
 
@@ -68,7 +71,7 @@ namespace Suscan {
     bool user = false;
 
     void deserialize(Suscan::Object const &conf) override;
-    Suscan::Object &&serialize(void) override;
+    Suscan::Object &&serialize() override;
   };
 
   struct SpectrumUnit {
@@ -84,14 +87,14 @@ namespace Suscan {
     bool userLocation = false;
 
     inline QString
-    getLocationName(void) const
+    getLocationName() const
     {
       return QString::fromStdString(
             this->name + ", " + this->country);
     }
 
     inline xyz_t
-    getQth(void) const
+    getQth() const
     {
       xyz_t qth;
 
@@ -102,9 +105,51 @@ namespace Suscan {
       return qth;
     }
 
+    inline QString
+    getGridLocator() const
+    {
+      QString locator;
+
+      qreal lat = (this->site.lat + 90) / 10;
+      qreal lon = (this->site.lon + 180) / 20;
+
+      char laField,  loField;
+      char laSquare, loSquare;
+      char laSubsq,  loSubsq;
+
+      lat = qBound(0., lat, 18.);
+      lon = qBound(0., lon, 18.);
+
+      laField = SCAST(char, floor(lat));
+      loField = SCAST(char, floor(lon));
+
+      lat -= laField;
+      lon -= loField;
+
+      laSquare = SCAST(char, floor(lat * 10));
+      loSquare = SCAST(char, floor(lon * 10));
+
+      lat -= laSquare * 1e-1;
+      lon -= loSquare * 1e-1;
+
+      laSubsq  = SCAST(char, floor(lat * 240));
+      loSubsq  = SCAST(char, floor(lon * 240));
+
+      locator += QChar('A' + loField);
+      locator += QChar('A' + laField);
+
+      locator += QChar('0' + loSquare);
+      locator += QChar('0' + laSquare);
+
+      locator += QChar('a' + loSubsq);
+      locator += QChar('a' + laSubsq);
+
+      return locator;
+    }
+
     // Overriden methods
     void deserialize(Suscan::Object const &conf) override;
-    Suscan::Object &&serialize(void) override;
+    Suscan::Object &&serialize() override;
   };
 
   struct Orbit {
@@ -191,19 +236,21 @@ namespace Suscan {
     }
 
     orbit_t const &
-    getCOrbit(void) const
+    getCOrbit() const
     {
       return *this->c_info;
     }
 
     QString
-    nameToQString(void) const
+    nameToQString() const
     {
       return this->c_info->name;
     }
 
-    void debug(void) const;
+    void debug() const;
   };
+
+  typedef void (*DelayedPluginCallback) (Suscan::Plugin *);
 
   class Singleton {
     static Singleton *instance;
@@ -227,15 +274,20 @@ namespace Suscan {
     QMap<std::string, SpectrumUnit> spectrumUnits;
     QHash<QString, Source::Config>  networkProfiles;
 
+    // Delayed plugin callbacks
+    std::list<std::pair<DelayedPluginCallback, Suscan::Plugin *>> pluginCallbacks;
+
     // Feature object factories
-    QList<SigDigger::ToolWidgetFactory *>       toolWidgetFactories;
-    QList<SigDigger::TabWidgetFactory *>        tabWidgetFactories;
-    QList<SigDigger::InspectionWidgetFactory *> inspectionWidgetFactories;
-    QList<SigDigger::UIListenerFactory *>       uiListenerFactories;
+    QList<SigDigger::ToolWidgetFactory *>         toolWidgetFactories;
+    QList<SigDigger::TabWidgetFactory *>          tabWidgetFactories;
+    QList<SigDigger::InspectionWidgetFactory *>   inspectionWidgetFactories;
+    QList<SigDigger::UIListenerFactory *>         uiListenerFactories;
+    QList<SigDigger::SourceConfigWidgetFactory *> sourceConfigWidgetFactories;
 
     // Used for search only
-    QHash<QString, SigDigger::TabWidgetFactory *>        tabWidgetFactoryTable;
-    QHash<QString, SigDigger::InspectionWidgetFactory *> inspectionWidgetFactoryTable;
+    QHash<QString, SigDigger::TabWidgetFactory *>          tabWidgetFactoryTable;
+    QHash<QString, SigDigger::InspectionWidgetFactory *>   inspectionWidgetFactoryTable;
+    QHash<QString, SigDigger::SourceConfigWidgetFactory *> sourceConfigWidgetFactoryTable;
 
     std::list<std::string> recentProfiles;
 
@@ -251,45 +303,47 @@ namespace Suscan {
     bool havePalette(std::string const &name);
     bool haveAutoGain(std::string const &name);
     bool haveFAT(std::string const &name);
-    void syncUI(void);
-    void syncRecent(void);
-    void syncLocations(void);
-    void syncTLESources(void);
-    void syncBookmarks(void);
+    void syncUI();
+    void syncRecent();
+    void syncLocations();
+    void syncTLESources();
+    void syncBookmarks();
     void initLocationsFromContext(ConfigContext &ctx, bool user);
     void initTLESourcesFromContext(ConfigContext &ctx, bool user);
 
     static QString normalizeTLEName(QString const &);
 
   public:
-    void init_sources(void);
-    void init_estimators(void);
-    void init_spectrum_sources(void);
-    void init_inspectors(void);
-    void init_palettes(void);
-    void init_fats(void);
-    void init_autogains(void);
-    void init_ui_config(void);
-    void init_recent_list(void);
-    void init_locations(void);
-    void init_bookmarks(void);
-    void init_tle_sources(void);
-    void init_tle(void);
-    void init_plugins(void);
-    void detect_devices(void);
+    void init_sources();
+    void init_estimators();
+    void init_spectrum_sources();
+    void init_inspectors();
+    void init_palettes();
+    void init_fats();
+    void init_autogains();
+    void init_ui_config();
+    void init_recent_list();
+    void init_locations();
+    void init_bookmarks();
+    void init_tle_sources();
+    void init_tle();
+    void init_plugins();
+    void detect_devices();
+    void trigger_delayed();
 
-    void sync(void);
+    void sync();
 
-    void killBackgroundTaskController(void);
+    void killBackgroundTaskController();
 
+    void registerDelayedCallback(DelayedPluginCallback, Plugin *);
     void registerSourceConfig(suscan_source_config_t *config);
     void registerNetworkProfile(const suscan_source_config_t *config);
     void registerSourceDevice(const suscan_source_device_t *dev);
 
-    MultitaskController *getBackgroundTaskController(void) const;
+    MultitaskController *getBackgroundTaskController() const;
 
-    ConfigMap::const_iterator getFirstProfile(void) const;
-    ConfigMap::const_iterator getLastProfile(void) const;
+    ConfigMap::const_iterator getFirstProfile() const;
+    ConfigMap::const_iterator getLastProfile() const;
     Suscan::Source::Config *getProfile(std::string const &name);
     void saveProfile(Suscan::Source::Config const &name);
 
@@ -305,58 +359,58 @@ namespace Suscan {
     void replaceSpectrumUnit(std::string const &, float, float);
     void removeSpectrumUnit(std::string const &);
 
-    void refreshDevices(void);
-    void refreshNetworkProfiles(void);
+    void refreshDevices();
+    void refreshNetworkProfiles();
 
     bool registerTLE(std::string const &);
 
     bool haveQth() const;
-    Location getQth(void) const;
+    Location getQth() const;
     void setQth(Location const &);
 
-    std::vector<Source::Device>::const_iterator getFirstDevice(void) const;
-    std::vector<Source::Device>::const_iterator getLastDevice(void) const;
+    std::vector<Source::Device>::const_iterator getFirstDevice() const;
+    std::vector<Source::Device>::const_iterator getLastDevice() const;
 
-    std::vector<Object>::const_iterator getFirstPalette(void) const;
-    std::vector<Object>::const_iterator getLastPalette(void) const;
+    std::vector<Object>::const_iterator getFirstPalette() const;
+    std::vector<Object>::const_iterator getLastPalette() const;
 
-    std::vector<Object>::const_iterator getFirstAutoGain(void) const;
-    std::vector<Object>::const_iterator getLastAutoGain(void) const;
+    std::vector<Object>::const_iterator getFirstAutoGain() const;
+    std::vector<Object>::const_iterator getLastAutoGain() const;
 
-    std::vector<Object>::const_iterator getFirstFAT(void) const;
-    std::vector<Object>::const_iterator getLastFAT(void) const;
+    std::vector<Object>::const_iterator getFirstFAT() const;
+    std::vector<Object>::const_iterator getLastFAT() const;
 
-    std::vector<Object>::iterator getFirstUIConfig(void);
-    std::vector<Object>::iterator getLastUIConfig(void);
+    std::vector<Object>::iterator getFirstUIConfig();
+    std::vector<Object>::iterator getLastUIConfig();
 
-    std::list<std::string>::const_iterator getFirstRecent(void) const;
-    std::list<std::string>::const_iterator getLastRecent(void) const;
+    std::list<std::string>::const_iterator getFirstRecent() const;
+    std::list<std::string>::const_iterator getLastRecent() const;
 
-    QMap<qint64, Bookmark> const &getBookmarkMap(void) const;
-    QMap<qint64, Bookmark>::const_iterator getFirstBookmark(void) const;
-    QMap<qint64, Bookmark>::const_iterator getLastBookmark(void) const;
+    QMap<qint64, Bookmark> const &getBookmarkMap() const;
+    QMap<qint64, Bookmark>::const_iterator getFirstBookmark() const;
+    QMap<qint64, Bookmark>::const_iterator getLastBookmark() const;
     QMap<qint64, Bookmark>::const_iterator getBookmarkFrom(qint64 bm) const;
 
-    QMap<QString, Location> const &getLocationMap(void) const;
-    QMap<QString, Location>::const_iterator getFirstLocation(void) const;
-    QMap<QString, Location>::const_iterator getLastLocation(void) const;
+    QMap<QString, Location> const &getLocationMap() const;
+    QMap<QString, Location>::const_iterator getFirstLocation() const;
+    QMap<QString, Location>::const_iterator getLastLocation() const;
 
-    QMap<QString, Orbit> const &getSatelliteMap(void) const;
-    QMap<QString, Orbit>::const_iterator getFirstSatellite(void) const;
-    QMap<QString, Orbit>::const_iterator getLastSatellite(void) const;
+    QMap<QString, Orbit> const &getSatelliteMap() const;
+    QMap<QString, Orbit>::const_iterator getFirstSatellite() const;
+    QMap<QString, Orbit>::const_iterator getLastSatellite() const;
 
-    QMap<std::string, TLESource> const &getTLESourceMap(void) const;
-    QMap<std::string, TLESource>::const_iterator getFirstTLESource(void) const;
-    QMap<std::string, TLESource>::const_iterator getLastTLESource(void) const;
+    QMap<std::string, TLESource> const &getTLESourceMap() const;
+    QMap<std::string, TLESource>::const_iterator getFirstTLESource() const;
+    QMap<std::string, TLESource>::const_iterator getLastTLESource() const;
 
-    QMap<std::string, SpectrumUnit> const &getSpectrumUnitMap(void) const;
-    QMap<std::string, SpectrumUnit>::const_iterator getFirstSpectrumUnit(void) const;
-    QMap<std::string, SpectrumUnit>::const_iterator getLastSpectrumUnit(void) const;
+    QMap<std::string, SpectrumUnit> const &getSpectrumUnitMap() const;
+    QMap<std::string, SpectrumUnit>::const_iterator getFirstSpectrumUnit() const;
+    QMap<std::string, SpectrumUnit>::const_iterator getLastSpectrumUnit() const;
     QMap<std::string, SpectrumUnit>::const_iterator getSpectrumUnitFrom(std::string const &) const;
 
-    QHash<QString, Source::Config> const &getNetworkProfileMap(void) const;
-    QHash<QString, Source::Config>::const_iterator getFirstNetworkProfile(void) const;
-    QHash<QString, Source::Config>::const_iterator getLastNetworkProfile(void) const;
+    QHash<QString, Source::Config> const &getNetworkProfileMap() const;
+    QHash<QString, Source::Config>::const_iterator getFirstNetworkProfile() const;
+    QHash<QString, Source::Config>::const_iterator getLastNetworkProfile() const;
     QHash<QString, Source::Config>::const_iterator getNetworkProfileFrom(QString const &) const;
 
     bool registerToolWidgetFactory(SigDigger::ToolWidgetFactory *);
@@ -376,6 +430,12 @@ namespace Suscan {
     QList<SigDigger::InspectionWidgetFactory *>::const_iterator getLastInspectionWidgetFactory() const;
     SigDigger::InspectionWidgetFactory *findInspectionWidgetFactory(QString const &) const;
 
+    bool registerSourceConfigWidgetFactory(SigDigger::SourceConfigWidgetFactory *);
+    bool unregisterSourceConfigWidgetFactory(SigDigger::SourceConfigWidgetFactory *);
+    QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator getFirstSourceConfigWidgetFactory() const;
+    QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator getLastSourceConfigWidgetFactory() const;
+    SigDigger::SourceConfigWidgetFactory *findSourceConfigWidgetFactory(QString const &) const;
+
     bool registerUIListenerFactory(SigDigger::UIListenerFactory *);
     bool unregisterUIListenerFactory(SigDigger::UIListenerFactory *);
     QList<SigDigger::UIListenerFactory *>::const_iterator getFirstUIListenerFactory() const;
@@ -383,16 +443,16 @@ namespace Suscan {
 
     bool notifyRecent(std::string const &name);
     bool removeRecent(std::string const &name);
-    void clearRecent(void);
+    void clearRecent();
 
     void putUIConfig(unsigned int where, Object &&rv);
 
     const Source::Device *getDeviceAt(unsigned int index) const;
 
-    static Singleton *get_instance(void);
+    static Singleton *get_instance();
 
-    static std::string sigutilsVersion(void);
-    static std::string suscanVersion(void);
+    static std::string sigutilsVersion();
+    static std::string suscanVersion();
   };
 };
 

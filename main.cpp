@@ -1,5 +1,5 @@
 //
-//    filename: description
+//    main.cpp: Entry point
 //    Copyright (C) 2018 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 
 #include <sigutils/version.h>
 #include <analyzer/version.h>
+#include <FileViewer.h>
 
 #include <cstring>
 #include <getopt.h>
@@ -42,6 +43,17 @@ runRMSViewer(QApplication &app)
   RMSViewer viewer;
 
   viewer.show();
+  ret = app.exec();
+
+  return ret;
+}
+
+static int
+runFileViewer(QApplication &app)
+{
+  int ret;
+  FileViewer viewer;
+
   ret = app.exec();
 
   return ret;
@@ -219,6 +231,8 @@ main(int argc, char *argv[])
     ret = runSigDigger(app);
   } else if (appName == "RMSViewer") {
     ret = runRMSViewer(app);
+  } else if (appName == "FileViewer") {
+    ret = runFileViewer(app);
   } else {
     fprintf(
           stderr,

@@ -24,6 +24,11 @@
 #include "FFT/FFTWidgetFactory.h"
 #include "DefaultTab/DefaultTabWidgetFactory.h"
 #include "GenericInspector/GenericInspectorFactory.h"
+#include "RMSInspector/RMSInspectorFactory.h"
+#include "SourceConfig/FileSourcePageFactory.h"
+#include "SourceConfig/SoapySDRSourcePageFactory.h"
+#include "SourceConfig/StdinSourcePageFactory.h"
+#include "SourceConfig/ToneGenSourcePageFactory.h"
 
 #include <Suscan/Library.h>
 
@@ -49,6 +54,12 @@ SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
   sus->registerTabWidgetFactory(new DefaultTabWidgetFactory(plugin));
 
   sus->registerInspectionWidgetFactory(new GenericInspectorFactory(plugin));
+  sus->registerInspectionWidgetFactory(new RMSInspectorFactory(plugin));
+
+  sus->registerSourceConfigWidgetFactory(new FileSourcePageFactory(plugin));
+  sus->registerSourceConfigWidgetFactory(new SoapySDRSourcePageFactory(plugin));
+  sus->registerSourceConfigWidgetFactory(new StdinSourcePageFactory(plugin));
+  sus->registerSourceConfigWidgetFactory(new ToneGenSourcePageFactory(plugin));
 
   return true;
 }

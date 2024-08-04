@@ -17,19 +17,18 @@
 //    <http://www.gnu.org/licenses/>
 //
 
-#include <QFileDialog>
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include <Suscan/Library.h>
 #include <SuWidgetsHelpers.h>
+#include <SourceConfigWidgetFactory.h>
 #include <time.h>
 #include "ProfileConfigTab.h"
 #include "SigDiggerHelpers.h"
-#include "DeviceTweaks.h"
 #include "ui_ProfileConfigTab.h"
 
-#define PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ 0
-#define PROFILE_CONFIG_TAB_MAX_DEVICE_FREQ 7.5e9
+#define PROFILE_CONFIG_SAMPLE_RATE_MATCH_REL_TOL 1e-6
 
 using namespace SigDigger;
 
@@ -47,210 +46,199 @@ Q_DECLARE_METATYPE(Suscan::Source::Device); // More unicorns
 void
 ProfileConfigTab::configChanged(bool restart)
 {
-  this->modified     = true;
-  this->needsRestart = this->needsRestart || restart;
+  m_modified     = true;
+  m_needsRestart = m_needsRestart || restart;
+
   emit changed();
 }
 
-bool
-ProfileConfigTab::shouldDisregardTweaks(void)
-{
-  QMessageBox::StandardButton reply;
-
-  if (this->hasTweaks) {
-    reply = QMessageBox::question(
-          this,
-          "Per-device tweaks",
-          "This action will clear currently defined device tweaks. Are you sure?",
-          QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes)
-      return false;
-  }
-
-  this->hasTweaks = false;
-
-  return true;
-}
-
 void
-ProfileConfigTab::populateProfileCombo(void)
+ProfileConfigTab::populateProfileCombo()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
-  this->ui->profileCombo->clear();
+  ui->profileCombo->clear();
 
   for (auto i = sus->getFirstProfile(); i != sus->getLastProfile(); ++i)
-    this->ui->profileCombo->addItem(
+    ui->profileCombo->addItem(
         QString::fromStdString(i->first),
         QVariant::fromValue(i->second));
 }
 
 void
-ProfileConfigTab::populateDeviceCombo(void)
-{
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  int currentIndex = this->ui->deviceCombo->currentIndex();
-  int newIndex = -1;
-  int p = 0;
-  QString prevName, name;
-
-  if (currentIndex != -1)
-    prevName = this->ui->deviceCombo->currentText();
-
-  this->ui->deviceCombo->clear();
-
-  for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
-    if (i->isAvailable() && !i->isRemote()) {
-      name = QString::fromStdString(i->getDesc());
-      if (currentIndex != -1 && newIndex == -1 && name == prevName)
-        newIndex = p;
-
-      this->ui->deviceCombo->addItem(
-          name,
-          QVariant::fromValue<long>(i - sus->getFirstDevice()));
-      ++p;
-    }
-  }
-
-  if (newIndex == -1)
-    newIndex = 0;
-
-  this->ui->deviceCombo->setCurrentIndex(newIndex);
-}
-
-void
-ProfileConfigTab::populateRemoteDeviceCombo(void)
+ProfileConfigTab::populateRemoteDeviceCombo()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
-  this->ui->remoteDeviceCombo->clear();
+  ui->remoteDeviceCombo->clear();
 
   for (
        auto i = sus->getFirstNetworkProfile();
        i != sus->getLastNetworkProfile();
        ++i)
-    this->ui->remoteDeviceCombo->addItem(i->label().c_str());
+    ui->remoteDeviceCombo->addItem(i->label().c_str());
 
-  if (this->ui->remoteDeviceCombo->currentIndex() != -1)
-    this->ui->remoteDeviceCombo->setCurrentIndex(0);
+  if (ui->remoteDeviceCombo->currentIndex() != -1)
+    ui->remoteDeviceCombo->setCurrentIndex(0);
 }
 
 
 void
-ProfileConfigTab::populateCombos(void)
+ProfileConfigTab::populateCombos()
 {
-  this->populateProfileCombo();
-  this->populateDeviceCombo();
-  this->populateRemoteDeviceCombo();
-
-  this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
+  populateProfileCombo();
+  populateRemoteDeviceCombo();
 }
 
 void
-ProfileConfigTab::sampRateCtlHint(int index)
+ProfileConfigTab::makeConfigWidgets()
 {
-  if (this->ui->sampleRateCombo->count() == 0)
-    index = 1;
+  int index = 0;
+  auto sus = Suscan::Singleton::get_instance();
 
-  this->ui->sampRateStack->setCurrentIndex(index);
+  QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator p   = sus->getFirstSourceConfigWidgetFactory();
+  auto end = sus->getLastSourceConfigWidgetFactory();
+
+  ui->sourceTypeCombo->clear();
+
+  while (p != end) {
+    SigDigger::SourceConfigWidgetFactory *factory = *p;
+    auto *iface = suscan_source_interface_lookup_by_name(factory->name());
+
+    if (iface != nullptr) {
+      auto widget = factory->make();
+
+      m_configWidgets.insert(iface->name, widget);
+      ui->sourceTypeCombo->addItem(iface->desc, QString(iface->name));
+      ui->sourceConfigStack->insertWidget(index++, widget);
+
+      connect(
+            widget,
+            SIGNAL(changed()),
+            this,
+            SLOT(onSourceConfigWidgetChanged()));
+    }
+
+    ++p;
+  }
 }
 
 void
-ProfileConfigTab::refreshUiState(void)
+ProfileConfigTab::refreshSampRateCtl()
 {
-  int analyzerTypeIndex = this->ui->analyzerTypeCombo->currentIndex();
-  bool netProfile = this->ui->useNetworkProfileRadio->isChecked();
+  int index;
+
+  index = m_rateHint == SAMPLE_RATE_CTL_HINT_LIST ? 0 : 1;
+
+  if (ui->sampleRateCombo->count() == 0
+      || ui->overrideCheck->isChecked())
+    index = 1; // User has overriden this
+
+  ui->sampRateStack->setCurrentIndex(index);
+}
+
+//
+// This method simply informs the UI which is the preferred way to obtain
+// a sample rate: whether from a combo box or manually from a spinbox. Sometimes
+// that is simply not possible. In those cases, the function may decide
+// which widget to display depending on the supported rates.
+//
+void
+ProfileConfigTab::sampRateCtlHint(SampleRateCtlHint hint)
+{
+  // index 0: list (enable combo)
+  // index 1: manual (enable spinbox)
+
+  m_rateHint = hint;
+
+  // Override only makes sense if we provide a combo box
+  ui->overrideCheck->setEnabled(hint == SAMPLE_RATE_CTL_HINT_LIST);
+  refreshSampRateCtl();
+}
+
+void
+ProfileConfigTab::refreshUiState()
+{
+  int analyzerTypeIndex = ui->analyzerTypeCombo->currentIndex();
+  bool netProfile = ui->useNetworkProfileRadio->isChecked();
   bool adjustStartTime = false;
 
-  this->ui->analyzerParamsStackedWidget->setCurrentIndex(analyzerTypeIndex);
+  ui->analyzerParamsStackedWidget->setCurrentIndex(analyzerTypeIndex);
 
-  if (!this->remoteSelected()) {
-    /* Local analyzer */
-    if (this->ui->sdrRadio->isChecked()) {
-      this->ui->sdrFrame->setEnabled(true);
-      this->ui->fileFrame->setEnabled(false);
-      this->sampRateCtlHint(0);
-      this->ui->ppmSpinBox->setEnabled(true);
-    } else {
-      this->ui->sdrFrame->setEnabled(false);
-      this->ui->fileFrame->setEnabled(true);
-      this->ui->ppmSpinBox->setEnabled(false);
-      this->sampRateCtlHint(1);
-      adjustStartTime = true;
-    }
+  ui->localPage->setVisible(!remoteSelected());
+  ui->remotePage->setVisible(remoteSelected());
+
+  if (!remoteSelected()) {
+    // Set PPM spinbox depending on the source being realtime or not.
+    ui->ppmSpinBox->setEnabled(m_profile.isRealTime());
+    sampRateCtlHint(
+          ui->sampleRateCombo->count() > 0
+          ? SAMPLE_RATE_CTL_HINT_LIST
+          : SAMPLE_RATE_CTL_HINT_MANUAL);
+
   } else {
     /* Remote analyzer */
-    this->sampRateCtlHint(1);
+    sampRateCtlHint(SAMPLE_RATE_CTL_HINT_MANUAL);
 
-    if (this->ui->remoteDeviceCombo->count() == 0) {
+    if (ui->remoteDeviceCombo->count() == 0) {
       if (netProfile)
         netProfile = false;
-      this->ui->useNetworkProfileRadio->setChecked(false);
-      this->ui->useHostPortRadio->setChecked(true);
-      this->ui->useNetworkProfileRadio->setEnabled(false);
+      ui->useNetworkProfileRadio->setChecked(false);
+      ui->useHostPortRadio->setChecked(true);
+      ui->useNetworkProfileRadio->setEnabled(false);
     } else {
-      this->ui->useNetworkProfileRadio->setEnabled(true);
+      ui->useNetworkProfileRadio->setEnabled(true);
     }
 
-    this->ui->hostEdit->setEnabled(!netProfile);
-    this->ui->portEdit->setEnabled(!netProfile);
-    this->ui->remoteDeviceCombo->setEnabled(netProfile);
-    this->ui->ppmSpinBox->setEnabled(true);
+    ui->hostEdit->setEnabled(!netProfile);
+    ui->portEdit->setEnabled(!netProfile);
+    ui->remoteDeviceCombo->setEnabled(netProfile);
+    ui->ppmSpinBox->setEnabled(false);
   }
 
-  this->ui->sourceTimeEdit->setEnabled(adjustStartTime);
-  this->ui->sourceTimeIsUTCCheck->setEnabled(adjustStartTime);
-  this->setSelectedSampleRate(this->profile.getSampleRate());
-  this->refreshTrueSampleRate();
+  ui->sourceTimeEdit->setEnabled(adjustStartTime);
+  ui->sourceTimeIsUTCCheck->setEnabled(adjustStartTime);
+
+  setSelectedSampleRate(m_profile.getSampleRate());
+  refreshTrueSampleRate();
 }
 
 void
-ProfileConfigTab::refreshAntennas(void)
+ProfileConfigTab::refreshSampRates()
 {
-  SigDiggerHelpers::populateAntennaCombo(
-        this->profile,
-        this->ui->antennaCombo);
+  QList<int> rates;
+
+  ui->sampleRateCombo->clear();
+
+  if (m_currentConfigWidget != nullptr) {
+    m_currentConfigWidget->getPreferredRates(rates);
+
+    for (auto p : rates)
+      ui->sampleRateCombo->addItem(
+            getSampRateString(p),
+            QVariant::fromValue<double>(p));
+
+  }
+
+  if (!remoteSelected())
+    sampRateCtlHint(
+          ui->sampleRateCombo->count() > 0
+          ? SAMPLE_RATE_CTL_HINT_LIST
+          : SAMPLE_RATE_CTL_HINT_MANUAL);
 }
 
 void
-ProfileConfigTab::refreshSampRates(void)
+ProfileConfigTab::refreshFrequencyLimits()
 {
-  Suscan::Source::Device device = this->profile.getDevice();
+  SUFREQ lnbFreq = ui->lnbSpinBox->value();
+  qint64 devMinFreq = -300000000000;
+  qint64 devMaxFreq = +300000000000;
 
-  this->ui->sampleRateCombo->clear();
+  if (m_currentConfigWidget != nullptr)
+    m_currentConfigWidget->getNativeFrequencyLimits(devMinFreq, devMaxFreq);
 
-  for (
-       auto p = device.getFirstSampRate();
-       p != device.getLastSampRate();
-       ++p) {
-    this->ui->sampleRateCombo->addItem(
-          getSampRateString(*p),
-          QVariant::fromValue<double>(*p));
-  }
-}
-
-void
-ProfileConfigTab::refreshFrequencyLimits(void)
-{
-  SUFREQ lnbFreq = this->ui->lnbSpinBox->value();
-  SUFREQ devMinFreq = PROFILE_CONFIG_TAB_MIN_DEVICE_FREQ;
-  SUFREQ devMaxFreq = PROFILE_CONFIG_TAB_MAX_DEVICE_FREQ;
-
-  if (this->profile.getType() == SUSCAN_SOURCE_TYPE_FILE) {
-    devMinFreq = SIGDIGGER_MIN_RADIO_FREQ;
-    devMaxFreq = SIGDIGGER_MAX_RADIO_FREQ;
-  } else {
-    const Suscan::Source::Device *dev = &(this->profile.getDevice());
-
-    if (dev != nullptr) {
-      devMinFreq = dev->getMinFreq();
-      devMaxFreq = dev->getMaxFreq();
-    }
-  }
-  // DEVFREQ = FREQ - LNB
-
-  this->ui->frequencySpinBox->setMinimum(devMinFreq + lnbFreq);
-  this->ui->frequencySpinBox->setMaximum(devMaxFreq + lnbFreq);
+  BLOCKSIG(ui->frequencySpinBox, setMinimum(devMinFreq + lnbFreq));
+  BLOCKSIG(ui->frequencySpinBox, setMaximum(devMaxFreq + lnbFreq));
 }
 
 QString
@@ -269,539 +257,413 @@ ProfileConfigTab::getSampRateString(qreal trueRate)
 }
 
 void
-ProfileConfigTab::refreshTrueSampleRate(void)
+ProfileConfigTab::refreshTrueSampleRate()
 {
-  float step = SU_POW(10., SU_FLOOR(SU_LOG(this->profile.getSampleRate())));
-  QString rateText;
-  qreal trueRate = static_cast<qreal>(this->getSelectedSampleRate())
-      / this->ui->decimationSpin->value();
+  float step = SU_POW(10., SU_FLOOR(SU_LOG(m_profile.getSampleRate())));
+  qreal trueRate = static_cast<qreal>(getSelectedSampleRate())
+      / getDecimation();
   if (step >= 10.f)
     step /= 10.f;
 
-  this->ui->trueRateLabel->setText(getSampRateString(trueRate));
+  ui->trueRateLabel->setText(getSampRateString(trueRate));
 }
 
 void
-ProfileConfigTab::refreshAnalyzerTypeUi(void)
+ProfileConfigTab::refreshAnalyzerTypeUi()
 {
-  if (this->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
-    this->ui->analyzerTypeCombo->setCurrentIndex(0);
-  } else {
-    this->ui->analyzerTypeCombo->setCurrentIndex(1);
-  }
+  int index = m_profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE ? 0 : 1;
 
-  this->ui->analyzerParamsStackedWidget->setCurrentIndex(
-        this->ui->analyzerTypeCombo->currentIndex());
+  ui->analyzerTypeCombo->setCurrentIndex(index);
+  ui->analyzerParamsStackedWidget->setCurrentIndex(index);
 }
 
 int
-ProfileConfigTab::findRemoteProfileIndex(void)
+ProfileConfigTab::findRemoteProfileIndex()
 {
-  return this->ui->remoteDeviceCombo->findText(this->profile.label().c_str());
+  return ui->remoteDeviceCombo->findText(m_profile.label().c_str());
 }
 
 void
-ProfileConfigTab::refreshProfileUi(void)
+ProfileConfigTab::refreshUi()
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   bool adjustableSourceTime = false;
 
-  for (auto i = 0; i < this->ui->profileCombo->count(); ++i)
-    if (this->ui->profileCombo->itemText(i).toStdString() ==
-        this->profile.label()) {
-      this->ui->profileCombo->setCurrentIndex(i);
+  for (auto i = 0; i < ui->profileCombo->count(); ++i)
+    if (ui->profileCombo->itemText(i).toStdString() ==
+        m_profile.label()) {
+      BLOCKSIG(ui->profileCombo, setCurrentIndex(i));
       break;
     }
 
-  this->refreshSampRates();
+  refreshSampRates();
+  setDecimation(m_profile.getDecimation());
+  selectSourceType(m_profile.getType());
+  setSelectedSampleRate(m_profile.getSampleRate());
 
-  this->ui->decimationSpin->setValue(
-        static_cast<int>(this->profile.getDecimation()));
+  BLOCKSIG(ui->lnbSpinBox,       setValue(m_profile.getLnbFreq()));
+  BLOCKSIG(ui->frequencySpinBox, setValue(m_profile.getFreq()));
+  BLOCKSIG(ui->iqBalanceCheck,   setChecked(m_profile.getIQBalance()));
+  BLOCKSIG(ui->removeDCCheck,    setChecked(m_profile.getDCRemove()));
+  BLOCKSIG(ui->ppmSpinBox,       setValue(static_cast<double>(m_profile.getPPM())));
 
-  switch (this->profile.getType()) {
-    case SUSCAN_SOURCE_TYPE_SDR:
-      this->ui->sdrRadio->setChecked(true);
-      this->sampRateCtlHint(0);
-      break;
+  refreshAnalyzerTypeUi();
 
-    case SUSCAN_SOURCE_TYPE_FILE:
-      this->ui->fileRadio->setChecked(true);
-      this->sampRateCtlHint(1);
-      break;
-  }
-
-  this->setSelectedSampleRate(this->profile.getSampleRate());
-
-  this->ui->iqBalanceCheck->setChecked(this->profile.getIQBalance());
-  this->ui->removeDCCheck->setChecked(this->profile.getDCRemove());
-  this->ui->loopCheck->setChecked(this->profile.getLoop());
-
-  this->ui->ppmSpinBox->setValue(
-        static_cast<double>(this->profile.getPPM()));
-
-  this->ui->bandwidthSpinBox->setValue(
-        static_cast<double>(this->profile.getBandwidth()));
-
-  switch (this->profile.getFormat()) {
-    case SUSCAN_SOURCE_FORMAT_AUTO:
-      this->ui->formatCombo->setCurrentIndex(0);
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_RAW_FLOAT32:
-      this->ui->formatCombo->setCurrentIndex(1);
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8:
-      this->ui->formatCombo->setCurrentIndex(2);
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_RAW_SIGNED8:
-      this->ui->formatCombo->setCurrentIndex(3);
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_RAW_SIGNED16:
-      this->ui->formatCombo->setCurrentIndex(4);
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_WAV:
-      this->ui->formatCombo->setCurrentIndex(5);
-      break;
-  }
-
-  this->ui->pathEdit->setText(QString::fromStdString(this->profile.getPath()));
-
-  this->refreshAnalyzerTypeUi();
-
-  if (this->profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
-    // Set local analyzer interface
-    for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
-      if (i->equals(this->profile.getDevice())) {
-        int index = this->ui->deviceCombo->findData(
-              QVariant::fromValue(
-                static_cast<long>(i - sus->getFirstDevice())));
-        if (index != -1) {
-          this->ui->deviceCombo->setCurrentIndex(index);
-          this->savedLocalDeviceIndex = index;
-        }
-
-        break;
-      }
-    }
-
-    if (this->ui->deviceCombo->currentIndex() == -1)
-      this->ui->deviceCombo->setCurrentIndex(0);
-
-    if (this->profile.getType() == SUSCAN_SOURCE_TYPE_FILE)
-      adjustableSourceTime = true;
+  if (m_profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
+    adjustableSourceTime = !m_profile.isRealTime();
   } else {
     bool hasMc;
     std::string host, port, user, pass, mc_if;
     int index;
 
-    host  = this->profile.getParam("host");
-    port  = this->profile.getParam("port");
-    user  = this->profile.getParam("user");
-    pass  = this->profile.getParam("password");
-    hasMc = this->profile.hasParam("mc_if");
-    mc_if = this->profile.getParam("mc_if");
+    host  = m_profile.getParam("host");
+    port  = m_profile.getParam("port");
+    user  = m_profile.getParam("user");
+    pass  = m_profile.getParam("password");
+    hasMc = m_profile.hasParam("mc_if");
+    mc_if = m_profile.getParam("mc_if");
 
     // Set remote analyzer interface
-    this->ui->hostEdit->setText(host.c_str());
+    BLOCKSIG(ui->hostEdit, setText(host.c_str()));
 
     try {
-      this->ui->portEdit->setValue(std::stoi(port));
+      BLOCKSIG(ui->portEdit, setValue(std::stoi(port)));
     } catch (std::invalid_argument &) {
-      this->ui->portEdit->setValue(28001);
+      BLOCKSIG(ui->portEdit, setValue(28001));
     }
 
-    this->ui->deviceCombo->setCurrentIndex(-1);
-
-    index = this->findRemoteProfileIndex();
+    index = findRemoteProfileIndex();
     if (index != -1) {
-      this->ui->useNetworkProfileRadio->setChecked(true);
-      this->ui->useHostPortRadio->setChecked(false);
-      this->ui->remoteDeviceCombo->setCurrentIndex(index);
+      BLOCKSIG(ui->useNetworkProfileRadio, setChecked(true));
+      BLOCKSIG(ui->useHostPortRadio,       setChecked(false));
+      BLOCKSIG(ui->remoteDeviceCombo,      setCurrentIndex(index));
     } else {
-      this->ui->useHostPortRadio->setChecked(true);
-      this->ui->useNetworkProfileRadio->setChecked(false);
+      BLOCKSIG(ui->useHostPortRadio,       setChecked(true));
+      BLOCKSIG(ui->useNetworkProfileRadio, setChecked(false));
     }
 
-    this->ui->userEdit->setText(user.c_str());
-    this->ui->passEdit->setText(pass.c_str());
-    this->ui->mcCheck->setChecked(hasMc);
-    this->ui->mcInterfaceEdit->setText(mc_if.c_str());
-    this->ui->mcInterfaceEdit->setEnabled(hasMc);
+    BLOCKSIG(ui->userEdit,        setText(user.c_str()));
+    BLOCKSIG(ui->passEdit,        setText(pass.c_str()));
+    BLOCKSIG(ui->mcCheck,         setChecked(hasMc));
+    BLOCKSIG(ui->mcInterfaceEdit, setText(mc_if.c_str()));
+
+    ui->mcInterfaceEdit->setEnabled(hasMc);
   }
 
   if (adjustableSourceTime) {
-    struct timeval startTime = this->profile.getStartTime();
+    struct timeval startTime = m_profile.getStartTime();
     qint64 epochMsec = startTime.tv_sec * 1000 + startTime.tv_usec / 1000;
     QDateTime dateTime;
     dateTime.setTimeSpec(
-          this->ui->sourceTimeIsUTCCheck->isChecked()
+          ui->sourceTimeIsUTCCheck->isChecked()
           ? Qt::TimeSpec::UTC
           : Qt::TimeSpec::LocalTime);
 
     dateTime.setMSecsSinceEpoch(epochMsec);
 
-    this->ui->sourceTimeEdit->setTimeSpec(dateTime.timeSpec());
-    this->ui->sourceTimeEdit->setDateTime(dateTime);
+    BLOCKSIG(ui->sourceTimeEdit, setTimeSpec(dateTime.timeSpec()));
+    BLOCKSIG(ui->sourceTimeEdit, setDateTime(dateTime));
   } else {
-    this->ui->sourceTimeEdit->setDateTime(
-          QDateTime::fromTime_t(
-            static_cast<unsigned int>(time(nullptr))));
+    BLOCKSIG(ui->sourceTimeEdit, setDateTime(
+          QDateTime::fromSecsSinceEpoch(
+            static_cast<unsigned int>(time(nullptr)))));
   }
 
-  this->ui->lnbSpinBox->setValue(this->profile.getLnbFreq());
-  this->ui->frequencySpinBox->setValue(this->profile.getFreq());
-  this->refreshFrequencyLimits();
-  this->refreshUiState();
-  this->refreshAntennas();
-  this->refreshTrueSampleRate();
-}
-
-void
-ProfileConfigTab::refreshUi(void)
-{
-  this->refreshing = true;
-
-  this->refreshProfileUi();
-
-  this->refreshing = false;
+  refreshFrequencyLimits();
+  refreshUiState();
+  refreshTrueSampleRate();
 }
 
 void
 ProfileConfigTab::save()
 {
-  bool modified = this->modified;
-  bool needsRestart = this->needsRestart;
-
-  this->profile.setType(
-        this->ui->sdrRadio->isChecked()
-        ? SUSCAN_SOURCE_TYPE_SDR
-        : SUSCAN_SOURCE_TYPE_FILE);
-
-  if (!this->hasTweaks)
-    this->onDeviceChanged(this->ui->deviceCombo->currentIndex());
-
-  this->onFormatChanged(this->ui->formatCombo->currentIndex());
-  this->onBandwidthChanged(this->ui->bandwidthSpinBox->value());
-  this->onCheckButtonsToggled(false);
-  this->onSpinsChanged();
-
-  if (!this->hasTweaks)
-    this->onAnalyzerTypeChanged(this->ui->analyzerTypeCombo->currentIndex());
-
-  this->modified     = modified;
-  this->needsRestart = needsRestart;
+  // Do nothing. The profile is already updated. The information in this
+  // object is so complex it is better off to store the state directly
+  // in it.
 }
 
 void
-ProfileConfigTab::setUnchanged(void)
+ProfileConfigTab::setUnchanged()
 {
-  this->modified     = false;
-  this->needsRestart = false;
+  m_modified     = false;
+  m_needsRestart = false;
 }
 
 bool
-ProfileConfigTab::hasChanged(void) const
+ProfileConfigTab::hasChanged() const
 {
-  return this->modified;
+  return m_modified;
 }
 
 bool
-ProfileConfigTab::shouldRestart(void) const
+ProfileConfigTab::shouldRestart() const
 {
-  return this->needsRestart;
+  return m_needsRestart;
 }
 
 void
-ProfileConfigTab::connectAll(void)
+ProfileConfigTab::connectAll()
 {
-  connect(
-        this->ui->deviceCombo,
-        SIGNAL(activated(int)),
-        this,
-        SLOT(onDeviceChanged(int)));
 
   connect(
-        this->ui->antennaCombo,
-        SIGNAL(activated(int)),
-        this,
-        SLOT(onAntennaChanged(int)));
-
-  connect(
-        this->ui->loadProfileButton,
+        ui->loadProfileButton,
         SIGNAL(clicked()),
         this,
-        SLOT(onLoadProfileClicked(void)));
+        SLOT(onLoadProfileClicked()));
 
   connect(
-        this->ui->sdrRadio,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onToggleSourceType(bool)));
-
-  connect(
-        this->ui->fileRadio,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onToggleSourceType(bool)));
-
-  connect(
-        this->ui->frequencySpinBox,
-        SIGNAL(valueChanged(double)),
-        this,
-        SLOT(onSpinsChanged(void)));
-
-  connect(
-        this->ui->lnbSpinBox,
-        SIGNAL(valueChanged(double)),
-        this,
-        SLOT(onSpinsChanged(void)));
-
-  connect(
-        this->ui->sampleRateSpinBox,
-        SIGNAL(valueChanged(double)),
-        this,
-        SLOT(onSpinsChanged(void)));
-
-  connect(
-        this->ui->decimationSpin,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onSpinsChanged(void)));
-
-  connect(
-        this->ui->sampleRateCombo,
+        ui->sourceTypeCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onChangeSourceType(int)));
 
   connect(
-        this->ui->ppmSpinBox,
+        ui->frequencySpinBox,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
-        this->ui->removeDCCheck,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onCheckButtonsToggled(bool)));
-
-  connect(
-        this->ui->iqBalanceCheck,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onCheckButtonsToggled(bool)));
-
-  connect(
-        this->ui->loopCheck,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onCheckButtonsToggled(bool)));
-
-  connect(
-        this->ui->bandwidthSpinBox,
+        ui->lnbSpinBox,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onBandwidthChanged(double)));
+        SLOT(onSpinsChanged()));
 
   connect(
-        this->ui->formatCombo,
+        ui->sampleRateSpinBox,
+        SIGNAL(valueChanged(double)),
+        this,
+        SLOT(onSpinsChanged()));
+
+  connect(
+        ui->decimCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onFormatChanged(int)));
+        SLOT(onSpinsChanged()));
 
   connect(
-        this->ui->browseButton,
-        SIGNAL(clicked(void)),
+        ui->sampleRateCombo,
+        SIGNAL(activated(int)),
         this,
-        SLOT(onBrowseCaptureFile(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
-        this->ui->saveProfileButton,
-        SIGNAL(clicked(void)),
+        ui->ppmSpinBox,
+        SIGNAL(valueChanged(double)),
         this,
-        SLOT(onSaveProfile(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
-        this->ui->analyzerTypeCombo,
+        ui->removeDCCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onCheckButtonsToggled(bool)));
+
+  connect(
+        ui->iqBalanceCheck,
+        SIGNAL(toggled(bool)),
+        this,
+        SLOT(onCheckButtonsToggled(bool)));
+
+  connect(
+        ui->saveProfileButton,
+        SIGNAL(clicked()),
+        this,
+        SLOT(onSaveProfile()));
+
+  connect(
+        ui->analyzerTypeCombo,
         SIGNAL(activated(int)),
         this,
         SLOT(onAnalyzerTypeChanged(int)));
 
   connect(
-        this->ui->hostEdit,
+        ui->hostEdit,
         SIGNAL(textEdited(const QString &)),
         this,
         SLOT(onRemoteParamsChanged()));
 
   connect(
-        this->ui->portEdit,
+        ui->portEdit,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onRemoteParamsChanged()));
 
   connect(
-        this->ui->userEdit,
+        ui->userEdit,
         SIGNAL(textEdited(const QString &)),
         this,
         SLOT(onRemoteParamsChanged()));
 
   connect(
-        this->ui->passEdit,
+        ui->passEdit,
         SIGNAL(textEdited(const QString &)),
         this,
         SLOT(onRemoteParamsChanged()));
 
   connect(
-        this->ui->mcCheck,
+        ui->mcCheck,
         SIGNAL(stateChanged(int)),
         this,
         SLOT(onRemoteParamsChanged()));
 
   connect(
-        this->ui->mcInterfaceEdit,
+        ui->mcInterfaceEdit,
         SIGNAL(textChanged(const QString &)),
         this,
         SLOT(onRemoteParamsChanged()));
 
   connect(
-        this->ui->useNetworkProfileRadio,
+        ui->useNetworkProfileRadio,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onChangeConnectionType(void)));
+        SLOT(onChangeConnectionType()));
 
   connect(
-        this->ui->useHostPortRadio,
+        ui->useHostPortRadio,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onChangeConnectionType(void)));
+        SLOT(onChangeConnectionType()));
 
   connect(
-        this->ui->remoteDeviceCombo,
+        ui->remoteDeviceCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onRemoteProfileSelected(void)));
+        SLOT(onRemoteProfileSelected()));
 
   connect(
-        this->ui->refreshButton,
-        SIGNAL(clicked(void)),
+        ui->refreshButton,
+        SIGNAL(clicked()),
         this,
-        SLOT(onRefreshRemoteDevices(void)));
+        SLOT(onRefreshRemoteDevices()));
 
   connect(
-        this->ui->ppmSpinBox,
+        ui->ppmSpinBox,
         SIGNAL(valueChanged(qreal)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
-        this->ui->sourceTimeEdit,
+        ui->sourceTimeEdit,
         SIGNAL(dateTimeChanged(QDateTime const &)),
         this,
-        SLOT(onSpinsChanged(void)));
+        SLOT(onSpinsChanged()));
 
   connect(
-        this->ui->sourceTimeIsUTCCheck,
+        ui->sourceTimeIsUTCCheck,
         SIGNAL(toggled(bool)),
         this,
-        SLOT(onChangeSourceTimeUTC(void)));
+        SLOT(onChangeSourceTimeUTC()));
 
   connect(
-        this->ui->deviceTweaksButton,
-        SIGNAL(clicked(void)),
+        ui->overrideCheck,
+        SIGNAL(toggled(bool)),
         this,
-        SLOT(onDeviceTweaksClicked(void)));
-
-  connect(
-        this->tweaks,
-        SIGNAL(accepted(void)),
-        this,
-        SLOT(onDeviceTweaksAccepted(void)));
+        SLOT(onOverrideSampleRate()));
 }
 
 void
 ProfileConfigTab::setProfile(const Suscan::Source::Config &profile)
 {
-  this->profile = profile;
-  this->hasTweaks = false;
+  m_currentConfigWidget = nullptr;
+  m_currentConfigIndex = -1;
 
-  this->refreshUi();
-  this->setUnchanged();
+  setUnchanged();
+  loadProfile(profile);
 }
 
 void
 ProfileConfigTab::setFrequency(qint64 val)
 {
-  this->profile.setFreq(static_cast<SUFREQ>(val));
+  m_profile.setFreq(val);
+  BLOCKSIG(ui->frequencySpinBox, setValue(val));
 }
 
 void
-ProfileConfigTab::notifySingletonChanges(void)
+ProfileConfigTab::notifySingletonChanges()
 {
-  this->populateCombos();
-  this->refreshUi();
+  for (auto p : m_configWidgets)
+    p->notifySingletonChanges();
+
+  populateCombos();
+  refreshUi();
 }
 
 bool
-ProfileConfigTab::remoteSelected(void) const
+ProfileConfigTab::remoteSelected() const
 {
-  return this->ui->analyzerTypeCombo->currentIndex() == 1;
+  return ui->analyzerTypeCombo->currentIndex() == 1;
 }
 
 void
 ProfileConfigTab::setGain(std::string const &name, float value)
 {
-  this->profile.setGain(name, value);
+  m_profile.setGain(name, value);
 }
 
 float
 ProfileConfigTab::getGain(std::string const &name) const
 {
-  return this->profile.getGain(name);
+  return m_profile.getGain(name);
 }
 
 Suscan::Source::Config
-ProfileConfigTab::getProfile(void) const
+ProfileConfigTab::getProfile() const
 {
-  return this->profile;
+  return m_profile;
+}
+
+unsigned
+ProfileConfigTab::getDecimation() const
+{
+  if (ui->decimCombo->currentIndex() < 0)
+    return 0;
+
+  return 1u << ui->decimCombo->currentIndex();
 }
 
 void
-ProfileConfigTab::updateRemoteParams(void)
+ProfileConfigTab::setDecimation(unsigned decim)
 {
-  this->profile.clearParams();
+  int i = 0;
 
-  this->profile.setParam("host", this->ui->hostEdit->text().toStdString());
-  this->profile.setParam("port", std::to_string(this->ui->portEdit->value()));
-  this->profile.setParam("user", this->ui->userEdit->text().toStdString());
-  this->profile.setParam("password", this->ui->passEdit->text().toStdString());
+  while ((1u << i) < decim && i != ui->decimCombo->count() - 1)
+    ++i;
 
-  if (this->ui->mcCheck->isChecked())
-    this->profile.setParam(
-        "mc_if",
-        this->ui->mcInterfaceEdit->text().toStdString());
-
-  this->profile.setParam("label", "User-defined remote profile");
+  BLOCKSIG(ui->decimCombo, setCurrentIndex(i));
 }
 
-ProfileConfigTab::ProfileConfigTab(QWidget *parent) : ConfigTab(parent, "Source"),
-  profile(SUSCAN_SOURCE_TYPE_FILE, SUSCAN_SOURCE_FORMAT_AUTO)
+void
+ProfileConfigTab::updateRemoteParams()
 {
-  this->ui = new Ui::ProfileConfigTab;
-  this->ui->setupUi(this);
+  m_profile.clearParams();
+
+  m_profile.setParam("host", ui->hostEdit->text().toStdString());
+  m_profile.setParam("port", std::to_string(ui->portEdit->value()));
+  m_profile.setParam("user", ui->userEdit->text().toStdString());
+  m_profile.setParam("password", ui->passEdit->text().toStdString());
+
+  if (ui->mcCheck->isChecked())
+    m_profile.setParam(
+        "mc_if",
+        ui->mcInterfaceEdit->text().toStdString());
+
+  m_profile.setParam("label", "User-defined remote profile");
+}
+
+ProfileConfigTab::ProfileConfigTab(QWidget *parent) :
+  ConfigTab(parent, "Source"),
+  m_profile("soapysdr", SUSCAN_SOURCE_FORMAT_AUTO)
+{
+  ui = new Ui::ProfileConfigTab;
+  ui->setupUi(this);
+
+  m_saveProfileDialog = new SaveProfileDialog(this);
 
   // Set local analyzer as default
-  this->ui->analyzerTypeCombo->setCurrentIndex(0);
-
-  this->tweaks = new DeviceTweaks(this);
-  this->tweaks->setModal(true);
+  ui->analyzerTypeCombo->setCurrentIndex(0);
 
   // Setup remote device
-  this->remoteDevice = Suscan::Source::Device(
+  m_remoteDevice = Suscan::Source::Device(
           "Remote device",
           "localhost",
           28001,
@@ -809,20 +671,23 @@ ProfileConfigTab::ProfileConfigTab(QWidget *parent) : ConfigTab(parent, "Source"
           "");
 
   // Setup sample rate size
-  this->ui->trueRateLabel->setFixedWidth(
+  ui->trueRateLabel->setFixedWidth(
         SuWidgetsHelpers::getWidgetTextWidth(
-          this->ui->trueRateLabel,
+          ui->trueRateLabel,
           "XXX.XXX Xsps"));
 
   // Set limits
-  this->ui->lnbSpinBox->setMaximum(300e9);
-  this->ui->lnbSpinBox->setMinimum(-300e9);
+  ui->lnbSpinBox->setMaximum(300e9);
+  ui->lnbSpinBox->setMinimum(-300e9);
+
+  // Make configuration widgets
+  makeConfigWidgets();
 
   // Populate locations
-  this->populateCombos();
-  this->ui->sampleRateSpinBox->setUnits("sps");
-  this->connectAll();
-  this->refreshUi();
+  populateCombos();
+  ui->sampleRateSpinBox->setUnits("sps");
+  connectAll();
+  refreshUi();
 
 }
 
@@ -837,206 +702,178 @@ ProfileConfigTab::getBaseName(const QString &path)
   return path;
 }
 
+bool
+ProfileConfigTab::selectSourceType(std::string const &type)
+{
+  QString asQString = QString::fromStdString(type);
+  SourceConfigWidget *next = nullptr;
+
+  if (m_configWidgets.find(asQString) != m_configWidgets.end())
+    next = m_configWidgets[asQString];
+
+  if (next != m_currentConfigWidget) {
+    // Previous widget present, call deactivate
+    if (!tryLeaveCurrentConfigWidget())
+      return false;
+
+    // New widget, set current widget and call activate
+    m_currentConfigWidget = next;
+
+    if (next != nullptr) {
+      ui->sourceConfigGroupBox->setVisible(true);
+      ui->sourceConfigStack->setCurrentWidget(next);
+      BLOCKSIG(
+            ui->sourceTypeCombo,
+            setCurrentIndex(ui->sourceConfigStack->currentIndex()));
+      BLOCKSIG(next, activateWidget());
+    } else {
+      ui->sourceConfigGroupBox->setVisible(false);
+    }
+
+    // Refresh sample rate combo
+    refreshSampRates();
+  }
+
+  return true;
+}
+
+bool
+ProfileConfigTab::tryLeaveCurrentConfigWidget()
+{
+  if (m_currentConfigWidget != nullptr)
+    if (!m_currentConfigWidget->deactivateWidget())
+      return false;
+
+  m_currentConfigWidget = nullptr;
+
+  return true;
+}
+
+void
+ProfileConfigTab::loadProfile(Suscan::Source::Config const &config)
+{
+  m_profile = config;
+
+  for (auto p: m_configWidgets)
+    p->setConfigRef(m_profile);
+
+  refreshUi();
+}
 
 ProfileConfigTab::~ProfileConfigTab()
 {
-  delete this->ui;
+  delete ui;
 }
 
 //////////////// Slots //////////////////
 void
-ProfileConfigTab::onLoadProfileClicked(void)
+ProfileConfigTab::onLoadProfileClicked()
 {
-  QVariant data = this->ui->profileCombo->itemData(this->ui->profileCombo->currentIndex());
+  QVariant data = ui->profileCombo->itemData(ui->profileCombo->currentIndex());
 
-  if (this->shouldDisregardTweaks()) {
-    this->configChanged(true);
-    this->profile = data.value<Suscan::Source::Config>();
-  }
-
-  this->refreshUi();
-}
-
-void
-ProfileConfigTab::onToggleSourceType(bool)
-{
-  if (!this->refreshing) {
-    this->configChanged(true);
-    if (this->ui->sdrRadio->isChecked()) {
-      this->profile.setType(SUSCAN_SOURCE_TYPE_SDR);
-    } else {
-      this->profile.setType(SUSCAN_SOURCE_TYPE_FILE);
-      this->guessParamsFromFileName();
-    }
-
-    this->refreshUiState();
-    this->refreshFrequencyLimits();
+  if (tryLeaveCurrentConfigWidget()) {
+    configChanged(true);
+    loadProfile(data.value<Suscan::Source::Config>());
   }
 }
 
 void
-ProfileConfigTab::onDeviceChanged(int index)
+ProfileConfigTab::onChangeSourceType(int)
 {
-  // Remember: only set device if the analyzer type is local
-  if (!this->refreshing
-      && index != -1
-      && !this->remoteSelected()) {
-    Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-    const Suscan::Source::Device *device;
+  QVariant data = ui->sourceTypeCombo->currentData();
+  QString name = data.value<QString>();
 
-    if (!this->shouldDisregardTweaks()) {
-      this->refreshUi();
-      return;
-    }
+  if (name == nullptr)
+    return;
 
-    SU_ATTEMPT(
-          device = sus->getDeviceAt(
-            static_cast<unsigned int>(
-            this->ui->deviceCombo->itemData(index).value<long>())));
-
-    this->configChanged(true);
-    this->profile.setDevice(*device);
-    this->hasTweaks = false;
-
-    auto begin = device->getFirstAntenna();
-    auto end   = device->getLastAntenna();
-
-    // We check whether we can keep the current antenna configuration. If we
-    // cannot, just set the first antenna in the list.
-    if (device->findAntenna(this->profile.getAntenna()) == end
-        && begin != end)
-      this->profile.setAntenna(*begin);
-
-    this->refreshUi();
-
-    unsigned sampRate = this->getSelectedSampleRate();
-    unsigned decimation = static_cast<unsigned>(this->ui->decimationSpin->value());
-    qreal maxBandwidth = static_cast<qreal>(sampRate)
-        / static_cast<qreal>(decimation);
-
-    if (this->ui->bandwidthSpinBox->value() > maxBandwidth)
-      this->ui->bandwidthSpinBox->setValue(maxBandwidth);
+  if (selectSourceType(name.toStdString())) {
+    m_profile.setType(name.toStdString());
+    configChanged(true);
+    refreshUiState();
+    refreshFrequencyLimits();
+  } else {
+    BLOCKSIG(ui->sourceTypeCombo, setCurrentIndex(m_currentConfigIndex));
   }
 }
 
 void
-ProfileConfigTab::onFormatChanged(int index)
+ProfileConfigTab::onSourceConfigWidgetChanged()
 {
-  if (!this->refreshing) {
-    this->configChanged(true);
-    switch (index) {
-      case 0:
-        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_AUTO);
-        break;
+  SigDigger::SourceConfigWidget *widget =
+      static_cast<SigDigger::SourceConfigWidget *>(QObject::sender());
 
-      case 1:
-        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_FLOAT32);
-        break;
-
-      case 2:
-        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8);
-        break;
-
-      case 3:
-        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_SIGNED8);
-        break;
-
-      case 4:
-        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_RAW_SIGNED16);
-        break;
-
-      case 5:
-        this->profile.setFormat(SUSCAN_SOURCE_FORMAT_WAV);
-        break;
-    }
-  }
-}
-
-void
-ProfileConfigTab::onAntennaChanged(int)
-{
-  if (!this->refreshing) {
-    this->configChanged();
-    this->profile.setAntenna(
-          this->ui->antennaCombo->currentText().toStdString());
+  if (widget == m_currentConfigWidget) {
+    configChanged(true);
+    refreshUi();
   }
 }
 
 void
 ProfileConfigTab::onAnalyzerTypeChanged(int index)
 {
-  if (!this->refreshing) {
-    if (!this->shouldDisregardTweaks()) {
-      this->refreshUi();
-      return;
-    }
+  switch (index) {
+    case 0:
+      m_profile.setInterface(SUSCAN_SOURCE_LOCAL_INTERFACE);
+      selectSourceType(m_profile.getType());
+      break;
 
-    switch (index) {
-      case 0:
-        this->profile.setInterface(SUSCAN_SOURCE_LOCAL_INTERFACE);
-        this->onDeviceChanged(this->savedLocalDeviceIndex);
-        break;
+    case 1:
+      if (!tryLeaveCurrentConfigWidget()) {
+        refreshUi();
+        return;
+      }
 
-      case 1:
-        this->savedLocalDeviceIndex = this->ui->deviceCombo->currentIndex();
-        this->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
-        this->onChangeConnectionType();
-        this->onRemoteParamsChanged();
-        break;
-    }
-
-    this->refreshUiState();
+      m_profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
+      onChangeConnectionType();
+      onRemoteParamsChanged();
+      break;
   }
+
+  configChanged(true);
+  refreshUiState();
 }
 
 void
-ProfileConfigTab::onRemoteParamsChanged(void)
+ProfileConfigTab::onRemoteParamsChanged()
 {
-  if (this->remoteSelected()) {
-    this->ui->mcInterfaceEdit->setEnabled(this->ui->mcCheck->isChecked());
-    this->configChanged(true);
-    this->profile.setDevice(this->remoteDevice);
-    this->updateRemoteParams();
+  if (remoteSelected()) {
+    ui->mcInterfaceEdit->setEnabled(ui->mcCheck->isChecked());
+    configChanged(true);
+    m_profile.setDevice(m_remoteDevice);
+    updateRemoteParams();
   }
 }
 
 void
 ProfileConfigTab::onCheckButtonsToggled(bool)
 {
-  if (!this->refreshing) {
-    if (this->profile.getDCRemove() != this->ui->removeDCCheck->isChecked()) {
-      this->profile.setDCRemove(this->ui->removeDCCheck->isChecked());
-      this->configChanged();
-    }
+  if (m_profile.getDCRemove() != ui->removeDCCheck->isChecked()) {
+    m_profile.setDCRemove(ui->removeDCCheck->isChecked());
+    configChanged();
+  }
 
-    if (this->profile.getIQBalance() != this->ui->iqBalanceCheck->isChecked()) {
-      this->profile.setIQBalance(this->ui->iqBalanceCheck->isChecked());
-      this->configChanged();
-    }
-
-    if (this->profile.getLoop() != this->ui->loopCheck->isChecked()) {
-      this->profile.setLoop(this->ui->loopCheck->isChecked());
-      this->configChanged(true);
-    }
+  if (m_profile.getIQBalance() != ui->iqBalanceCheck->isChecked()) {
+    m_profile.setIQBalance(ui->iqBalanceCheck->isChecked());
+    configChanged();
   }
 }
 
 unsigned int
-ProfileConfigTab::getSelectedSampleRate(void) const
+ProfileConfigTab::getSelectedSampleRate() const
 {
   unsigned int sampRate = 0;
 
-  if (this->ui->sampRateStack->currentIndex() == 0) {
+  if (ui->sampRateStack->currentIndex() == 0) {
     // Index 0: Sample Rate Combo
-    if (this->ui->sampleRateCombo->currentIndex() != -1) {
+    if (ui->sampleRateCombo->currentIndex() != -1) {
       qreal selectedValue =
-          this->ui->sampleRateCombo->currentData().value<qreal>();
+          ui->sampleRateCombo->currentData().value<qreal>();
       sampRate = static_cast<unsigned>(selectedValue);
     }
   } else {
     // Index 1: Sample Rate Spin
     sampRate = static_cast<unsigned>(
-          this->ui->sampleRateSpinBox->value());
+          ui->sampleRateSpinBox->value());
   }
 
   return sampRate;
@@ -1047,454 +884,239 @@ ProfileConfigTab::setSelectedSampleRate(unsigned int rate)
 {
   // Set sample rate in both places
   qreal dist = std::numeric_limits<qreal>::infinity();
+  qreal bestRate = std::numeric_limits<qreal>::infinity();
+
   int bestIndex = -1;
-  for (auto i = 0; i < this->ui->sampleRateCombo->count(); ++i) {
-    qreal value = this->ui->sampleRateCombo->itemData(i).value<qreal>();
+  for (auto i = 0; i < ui->sampleRateCombo->count(); ++i) {
+    qreal value = ui->sampleRateCombo->itemData(i).value<qreal>();
     if (fabs(value - rate) < dist) {
       bestIndex = i;
+      bestRate = rate;
       dist = fabs(value - rate);
     }
   }
 
-  if (bestIndex != -1)
-    this->ui->sampleRateCombo->setCurrentIndex(bestIndex);
+  // bestIndex different from -1 means that there is at least one optioon
+  if (bestIndex != -1) {
+    bool optionIsGood =
+        dist / bestRate < PROFILE_CONFIG_SAMPLE_RATE_MATCH_REL_TOL;
 
-  this->ui->sampleRateSpinBox->setValue(rate);
+    if (optionIsGood)
+      BLOCKSIG(ui->sampleRateCombo, setCurrentIndex(bestIndex));
+    else
+      BLOCKSIG(ui->overrideCheck,   setChecked(true));
+  }
+
+  BLOCKSIG(ui->sampleRateSpinBox, setValue(rate));
 }
 
 void
-ProfileConfigTab::onSpinsChanged(void)
+ProfileConfigTab::onSpinsChanged()
 {
-  if (!this->refreshing) {
-    SUFREQ freq;
-    SUFREQ lnbFreq;
-    SUFLOAT ppm;
-    SUFLOAT maxBandwidth;
-    time_t timeStamp;
-    time_t timeStampUsec;
-    bool adjustBandwidth = false;
+  SUFREQ freq;
+  SUFREQ lnbFreq;
+  SUFLOAT ppm;
 
-    unsigned int sampRate;
-    unsigned int decimation;
+  time_t timeStamp;
+  time_t timeStampUsec;
 
-    lnbFreq = this->ui->lnbSpinBox->value();
-    this->refreshFrequencyLimits();
-    freq = this->ui->frequencySpinBox->value();
-    sampRate = this->getSelectedSampleRate();
-    decimation = static_cast<unsigned>(this->ui->decimationSpin->value());
-    ppm = static_cast<SUFLOAT>(this->ui->ppmSpinBox->value());
-    maxBandwidth = static_cast<SUFLOAT>(sampRate)
-        / static_cast<SUFLOAT>(decimation) ;
-    timeStamp = this->ui->sourceTimeEdit->dateTime().toSecsSinceEpoch();
-    timeStampUsec = 1000 * (
-          this->ui->sourceTimeEdit->dateTime().toMSecsSinceEpoch() % 1000);
+  unsigned int sampRate;
+  unsigned int decimation;
 
-    if (!sufeq(this->profile.getFreq(), freq, .5f)) {
-      this->profile.setFreq(freq);
-      this->configChanged();
-    }
+  lnbFreq = ui->lnbSpinBox->value();
+  refreshFrequencyLimits();
+  freq = ui->frequencySpinBox->value();
+  sampRate = getSelectedSampleRate();
+  decimation = getDecimation();
+  ppm = static_cast<SUFLOAT>(ui->ppmSpinBox->value());
+  timeStamp = ui->sourceTimeEdit->dateTime().toSecsSinceEpoch();
+  timeStampUsec = 1000 * (
+        ui->sourceTimeEdit->dateTime().toMSecsSinceEpoch() % 1000);
 
-    if (!sufeq(this->profile.getLnbFreq(), lnbFreq, .5f)) {
-      this->profile.setLnbFreq(lnbFreq);
-      this->configChanged();
-    }
 
-    if (this->profile.getSampleRate() != sampRate) {
-      this->profile.setSampleRate(sampRate);
-      this->configChanged(true);
-      adjustBandwidth = true;
-    }
-
-    if (this->profile.getDecimation() != decimation) {
-      this->profile.setDecimation(decimation);
-      this->configChanged(true);
-      adjustBandwidth = true;
-    }
-
-    if (!sufeq(this->profile.getPPM(), ppm, .5f)) {
-      this->profile.setPPM(ppm);
-      this->configChanged();
-    }
-
-    if (this->profile.getStartTime().tv_sec != timeStamp
-        || this->profile.getStartTime().tv_usec != timeStampUsec) {
-      struct timeval tv;
-      tv.tv_sec  = timeStamp;
-      tv.tv_usec = timeStampUsec;
-      this->profile.setStartTime(tv);
-      this->configChanged(true);
-    }
-
-    if (adjustBandwidth && this->profile.getBandwidth() > maxBandwidth)
-      this->ui->bandwidthSpinBox->setValue(static_cast<qreal>(maxBandwidth));
-
-    this->refreshTrueSampleRate();
+  if (!sufeq(m_profile.getLnbFreq(), lnbFreq, .5f)) {
+    // Hey! Recall to adjust frequency accordingly
+    qreal diff = lnbFreq - m_profile.getLnbFreq();
+    freq += diff;
+    BLOCKSIG(ui->frequencySpinBox, setValue(freq));
+    m_profile.setLnbFreq(lnbFreq);
+    configChanged();
   }
+
+  if (!sufeq(m_profile.getFreq(), freq, .5f)) {
+    m_profile.setFreq(freq);
+    configChanged();
+  }
+
+  if (m_profile.getSampleRate() != sampRate) {
+    m_profile.setSampleRate(sampRate);
+    configChanged(true);
+  }
+
+  if (m_profile.getDecimation() != decimation) {
+    m_profile.setDecimation(decimation);
+    configChanged(true);
+  }
+
+  if (!sufeq(m_profile.getPPM(), ppm, .5f)) {
+    m_profile.setPPM(ppm);
+    configChanged();
+  }
+
+  if (ui->sourceTimeEdit->isEnabled()
+      && (m_profile.getStartTime().tv_sec != timeStamp
+      || m_profile.getStartTime().tv_usec != timeStampUsec)) {
+    struct timeval tv;
+    tv.tv_sec  = timeStamp;
+    tv.tv_usec = timeStampUsec;
+    m_profile.setStartTime(tv);
+    configChanged(true);
+  }
+
+  refreshTrueSampleRate();
 }
 
 void
-ProfileConfigTab::onBandwidthChanged(double)
-{
-  if (!this->refreshing) {
-    this->profile.setBandwidth(
-        static_cast<SUFLOAT>(
-          this->ui->bandwidthSpinBox->value()));
-    this->configChanged();
-  }
-}
-
-void
-ProfileConfigTab::guessParamsFromFileName(void)
-{
-  QFileInfo fi(QString::fromStdString(this->profile.getPath()));
-  std::string baseName = fi.baseName().toStdString();
-  SigDiggerHelpers *hlp = SigDiggerHelpers::instance();
-
-  SUFREQ fc;
-  unsigned int fs;
-  unsigned int date, time;
-  bool haveFc   = false;
-  bool haveFs   = false;
-  bool haveDate = false;
-  bool haveTime = false;
-  bool isUTC    = false;
-  bool haveTm   = false;
-  struct tm tm;
-  struct timeval tv = {0, 0};
-
-  memset(&tm, 0, sizeof(struct tm));
-
-  if (sscanf(
-        baseName.c_str(),
-        "sigdigger_%08d_%06dZ_%d_%lg_float32_iq",
-        &date,
-        &time,
-        &fs,
-        &fc) == 4) {
-    haveFc   = true;
-    haveFs   = true;
-    haveDate = true;
-    haveTime = true;
-    isUTC    = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "sigdigger_%d_%lg_float32_iq",
-        &fs,
-        &fc) == 2) {
-    haveFc = true;
-    haveFs = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "gqrx_%08d_%06d_%lg_%d_fc",
-        &date,
-        &time,
-        &fc,
-        &fs) == 4) {
-    haveFc   = true;
-    haveFs   = true;
-    haveDate = true;
-    haveTime = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "SDRSharp_%08d_%06dZ_%lg_IQ",
-        &date,
-        &time,
-        &fc) == 3) {
-    haveFc   = true;
-    haveDate = true;
-    haveTime = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "HDSDR_%08d_%06dZ_%lgkHz",
-        &date,
-        &time,
-        &fc) == 3) {
-    fc      *= 1e3;
-    haveFc   = true;
-    haveDate = true;
-    haveTime = true;
-    isUTC    = true;
-  } else if (sscanf(
-        baseName.c_str(),
-        "baseband_%lgHz_%02d-%02d-%02d_%02d-%02d-%04d",
-        &fc,
-        &tm.tm_hour,
-        &tm.tm_min,
-        &tm.tm_sec,
-        &tm.tm_mday,
-        &tm.tm_mon,
-        &tm.tm_year) == 7) {
-    tm.tm_year -= 1900;
-    tm.tm_mon  -= 1;
-
-    haveFc   = true;
-    haveTm   = true;
-    isUTC    = true;
-  }
-
-  if (haveDate || haveTime) {
-    haveTm = true;
-    if (haveDate) {
-      tm.tm_year = date / 10000 - 1900;
-      tm.tm_mon  = ((date / 100) % 100) - 1;
-      tm.tm_mday = date % 100;
-    }
-
-    if (haveTime) {
-      tm.tm_hour = time / 10000;
-      tm.tm_min  = (time / 100) % 100;
-      tm.tm_sec  = time % 100;
-    }
-  }
-
-  if (haveTm) {
-    if (isUTC) {
-      hlp->pushUTCTZ();
-      tm.tm_isdst = 0;
-      tv.tv_sec = mktime(&tm);
-    } else {
-      hlp->pushLocalTZ();
-      tm.tm_isdst = -1;
-      tv.tv_sec = mktime(&tm);
-    }
-
-    hlp->popTZ();
-
-    this->profile.setStartTime(tv);
-  }
-
-  if (haveFs)
-    this->profile.setSampleRate(fs);
-
-  if (haveFc)
-    this->profile.setFreq(fc);
-
-  if (haveFs || haveFc || haveTm)
-    this->refreshUi();
-}
-
-void
-ProfileConfigTab::onBrowseCaptureFile(void)
-{
-  QString title;
-  QFileInfo fi(this->ui->pathEdit->text());
-  QStringList formats;
-  QString selected = "All files (*)";
-
-  switch (this->profile.getFormat()) {
-    case SUSCAN_SOURCE_FORMAT_AUTO:
-      title = "Open capture file";
-      formats
-          << "Raw complex 32-bit float (*.raw *.cf32)"
-          << "Raw complex 8-bit unsigned (*.u8 *.cu8)"
-          << "Raw complex 8-bit signed (*.s8 *.cs8)"
-          << "Raw complex 16-bit signed (*.s16 *.cs16)"
-          << "WAV files (*.wav)"
-          << "All files (*)";
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_RAW_FLOAT32:
-      title = "Open I/Q file";
-      formats
-          << "Raw complex 32-bit float (*.raw *.cf32)"
-          << "All files (*)";
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_RAW_UNSIGNED8:
-      title = "Open I/Q file";
-      formats
-          << "Raw complex 8-bit unsigned (*.u8 *.cu8)"
-          << "All files (*)";
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_RAW_SIGNED8:
-      title = "Open I/Q file";
-      formats
-          << "Raw complex 8-bit signed (*.s8 *.cs8)"
-          << "All files (*)";
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_RAW_SIGNED16:
-      title = "Open I/Q file";
-      formats
-          << "Raw complex 16-bit signed (*.s16 *.cs16)"
-          << "All files (*)";
-      break;
-
-    case SUSCAN_SOURCE_FORMAT_WAV:
-      title = "Open WAV file";
-      formats
-          << "WAV files (*.wav)"
-          << "All files (*)";
-      break;
-  }
-
-  for (auto p : formats)
-    if (p.contains("*." + fi.suffix()))
-      selected = p;
-
-  QString path = QFileDialog::getOpenFileName(
-         this,
-         title,
-         fi.absolutePath(),
-         formats.join(";;"),
-         &selected);
-
-  if (!path.isEmpty()) {
-    this->ui->pathEdit->setText(path);
-    this->configChanged(true);
-    this->profile.setPath(path.toStdString());
-    this->guessParamsFromFileName();
-  }
-}
-
-void
-ProfileConfigTab::onSaveProfile(void)
+ProfileConfigTab::onSaveProfile()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  std::string name = "My " + this->profile.label();
+  std::string name = "My " + m_profile.label();
   std::string candidate = name;
   unsigned int i = 1;
 
   while (sus->getProfile(candidate) != nullptr)
     candidate = name + " (" + std::to_string(i++) + ")";
 
-  this->saveProfileDialog.setProfileName(QString::fromStdString(candidate));
+  m_saveProfileDialog->setProfileName(QString::fromStdString(candidate));
 
-  if (this->saveProfileDialog.run()) {
-    candidate = this->saveProfileDialog.getProfileName().toStdString();
+  if (m_saveProfileDialog->run()) {
+    candidate = m_saveProfileDialog->getProfileName().toStdString();
 
     if (sus->getProfile(candidate) != nullptr) {
       QMessageBox::warning(
             this,
             "Profile already exists",
             "There is already a profile named " +
-            this->saveProfileDialog.getProfileName() +
+            m_saveProfileDialog->getProfileName() +
             " please choose a different one.",
             QMessageBox::Ok);
       return;
     }
 
-    this->profile.setLabel(candidate);
-    sus->saveProfile(this->profile);
-    this->populateProfileCombo();
+    m_profile.setLabel(candidate);
+    sus->saveProfile(m_profile);
+    populateProfileCombo();
   }
 }
 
 void
-ProfileConfigTab::onChangeConnectionType(void)
+ProfileConfigTab::onChangeConnectionType()
 {
-  if (this->ui->useNetworkProfileRadio->isChecked()) {
-    this->onRemoteProfileSelected();
-    this->ui->useHostPortRadio->setChecked(false);
+  if (ui->useNetworkProfileRadio->isChecked()) {
+    onRemoteProfileSelected();
+    ui->useHostPortRadio->setChecked(false);
   }
 
-  if (this->ui->useHostPortRadio->isChecked()) {
-    this->onRemoteParamsChanged();
-    this->ui->useNetworkProfileRadio->setChecked(false);
+  if (ui->useHostPortRadio->isChecked()) {
+    onRemoteParamsChanged();
+    ui->useNetworkProfileRadio->setChecked(false);
   }
 
-  this->configChanged(true);
-  this->refreshUiState();
+  configChanged(true);
+  refreshUiState();
 }
 
 void
-ProfileConfigTab::onRefreshRemoteDevices(void)
+ProfileConfigTab::onRefreshRemoteDevices()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  int countBefore = this->ui->remoteDeviceCombo->count();
+  int countBefore = ui->remoteDeviceCombo->count();
   int countAfter;
 
   sus->refreshNetworkProfiles();
-  this->populateRemoteDeviceCombo();
+  populateRemoteDeviceCombo();
 
-  countAfter = this->ui->remoteDeviceCombo->count();
+  countAfter = ui->remoteDeviceCombo->count();
 
   if (countAfter > countBefore) {
-    this->ui->useNetworkProfileRadio->setChecked(true);
-    this->onChangeConnectionType();
+    ui->useNetworkProfileRadio->setChecked(true);
+    onChangeConnectionType();
   } else {
-    this->refreshUiState();
+    refreshUiState();
   }
 
-  this->onRemoteParamsChanged();
+  onRemoteParamsChanged();
 }
 
 void
-ProfileConfigTab::onRemoteProfileSelected(void)
+ProfileConfigTab::onRemoteProfileSelected()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
-  if (this->ui->useNetworkProfileRadio->isChecked()) {
+  if (ui->useNetworkProfileRadio->isChecked()) {
     QHash<QString, Suscan::Source::Config>::const_iterator it;
     std::string user, pass, mc, mc_if;
     bool hasMc;
 
     // Save multicast config
-    hasMc = this->ui->mcCheck->isChecked();
-    mc_if = this->ui->mcInterfaceEdit->text().toStdString();
+    hasMc = ui->mcCheck->isChecked();
+    mc_if = ui->mcInterfaceEdit->text().toStdString();
 
-    it = sus->getNetworkProfileFrom(this->ui->remoteDeviceCombo->currentText());
+    it = sus->getNetworkProfileFrom(ui->remoteDeviceCombo->currentText());
 
     if (it != sus->getLastNetworkProfile()) {
       user = it->getParam("user");
       pass = it->getParam("password");
 
       if (user.length() == 0)
-        user = this->ui->userEdit->text().toStdString();
+        user = ui->userEdit->text().toStdString();
       if (user.length() == 0)
         user = "anonymous";
 
       if (pass.length() == 0)
-        pass = this->ui->passEdit->text().toStdString();
+        pass = ui->passEdit->text().toStdString();
 
-      this->configChanged(true);
-      this->setProfile(*it);
+      configChanged(true);
+      setProfile(*it);
 
       // Provide a better hint for username if the server announced none
-      this->ui->userEdit->setText(user.c_str());
-      this->ui->passEdit->setText(pass.c_str());
+      ui->userEdit->setText(user.c_str());
+      ui->passEdit->setText(pass.c_str());
 
       // Restore mc config
-      this->ui->mcCheck->setChecked(hasMc);
-      this->ui->mcInterfaceEdit->setText(mc_if.c_str());
-      this->ui->mcInterfaceEdit->setEnabled(hasMc);
+      ui->mcCheck->setChecked(hasMc);
+      ui->mcInterfaceEdit->setText(mc_if.c_str());
+      ui->mcInterfaceEdit->setEnabled(hasMc);
 
-      this->onRemoteParamsChanged();
+      onRemoteParamsChanged();
     }
   }
 }
 
 void
-ProfileConfigTab::onChangeSourceTimeUTC(void)
+ProfileConfigTab::onChangeSourceTimeUTC()
 {
-  QDateTime dateTime = this->ui->sourceTimeEdit->dateTime();
+  QDateTime dateTime = ui->sourceTimeEdit->dateTime();
   qint64 epochMsec   = dateTime.toMSecsSinceEpoch();
 
   dateTime.setTimeSpec(
-        this->ui->sourceTimeIsUTCCheck->isChecked()
+        ui->sourceTimeIsUTCCheck->isChecked()
         ? Qt::TimeSpec::UTC
         : Qt::TimeSpec::LocalTime);
 
   dateTime.setMSecsSinceEpoch(epochMsec);
 
-  this->ui->sourceTimeEdit->setTimeSpec(dateTime.timeSpec());
-  this->ui->sourceTimeEdit->setDateTime(dateTime);
+  ui->sourceTimeEdit->setTimeSpec(dateTime.timeSpec());
+  ui->sourceTimeEdit->setDateTime(dateTime);
 }
 
 void
-ProfileConfigTab::onDeviceTweaksClicked(void)
+ProfileConfigTab::onOverrideSampleRate()
 {
-  this->tweaks->setProfile(&this->profile);
-  this->tweaks->exec();
-}
-
-void
-ProfileConfigTab::onDeviceTweaksAccepted(void)
-{
-  if (this->tweaks->hasChanged()) {
-    this->tweaks->commitConfig();
-    this->configChanged(true);
-    this->hasTweaks = true;
+  if (!ui->overrideCheck->isChecked()) {
+    refreshSampRateCtl();
+    onSpinsChanged();
   }
+
+  refreshUiState();
 }

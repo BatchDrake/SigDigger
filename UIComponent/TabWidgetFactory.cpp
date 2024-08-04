@@ -32,11 +32,25 @@ TabWidget::TabWidget(
 {
   m_menu = new QMenu(this);
   m_renameTab = new QAction("&Rename...", this);
-  m_floatTab = new QAction("&Detach to a separate window", this);
+  m_floatTab = new QAction("&Detach to window", this);
   m_closeTab = new QAction("&Close", this);
 
+  m_renameTab->setShortcut(QString("F2"));
+  m_renameTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+  m_closeTab->setShortcut(QString("CTRL+W"));
+  m_closeTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  QWidget::addAction(m_closeTab);
+
+  m_floatTab->setShortcut(QString("CTRL+SHIFT+W"));
+  m_floatTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
   m_menu->addAction(m_renameTab);
+  QWidget::addAction(m_renameTab);
+
   m_menu->addAction(m_floatTab);
+  QWidget::addAction(m_floatTab);
+
   m_menu->addSeparator();
   m_menu->addAction(m_closeTab);
 
@@ -58,6 +72,74 @@ TabWidget::TabWidget(
         this,
         SLOT(onFloat()));
 }
+
+QString
+TabWidget::getCurrentLabel() const
+{
+  if (!m_labelChanged)
+    return QString::fromStdString(getLabel());
+
+  return m_cachedLabel;
+}
+
+void
+TabWidget::addAction(QAction *action)
+{
+  m_customActions.push_back(action);
+  m_menu->insertAction(m_renameTab, action);
+
+  QWidget::addAction(action);
+}
+
+void
+TabWidget::addSeparator()
+{
+  m_customActions.push_back(nullptr);
+  m_menu->insertSeparator(m_renameTab);
+}
+
+bool
+TabWidget::hasCustomActions() const
+{
+  return m_customActions.size() > 0;
+}
+
+void
+TabWidget::addCustomActionsToMenu(QMenu *menu)
+{
+  for (auto action : m_customActions) {
+    if (action == nullptr)
+      menu->addSeparator();
+    else
+      menu->addAction(action);
+  }
+}
+
+void
+TabWidget::addCommonActionsToMenu(QMenu *menu)
+{
+  menu->addAction(m_renameTab);
+  menu->addSeparator();
+  menu->addAction(m_closeTab);
+}
+
+void
+TabWidget::addActionsToParent(QWidget *widget)
+{
+  m_renameTab->setShortcutContext(Qt::ApplicationShortcut);
+  m_floatTab->setShortcutContext(Qt::ApplicationShortcut);
+
+  widget->addAction(m_renameTab);
+  widget->addAction(m_closeTab);
+
+  for (auto action : m_customActions) {
+    if (action != nullptr) {
+      widget->addAction(action);
+            action->setShortcutContext(Qt::ApplicationShortcut);
+    }
+  }
+}
+
 
 TabWidget::~TabWidget()
 {
