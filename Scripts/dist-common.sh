@@ -29,13 +29,16 @@ OSTYPE=`uname -s`
 ARCH=`uname -m`
 RELEASE="0.3.0"
 DISTFILENAME=SigDigger-"$RELEASE"-"$ARCH"
-PKGVERSION=""
 MAKE="make"
 CMAKE_SUSCAN_EXTRA_ARGS=""
 QMAKE_SIGDIGGER_EXTRA_ARGS=""
 
+if [ "x$PKGVERSION" == "x" ]; then
+    PKGVERSION=""
+fi
+
 if [ "x$BRANCH" == "x" ]; then
-    BRANCH=develop
+    BRANCH=master
 fi
 
 if [ "x$BUILDTYPE" == "x" ]; then
@@ -281,10 +284,10 @@ function build()
         cd "$BUILDROOT"
 
 	# The latest sigutils is now on master
-        try "Cloning sigutils (master)..."          git clone --recurse-submodules -b master https://github.com/BatchDrake/sigutils
-        try "Cloning suscan (master)..."            git clone --recurse-submodules -b master https://github.com/BatchDrake/suscan
-        try "Cloning SuWidgets (${BRANCH})..."         git clone --recurse-submodules -b "$BRANCH" https://github.com/BatchDrake/SuWidgets
-        try "Cloning SigDigger (${BRANCH})..."         git clone --recurse-submodules -b "$BRANCH" https://github.com/BatchDrake/SigDigger
+        try "Cloning sigutils (master)..."          git clone --recurse-submodules https://github.com/BatchDrake/sigutils
+        try "Cloning suscan (master)..."            git clone --recurse-submodules https://github.com/BatchDrake/suscan
+        try "Cloning SuWidgets (${BRANCH})..."      git clone --recurse-submodules https://github.com/BatchDrake/SuWidgets
+        try "Cloning SigDigger (${BRANCH})..."      git clone --recurse-submodules -b "$BRANCH" https://github.com/BatchDrake/SigDigger
         try "Creating builddirs..."        mkdir -p sigutils/build suscan/build
         cd sigutils/build
         try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
@@ -314,13 +317,13 @@ function build()
         fi
 	
         cd SuWidgets
-        try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += $QMAKE_BUILDTYPE" PREFIX="$DEPLOYROOT/usr"
+        try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += $QMAKE_BUILDTYPE" PREFIX="$DEPLOYROOT/usr" PKGVERSION="$PKGVERSION"
         try "Building SuWidgets..."        $MAKE -j $THREADS
         try "Deploying SuWidgets..."       $MAKE install
         cd ..
 
         cd SigDigger
-        try "Running QMake (SigDigger)..." qmake SigDigger.pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr"
+        try "Running QMake (SigDigger)..." qmake SigDigger.pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr" PKGVERSION="$PKGVERSION"
         try "Building SigDigger..."        $MAKE -j $THREADS
         try "Deploying SigDigger..."       $MAKE install
         cd ..

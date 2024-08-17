@@ -157,7 +157,7 @@ if [ -f "$DEPLOYROOT"/usr/bin/SigDigger.app ]; then
     try "Restoring old SigDigger executable..." cp "$DEPLOYROOT"/usr/bin/SigDigger.app "$DEPLOYROOT"/usr/bin/SigDigger
 fi
 
-if [ "$BRANCH" == "develop" ]; then
+if [ "x$SUFFIX" == "x" ]; then
     SUFFIX=-`date -u '+%Y%m%d-%H%M%SZ'`
 fi
 

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ master ]
   pull_request:
-    branches: [ develop ]
+    branches: [ master ]
   workflow_dispatch:
     inputs:
       debug_enabled:
@@ -36,7 +36,7 @@ jobs:
         cd Scripts
         chmod a+x dist-appimage.sh
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
-        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-appimage.sh 
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Release BRANCH=master ./dist-appimage.sh 
         cd ..
 
     - name: Archive AppImage files
@@ -60,7 +60,7 @@ jobs:
       run: |
         cd Scripts
         chmod a+x dist-dmg.sh
-        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-dmg.sh
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Release BRANCH=master ./dist-dmg.sh
         cd ..
 
     - name: Archive .DMG files
@@ -140,7 +140,7 @@ jobs:
         run: |
           cd Scripts
           chmod a+x dist-mingw32.sh
-          BUILDTYPE=Debug ./dist-mingw32.sh
+          BUILDTYPE=Release BRANCH=master ./dist-mingw32.sh
           cd ..
 
       - name: Archive .ZIP files
