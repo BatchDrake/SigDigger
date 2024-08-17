@@ -16,6 +16,7 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
+#include <QObject>
 #include <UIComponentFactory.h>
 #include <UIMediator.h>
 #include <cassert>
@@ -57,6 +58,19 @@ UIComponent::setTimeStamp(struct timeval const &)
 {
   // NO-OP
 }
+
+void
+UIComponent::registerAction(QAction *action)
+{
+  m_toolBarActions.push_back(action);
+}
+
+QList<QAction *> const &
+UIComponent::actions() const
+{
+  return m_toolBarActions;
+}
+
 
 UIComponent::UIComponent(UIComponentFactory *factory, UIMediator *mediator)
   : FeatureObject(factory), PersistentObject(), m_mediator(mediator)

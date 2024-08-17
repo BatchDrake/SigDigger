@@ -375,6 +375,26 @@ UIMediator::unFloatTabWidget(TabWidget *tabWidget)
 }
 
 void
+UIMediator::registerComponentActions(UIComponent *comp)
+{
+  auto &actions = comp->actions();
+
+  if (!actions.isEmpty()) {
+    QToolBar *toolBar = new QToolBar(comp->factory()->name());
+
+    getMainWindow()->insertToolBar(m_lastToolBar, toolBar);
+    m_lastToolBar = toolBar;
+
+    toolBar->setIconSize(QSize(24, 24));
+    toolBar->setFloatable(true);
+    toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+
+    for (auto &p : actions)
+      toolBar->addAction(p);
+  }
+}
+
+void
 UIMediator::setUIBusy(bool busy)
 {
   m_owner->setCursor(busy ? Qt::WaitCursor : Qt::ArrowCursor);
@@ -675,6 +695,8 @@ UIMediator::initSidePanel()
     m_ui->spectrum->addToolWidget(
           widget,
           f->getTitle().c_str());
+
+    registerComponentActions(widget);
   }
 }
 
@@ -700,6 +722,7 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
   m_lastPsd.tv_sec = m_lastPsd.tv_usec = 0;
 
   m_requestTracker = new Suscan::AnalyzerRequestTracker(this);
+  m_lastToolBar    = m_ui->main->helpToolBar;
 
   m_remoteDevice = Suscan::Source::Device(
             "Remote device",
@@ -758,6 +781,7 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   m_remoteControl = new RemoteControlServer(this);
   m_remoteControl->setEnabled(true);
+
 }
 
 void

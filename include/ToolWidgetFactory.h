@@ -31,6 +31,8 @@ namespace SigDigger {
 
   protected:
     ToolWidget(ToolWidgetFactory *, UIMediator *, QWidget *parent = nullptr);
+
+    void registerAction(QAction *action, const char *slot);
   };
 
   class ToolWidgetFactory : public UIComponentFactory {

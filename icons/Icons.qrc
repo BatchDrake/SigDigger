@@ -51,6 +51,10 @@
         <file>system-search.png</file>
         <file>earthmap.png</file>
         <file>connect.png</file>
+        <file>ask-inspector.svg</file>
+        <file>fsk-inspector.svg</file>
+        <file>psk-inspector.svg</file>
+        <file>rms-inspector.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

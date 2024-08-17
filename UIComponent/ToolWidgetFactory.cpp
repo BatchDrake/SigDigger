@@ -28,6 +28,26 @@ ToolWidget::ToolWidget(
 
 }
 
+
+void
+ToolWidget::registerAction(QAction *action, const char *slot)
+{
+  // OH MY GOD. C++ is so stupid that it does not know that if I define
+  // a method with a given number of arguments in the base class, and
+  // a new method with the same name but more arguments in a derived class,
+  // calling the one in the base class WITH ITS UNAMBIGUOUSLY DEFINED
+  // NUMBER OF ARGUMENTS from the derived class "as is" will not work. I have
+  // to explicitly break this non-existant ambiguity with ::
+
+  UIComponent::registerAction(action);
+
+  connect(
+        action,
+        SIGNAL(triggered(bool)),
+        this,
+        slot);
+}
+
 bool
 ToolWidgetFactory::registerGlobally(void)
 {

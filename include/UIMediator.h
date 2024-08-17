@@ -96,6 +96,7 @@ namespace SigDigger {
     unsigned int m_recentCount = 0;
 
     // UI State
+    QToolBar *m_lastToolBar = nullptr;
     bool m_settingRanges = false;
     struct timeval m_rtMaxDelta = {0, 10000};
     struct timeval m_lastPsd;
@@ -185,6 +186,7 @@ namespace SigDigger {
     void notifySourceInfo(Suscan::AnalyzerSourceInfo const &);
     void notifyTimeStamp(struct timeval const &timestamp);
     void setUIBusy(bool);
+    void registerComponentActions(UIComponent *);
 
     // Recent list handling
     void clearRecent();

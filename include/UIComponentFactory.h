@@ -27,14 +27,20 @@ namespace Suscan {
   struct Location;
 }
 
+class QAction;
+
 namespace SigDigger {
   class UIMediator;
   class UIComponentFactory;
   class ColorConfig;
 
   class UIComponent : public Suscan::FeatureObject, public PersistentObject {
+    QList<QAction *> m_toolBarActions;
+
   protected:
     UIMediator *m_mediator = nullptr;
+
+    void registerAction(QAction *);
     UIComponent(UIComponentFactory *, UIMediator *);
 
   public:
@@ -45,6 +51,8 @@ namespace SigDigger {
     virtual void setColorConfig(ColorConfig const &);
     virtual void setQth(Suscan::Location const &);
     virtual void setTimeStamp(struct timeval const &);
+
+    QList<QAction *> const &actions() const;
 
     virtual ~UIComponent() override;
   };

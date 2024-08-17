@@ -54,7 +54,7 @@ namespace SigDigger {
 
     // Overriden methods
     void deserialize(Suscan::Object const &conf) override;
-    Suscan::Object &&serialize(void) override;
+    Suscan::Object &&serialize() override;
   };
 
   class InspToolWidget : public ToolWidget
@@ -107,14 +107,14 @@ namespace SigDigger {
     SUSCOUNT m_uiRefreshSamples = 0;
 
     // Private methods
-    void connectAll(void);
-    void refreshUi(void);
-    void enableAutoSquelch(void);
-    void cancelAutoSquelch(void);
+    void connectAll();
+    void refreshUi();
+    void enableAutoSquelch();
+    void cancelAutoSquelch();
     void setInspectorClass(std::string const &cls);
-    void refreshCaptureInfo(void);
-    void openTimeWindow(void);
-    void transferHistory(void);
+    void refreshCaptureInfo();
+    void openTimeWindow();
+    void transferHistory();
 
     void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
     void setDemodFrequency(qint64);
@@ -129,11 +129,16 @@ namespace SigDigger {
     void resetRawInspector(qreal sampleRate);
     void feedRawInspector(const SUCOMPLEX *data, size_t size);
 
-    unsigned int getBandwidth(void) const;
-    std::string getInspectorClass(void) const;
-    bool getPrecise(void) const;
-    enum State getState(void) const;
+    unsigned int getBandwidth() const;
+    std::string getInspectorClass() const;
+    bool getPrecise() const;
+    enum State getState() const;
     void refreshInspectorCombo();
+
+    void openInspector(
+        const char *inspFactory,
+        const char *inspClass,
+        bool);
 
   public:
     explicit InspToolWidget(
@@ -147,30 +152,30 @@ namespace SigDigger {
     void setState(int, Suscan::Analyzer *) override;
     void setProfile(Suscan::Source::Config &) override;
     void setColorConfig(ColorConfig const &) override;
-    Suscan::Serializable *allocConfig(void) override;
-    void applyConfig(void) override;
+    Suscan::Serializable *allocConfig() override;
+    void applyConfig() override;
     bool event(QEvent *) override;
 
   public slots:
     // UI slots
     void onInspClassChanged();
-    void onOpenInspector(void);
+    void onOpenInspector();
     void onBandwidthChanged(double);
-    void onPreciseChanged(void);
-    void onPressHold(void);
-    void onReleaseHold(void);
+    void onPreciseChanged();
+    void onPressHold();
+    void onReleaseHold();
 
 
-    void onPressAutoSquelch(void);
-    void onReleaseAutoSquelch(void);
-    void onToggleAutoSquelch(void);
+    void onPressAutoSquelch();
+    void onReleaseAutoSquelch();
+    void onToggleAutoSquelch();
 
-    void onTimeWindowConfigChanged(void);
+    void onTimeWindowConfigChanged();
     void onTriggerSNRChanged(double val);
 
     // Main UI slots
-    void onSpectrumBandwidthChanged(void);
-    void onSpectrumFrequencyChanged(void);
+    void onSpectrumBandwidthChanged();
+    void onSpectrumFrequencyChanged();
 
     // Request tracker slots
     void onOpened(Suscan::AnalyzerRequest const &);
@@ -181,6 +186,11 @@ namespace SigDigger {
     void onSourceInfoMessage(Suscan::SourceInfoMessage const &);
     void onInspectorMessage(Suscan::InspectorMessage const &);
     void onInspectorSamples(Suscan::SamplesMessage const &);
+
+    void onOpenASK();
+    void onOpenFSK();
+    void onOpenPSK();
+    void onOpenRMS();
   };
 }
 

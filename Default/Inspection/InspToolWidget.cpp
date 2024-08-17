@@ -25,6 +25,8 @@
 #include <MainSpectrum.h>
 #include <SuWidgetsHelpers.h>
 #include <QMessageBox>
+#include <QAction>
+#include <QIcon>
 
 using namespace SigDigger;
 
@@ -699,6 +701,9 @@ InspToolWidget::setState(int, Suscan::Analyzer *analyzer)
     setState(m_analyzer == nullptr ? DETACHED : ATTACHED);
   }
 
+  for (auto &p : UIComponent::actions())
+    p->setEnabled(m_analyzer != nullptr);
+
   refreshInspectorCombo();
 }
 
@@ -708,6 +713,22 @@ InspToolWidget::setProfile(Suscan::Source::Config &config)
   setBandwidthLimits(
         1,
         config.getDecimatedSampleRate());
+}
+
+void
+InspToolWidget::openInspector(
+    const char *inspFactory,
+    const char *inspClass,
+    bool precise)
+{
+  Suscan::Channel ch;
+  ch.bw    = getBandwidth();
+  ch.ft    = 0;
+  ch.fc    = SCAST(SUFREQ, mediator()->getMainSpectrum()->getLoFreq());
+  ch.fLow  = - .5 * ch.bw;
+  ch.fHigh = + .5 * ch.bw;
+
+  mediator()->openInspectorTab(inspFactory, inspClass, ch, precise);
 }
 
 InspToolWidget::InspToolWidget
@@ -725,6 +746,23 @@ InspToolWidget::InspToolWidget
   connectAll();
 
   setProperty("collapsed", m_panelConfig->collapsed);
+
+  auto action = new QAction;
+
+  action->setIcon(QIcon(":/icons/ask-inspector.svg"));
+  registerAction(action, SLOT(onOpenASK()));
+
+  action = new QAction;
+  action->setIcon(QIcon(":/icons/fsk-inspector.svg"));
+  registerAction(action, SLOT(onOpenFSK()));
+
+  action = new QAction;
+  action->setIcon(QIcon(":/icons/psk-inspector.svg"));
+  registerAction(action, SLOT(onOpenPSK()));
+
+  action = new QAction;
+  action->setIcon(QIcon(":/icons/rms-inspector.svg"));
+  registerAction(action, SLOT(onOpenRMS()));
 }
 
 InspToolWidget::~InspToolWidget()
@@ -742,25 +780,13 @@ InspToolWidget::onInspClassChanged()
 void
 InspToolWidget::onOpenInspector()
 {
-  Suscan::Channel ch;
-  ch.bw    = getBandwidth();
-  ch.ft    = 0;
-  ch.fc    = SCAST(SUFREQ, mediator()->getMainSpectrum()->getLoFreq());
-  ch.fLow  = - .5 * ch.bw;
-  ch.fHigh = + .5 * ch.bw;
-
-  if (m_ui->inspectorCombo->currentIndex() == -1)
-    return;
-
   m_panelConfig->inspFactory =
     m_ui->inspectorCombo->currentData().value<QString>().toStdString();
-
   m_panelConfig->inspectorClass = getInspectorClass();
 
-  mediator()->openInspectorTab(
+  openInspector(
         m_panelConfig->inspFactory.c_str(),
         m_panelConfig->inspectorClass.c_str(),
-        ch,
         m_ui->preciseCheck->isChecked());
 }
 
@@ -920,4 +946,28 @@ InspToolWidget::onInspectorSamples(Suscan::SamplesMessage const &msg)
 {
   if (m_opened && msg.getInspectorId() == m_request.inspectorId)
     feedRawInspector(msg.getSamples(), msg.getCount());
+}
+
+void
+InspToolWidget::onOpenASK()
+{
+  openInspector("GenericInspectorFactory", "ask", true);
+}
+
+void
+InspToolWidget::onOpenFSK()
+{
+  openInspector("GenericInspectorFactory", "ask", true);
+}
+
+void
+InspToolWidget::onOpenPSK()
+{
+  openInspector("GenericInspectorFactory", "ask", true);
+}
+
+void
+InspToolWidget::onOpenRMS()
+{
+  openInspector("RMSInspectorFactory", "power", true);
 }
