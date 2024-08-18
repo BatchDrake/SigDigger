@@ -18,6 +18,7 @@
 //
 #include "ToolWidgetFactory.h"
 #include <Suscan/Library.h>
+#include <QAction>
 
 using namespace SigDigger;
 
