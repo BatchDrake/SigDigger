@@ -55,6 +55,12 @@
         <file>fsk-inspector.svg</file>
         <file>psk-inspector.svg</file>
         <file>rms-inspector.svg</file>
+        <file>am.svg</file>
+        <file>fm.svg</file>
+        <file>nodemod.svg</file>
+        <file>raw.svg</file>
+        <file>usb.svg</file>
+        <file>lsb.svg</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

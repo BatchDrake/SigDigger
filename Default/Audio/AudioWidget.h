@@ -191,6 +191,15 @@ namespace SigDigger {
 
     // Analyzer slots
     void onSourceInfoMessage(Suscan::SourceInfoMessage const &);
+
+    // Quick actions
+    void onNoDemod();
+    void onAM();
+    void onFM();
+    void onUSB();
+    void onLSB();
+    void onRaw();
+
   };
 }
 

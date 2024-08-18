@@ -138,6 +138,31 @@ AudioWidget::AudioWidget(
   connectAll();
 
   setProperty("collapsed", m_panelConfig->collapsed);
+
+  auto action = new QAction;
+
+  action->setIcon(QIcon(":/icons/nodemod.svg"));
+  registerAction(action, SLOT(onNoDemod()));
+
+  action = new QAction;
+  action->setIcon(QIcon(":/icons/am.svg"));
+  registerAction(action, SLOT(onAM()));
+
+  action = new QAction;
+  action->setIcon(QIcon(":/icons/fm.svg"));
+  registerAction(action, SLOT(onFM()));
+
+  action = new QAction;
+  action->setIcon(QIcon(":/icons/lsb.svg"));
+  registerAction(action, SLOT(onAM()));
+
+  action = new QAction;
+  action->setIcon(QIcon(":/icons/usb.svg"));
+  registerAction(action, SLOT(onUSB()));
+
+  action = new QAction;
+  action->setIcon(QIcon(":/icons/raw.svg"));
+  registerAction(action, SLOT(onRaw()));
 }
 
 AudioWidget::~AudioWidget()
@@ -878,6 +903,9 @@ AudioWidget::setState(int state, Suscan::Analyzer *analyzer)
   if (analyzer == nullptr)
     m_processor->setAnalyzer(analyzer);
 
+  for (auto &p : UIComponent::actions())
+    p->setEnabled(m_analyzer != nullptr);
+
   applySpectrumState();
 }
 
@@ -1233,5 +1261,45 @@ AudioWidget::onLockToFreqChanged()
   setLockToFreq(getLockToFreq());
 }
 
+void
+AudioWidget::onNoDemod()
+{
+  setEnabled(false);
+}
+
+void
+AudioWidget::onAM()
+{
+  setEnabled(true);
+  setDemod(AudioDemod::AM);
+}
+
+void
+AudioWidget::onFM()
+{
+  setEnabled(true);
+  setDemod(AudioDemod::FM);
+}
+
+void
+AudioWidget::onUSB()
+{
+  setEnabled(true);
+  setDemod(AudioDemod::USB);
+}
+
+void
+AudioWidget::onLSB()
+{
+  setEnabled(true);
+  setDemod(AudioDemod::LSB);
+}
+
+void
+AudioWidget::onRaw()
+{
+  setEnabled(true);
+  setDemod(AudioDemod::RAW);
+}
 
 ////////////////// TODO: implement onJumpToBookmark ////////////////////////////
