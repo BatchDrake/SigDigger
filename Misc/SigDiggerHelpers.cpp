@@ -246,7 +246,7 @@ SigDiggerHelpers::openSaveCoherentSamplesDialog(
     const SUCOMPLEX *channel1,
     const SUCOMPLEX *channel2,
     size_t length,
-    qreal fs,
+    qreal,
     int start,
     int end,
     Suscan::MultitaskController *mt)
@@ -256,8 +256,6 @@ SigDiggerHelpers::openSaveCoherentSamplesDialog(
   do {
     QFileDialog dialog(root);
     QStringList filters;
-    QString format;
-
     dialog.setFileMode(QFileDialog::FileMode::AnyFile);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setWindowTitle(QString("Save coherent capture"));
@@ -268,7 +266,6 @@ SigDiggerHelpers::openSaveCoherentSamplesDialog(
 
     if (dialog.exec()) {
       QString path = dialog.selectedFiles().first();
-      QString filter = dialog.selectedNameFilter();
       ExportCSVTask *task;
 
       path = SuWidgetsHelpers::ensureExtension(path, "csv");
@@ -304,7 +301,7 @@ Palette *
 SigDiggerHelpers::getGqrxPalette()
 {
   static qreal color[256][3];
-  if (this->m_gqrxPalette == nullptr) {
+  if (m_gqrxPalette == nullptr) {
     for (int i = 0; i < 256; i++) {
       if (i < 20) { // level 0: black background
         color[i][0] = color[i][1] = color[i][2] = 0;
@@ -341,16 +338,16 @@ SigDiggerHelpers::deserializePalettes()
 {
   Suscan::Singleton *sus = Suscan::Singleton::get_instance();
 
-  if (this->m_palettes.size() == 0) {
-    this->m_palettes.push_back(Palette("Suscan", wf_gradient));
-    this->m_palettes.push_back(*this->getGqrxPalette());
+  if (m_palettes.size() == 0) {
+    m_palettes.push_back(Palette("Suscan", wf_gradient));
+    m_palettes.push_back(*getGqrxPalette());
   }
 
   // Fill palette vector
   for (auto i = sus->getFirstPalette();
        i != sus->getLastPalette();
        i++)
-    this->m_palettes.push_back(Palette(*i));
+    m_palettes.push_back(Palette(*i));
 }
 
 void
@@ -361,7 +358,7 @@ SigDiggerHelpers::populatePaletteCombo(QComboBox *cb)
   cb->clear();
 
   // Populate combo
-  for (auto p : this->m_palettes) {
+  for (auto p : m_palettes) {
     cb->insertItem(
           ndx,
           QIcon(QPixmap::fromImage(p.getThumbnail())),
@@ -397,10 +394,10 @@ SigDiggerHelpers::populateAntennaCombo(
 const Palette *
 SigDiggerHelpers::getPalette(int index) const
 {
-  if (index < 0 || index >= static_cast<int>(this->m_palettes.size()))
+  if (index < 0 || index >= static_cast<int>(m_palettes.size()))
     return nullptr;
 
-  return &this->m_palettes[static_cast<size_t>(index)];
+  return &m_palettes[static_cast<size_t>(index)];
 }
 
 int
@@ -408,8 +405,8 @@ SigDiggerHelpers::getPaletteIndex(std::string const &name) const
 {
   unsigned int i;
 
-  for (i = 0; i < this->m_palettes.size(); ++i)
-    if (this->m_palettes[i].getName().compare(name) == 0)
+  for (i = 0; i < m_palettes.size(); ++i)
+    if (m_palettes[i].getName().compare(name) == 0)
       return static_cast<int>(i);
 
   return -1;
@@ -418,10 +415,10 @@ SigDiggerHelpers::getPaletteIndex(std::string const &name) const
 const Palette *
 SigDiggerHelpers::getPalette(std::string const &name) const
 {
-  int index = this->getPaletteIndex(name);
+  int index = getPaletteIndex(name);
 
   if (index >= 0)
-    return &this->m_palettes[index];
+    return &m_palettes[index];
 
   return nullptr;
 }
@@ -430,11 +427,11 @@ SigDiggerHelpers::SigDiggerHelpers()
 {
   const char *localTZ = getenv("TZ");
 
-  this->m_haveTZvar = localTZ != nullptr;
+  m_haveTZvar = localTZ != nullptr;
   if (localTZ != nullptr)
-    this->m_tzVar = localTZ;
+    m_tzVar = localTZ;
 
-  this->deserializePalettes();
+  deserializePalettes();
 }
 
 
@@ -446,12 +443,12 @@ SigDiggerHelpers::pushTZ(const char *tz)
 
   // Non-null TZ, push in saving stack
   if (prev != nullptr) {
-    this->m_tzs.push_front(prev);
-    front = &this->m_tzs.front();
+    m_tzs.push_front(prev);
+    front = &m_tzs.front();
   }
 
   // Push this one nonetheless
-  this->m_tzStack.push_front(front);
+  m_tzStack.push_front(front);
 
   if (tz != nullptr)
     setenv("TZ", tz, 1);
@@ -466,15 +463,15 @@ SigDiggerHelpers::popTZ()
 {
   const std::string *front;
 
-  if (this->m_tzStack.empty())
+  if (m_tzStack.empty())
     return false;
 
-  front = this->m_tzStack.front();
+  front = m_tzStack.front();
 
   if (front != nullptr) {
     setenv("TZ", front->c_str(), 1);
     // Non-null TZ, pop from the saving stack
-    this->m_tzs.pop_front();
+    m_tzs.pop_front();
   } else {
     unsetenv("TZ");
   }
@@ -482,7 +479,7 @@ SigDiggerHelpers::popTZ()
   tzset();
 
   // Pop it
-  this->m_tzStack.pop_front();
+  m_tzStack.pop_front();
 
   return true;
 }
@@ -490,16 +487,16 @@ SigDiggerHelpers::popTZ()
 void
 SigDiggerHelpers::pushLocalTZ()
 {
-  if (this->m_haveTZvar)
-    this->pushTZ(this->m_tzVar.c_str());
+  if (m_haveTZvar)
+    pushTZ(m_tzVar.c_str());
   else
-    this->pushTZ(nullptr);
+    pushTZ(nullptr);
 }
 
 void
 SigDiggerHelpers::pushUTCTZ()
 {
-  this->pushTZ("");
+  pushTZ("");
 }
 
 QString
