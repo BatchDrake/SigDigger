@@ -18,6 +18,7 @@
 //
 
 #include <QApplication>
+#include <QTranslator>
 #include <RMSViewer.h>
 #include <iostream>
 #include <QFont>
@@ -196,6 +197,12 @@ main(int argc, char *argv[])
   QString appName = "SigDigger";
   int ret = EXIT_FAILURE;
   int c;
+
+  QTranslator translator;
+  if (!translator.load(QLocale(), "SigDigger", "_", ":/i18n"))
+    fprintf(stderr, "%s: locale %s not found, using English as default\n", argv[0], QLocale().name().toStdString().c_str());
+  else
+    app.installTranslator(&translator);
 
 #ifdef __APPLE__
   QFont::insertSubstitution("Monospace", "Monaco");

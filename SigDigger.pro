@@ -15,6 +15,11 @@ TEMPLATE = app
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
+CONFIG += lrelease embed_translations
+
+TRANSLATIONS += i18n/SigDigger_en_US.ts \
+                i18n/SigDigger_zh_CN.ts
+
 equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 9) {
   QMAKE_CXXFLAGS += -std=gnu++17
 } else {
