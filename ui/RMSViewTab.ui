@@ -333,7 +333,7 @@
          </font>
         </property>
         <property name="toolTip">
-         <string>Toggle logaritmic scale</string>
+         <string>Toggle logarithmic scale</string>
         </property>
         <property name="text">
          <string>dB</string>
@@ -439,6 +439,7 @@
    <class>Waveform</class>
    <extends>QFrame</extends>
    <header>Waveform.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>TimeSpinBox</class>

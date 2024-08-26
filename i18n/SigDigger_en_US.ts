@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1">
+<TS version="2.1" language="en_US">
 <context>
     <name>AboutDialog</name>
     <message>
@@ -3308,7 +3308,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="ui/RMSViewTab.ui" line="336"/>
-        <source>Toggle logaritmic scale</source>
+        <source>Toggle logarithmic scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
