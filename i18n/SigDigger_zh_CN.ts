@@ -1015,4 +1015,542 @@
       <translation type="finished">关于</translation>
     </message>
   </context>
+  <context>
+    <name>TVProcessorTab</name>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="51"/>
+      <source>Picture</source>
+      <translation type="finished">图像</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="126"/>
+      <source>Invert polarity</source>
+      <translation type="finished">反转</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="147"/>
+      <source>Sync</source>
+      <translation type="finished">同步信号</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="154"/>
+      <source>Image</source>
+      <translation type="finished">图像</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="164"/>
+      <source>Zoom</source>
+      <translation type="finished">放缩</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="198"/>
+      <source>Flip</source>
+      <translation type="finished">翻转</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="219"/>
+      <source>Vertical</source>
+      <translation type="finished">垂直</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="226"/>
+      <source>Horizontal</source>
+      <translation type="finished">水平</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="236"/>
+      <source>Presets</source>
+      <translation type="finished">预置</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="257"/>
+      <source>&amp;NTSC</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="267"/>
+      <source>&amp;PAL</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="274"/>
+      <source>&amp;Custom...</source>
+      <translation type="finished">定制...</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="284"/>
+      <source>Geometry</source>
+      <translation type="finished">几何结构</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="330"/>
+      <source>Line period</source>
+      <translation type="finished">线周期</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="337"/>
+      <source>Lines</source>
+      <translation type="finished">线制</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="374"/>
+      <source> Hz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="418"/>
+      <source>&amp;Comb</source>
+      <translation type="finished">组合</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="437"/>
+      <source>&amp;Y/C</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="453"/>
+      <source>&amp;Accum</source>
+      <translation type="finished">累积</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="469"/>
+      <source>A&amp;GC</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="491"/>
+      <source> f</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="510"/>
+      <source>&amp;LPF</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="526"/>
+      <source>Adjust</source>
+      <translation type="finished">调整</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="575"/>
+      <source>Brightness</source>
+      <translation type="finished">亮度</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="647"/>
+      <source>Gamma</source>
+      <translation type="finished">伽马值</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="657"/>
+      <source>Contrast</source>
+      <translation type="finished">对比度</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="670"/>
+      <source>Levels</source>
+      <translation type="finished">电平</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="697"/>
+      <source>%</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="710"/>
+      <source>DC</source>
+      <translation type="finished">直流</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="720"/>
+      <source>Field dominance</source>
+      <translation type="finished">扫描类型</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="741"/>
+      <source>Non-interlaced</source>
+      <translation type="finished">无交织</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="748"/>
+      <source>Field one</source>
+      <translation type="finished">场1</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="755"/>
+      <source>Field two</source>
+      <translation type="finished">场2</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="765"/>
+      <source>Rotation</source>
+      <translation type="finished">旋转</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="810"/>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="846"/>
+      <source>Synchronization</source>
+      <translation type="finished">同步</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="873"/>
+      <source> pulses</source>
+      <translation type="finished"> 脉冲</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="880"/>
+      <source>HSYNC</source>
+      <translation type="finished">水平同步</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="887"/>
+      <source>VSYNC</source>
+      <translation type="finished">垂直同步</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="904"/>
+      <source>Sync to pulses</source>
+      <translation type="finished">同步到脉冲</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="917"/>
+      <source>Train length</source>
+      <translation type="finished">训练长度</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="937"/>
+      <source>Time constants and triggers</source>
+      <translation type="finished">时间常数和触发</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="964"/>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="994"/>
+      <source> lines</source>
+      <translation type="finished"> 线</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="974"/>
+      <source>Slow track</source>
+      <translation type="finished">慢速追踪</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="981"/>
+      <source>Line adjust</source>
+      <translation type="finished">线调节</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1013"/>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1043"/>
+      <source> frames</source>
+      <translation type="finished"> 帧</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1023"/>
+      <source>Fast track</source>
+      <translation type="finished">快速追踪</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1030"/>
+      <source>AGC</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1059"/>
+      <source>Hsync error interval</source>
+      <translation type="finished">水平同步误差间隔</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1072"/>
+      <source>Fast correction threshold</source>
+      <translation type="finished">快速修正门限</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1090"/>
+      <source>100.00%-100.00%</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1140"/>
+      <source>TextLabel</source>
+      <translation type="finished">文本标签</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1150"/>
+      <source>Tolerances</source>
+      <translation type="finished">容差</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1156"/>
+      <source>Time tolerance</source>
+      <translation type="finished">时间容差</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1190"/>
+      <source>100.01</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1197"/>
+      <source>Level tolerance</source>
+      <translation type="finished">电平容差</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1225"/>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1260"/>
+      <source>0%</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1232"/>
+      <source>Geometry tolerance</source>
+      <translation type="finished">几何结构容差</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1293"/>
+      <source>&amp;Enable</source>
+      <translation type="finished">使能</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/TVProcessorTab.ui" line="1303"/>
+      <source>&amp;Snapshot</source>
+      <translation type="finished">快照</translation>
+    </message>
+  </context>
+  <context>
+    <name>WaveformTab</name>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="65"/>
+      <source>&amp;Frequency</source>
+      <translation type="finished">频率</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="87"/>
+      <source>&amp;Record</source>
+      <translation type="finished">记录</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="97"/>
+      <source>Save captured data</source>
+      <translation type="finished">保存捕获的数据</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="114"/>
+      <source>Fit to gain</source>
+      <translation type="finished">自适应增益</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="117"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="151"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="193"/>
+      <source>...</source>
+      <translation type="finished">...</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="131"/>
+      <source>Save selection</source>
+      <translation type="finished">保存选择区域</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="148"/>
+      <source>Reset zoom</source>
+      <translation type="finished">重置缩放</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="165"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="182"/>
+      <source>Both</source>
+      <translation type="finished">全选</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="172"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="1052"/>
+      <source>In-Phase</source>
+      <translation type="finished">同向</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="177"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="1075"/>
+      <source>Quadrature</source>
+      <translation type="finished">正交</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="190"/>
+      <source>Zoom selection</source>
+      <translation type="finished">放缩选框</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="207"/>
+      <source>&amp;Phase</source>
+      <translation type="finished">相位</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="220"/>
+      <source>&amp;Waveform</source>
+      <translation type="finished">波形</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="236"/>
+      <source>En&amp;velope</source>
+      <translation type="finished">包络</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="262"/>
+      <source>Component</source>
+      <translation type="finished">分量</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="269"/>
+      <source>&amp;Clear</source>
+      <translation type="finished">清除</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="333"/>
+      <source>t:</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="340"/>
+      <source>Q:</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="354"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="374"/>
+      <source>0</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="381"/>
+      <source>I:</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="425"/>
+      <source>0 (0º)</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="432"/>
+      <source>Mag (phase)</source>
+      <translation type="finished">幅度（相位）</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="452"/>
+      <source>0 ms</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="483"/>
+      <source>Palette</source>
+      <translation type="finished">颜色板</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="500"/>
+      <source>Palette origin</source>
+      <translation type="finished">颜色板起始</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="523"/>
+      <source>Contrast</source>
+      <translation type="finished">对比</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="550"/>
+      <source>Periodic sel.</source>
+      <translation type="finished">周期选择</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="575"/>
+      <source> cycles</source>
+      <translation type="finished">周期</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="591"/>
+      <source>Fine tune sel. start</source>
+      <translation type="finished">微调 起始</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="640"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="788"/>
+      <source>&lt;</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="656"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="804"/>
+      <source>&gt;</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="672"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="772"/>
+      <source>&lt;&lt;</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="694"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="820"/>
+      <source>&gt;&gt;</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="713"/>
+      <source>&amp;Lock</source>
+      <translation type="finished">锁定</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="729"/>
+      <source>Fine tune sel. end</source>
+      <translation type="finished">微调 终止</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="846"/>
+      <source>Selection start</source>
+      <translation type="finished">选框 起始</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="866"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="899"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="932"/>
+      <source>0 ms (0)</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="879"/>
+      <source>Selection end</source>
+      <translation type="finished">选框 终止</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="912"/>
+      <source>Selection length</source>
+      <translation type="finished">选框时长</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="945"/>
+      <source>Selection ΔT</source>
+      <translation type="finished">选框ΔT</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="968"/>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="1004"/>
+      <source>N/A</source>
+      <translation type="finished">不可用</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/WaveformTab.ui" line="981"/>
+      <source>Selection freq</source>
+      <translation type="finished">选框频率</translation>
+    </message>
+  </context>
 </TS>
