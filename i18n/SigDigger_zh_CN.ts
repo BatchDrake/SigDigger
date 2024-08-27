@@ -687,4 +687,332 @@
       <translation type="finished">文本颜色</translation>
     </message>
   </context>
+  <context>
+    <name>LocationConfigTab</name>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="35"/>
+      <source>Search . . .</source>
+      <translation type="finished">搜索...</translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="67"/>
+      <source>Current location</source>
+      <translation type="finished">当前位置</translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="91"/>
+      <source> m</source>
+      <translation type="finished"> m</translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="107"/>
+      <source>Longitude</source>
+      <translation type="finished">经度</translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="117"/>
+      <source>E </source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="120"/>
+      <location filename="ui/LocationConfigTab.ui" line="175"/>
+      <source> º</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="139"/>
+      <source>Latitude</source>
+      <translation type="finished">纬度</translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="149"/>
+      <source>Altitude</source>
+      <translation type="finished">海拔</translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="172"/>
+      <source>N </source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="204"/>
+      <source>Name / city</source>
+      <translation type="finished">名称/城市</translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="211"/>
+      <source>Country</source>
+      <translation type="finished">国家</translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="218"/>
+      <source>&amp;Add current location to list</source>
+      <translation type="finished">把当前位置添加到列表</translation>
+    </message>
+    <message>
+      <location filename="ui/LocationConfigTab.ui" line="231"/>
+      <source>In order to perform accurate Doppler corrections of satellital signals, SigDigger needs to know the geographical coordinates of the reception site. Note that this does not apply to remote analyzers, as Doppler corrections are performed according to the remote receiver location.</source>
+      <translation type="finished">为了准确的进行卫星信号多普勒效应修正，SigDigger需要获取接收站地理坐标。注意这不适用于远程分析，因为多普勒效应修正是基于接收站点计算的</translation>
+    </message>
+  </context>
+  <context>
+    <name>RemoteControlTab</name>
+    <message>
+      <location filename="ui/RemoteControlTab.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="ui/RemoteControlTab.ui" line="45"/>
+      <source>localhost</source>
+      <translation type="finished">本地主机</translation>
+    </message>
+    <message>
+      <location filename="ui/RemoteControlTab.ui" line="61"/>
+      <source>Listen address</source>
+      <translation type="finished">监听地址</translation>
+    </message>
+    <message>
+      <location filename="ui/RemoteControlTab.ui" line="93"/>
+      <source>Port</source>
+      <translation type="finished">端口</translation>
+    </message>
+    <message>
+      <location filename="ui/RemoteControlTab.ui" line="103"/>
+      <source>Enable remote operation of the GUI from a TCP socket</source>
+      <translation type="finished">使能远程控制(通过TCP协议)</translation>
+    </message>
+  </context>
+  <context>
+    <name>RMSViewTab</name>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="53"/>
+      <source>yyyy/MM/dd hh:mm:ss</source>
+      <translation type="finished">年/月/日 时:分:秒</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="60"/>
+      <source>Time scale</source>
+      <translation type="finished">时间</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="93"/>
+      <source>Elapsed time</source>
+      <translation type="finished">用时</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="98"/>
+      <source>Source time</source>
+      <translation type="finished">数据源时间</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="103"/>
+      <source>Custom</source>
+      <translation type="finished">定制</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="111"/>
+      <source>Average:</source>
+      <translation type="finished">平均:</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="200"/>
+      <source> points</source>
+      <translation type="finished">点</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="213"/>
+      <source>Accumulate:</source>
+      <translation type="finished">累积:</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="239"/>
+      <source>Integrate:</source>
+      <translation type="finished">累积时长:</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="260"/>
+      <source>Autoscroll</source>
+      <translation type="finished">自动滚动</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="263"/>
+      <location filename="ui/RMSViewTab.ui" line="293"/>
+      <location filename="ui/RMSViewTab.ui" line="316"/>
+      <source>...</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="290"/>
+      <source>Autofit</source>
+      <translation type="finished">自适应</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="313"/>
+      <source>Reset zoom</source>
+      <translation type="finished">放缩重置</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="336"/>
+      <source>Toggle logarithmic scale</source>
+      <translation type="finished">切换对数标尺</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="339"/>
+      <source>dB</source>
+      <translation type="finished">dB</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="368"/>
+      <source>Since: N/A</source>
+      <translation type="finished">起始时刻: 不可用</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="375"/>
+      <source>Disconnect from host</source>
+      <translation type="finished">断开连接</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="398"/>
+      <source>Last measure: N/A</source>
+      <translation type="finished">上一次测量: 不可用</translation>
+    </message>
+    <message>
+      <location filename="ui/RMSViewTab.ui" line="405"/>
+      <source>Save data</source>
+      <translation type="finished">保存数据</translation>
+    </message>
+  </context>
+  <context>
+    <name>SymViewTab</name>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="56"/>
+      <source>Offset</source>
+      <translation type="finished">偏移</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="81"/>
+      <source>Data size: 0 bits</source>
+      <translation type="finished">数据大小: 0 bits</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="99"/>
+      <source>Capture size: 0 sym</source>
+      <translation type="finished">捕获大小: 0 符号</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="121"/>
+      <source>Record</source>
+      <translation type="finished">记录</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="131"/>
+      <source>Clear</source>
+      <translation type="finished">清除</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="138"/>
+      <source>Reverse</source>
+      <translation type="finished">反向</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="164"/>
+      <source>Fit to window</source>
+      <translation type="finished">适应窗口</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="184"/>
+      <source>Save</source>
+      <translation type="finished">保存</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="191"/>
+      <source>Width</source>
+      <translation type="finished">宽度</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="198"/>
+      <source>Autoscroll</source>
+      <translation type="finished">自动滚动</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="230"/>
+      <source>Zoom</source>
+      <translation type="finished">缩放</translation>
+    </message>
+    <message>
+      <location filename="Default/GenericInspector/SymViewTab.ui" line="253"/>
+      <source>Reset zoom</source>
+      <translation type="finished">重置缩放</translation>
+    </message>
+  </context>
+  <context>
+    <name>TLESourceTab</name>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="35"/>
+      <source>&amp;Remove</source>
+      <translation type="finished">删除</translation>
+    </message>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="42"/>
+      <source>&amp;Add</source>
+      <translation type="finished">添加</translation>
+    </message>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="74"/>
+      <source>Name</source>
+      <translation type="finished">名称</translation>
+    </message>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="79"/>
+      <source>URL</source>
+      <translation type="finished">URL</translation>
+    </message>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="87"/>
+      <source>Download TLEs automatically on &amp;startup</source>
+      <translation type="finished">在启动时自动下载TLEs</translation>
+    </message>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="107"/>
+      <source>Update TLEs</source>
+      <translation type="finished">更新TLEs</translation>
+    </message>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="138"/>
+      <source>&amp;Download now</source>
+      <translation type="finished">立即下载</translation>
+    </message>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="145"/>
+      <source>Ready</source>
+      <translation type="finished">已就绪</translation>
+    </message>
+    <message>
+      <location filename="ui/TLESourceTab.ui" line="155"/>
+      <source>&amp;Abort</source>
+      <translation type="finished">关于</translation>
+    </message>
+  </context>
 </TS>
