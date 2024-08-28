@@ -26,7 +26,8 @@ namespace SigDigger {
   {
   public:
     // FeatureFactory overrides
-    const char *name(void) const override;
+    const char *name() const override;
+    const char *desc() const override;
 
     // ToolWidgetFactory overrides
     ToolWidget *make(UIMediator *) override;

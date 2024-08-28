@@ -380,7 +380,7 @@ UIMediator::registerComponentActions(UIComponent *comp)
   auto &actions = comp->actions();
 
   if (!actions.isEmpty()) {
-    QToolBar *toolBar = new QToolBar(comp->factory()->name());
+    QToolBar *toolBar = new QToolBar(comp->factory()->desc());
 
     getMainWindow()->insertToolBar(m_lastToolBar, toolBar);
     m_lastToolBar = toolBar;

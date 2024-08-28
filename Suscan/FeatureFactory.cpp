@@ -63,6 +63,12 @@ FeatureFactory::FeatureFactory(Plugin *plugin)
   plugin->registerFactory(this);
 }
 
+const char *
+FeatureFactory::desc() const
+{
+  return name();
+}
+
 FeatureFactory::~FeatureFactory()
 {
   // Destruction of a FeatureFactory: notify the plugin about this removal

@@ -54,6 +54,7 @@ namespace Suscan {
 
   public:
     virtual const char *name() const = 0;
+    virtual const char *desc() const;
 
     bool canBeRemoved() const;
 

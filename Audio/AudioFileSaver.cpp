@@ -73,6 +73,10 @@ AudioFileWriter::prepare(void)
       case LSB:
         modulation = "LSB";
         break;
+
+      case RAW:
+        modulation = "RAW";
+        break;
     }
 
     do {

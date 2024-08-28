@@ -1553,4 +1553,272 @@
       <translation type="finished">选框频率</translation>
     </message>
   </context>
+  <context>
+    <name>AudioPanel</name>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="20"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="44"/>
+      <source>Baseband audio preview</source>
+      <translation type="finished">音频侦听</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="81"/>
+      <source>Disk usage</source>
+      <translation type="finished">硬盘使用量</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="91"/>
+      <source>Audio cutoff</source>
+      <translation type="finished">音频截止频率</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="116"/>
+      <source>Audio recorder</source>
+      <translation type="finished">音频记录器</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="123"/>
+      <source>Sample rate</source>
+      <translation type="finished">采样率</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="136"/>
+      <source>&amp;Record</source>
+      <translation type="finished">记录</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="146"/>
+      <source>Folder</source>
+      <translation type="finished">文件夹</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="162"/>
+      <source>22222 Hz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="169"/>
+      <source>0 bytes</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="183"/>
+      <source>Gain control</source>
+      <translation type="finished">增益控制</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="193"/>
+      <source>Capture size</source>
+      <translation type="finished">捕获大小</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="216"/>
+      <source>Volume</source>
+      <translation type="finished">音量</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="227"/>
+      <source>Disabled</source>
+      <translation type="finished">不使能</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="232"/>
+      <source>Slow</source>
+      <translation type="finished">慢</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="237"/>
+      <source>Normal</source>
+      <translation type="finished">中</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="242"/>
+      <source>Fast</source>
+      <translation type="finished">快</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="279"/>
+      <source>0%</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="286"/>
+      <source>Demodulator</source>
+      <translation type="finished">解调器</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="296"/>
+      <source>&amp;Browse...</source>
+      <translation type="finished">浏览...</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="306"/>
+      <source>&amp;Doppler settings</source>
+      <translation type="finished">多普勒设置</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="359"/>
+      <source>&amp;SQL</source>
+      <translation type="finished">静噪</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="392"/>
+      <source>Squelch at</source>
+      <translation type="finished">静噪阈值</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="402"/>
+      <source>Correction</source>
+      <translation type="finished">修正</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="417"/>
+      <source>None</source>
+      <translation type="finished">无</translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="431"/>
+      <source>AM</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="436"/>
+      <source>FM</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="441"/>
+      <source>USB</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="446"/>
+      <source>LSB</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="451"/>
+      <source>RAW</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Audio/AudioWidget.ui" line="462"/>
+      <source>Lock to current frequency</source>
+      <translation type="finished">锁定到当前频率</translation>
+    </message>
+  </context>
+  <context>
+    <name>SourcePanel</name>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="35"/>
+      <source>Swap I/Q</source>
+      <translation type="finished">互换I/Q</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="48"/>
+      <source> ppm</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="66"/>
+      <location filename="Default/Source/SourceWidget.ui" line="195"/>
+      <location filename="Default/Source/SourceWidget.ui" line="485"/>
+      <source>N/A</source>
+      <translation type="finished">不可用</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="120"/>
+      <source>Use gain presets</source>
+      <translation type="finished">使用增益预设值</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="130"/>
+      <source>Processing rate</source>
+      <translation type="finished">处理速率</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="143"/>
+      <source>Throttle override</source>
+      <translation type="finished">复写采样率</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="258"/>
+      <source>Hardware AGC</source>
+      <translation type="finished">硬件AGC</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="284"/>
+      <source>Sample rate</source>
+      <translation type="finished">采样率</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="294"/>
+      <source>DC remove</source>
+      <translation type="finished">去除直流</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="301"/>
+      <source>Freq. correction</source>
+      <translation type="finished">频率修正</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="311"/>
+      <source>Bandwidth</source>
+      <translation type="finished">带宽</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="357"/>
+      <source>Effective rate</source>
+      <translation type="finished">实际速率</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="367"/>
+      <source>Antenna</source>
+      <translation type="finished">天线</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="402"/>
+      <source>Allocate replay history</source>
+      <translation type="finished">分配历史暂留内存</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="412"/>
+      <source> MiB</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="428"/>
+      <source>Replay time</source>
+      <translation type="finished">回放时长</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="438"/>
+      <source>History allocation</source>
+      <translation type="finished">历史暂留分配</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="457"/>
+      <source>&amp;Replay</source>
+      <translation type="finished">回放</translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="460"/>
+      <source>Ctrl+H</source>
+      <translation type="finished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Source/SourceWidget.ui" line="470"/>
+      <source>Max replay time</source>
+      <translation type="finished">最大回放时长</translation>
+    </message>
+  </context>
 </TS>

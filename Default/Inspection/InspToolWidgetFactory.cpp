@@ -23,7 +23,7 @@
 using namespace SigDigger;
 
 const char *
-InspToolWidgetFactory::name(void) const
+InspToolWidgetFactory::name() const
 {
   return "InspToolWidget";
 }
@@ -37,8 +37,14 @@ InspToolWidgetFactory::make(UIMediator *mediator)
 InspToolWidgetFactory::InspToolWidgetFactory(Suscan::Plugin *plugin) :
   ToolWidgetFactory(plugin) { }
 
+const char *
+InspToolWidgetFactory::desc() const
+{
+  return "Channel inspection";
+}
+
 std::string
 InspToolWidgetFactory::getTitle() const
 {
-  return "Channel inspection";
+  return desc();
 }

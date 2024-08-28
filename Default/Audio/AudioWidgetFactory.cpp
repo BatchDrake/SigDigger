@@ -22,7 +22,7 @@
 using namespace SigDigger;
 
 const char *
-AudioWidgetFactory::name(void) const
+AudioWidgetFactory::name() const
 {
   return "AudioWidget";
 }
@@ -36,8 +36,14 @@ AudioWidgetFactory::make(UIMediator *mediator)
 AudioWidgetFactory::AudioWidgetFactory(Suscan::Plugin *plugin) :
   ToolWidgetFactory(plugin) { }
 
+const char *
+AudioWidgetFactory::desc() const
+{
+  return "Audio preview";
+}
+
 std::string
 AudioWidgetFactory::getTitle() const
 {
-  return "Audio preview";
+  return desc();
 }
