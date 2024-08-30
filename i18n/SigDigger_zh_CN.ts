@@ -1693,17 +1693,17 @@
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="441"/>
       <source>USB</source>
-      <translation type="unfinished"></translation>
+      <translation type="finished">上边带</translation>
     </message>
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="446"/>
       <source>LSB</source>
-      <translation type="unfinished"></translation>
+      <translation type="finished">下边带</translation>
     </message>
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="451"/>
       <source>RAW</source>
-      <translation type="unfinished"></translation>
+      <translation type="finished">原始</translation>
     </message>
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="462"/>
@@ -1788,7 +1788,7 @@
     <message>
       <location filename="Default/Source/SourceWidget.ui" line="402"/>
       <source>Allocate replay history</source>
-      <translation type="finished">分配历史暂留内存</translation>
+      <translation type="finished">设置暂存缓冲区</translation>
     </message>
     <message>
       <location filename="Default/Source/SourceWidget.ui" line="412"/>
@@ -1803,7 +1803,7 @@
     <message>
       <location filename="Default/Source/SourceWidget.ui" line="438"/>
       <source>History allocation</source>
-      <translation type="finished">历史暂留分配</translation>
+      <translation type="finished">缓冲区大小</translation>
     </message>
     <message>
       <location filename="Default/Source/SourceWidget.ui" line="457"/>
@@ -1813,7 +1813,7 @@
     <message>
       <location filename="Default/Source/SourceWidget.ui" line="460"/>
       <source>Ctrl+H</source>
-      <translation type="finished"></translation>
+      <translation type="finished">Ctrl+H</translation>
     </message>
     <message>
       <location filename="Default/Source/SourceWidget.ui" line="470"/>
@@ -1821,4 +1821,533 @@
       <translation type="finished">最大回放时长</translation>
     </message>
   </context>
+  <context>
+    <name>InspectorPanel</name>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="35"/>
+      <source>Precise channel centering</source>
+      <translation type="finished">信道精确居中</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="42"/>
+      <source>Bandwidth</source>
+      <translation type="finished">带宽</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="58"/>
+      <source>Open inspector</source>
+      <translation type="finished">打开检测器</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="71"/>
+      <source>Enable channel detector</source>
+      <translation type="finished">使能信道检测</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="78"/>
+      <source>Center frequency</source>
+      <translation type="finished">中心频率</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="85"/>
+      <source>Streaming inspection</source>
+      <translation type="finished">流检测</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="122"/>
+      <source>Pass-through (no demodulation)</source>
+      <translation type="finished">直通（无解调）</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="132"/>
+      <source>Digital &amp;Phase demodulator (PSK)</source>
+      <translation type="finished">相移键控（PSK）</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="145"/>
+      <source>&amp;Audio demodulator</source>
+      <translation type="finished">音频解调器</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="155"/>
+      <source>Digital &amp;FM demodulator (FSK)</source>
+      <translation type="finished">频移键控（FSK）</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="165"/>
+      <source>Inspector type</source>
+      <translation type="finished">检测器类型</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="172"/>
+      <source>Digital &amp;AM demodulator (ASK)</source>
+      <translation type="finished">幅移键控（ASK）</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="182"/>
+      <source>&amp;Power meter</source>
+      <translation type="finished">功率计</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="195"/>
+      <source>Deferred inspection</source>
+      <translation type="finished">离线检测器</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="224"/>
+      <source>0 sps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="236"/>
+      <source>0 ms</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="251"/>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="303"/>
+      <source>N/A</source>
+      <translation type="finished">不可用</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="264"/>
+      <source> MiB</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="288"/>
+      <source>Time domain capture</source>
+      <translation type="finished">时域捕获</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="310"/>
+      <source>Duration</source>
+      <translation type="finished">时长</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="317"/>
+      <source>Memory</source>
+      <translation type="finished">内存</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="329"/>
+      <source>0 bytes</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="336"/>
+      <source>Power spectral density</source>
+      <translation type="finished">功率谱密度</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="378"/>
+      <source>Push to capture</source>
+      <translation type="finished">按此键开始捕获</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="396"/>
+      <source>Autosquelch</source>
+      <translation type="finished">自动静噪</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="409"/>
+      <source>Hang time</source>
+      <translation type="finished">悬置时长</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="416"/>
+      <source>Max memory</source>
+      <translation type="finished">缓冲区大小</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="423"/>
+      <source>Sample rate</source>
+      <translation type="finished">采样率</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="430"/>
+      <source>Squelch level</source>
+      <translation type="finished">静噪电平</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="443"/>
+      <source> ms</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="459"/>
+      <source>Trigger SNR</source>
+      <translation type="finished">触发门限</translation>
+    </message>
+    <message>
+      <location filename="Default/Inspection/InspToolWidget.ui" line="472"/>
+      <source> dB</source>
+      <translation type="unfinished"></translation>
+    </message>
+  </context>
+  <context>
+    <name>FftPanel</name>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="35"/>
+      <source>Timezone</source>
+      <translation type="finished">时间范围</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="66"/>
+      <source>&amp;Time stamps</source>
+      <translation type="finished">时间戳</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="76"/>
+      <source>&amp;Bookmarks</source>
+      <translation type="finished">书签</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="86"/>
+      <source>&amp;Channels</source>
+      <translation type="finished">通道</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="102"/>
+      <source>Window</source>
+      <translation type="finished">窗函数</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="112"/>
+      <source>Spect/Wf</source>
+      <translation type="finished">图表占比</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="122"/>
+      <source>Freq zoom</source>
+      <translation type="finished">频率缩放</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="133"/>
+      <source>Default</source>
+      <translation type="finished">默认</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="138"/>
+      <source>512</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="143"/>
+      <source>1024</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="148"/>
+      <source>2048</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="153"/>
+      <source>4096</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="158"/>
+      <source>8192</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="163"/>
+      <source>16384</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="168"/>
+      <source>32768</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="173"/>
+      <source>65536</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="210"/>
+      <source>1x</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="217"/>
+      <source>Rate</source>
+      <translation type="finished">刷新率</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="227"/>
+      <location filename="Default/FFT/FFTWidget.ui" line="845"/>
+      <source>N/A</source>
+      <translation type="finished">不可用</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="237"/>
+      <source>Gain</source>
+      <translation type="finished">增益</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="247"/>
+      <source>FFT size</source>
+      <translation type="finished">FFT点数</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="257"/>
+      <source>Units</source>
+      <translation type="finished">单位</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="267"/>
+      <source>Peak</source>
+      <translation type="finished">峰值</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="280"/>
+      <source> dBFS</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="296"/>
+      <source> dB</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="335"/>
+      <source>1 Hz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="340"/>
+      <source>10 Hz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="345"/>
+      <source>100 Hz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="350"/>
+      <source>1 kHz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="355"/>
+      <source>2.5 kHz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="360"/>
+      <source>10 kHz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="365"/>
+      <source>25 kHz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="370"/>
+      <source>100 kHz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="375"/>
+      <source>250 kHz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="380"/>
+      <source>1 MHz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="385"/>
+      <source>2.5 MHz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="390"/>
+      <source>10 MHz</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="402"/>
+      <source>1 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="407"/>
+      <source>5 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="412"/>
+      <source>10 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="417"/>
+      <source>15 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="422"/>
+      <source>20 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="427"/>
+      <source>30 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="432"/>
+      <source>50 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="437"/>
+      <source>60 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="442"/>
+      <source>90 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="447"/>
+      <source>120 fps</source>
+      <translation type="unfinished"></translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="455"/>
+      <source>Averaging</source>
+      <translation type="finished">平均</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="466"/>
+      <source>Rectangular</source>
+      <translation type="unfinished">矩形窗</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="471"/>
+      <source>Hamming</source>
+      <translation type="unfinished">汉明窗</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="476"/>
+      <source>Hann</source>
+      <translation type="unfinished">汉宁窗</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="481"/>
+      <source>Flat-top</source>
+      <translation type="finished">平顶窗</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="486"/>
+      <source>Blackmann-Harris</source>
+      <translation type="finished">布莱克曼窗</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="513"/>
+      <source>Palette</source>
+      <translation type="finished">调色板</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="536"/>
+      <source>Click res.</source>
+      <translation type="finished">点选分辨率</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="567"/>
+      <source>Wf. dB</source>
+      <translation type="finished">瀑布图幅度范围</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="577"/>
+      <source>RBW</source>
+      <translation type="finished">分辨率带宽</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="618"/>
+      <source>FFTs</source>
+      <translation type="finished">FFTs</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="629"/>
+      <source>Local time</source>
+      <translation type="finished">本地时间</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="634"/>
+      <source>Universal Time (UTC)</source>
+      <translation type="finished">协调世界时（UTC）</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="682"/>
+      <source>&amp;Detect</source>
+      <translation type="finished">检测</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="695"/>
+      <source>&amp;Hold</source>
+      <translation type="finished">保持</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="708"/>
+      <source>Zero adjust</source>
+      <translation type="finished">参考电平</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="721"/>
+      <source>&amp;Lock spectrum and waterfall</source>
+      <translation type="finished">固定频谱和瀑布图</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="767"/>
+      <source>Center</source>
+      <translation type="finished">中心</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="786"/>
+      <source>Auto</source>
+      <translation type="finished">自动</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="799"/>
+      <source>&amp;Filled</source>
+      <translation type="finished">填充</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="812"/>
+      <source>Time span</source>
+      <translation type="finished">时间跨度</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="822"/>
+      <source>Pand. dB</source>
+      <translation type="finished">频谱图幅度范围</translation>
+    </message>
+    <message>
+      <location filename="Default/FFT/FFTWidget.ui" line="835"/>
+      <source>Coverage</source>
+      <translation type="finished">覆盖率</translation>
+    </message>
+  </context>
+
 </TS>
