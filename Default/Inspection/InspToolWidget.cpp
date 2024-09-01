@@ -957,13 +957,13 @@ InspToolWidget::onOpenASK()
 void
 InspToolWidget::onOpenFSK()
 {
-  openInspector("GenericInspectorFactory", "ask", true);
+  openInspector("GenericInspectorFactory", "fsk", true);
 }
 
 void
 InspToolWidget::onOpenPSK()
 {
-  openInspector("GenericInspectorFactory", "ask", true);
+  openInspector("GenericInspectorFactory", "psk", true);
 }
 
 void
