@@ -1683,12 +1683,12 @@
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="431"/>
       <source>AM</source>
-      <translation type="unfinished"></translation>
+      <translation type="finished">调幅</translation>
     </message>
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="436"/>
       <source>FM</source>
-      <translation type="unfinished"></translation>
+      <translation type="finished">调频</translation>
     </message>
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="441"/>
@@ -2380,12 +2380,12 @@
         <location filename="../ui/AddBookmarkDialog.ui" line="94"/>
         <location filename="../ui/AddBookmarkDialog.ui" line="98"/>
         <source>AM</source>
-        <translation type="finished">不可用</translation>
+        <translation type="finished">调幅</translation>
     </message>
     <message>
         <location filename="../ui/AddBookmarkDialog.ui" line="103"/>
         <source>FM</source>
-        <translation type="unfinished"></translation>
+        <translation type="finished">调频</translation>
     </message>
     <message>
         <location filename="../ui/AddBookmarkDialog.ui" line="108"/>
@@ -2430,7 +2430,7 @@
         <source>http://example.com/satellites.txt</source>
         <translation type="unfinished"></translation>
     </message>
-   </context>
+  </context>
   <context>
     <name>AfcControl</name>
     <message>
