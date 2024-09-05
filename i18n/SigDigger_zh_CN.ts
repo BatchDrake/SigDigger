@@ -284,7 +284,7 @@
     <message>
       <location filename="ui/ColorConfigTab.ui" line="150"/>
       <source>Transition color</source>
-      <translation type="finished">迁移图颜色</translation>
+      <translation type="finished">转变图颜色</translation>
     </message>
     <message>
       <location filename="ui/ColorConfigTab.ui" line="160"/>
@@ -294,7 +294,7 @@
     <message>
       <location filename="ui/ColorConfigTab.ui" line="170"/>
       <source>Transition background</source>
-      <translation type="finished">迁移图背景</translation>
+      <translation type="finished">转变图背景</translation>
     </message>
     <message>
       <location filename="ui/ColorConfigTab.ui" line="180"/>
@@ -304,27 +304,27 @@
     <message>
       <location filename="ui/ColorConfigTab.ui" line="190"/>
       <source>Transition axes</source>
-      <translation type="finished">迁移图轴线</translation>
+      <translation type="finished">转变图轴线</translation>
     </message>
     <message>
       <location filename="ui/ColorConfigTab.ui" line="207"/>
       <source>Histogram color</source>
-      <translation type="finished">柱状图颜色</translation>
+      <translation type="finished">直方图颜色</translation>
     </message>
     <message>
       <location filename="ui/ColorConfigTab.ui" line="217"/>
       <source>Histogram background</source>
-      <translation type="finished">柱状图背景色</translation>
+      <translation type="finished">直方图背景色</translation>
     </message>
     <message>
       <location filename="ui/ColorConfigTab.ui" line="227"/>
       <source>Histogram model</source>
-      <translation type="finished">柱状图模型</translation>
+      <translation type="finished">直方图模型</translation>
     </message>
     <message>
       <location filename="ui/ColorConfigTab.ui" line="237"/>
       <source>Histogram axes</source>
-      <translation type="finished">柱状图轴线</translation>
+      <translation type="finished">直方图轴线</translation>
     </message>
     <message>
       <location filename="ui/ColorConfigTab.ui" line="254"/>
@@ -1683,12 +1683,12 @@
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="431"/>
       <source>AM</source>
-      <translation type="unfinished"></translation>
+      <translation type="finished">调幅</translation>
     </message>
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="436"/>
       <source>FM</source>
-      <translation type="unfinished"></translation>
+      <translation type="finished">调频</translation>
     </message>
     <message>
       <location filename="Default/Audio/AudioWidget.ui" line="441"/>
@@ -2349,5 +2349,219 @@
       <translation type="finished">覆盖率</translation>
     </message>
   </context>
-
+  <context>
+    <name>AddBookmarkDialog</name>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="20"/>
+        <source>Add bookmark</source>
+        <translation type="finished">添加书签</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="32"/>
+        <source>Bookmark name</source>
+        <translation type="finished">书签名称</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="48"/>
+        <source>Frequency</source>
+        <translation type="finished">频率</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="61"/>
+        <source>Bandwidth</source>
+        <translation type="finished">带宽</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="71"/>
+        <source>Modulation</source>
+        <translation type="finished">调制</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="94"/>
+        <location filename="../ui/AddBookmarkDialog.ui" line="98"/>
+        <source>AM</source>
+        <translation type="finished">调幅</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="103"/>
+        <source>FM</source>
+        <translation type="finished">调频</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="108"/>
+        <source>USB</source>
+        <translation type="finished">上边带</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="113"/>
+        <source>LSB</source>
+        <translation type="finished">下边带</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddBookmarkDialog.ui" line="118"/>
+        <source>RAW</source>
+        <translation type="finished">原始</translation>
+    </message>
+  </context>
+  <context>
+    <name>AddTLESourceDialog</name>
+    <message>
+        <location filename="../ui/AddTLESourceDialog.ui" line="20"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/AddTLESourceDialog.ui" line="26"/>
+        <source>Source name</source>
+        <translation type="finished">数据源名称</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddTLESourceDialog.ui" line="33"/>
+        <source>New satellite source</source>
+        <translation type="finished">新建卫星数据源</translation>
+    </message>
+    <message>
+        <location filename="../ui/AddTLESourceDialog.ui" line="40"/>
+        <source>URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/AddTLESourceDialog.ui" line="47"/>
+        <source>http://example.com/satellites.txt</source>
+        <translation type="unfinished"></translation>
+    </message>
+  </context>
+  <context>
+    <name>AfcControl</name>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="59"/>
+        <location filename="../ui/AfcControl.ui" line="93"/>
+        <source>Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="66"/>
+        <source>Offset</source>
+        <translation type="finished">偏移</translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="83"/>
+        <source>Type</source>
+        <translation type="finished">类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="100"/>
+        <source>Loop BW</source>
+        <translation type="finished">环路带宽</translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="111"/>
+        <source>Manual</source>
+        <translation type="finished">手动</translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="116"/>
+        <source>Costas/BPSK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="121"/>
+        <source>Costas/QPSK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="126"/>
+        <source>Costas/8PSK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="135"/>
+        <source>1 (2 phases)</source>
+        <translation type="finished">1 (2相)</translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="140"/>
+        <source>2 (4 phases)</source>
+        <translation type="finished">2 (4相)</translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="145"/>
+        <source>3 (8 phases)</source>
+        <translation type="finished">3 (8相)</translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="153"/>
+        <source>Order</source>
+        <translation type="finished">级数</translation>
+    </message>
+    <message>
+        <location filename="../ui/AfcControl.ui" line="170"/>
+        <source>&lt;b&gt;Automatic Frequency Control&lt;/b&gt;</source>
+        <translation type="finished">&lt;b&gt;自动频率控制&lt;/b&gt;</translation>
+    </message>
+  </context>
+  <context>
+    <name>AskControl</name>
+    <message>
+        <location filename="../ui/AskControl.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="65"/>
+        <source>Use PLL</source>
+        <translation type="finished">使用锁相环</translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="82"/>
+        <source>Bits per sample</source>
+        <translation type="finished">位/样点</translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="92"/>
+        <source>Offset</source>
+        <translation type="finished">偏移</translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="108"/>
+        <location filename="../ui/AskControl.ui" line="121"/>
+        <source> Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="128"/>
+        <source>PLL Cutoff</source>
+        <translation type="finished">锁相环截止</translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="138"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;ASK Detection&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="finished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;ASK 检测&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="145"/>
+        <source>Component</source>
+        <translation type="finished">分量</translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="153"/>
+        <source>Both</source>
+        <translation type="finished">全选</translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="158"/>
+        <source>In-phase</source>
+        <translation type="finished">同向</translation>
+    </message>
+    <message>
+        <location filename="../ui/AskControl.ui" line="163"/>
+        <source>Quadrature</source>
+        <translation type="finished">正交</translation>
+    </message>
+  </context>
 </TS>
