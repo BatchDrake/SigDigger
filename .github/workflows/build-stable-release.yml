@@ -72,7 +72,7 @@ jobs:
         cd ..
 
     - name: Archive AppImage files
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: linux-latest-appimage
         path: Scripts/*.AppImage
@@ -152,7 +152,7 @@ jobs:
         cd ..
 
     - name: Archive .DMG files
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: macos-latest-dmg
         path: Scripts/*.dmg
@@ -232,7 +232,7 @@ jobs:
           cd ..
 
       - name: Archive .ZIP files
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: windows-latest-zip
           path: Scripts/SigDigger-*.zip
