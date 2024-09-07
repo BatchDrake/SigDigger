@@ -2564,4 +2564,283 @@
         <translation type="finished">正交</translation>
     </message>
   </context>
+  <context>
+    <name>BackgroundTasksDialog</name>
+    <message>
+        <location filename="../ui/BackgroundTasksDialog.ui" line="14"/>
+        <source>Background tasks</source>
+        <translation type="finished">后台任务</translation>
+    </message>
+    <message>
+        <location filename="../ui/BackgroundTasksDialog.ui" line="35"/>
+        <source>&amp;Cancel all tasks</source>
+        <translation type="finished">终止所有任务</translation>
+    </message>
+  </context>
+  <context>
+    <name>BookmarkManagerDialog</name>
+    <message>
+        <location filename="../ui/BookmarkManagerDialog.ui" line="14"/>
+        <source>Bookmark manager</source>
+        <translation type="finished">书签管理器</translation>
+    </message>
+    <message>
+        <location filename="../ui/BookmarkManagerDialog.ui" line="58"/>
+        <source>Double click on a bookmark to center it in the main spectrum window.</source>
+        <translation type="finished">双击某个书签，频谱图窗口将在中心位置显示它</translation>
+    </message>
+  </context>
+  <context>
+    <name>ClockRecovery</name>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="59"/>
+        <source>Loop gain</source>
+        <translation type="finished">环路增益</translation>
+    </message>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="69"/>
+        <source>Baudrate</source>
+        <translation type="finished">波特率</translation>
+    </message>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="79"/>
+        <source>Phase</source>
+        <translation type="finished">相位</translation>
+    </message>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="89"/>
+        <source>Type</source>
+        <translation type="finished">类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="99"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Clock recovery&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="finished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;时钟恢复&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="125"/>
+        <source> dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="142"/>
+        <source>Manual</source>
+        <translation type="finished">手动</translation>
+    </message>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="147"/>
+        <source>Gardner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ClockRecovery.ui" line="158"/>
+        <source>Start</source>
+        <translation type="finished">启动</translation>
+    </message>
+  </context>
+  <context>
+    <name>Config</name>
+    <message>
+        <location filename="../ui/Config.ui" line="26"/>
+        <source>Settings</source>
+        <translation type="finished">设置</translation>
+    </message>
+  </context>
+  <context>
+    <name>DataSaverUI</name>
+    <message>
+        <location filename="../ui/DataSaverUI.ui" line="20"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/DataSaverUI.ui" line="65"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Capture recorder&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="finished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;捕获记录器&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/DataSaverUI.ui" line="72"/>
+        <source>Folder</source>
+        <translation type="finished">文件夹</translation>
+    </message>
+    <message>
+        <location filename="../ui/DataSaverUI.ui" line="89"/>
+        <source>Browse...</source>
+        <translation type="finished">浏览</translation>
+    </message>
+    <message>
+        <location filename="../ui/DataSaverUI.ui" line="96"/>
+        <source>I/O bandwidth</source>
+        <translation type="unfinished">缓冲区占用度</translation>
+    </message>
+    <message>
+        <location filename="../ui/DataSaverUI.ui" line="119"/>
+        <source>Disk usage</source>
+        <translation type="finished">硬盘使用量</translation>
+    </message>
+    <message>
+        <location filename="../ui/DataSaverUI.ui" line="139"/>
+        <source>Capture size</source>
+        <translation type="finished">捕获大小</translation>
+    </message>
+    <message>
+        <location filename="../ui/DataSaverUI.ui" line="149"/>
+        <source>0 bytes</source>
+        <translation type="finished">0字节</translation>
+    </message>
+    <message>
+        <location filename="../ui/DataSaverUI.ui" line="159"/>
+        <source>Record</source>
+        <translation type="finished">记录</translation>
+    </message>
+  </context>
+  <context>
+    <name>DeviceDialog</name>
+    <message>
+        <location filename="../ui/DeviceDialog.ui" line="17"/>
+        <source>Capture devices</source>
+        <translation type="finished">要捕获的设备</translation>
+    </message>
+    <message>
+        <location filename="../ui/DeviceDialog.ui" line="39"/>
+        <source>&amp;Refresh</source>
+        <translation type="finished">刷新</translation>
+    </message>
+    <message>
+        <location filename="../ui/DeviceDialog.ui" line="46"/>
+        <source>&amp;Close</source>
+        <translation type="finished">关闭</translation>
+    </message>
+    <message>
+        <location filename="../ui/DeviceDialog.ui" line="56"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the list of capture devices and SDR receivers that are or have been available in your system. However, since device initialization can take a while, some devices could have been detected as unavailable during program startup.&lt;/p&gt;&lt;p&gt;If you have just plugged a device and it does not appear in the source configuration dialog, click on the &amp;quot;Refresh&amp;quot; button and try again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="finished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;列表中显示可用的捕获设备和SDR接收机。由于设备初始化需要一段时间，所以程序启动时某些设备可能标识为不可用。&lt;/p&gt;&lt;p&gt;如果设备刚刚接入，在数据源配置对话框中没有显示，双击 &amp;quot;刷新&amp;quot; 按钮并重试一次。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/DeviceDialog.ui" line="78"/>
+        <source>Loading</source>
+        <translation type="finished">加载中</translation>
+    </message>
+    <message>
+        <location filename="../ui/DeviceDialog.ui" line="127"/>
+        <source>Device ID</source>
+        <translation type="finished">设备ID</translation>
+    </message>
+    <message>
+        <location filename="../ui/DeviceDialog.ui" line="132"/>
+        <source>Driver</source>
+        <translation type="finished">驱动</translation>
+    </message>
+  </context>
+  <context>
+    <name>DeviceGain</name>
+    <message>
+        <location filename="../ui/DeviceGain.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/DeviceGain.ui" line="35"/>
+        <source>nameLabel</source>
+        <translation type="finished">名字标签</translation>
+    </message>
+    <message>
+        <location filename="../ui/DeviceGain.ui" line="45"/>
+        <source>dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/DeviceGain.ui" line="71"/>
+        <source>Reset</source>
+        <translation type="finished">重置</translation>
+    </message>
+  </context>
+  <context>
+    <name>DeviceTweaks</name>
+    <message>
+        <location filename="../Default/SourceConfig/DeviceTweaks.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/DeviceTweaks.ui" line="26"/>
+        <source>SoapySDR arguments</source>
+        <translation type="finished">SoapySDR参数</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/DeviceTweaks.ui" line="60"/>
+        <source>Key</source>
+        <translation type="finished">键</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/DeviceTweaks.ui" line="65"/>
+        <source>Value</source>
+        <translation type="finished">值</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/DeviceTweaks.ui" line="73"/>
+        <source>&amp;Remove</source>
+        <translation type="finished">移除</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/DeviceTweaks.ui" line="93"/>
+        <source>&amp;Add</source>
+        <translation type="finished">添加</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/DeviceTweaks.ui" line="105"/>
+        <source>Warning: this tab provides direct access to the SoapySDR arguments used for device instantiation. Changing or removing arguments from this list may prevent the device from starting correctly.</source>
+        <translation type="finished">警告：该页所列的参数用于直接控制SoapySDR，修改或移除参数可能导致设备启动异常。</translation>
+    </message>
+  </context>
+  <context>
+    <name>DopplerDialog</name>
+    <message>
+        <location filename="../ui/DopplerDialog.ui" line="14"/>
+        <source>Doppler velocity distribution</source>
+        <translation type="finished">多普勒速度分布</translation>
+    </message>
+    <message>
+        <location filename="../ui/DopplerDialog.ui" line="45"/>
+        <source>m/s</source>
+        <translation type="finished">米/秒</translation>
+    </message>
+    <message>
+        <location filename="../ui/DopplerDialog.ui" line="82"/>
+        <source>&amp;Save diagram</source>
+        <translation type="finished">保存图表</translation>
+    </message>
+    <message>
+        <location filename="../ui/DopplerDialog.ui" line="89"/>
+        <source>Dominant velocity</source>
+        <translation type="finished">主速度</translation>
+    </message>
+    <message>
+        <location filename="../ui/DopplerDialog.ui" line="107"/>
+        <location filename="../ui/DopplerDialog.ui" line="133"/>
+        <location filename="../ui/DopplerDialog.ui" line="164"/>
+        <source>N/A</source>
+        <translation type="finished">不可用</translation>
+    </message>
+    <message>
+        <location filename="../ui/DopplerDialog.ui" line="114"/>
+        <source>Center frequency</source>
+        <translation type="finished">中心频率</translation>
+    </message>
+    <message>
+        <location filename="../ui/DopplerDialog.ui" line="152"/>
+        <source>Velocity dispersion</source>
+        <translation type="finished">速度弥散度</translation>
+    </message>
+    <message>
+        <location filename="../ui/DopplerDialog.ui" line="191"/>
+        <source>Reset &amp;zoom</source>
+        <translation type="finished">放缩重置</translation>
+    </message>
+  </context>
 </TS>
