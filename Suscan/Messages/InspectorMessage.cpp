@@ -42,15 +42,21 @@ InspectorMessage::InspectorMessage(struct suscan_analyzer_inspector_msg *msg) :
     case SUSCAN_ANALYZER_INSPECTOR_MSGKIND_OPEN:
       this->sources.resize(static_cast<unsigned>(msg->spectsrc_count));
       for (i = 0; i < static_cast<unsigned>(msg->spectsrc_count); ++i) {
-        this->sources[i].name = msg->spectsrc_list[i]->name;
-        this->sources[i].desc = msg->spectsrc_list[i]->desc;
+        auto name = msg->spectsrc_list[i];
+        auto spectStrc = suscan_spectsrc_class_lookup(name);
+
+        this->sources[i].name = name;
+        this->sources[i].desc = spectStrc == nullptr ? name : spectStrc->desc;
       }
 
       this->estimators.resize(static_cast<unsigned>(msg->estimator_count));
       for (i = 0; i < static_cast<unsigned>(msg->estimator_count); ++i) {
-        this->estimators[i].name  = msg->estimator_list[i]->name;
-        this->estimators[i].desc  = msg->estimator_list[i]->desc;
-        this->estimators[i].field = msg->estimator_list[i]->field;
+        auto name = msg->estimator_list[i];
+        auto estimator = suscan_estimator_class_lookup(name);
+
+        this->estimators[i].name  = name;
+        this->estimators[i].desc  = estimator == nullptr ? name : estimator->desc;
+        this->estimators[i].field = estimator == nullptr ? "" : estimator->field;
         this->estimators[i].id    = i;
       }
       break;
