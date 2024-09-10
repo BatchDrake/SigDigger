@@ -2843,4 +2843,645 @@
         <translation type="finished">放缩重置</translation>
     </message>
   </context>
+  <context>
+    <name>EqualizerControl</name>
+    <message>
+        <location filename="../ui/EqualizerControl.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/EqualizerControl.ui" line="59"/>
+        <source>Rate</source>
+        <translation type="finished">更新率</translation>
+    </message>
+    <message>
+        <location filename="../ui/EqualizerControl.ui" line="69"/>
+        <source>0.001</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/EqualizerControl.ui" line="79"/>
+        <source>Lock</source>
+        <translation type="finished">锁定</translation>
+    </message>
+    <message>
+        <location filename="../ui/EqualizerControl.ui" line="92"/>
+        <source>Reset</source>
+        <translation type="finished">重置</translation>
+    </message>
+    <message>
+        <location filename="../ui/EqualizerControl.ui" line="99"/>
+        <source>Type</source>
+        <translation type="finished">类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/EqualizerControl.ui" line="110"/>
+        <source>None</source>
+        <translation type="finished">无</translation>
+    </message>
+    <message>
+        <location filename="../ui/EqualizerControl.ui" line="115"/>
+        <source>Constant Modulus Algorithm</source>
+        <translation type="finished">恒模算法</translation>
+    </message>
+    <message>
+        <location filename="../ui/EqualizerControl.ui" line="123"/>
+        <source>&lt;b&gt;Equalizer&lt;/b&gt;</source>
+        <translation type="finished">&lt;b&gt;均衡器&lt;/b&gt;</translation>
+    </message>
+  </context>
+  <context>
+    <name>EstimatorControl</name>
+    <message>
+        <location filename="../ui/EstimatorControl.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/EstimatorControl.ui" line="68"/>
+        <source>N/A</source>
+        <translation type="finished">不可用</translation>
+    </message>
+    <message>
+        <location filename="../ui/EstimatorControl.ui" line="75"/>
+        <source>Estimate</source>
+        <translation type="finished">估计</translation>
+    </message>
+    <message>
+        <location filename="../ui/EstimatorControl.ui" line="85"/>
+        <source>Apply</source>
+        <translation type="finished">应用</translation>
+    </message>
+    <message>
+        <location filename="../ui/EstimatorControl.ui" line="95"/>
+        <source>Name</source>
+        <translation type="finished">名称</translation>
+    </message>
+  </context>
+  <context>
+    <name>FileSourcePage</name>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="36"/>
+        <source>Autodetect</source>
+        <translation type="finished">自动检测</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="41"/>
+        <source>Raw complex 32-bit float (CF32)</source>
+        <translation type="finished">原始复数32位浮点(CF32)</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="46"/>
+        <source>Raw complex 8-bit unsigned (CU8)</source>
+        <translation type="finished">原始复数8位无符号整数(CU8)</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="51"/>
+        <source>Raw complex 8-bit signed (CS8)</source>
+        <translation type="finished">原始复数8位有符号整数(CS8)</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="56"/>
+        <source>Raw complex 16-bit signed (CS16)</source>
+        <translation type="finished">原始复数16位有符号整数(CS16)</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="61"/>
+        <source>WAV file</source>
+        <translation type="finished">WAV文件</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="66"/>
+        <source>SigMF recording</source>
+        <translation type="unfinished">SigMF格式记录</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="74"/>
+        <source>File</source>
+        <translation type="finished">文件</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="81"/>
+        <source>&amp;Browse...</source>
+        <translation type="finished">浏览...</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="88"/>
+        <source>Format</source>
+        <translation type="finished">格式</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/FileSourcePage.ui" line="102"/>
+        <source>&amp;Loop</source>
+        <translation type="finished">环路</translation>
+    </message>
+  </context>
+  <context>
+    <name>FloatingTabWindow</name>
+    <message>
+        <location filename="../ui/FloatingTabWindow.ui" line="14"/>
+        <source>MainWindow</source>
+        <translation type="finished">主窗口</translation>
+    </message>
+    <message>
+        <location filename="../ui/FloatingTabWindow.ui" line="28"/>
+        <source>&amp;Window</source>
+        <translation type="finished">窗口</translation>
+    </message>
+    <message>
+        <location filename="../ui/FloatingTabWindow.ui" line="37"/>
+        <source>&amp;Rename...</source>
+        <translation type="finished">重命名...</translation>
+    </message>
+    <message>
+        <location filename="../ui/FloatingTabWindow.ui" line="42"/>
+        <source>&amp;Close</source>
+        <translation type="finished">关闭</translation>
+    </message>
+    <message>
+        <location filename="../ui/FloatingTabWindow.ui" line="47"/>
+        <source>Re&amp;attach</source>
+        <translation type="finished">重绑定</translation>
+    </message>
+  </context>
+  <context>
+    <name>FrequencyCorrectionDialog</name>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="26"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="45"/>
+        <source>Correction type</source>
+        <translation type="finished">修正类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="53"/>
+        <source>No correction</source>
+        <translation type="finished">无修正</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="58"/>
+        <source>Two line element set (TLE)</source>
+        <translation type="finished">两行轨道数(TLE)</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="76"/>
+        <source>Details</source>
+        <translation type="finished">详情</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="109"/>
+        <source>No frequency corrections enabled</source>
+        <translation type="finished">无频率修正</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="174"/>
+        <source>Please input a valid TLE set</source>
+        <translation type="finished">请输入一个有效的两行轨道数据集</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="190"/>
+        <source>&amp;Satellite</source>
+        <translation type="finished">卫星</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="209"/>
+        <source>Orbit details</source>
+        <translation type="finished">轨道详情</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="230"/>
+        <source>Azimuth</source>
+        <translation type="finished">水平</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="242"/>
+        <source>0 º</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="249"/>
+        <source>Inclination</source>
+        <translation type="finished">倾斜度</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="261"/>
+        <source>0 km/s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="273"/>
+        <source>0 Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="280"/>
+        <source>VLOS speed</source>
+        <translation type="finished">视距内速度</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="292"/>
+        <source>No</source>
+        <translation type="finished">否</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="299"/>
+        <source>Period</source>
+        <translation type="finished">周期</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="323"/>
+        <source>Rise in XX:XX:XX</source>
+        <translation type="finished">在XX:XX:XX上升</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="330"/>
+        <source>Eccentricity</source>
+        <translation type="finished">离心率</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="337"/>
+        <source>Next event</source>
+        <translation type="finished">下一事件</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="361"/>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="418"/>
+        <source>XXXº XX&apos; XX&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="368"/>
+        <source>Elevation</source>
+        <translation type="finished">海拔</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="375"/>
+        <source>Doppler</source>
+        <translation type="finished">多普勒</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="382"/>
+        <source>Visible</source>
+        <translation type="finished">可见</translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="394"/>
+        <source>XX:XX:XX</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="430"/>
+        <source>0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/FrequencyCorrectionDialog.ui" line="470"/>
+        <source>&amp;Two line element set (TLE)</source>
+        <translation type="finished">两行轨道数(TLE)</translation>
+    </message>
+  </context>
+  <context>
+    <name>GainControl</name>
+    <message>
+        <location filename="../ui/GainControl.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/GainControl.ui" line="59"/>
+        <source>dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/GainControl.ui" line="66"/>
+        <source>Auto</source>
+        <translation type="finished">自动</translation>
+    </message>
+    <message>
+        <location filename="../ui/GainControl.ui" line="76"/>
+        <source>Gain</source>
+        <translation type="finished">增益</translation>
+    </message>
+    <message>
+        <location filename="../ui/GainControl.ui" line="89"/>
+        <source>&lt;b&gt;Automatic Gain Control&lt;/b&gt;</source>
+        <translation type="finished">&lt;b&gt;自动增益控制&lt;/b&gt;</translation>
+    </message>
+  </context>
+  <context>
+    <name>GainSlider</name>
+    <message>
+        <location filename="../ui/GainSlider.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/GainSlider.ui" line="35"/>
+        <source>GAIN</source>
+        <translation type="finished">增益</translation>
+    </message>
+    <message>
+        <location filename="../ui/GainSlider.ui" line="52"/>
+        <source>dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/GainSlider.ui" line="59"/>
+        <source>NN</source>
+        <translation type="unfinished"></translation>
+    </message>
+  </context>
+  <context>
+    <name>Inspector</name>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="43"/>
+        <source>Channel properties</source>
+        <translation type="finished">信道属性</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="130"/>
+        <source>Bandwidth (Hz)</source>
+        <translation type="finished">带宽(Hz)</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="140"/>
+        <source>Doppler correction</source>
+        <translation type="finished">多普勒修正</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="166"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="178"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="197"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="216"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="235"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="263"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="275"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="301"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="836"/>
+        <source>N / A</source>
+        <translation type="finished">不可用</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="185"/>
+        <source>Satellite</source>
+        <translation type="finished">卫星</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="204"/>
+        <source>Elevation</source>
+        <translation type="finished">海拔</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="223"/>
+        <source>Visible</source>
+        <translation type="finished">可见</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="242"/>
+        <source>Airmass</source>
+        <translation type="finished">气团</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="249"/>
+        <source>VLOS speed</source>
+        <translation type="finished">视距内速度</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="282"/>
+        <source>Distance</source>
+        <translation type="finished">距离</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="289"/>
+        <source>Doppler</source>
+        <translation type="finished">多普勒</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="308"/>
+        <source>&amp;Configure corrections</source>
+        <translation type="finished">配置修正参数</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="315"/>
+        <source>Azimuth</source>
+        <translation type="finished">水平</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="325"/>
+        <source>Channel offset (Hz)</source>
+        <translation type="finished">信道偏移(Hz)</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="335"/>
+        <source>Sample rate: XXX</source>
+        <translation type="finished">采样率: XXX</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="343"/>
+        <source>Parameter estimation</source>
+        <translation type="finished">参数估计</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="387"/>
+        <source>Demodulator controls</source>
+        <translation type="finished">解调器控制</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="444"/>
+        <source>Subcarrier inspection</source>
+        <translation type="finished">子载波检测</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="501"/>
+        <source>AS&amp;K inspector</source>
+        <translation type="finished">AS&amp;K检测器</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="514"/>
+        <source>Frequency</source>
+        <translation type="finished">频率</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="527"/>
+        <source>Precise channel centering</source>
+        <translation type="finished">信道严格居中</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="543"/>
+        <source>&amp;PSK inspector</source>
+        <translation type="finished">&amp;PSK检测器</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="571"/>
+        <source>&amp;Open inspector</source>
+        <translation type="finished">打开检测器</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="604"/>
+        <source>&amp;FSK inspector</source>
+        <translation type="finished">&amp;FSK检测器</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="617"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1160"/>
+        <source>Bandwidth</source>
+        <translation type="finished">带宽</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="628"/>
+        <source>Data forwarding</source>
+        <translation type="finished">数据转发</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="683"/>
+        <source>Decision space</source>
+        <translation type="finished">判决间隔</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="688"/>
+        <source>Complex soft bits (IQ)</source>
+        <translation type="finished">复数软比特(IQ)</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="693"/>
+        <source>Soft bits (I)</source>
+        <translation type="finished">软比特(I)</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="698"/>
+        <source>Soft bits (Q)</source>
+        <translation type="finished">软比特(Q)</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="703"/>
+        <source>Symbols</source>
+        <translation type="finished">符号</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="723"/>
+        <source>Data properties</source>
+        <translation type="finished">数据属性</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="730"/>
+        <source>Type</source>
+        <translation type="finished">类型</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="746"/>
+        <source>Variable</source>
+        <translation type="finished">变量</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="766"/>
+        <source>32 bit float (LE)</source>
+        <translation type="finished">32位浮点(小端)</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="895"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="915"/>
+        <source>Reset</source>
+        <translation type="finished">重置</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="902"/>
+        <source>CPU Burn</source>
+        <translation type="finished">超频</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="922"/>
+        <source> fps</source>
+        <translation type="finished">帧率</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="938"/>
+        <source>SNR</source>
+        <translation type="finished">信噪比</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="981"/>
+        <source>Spectrum</source>
+        <translation type="finished">频谱</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1048"/>
+        <source>Peak hold</source>
+        <translation type="finished">峰值保持</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1058"/>
+        <source>Palette</source>
+        <translation type="finished">调色板</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1069"/>
+        <source>None</source>
+        <translation type="finished">无</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1090"/>
+        <source>Source</source>
+        <translation type="finished">数据源</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1103"/>
+        <source> dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1116"/>
+        <source>Peak detection</source>
+        <translation type="finished">峰值检测</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1126"/>
+        <source>Gain</source>
+        <translation type="finished">增益</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1172"/>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1191"/>
+        <source>0 Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1179"/>
+        <source>Center frequency</source>
+        <translation type="finished">中心频率</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1214"/>
+        <source>Units</source>
+        <translation type="finished">单位</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1233"/>
+        <source> dBFS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1246"/>
+        <source>WF ratio</source>
+        <translation type="finished">瀑布图占比</translation>
+    </message>
+    <message>
+        <location filename="../Default/GenericInspector/GenericInspector.ui" line="1272"/>
+        <source>Zero adjust</source>
+        <translation type="finished">参考电平</translation>
+    </message>
+  </context>
 </TS>
