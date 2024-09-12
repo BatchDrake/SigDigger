@@ -3060,7 +3060,7 @@
     <message>
         <location filename="../ui/FrequencyCorrectionDialog.ui" line="230"/>
         <source>Azimuth</source>
-        <translation type="finished">水平</translation>
+        <translation type="finished">方位角</translation>
     </message>
     <message>
         <location filename="../ui/FrequencyCorrectionDialog.ui" line="242"/>
@@ -3070,7 +3070,7 @@
     <message>
         <location filename="../ui/FrequencyCorrectionDialog.ui" line="249"/>
         <source>Inclination</source>
-        <translation type="finished">倾斜度</translation>
+        <translation type="finished">轨道倾角</translation>
     </message>
     <message>
         <location filename="../ui/FrequencyCorrectionDialog.ui" line="261"/>
@@ -3100,7 +3100,7 @@
     <message>
         <location filename="../ui/FrequencyCorrectionDialog.ui" line="323"/>
         <source>Rise in XX:XX:XX</source>
-        <translation type="finished">在XX:XX:XX上升</translation>
+        <translation type="finished">于XX:XX:XX后上升</translation>
     </message>
     <message>
         <location filename="../ui/FrequencyCorrectionDialog.ui" line="330"/>
@@ -3121,7 +3121,7 @@
     <message>
         <location filename="../ui/FrequencyCorrectionDialog.ui" line="368"/>
         <source>Elevation</source>
-        <translation type="finished">海拔</translation>
+        <translation type="finished">高度角</translation>
     </message>
     <message>
         <location filename="../ui/FrequencyCorrectionDialog.ui" line="375"/>
@@ -3243,7 +3243,7 @@
     <message>
         <location filename="../Default/GenericInspector/GenericInspector.ui" line="204"/>
         <source>Elevation</source>
-        <translation type="finished">海拔</translation>
+        <translation type="finished">高度角</translation>
     </message>
     <message>
         <location filename="../Default/GenericInspector/GenericInspector.ui" line="223"/>
@@ -3253,7 +3253,7 @@
     <message>
         <location filename="../Default/GenericInspector/GenericInspector.ui" line="242"/>
         <source>Airmass</source>
-        <translation type="finished">气团</translation>
+        <translation type="finished">大气质量</translation>
     </message>
     <message>
         <location filename="../Default/GenericInspector/GenericInspector.ui" line="249"/>
@@ -3278,7 +3278,7 @@
     <message>
         <location filename="../Default/GenericInspector/GenericInspector.ui" line="315"/>
         <source>Azimuth</source>
-        <translation type="finished">水平</translation>
+        <translation type="finished">方位角</translation>
     </message>
     <message>
         <location filename="../Default/GenericInspector/GenericInspector.ui" line="325"/>
