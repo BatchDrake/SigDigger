@@ -23,6 +23,7 @@
 #include "MainSpectrum.h"
 #include <InspectionWidgetFactory.h>
 #include <SuWidgetsHelpers.h>
+#include <QCheckBox>
 
 using namespace SigDigger;
 
@@ -86,13 +87,25 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
         if ((m_psdDelta - interval) / interval
             > SIGDIGGER_UI_MEDIATOR_PSD_MAX_LAG) {
           if (m_laggedMsgBox == nullptr) {
+            QCheckBox *cb = new QCheckBox("Do not show again");
             m_laggedMsgBox = new QMessageBox(m_owner);
             m_laggedMsgBox->setWindowTitle("Connection quality warning");
             m_laggedMsgBox->setWindowModality(Qt::NonModal);
             m_laggedMsgBox->setIcon(QMessageBox::Icon::Warning);
+            m_laggedMsgBox->setCheckBox(cb);
+
+            QObject::connect(
+                  cb,
+                  &QCheckBox::stateChanged,
+                  [this](int state) {
+              if (static_cast<Qt::CheckState>(state) == Qt::CheckState::Checked) {
+                m_appConfig->disableConnectionQualityWarning = true;
+              }
+            });
           }
 
-          if (m_laggedMsgBox->isHidden()) {
+          if (m_laggedMsgBox->isHidden()
+              && !m_appConfig->disableConnectionQualityWarning) {
             m_laggedMsgBox->setText(
                   QString::asprintf(
                     "The rate at which spectrum data is arriving is slower than "

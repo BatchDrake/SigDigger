@@ -69,7 +69,7 @@ namespace SigDigger {
       int y = -1;
       qreal sidePanelRatio = .16;
       bool disableHighRateWarning = false;
-
+      bool disableConnectionQualityWarning = false;
       int loFreq = 0;
       unsigned int bandwidth = 0;
 
