@@ -3530,7 +3530,7 @@
     <message>
         <location filename="../ui/HistogramDialog.ui" line="117"/>
         <source>Sampling space</source>
-        <translation type="finished">采样间隔</translation>
+        <translation type="finished">采样域</translation>
     </message>
     <message>
         <location filename="../ui/HistogramDialog.ui" line="124"/>
