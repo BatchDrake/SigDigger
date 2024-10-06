@@ -3484,4 +3484,528 @@
         <translation type="finished">参考电平</translation>
     </message>
   </context>
+  <context>
+    <name>HistogramDialog</name>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="20"/>
+        <source>Histogram</source>
+        <translation type="finished">直方图</translation>
+    </message>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="58"/>
+        <source>X samples (x seconds)</source>
+        <translation type="finished">X样点(x秒)</translation>
+    </message>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="65"/>
+        <source>Histogram range</source>
+        <translation type="finished">直方图范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="77"/>
+        <source>x to x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="84"/>
+        <source>Amplitude</source>
+        <translation type="finished">幅度</translation>
+    </message>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="96"/>
+        <location filename="../ui/HistogramDialog.ui" line="136"/>
+        <source>N/A</source>
+        <translation type="finished">不可用</translation>
+    </message>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="103"/>
+        <source>Histogram span</source>
+        <translation type="finished">直方图跨度</translation>
+    </message>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="110"/>
+        <source>Range width</source>
+        <translation type="finished">范围宽度</translation>
+    </message>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="117"/>
+        <source>Sampling space</source>
+        <translation type="finished">采样域</translation>
+    </message>
+    <message>
+        <location filename="../ui/HistogramDialog.ui" line="124"/>
+        <source>Selected range</source>
+        <translation type="finished">选中范围</translation>
+    </message>
+  </context>
+  <context>
+    <name>LogDialog</name>
+    <message>
+        <location filename="../ui/LogDialog.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/LogDialog.ui" line="69"/>
+        <location filename="../ui/LogDialog.ui" line="83"/>
+        <location filename="../ui/LogDialog.ui" line="97"/>
+        <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/LogDialog.ui" line="175"/>
+        <source>Date</source>
+        <translation type="finished">日期</translation>
+    </message>
+    <message>
+        <location filename="../ui/LogDialog.ui" line="180"/>
+        <source>Message</source>
+        <translation type="finished">消息</translation>
+    </message>
+    <message>
+        <location filename="../ui/LogDialog.ui" line="185"/>
+        <source>Domain</source>
+        <translation type="finished">域</translation>
+    </message>
+    <message>
+        <location filename="../ui/LogDialog.ui" line="190"/>
+        <source>Method</source>
+        <translation type="finished">方法</translation>
+    </message>
+    <message>
+        <location filename="../ui/LogDialog.ui" line="195"/>
+        <source>Line</source>
+        <translation type="finished">行</translation>
+    </message>
+  </context>
+  <context>
+    <name>MainSpectrum</name>
+    <message>
+        <location filename="../ui/MainSpectrum.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/MainSpectrum.ui" line="122"/>
+        <source>  Throttling: OFF</source>
+        <translation type="finished">流速控制：关闭</translation>
+    </message>
+    <message>
+        <location filename="../ui/MainSpectrum.ui" line="143"/>
+        <source>  Capture mode: N/A</source>
+        <translation type="finished">捕获模式：不可用</translation>
+    </message>
+    <message>
+        <location filename="../ui/MainSpectrum.ui" line="241"/>
+        <source> DEMOD </source>
+        <translation type="finished">解调</translation>
+    </message>
+    <message>
+        <location filename="../ui/MainSpectrum.ui" line="264"/>
+        <source> LNB </source>
+        <translation type="finished">高频头</translation>
+    </message>
+  </context>
+  <context>
+    <name>MfControl</name>
+    <message>
+        <location filename="../ui/MfControl.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/MfControl.ui" line="59"/>
+        <source>Matched filter</source>
+        <translation type="finished">匹配滤波器</translation>
+    </message>
+    <message>
+        <location filename="../ui/MfControl.ui" line="70"/>
+        <source>None</source>
+        <translation type="finished">无/translation>
+    </message>
+    <message>
+        <location filename="../ui/MfControl.ui" line="75"/>
+        <source>SRRC</source>
+        <translation type="finished">根升余弦滤波器</translation>
+    </message>
+    <message>
+        <location filename="../ui/MfControl.ui" line="83"/>
+        <source>Roll-off</source>
+        <translation type="finished">滚降系数</translation>
+    </message>
+    <message>
+        <location filename="../ui/MfControl.ui" line="109"/>
+        <source>&lt;b&gt;Matched filter&lt;/b&gt;</source>
+        <translation type="finished">&lt;b&gt;匹配滤波器&lt;/b&gt;</translation>
+    </message>
+  </context>
+  <context>
+    <name>UDPForwarderUI</name>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="20"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="69"/>
+        <source>UDP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="74"/>
+        <source>TCP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="95"/>
+        <source>0 bytes</source>
+        <translation type="finished">0字节</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="107"/>
+        <source>localhost</source>
+        <translation type="finished">本地主机</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="117"/>
+        <source>Port</source>
+        <translation type="finished">端口</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="127"/>
+        <source>Frame size</source>
+        <translation type="finished">帧长</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="137"/>
+        <source>I/O bandwidth</source>
+        <translation type="finished">传输带宽</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="150"/>
+        <source>Forward</source>
+        <translation type="finished">转发</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="160"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Network forwarding&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="finished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;网络转发&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="167"/>
+        <source>Connection type</source>
+        <translation type="finished">连接类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="196"/>
+        <source> bytes</source>
+        <translation type="finished">字节</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="212"/>
+        <source>Host</source>
+        <translation type="finished">主机</translation>
+    </message>
+    <message>
+        <location filename="../ui/NetForwarderUI.ui" line="261"/>
+        <source>Forwarded</source>
+        <translation type="finished">已转发</translation>
+    </message>
+  </context>
+  <context>
+    <name>PanoramicDialog</name>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="20"/>
+        <source>Panoramic spectrum view</source>
+        <translation type="finished">全景频谱视图</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="80"/>
+        <source>Device</source>
+        <translation type="finished">设备</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="90"/>
+        <source>Antenna</source>
+        <translation type="finished">天线</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="100"/>
+        <source>Partitioning</source>
+        <translation type="finished">分段</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="110"/>
+        <source>Relative BW</source>
+        <translation type="finished">相对带宽</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="126"/>
+        <source>Settling time</source>
+        <translation type="finished">建立时间</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="136"/>
+        <source>Reset</source>
+        <translation type="finished">重置</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="149"/>
+        <source>Start scan</source>
+        <translation type="finished">启动扫描</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="165"/>
+        <source> ms</source>
+        <translation type="finished">毫秒</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="182"/>
+        <source>Stochastic</source>
+        <translation type="finished">随机</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="187"/>
+        <source>Progressive</source>
+        <translation type="finished">步进</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="195"/>
+        <source>Sample rate</source>
+        <translation type="finished">采样率</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="205"/>
+        <source>Scan range</source>
+        <translation type="finished">扫描范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="237"/>
+        <source>to</source>
+        <translation type="finished">到</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="247"/>
+        <source>LNB</source>
+        <translation type="finished">高频头</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="260"/>
+        <source>Full device range</source>
+        <translation type="finished">最大范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="271"/>
+        <source>Continuous</source>
+        <translation type="finished">连续</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="276"/>
+        <source>Discrete</source>
+        <translation type="finished">离散</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="284"/>
+        <source>Walk strategy</source>
+        <translation type="finished">扫频方式</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="327"/>
+        <source>Device gains</source>
+        <translation type="finished">设备增益</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="408"/>
+        <source>0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="415"/>
+        <source>Bandwidth</source>
+        <translation type="finished">带宽</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="425"/>
+        <source>Selected</source>
+        <translation type="finished">选中区域</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="453"/>
+        <location filename="../ui/PanoramicDialog.ui" line="517"/>
+        <source>0 Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="463"/>
+        <source>Frames</source>
+        <translation type="finished">帧</translation>
+    </message>
+    <message>
+        <location filename="../ui/PanoramicDialog.ui" line="476"/>
+        <source>Export as...</source>
+        <translation type="finished">导出为...</translation>
+    </message>
+  </context>
+  <context>
+    <name>QuickConnectDialog</name>
+    <message>
+        <location filename="../ui/QuickConnectDialog.ui" line="23"/>
+        <source>Quick connect to device server</source>
+        <translation type="finished">快速连接到设备服务器</translation>
+    </message>
+    <message>
+        <location filename="../ui/QuickConnectDialog.ui" line="44"/>
+        <source>User</source>
+        <translation type="finished">用户</translation>
+    </message>
+    <message>
+        <location filename="../ui/QuickConnectDialog.ui" line="51"/>
+        <source>Password</source>
+        <translation type="finished">密码</translation>
+    </message>
+    <message>
+        <location filename="../ui/QuickConnectDialog.ui" line="71"/>
+        <source>Port</source>
+        <translation type="finished">端口</translation>
+    </message>
+    <message>
+        <location filename="../ui/QuickConnectDialog.ui" line="88"/>
+        <source>Host</source>
+        <translation type="finished">主机</translation>
+    </message>
+  </context>
+  <context>
+    <name>RMSInspector</name>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="39"/>
+        <source>Channel config</source>
+        <translation type="finished">信道配置</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="82"/>
+        <source>Frequency offset</source>
+        <translation type="finished">频率偏移</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="92"/>
+        <source>Bandwidth</source>
+        <translation type="finished">带宽</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="132"/>
+        <source>Data logging</source>
+        <translation type="finished">数据记录</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="144"/>
+        <source>Format</source>
+        <translation type="finished">格式</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="164"/>
+        <source>Enable external data logging</source>
+        <translation type="finished">使能外部数据记录</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="218"/>
+        <source>Current file</source>
+        <translation type="finished">当前文件</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="225"/>
+        <source>N/A</source>
+        <translation type="finished">不可用</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="232"/>
+        <source>&amp;Browse...</source>
+        <translation type="finished">浏览...</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="252"/>
+        <source>Directory</source>
+        <translation type="finished">目录</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="316"/>
+        <source>Host  </source>
+        <translation type="finished">主机</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="323"/>
+        <source>127.0.0.1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="336"/>
+        <source>Port</source>
+        <translation type="finished">端口</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="370"/>
+        <source>Logged size</source>
+        <translation type="finished">已保存</translation>
+    </message>
+    <message>
+        <location filename="../Default/RMSInspector/RMSInspector.ui" line="377"/>
+        <source>0 bytes</source>
+        <translation type="unfinished"></translation>
+    </message>
+  </context>
+  <context>
+    <name>RMSViewer</name>
+    <message>
+        <location filename="../ui/RMSViewer.ui" line="14"/>
+        <source>RMSViewer [Stopped]</source>
+        <translation type="finished">RMS视图 [停止]</translation>
+    </message>
+    <message>
+        <location filename="../ui/RMSViewer.ui" line="82"/>
+        <source>&lt;i&gt;Click start button to start RMS Viewer server.&lt;/i&gt;</source>
+        <translation type="finished">&lt;i&gt;点击“启动”按钮来启动RMS视图服务器&lt;/i&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/RMSViewer.ui" line="108"/>
+        <source>toolBar</source>
+        <translation type="finished">工具栏</translation>
+    </message>
+    <message>
+        <location filename="../ui/RMSViewer.ui" line="128"/>
+        <source>Start</source>
+        <translation type="finished">启动</translation>
+    </message>
+    <message>
+        <location filename="../ui/RMSViewer.ui" line="137"/>
+        <source>Settings</source>
+        <translation type="finished">设置</translation>
+    </message>
+  </context>
+  <context>
+    <name>RMSViewerSettingsDialog</name>
+    <message>
+        <location filename="../ui/RMSViewerSettingsDialog.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/RMSViewerSettingsDialog.ui" line="20"/>
+        <source>Listen address</source>
+        <translation type="finished">监听地址</translation>
+    </message>
+    <message>
+        <location filename="../ui/RMSViewerSettingsDialog.ui" line="27"/>
+        <source>0.0.0.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/RMSViewerSettingsDialog.ui" line="37"/>
+        <source>Port</source>
+        <translation type="finished">端口</translation>
+    </message>
+  </context>
 </TS>
