@@ -3621,7 +3621,7 @@
     <message>
         <location filename="../ui/MfControl.ui" line="70"/>
         <source>None</source>
-        <translation type="finished">无/translation>
+        <translation type="finished">无</translation>
     </message>
     <message>
         <location filename="../ui/MfControl.ui" line="75"/>
