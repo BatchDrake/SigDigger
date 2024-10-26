@@ -53,6 +53,7 @@ AppConfig::serialize(void)
   obj.set("fullScreen", this->fullScreen);
   obj.set("sidePanelRatio", this->sidePanelRatio);
   obj.set("disableHighRateWarning", this->disableHighRateWarning);
+  obj.set("disableConnectionQualityWarning", this->disableConnectionQualityWarning);
   obj.set("loFreq", this->loFreq);
   obj.set("bandwidth", this->bandwidth);
   obj.set("lastLoadedFile", this->lastLoadedFile);
@@ -138,6 +139,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->fullScreen = conf.get("fullScreen", this->fullScreen));
     TRYSILENT(this->sidePanelRatio = conf.get("sidePanelRatio", this->sidePanelRatio));
     TRYSILENT(this->disableHighRateWarning = conf.get("disableHighRateWarning", this->disableHighRateWarning));
+    TRYSILENT(this->disableConnectionQualityWarning = conf.get("disableConnectionQualityWarning", this->disableHighRateWarning));
     TRYSILENT(this->loFreq     = conf.get("loFreq", this->loFreq));
     TRYSILENT(this->bandwidth  = conf.get("bandwidth", this->bandwidth));
     TRYSILENT(this->lastLoadedFile = conf.get("lastLoadedFile", this->lastLoadedFile));

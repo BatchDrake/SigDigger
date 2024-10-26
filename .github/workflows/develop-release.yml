@@ -150,7 +150,7 @@ jobs:
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
 
       - name: Download binaries
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
 
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
