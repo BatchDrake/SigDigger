@@ -4008,4 +4008,813 @@
         <translation type="finished">端口</translation>
     </message>
   </context>
+  <context>
+    <name>SamplerDialog</name>
+    <message>
+        <location filename="../ui/SamplerDialog.ui" line="14"/>
+        <source>采样窗口</source>
+        <translation type="finished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/SamplerDialog.ui" line="125"/>
+        <source>Row size</source>
+        <translation type="finished">行长度</translation>
+    </message>
+    <message>
+        <location filename="../ui/SamplerDialog.ui" line="148"/>
+        <source>Bits per symbol</source>
+        <translation type="finished">每符号比特数</translation>
+    </message>
+    <message>
+        <location filename="../ui/SamplerDialog.ui" line="168"/>
+        <source>Zoom</source>
+        <translation type="finished">缩放</translation>
+    </message>
+    <message>
+        <location filename="../ui/SamplerDialog.ui" line="188"/>
+        <source>&amp;Save as...</source>
+        <translation type="finished">另存为</translation>
+    </message>
+    <message>
+        <location filename="../ui/SamplerDialog.ui" line="195"/>
+        <source>Position: N/A</source>
+        <translation type="finished">位置：不可用</translation>
+    </message>
+  </context>
+  <context>
+    <name>SaveProfileDialog</name>
+    <message>
+        <location filename="../ui/SaveProfileDialog.ui" line="14"/>
+        <source>Save profile</source>
+        <translation type="finished">保存资料</translation>
+    </message>
+    <message>
+        <location filename="../ui/SaveProfileDialog.ui" line="33"/>
+        <source>New profile name</source>
+        <translation type="finished">新建资料名称</translation>
+    </message>
+  </context>
+  <context>
+    <name>SoapySDRSourcePage</name>
+    <message>
+        <location filename="../Default/SourceConfig/SoapySDRSourcePage.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/SoapySDRSourcePage.ui" line="70"/>
+        <source>Bandwidth</source>
+        <translation type="finished">带宽</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/SoapySDRSourcePage.ui" line="86"/>
+        <source>Device</source>
+        <translation type="finished">设备</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/SoapySDRSourcePage.ui" line="96"/>
+        <source>Device-specific &amp;tweaks</source>
+        <translation type="finished">具体设备相关的微调</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/SoapySDRSourcePage.ui" line="109"/>
+        <source>Antenna</source>
+        <translation type="finished">天线</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/SoapySDRSourcePage.ui" line="135"/>
+        <source>Channel</source>
+        <translation type="finished">通道</translation>
+    </message>
+  </context>
+  <context>
+    <name>StdinSourcePage</name>
+    <message>
+        <location filename="../Default/SourceConfig/StdinSourcePage.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/StdinSourcePage.ui" line="23"/>
+        <source>Real-time</source>
+        <translation type="finished">实时</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/StdinSourcePage.ui" line="36"/>
+        <source>Input sample format</source>
+        <translation type="finished">样本格式</translation>
+    </message>
+  </context>
+  <context>
+    <name>TimeWindow</name>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="14"/>
+        <source>Time preview</source>
+        <translation type="finished">时间预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="45"/>
+        <location filename="../ui/TimeWindow.ui" line="2261"/>
+        <source>Quadrature</source>
+        <translation type="finished">正交</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="58"/>
+        <location filename="../ui/TimeWindow.ui" line="2256"/>
+        <source>In-Phase</source>
+        <translation type="finished">同向</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="100"/>
+        <source>Abort</source>
+        <translation type="finished">中止</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="112"/>
+        <source>Idle</source>
+        <translation type="finished">空闲</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="120"/>
+        <source>toolBar</source>
+        <translation type="finished">工具条</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="161"/>
+        <source>Time tools</source>
+        <translation type="finished">时域工具</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="285"/>
+        <location filename="../ui/TimeWindow.ui" line="736"/>
+        <location filename="../ui/TimeWindow.ui" line="1355"/>
+        <location filename="../ui/TimeWindow.ui" line="1433"/>
+        <source>0 Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="292"/>
+        <source>Mag (phase)</source>
+        <translation type="finished">幅度（相位）</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="305"/>
+        <source>0 (0º)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="312"/>
+        <source>Doppler shift</source>
+        <translation type="finished">多普勒偏移</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="319"/>
+        <source>I:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="338"/>
+        <location filename="../ui/TimeWindow.ui" line="547"/>
+        <source>0 ms</source>
+        <translation type="finished">0毫秒</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="381"/>
+        <location filename="../ui/TimeWindow.ui" line="420"/>
+        <location filename="../ui/TimeWindow.ui" line="606"/>
+        <location filename="../ui/TimeWindow.ui" line="639"/>
+        <location filename="../ui/TimeWindow.ui" line="943"/>
+        <location filename="../ui/TimeWindow.ui" line="970"/>
+        <location filename="../ui/TimeWindow.ui" line="1005"/>
+        <location filename="../ui/TimeWindow.ui" line="1031"/>
+        <location filename="../ui/TimeWindow.ui" line="1192"/>
+        <source>0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="388"/>
+        <source>t:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="401"/>
+        <source>0 m/s</source>
+        <translation type="finished">0米/秒</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="427"/>
+        <source>Frequency shift</source>
+        <translation type="finished">频率偏移</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="434"/>
+        <source>Q:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="466"/>
+        <source>Measurements</source>
+        <translation type="finished">测量</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="499"/>
+        <location filename="../ui/TimeWindow.ui" line="781"/>
+        <location filename="../ui/TimeWindow.ui" line="1057"/>
+        <source>0 ms (0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="512"/>
+        <source>Selection start</source>
+        <translation type="finished">选择区域起始</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="525"/>
+        <source>Selection ΔT</source>
+        <translation type="finished">选择区域ΔT</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="566"/>
+        <location filename="../ui/TimeWindow.ui" line="826"/>
+        <source>N/A</source>
+        <translation type="finished">不可用</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="573"/>
+        <source>Max Q</source>
+        <translation type="finished">Q最大值</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="580"/>
+        <source>Fine tune sel. end</source>
+        <translation type="finished">微调选区终止</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="587"/>
+        <source>Mean I</source>
+        <translation type="finished">I平均值</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="613"/>
+        <source>Min Q</source>
+        <translation type="finished">Q最小值</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="620"/>
+        <source>Periodic selection</source>
+        <translation type="finished">周期选择</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="653"/>
+        <source>Source frequency</source>
+        <translation type="finished">数据源频率</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="672"/>
+        <source>0 samples</source>
+        <translation type="finished">0样点</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="694"/>
+        <source> cycles</source>
+        <translation type="finished">周期</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="710"/>
+        <source>Sample rate</source>
+        <translation type="finished">采样率</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="723"/>
+        <source>Min I</source>
+        <translation type="finished">I最小值</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="749"/>
+        <source>Length</source>
+        <translation type="finished">长度</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="762"/>
+        <source>Duration</source>
+        <translation type="finished">持续时间</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="800"/>
+        <source>1 sps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="807"/>
+        <source>Center frequency</source>
+        <translation type="finished">中心频率</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="869"/>
+        <location filename="../ui/TimeWindow.ui" line="1135"/>
+        <source>&lt;&lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="885"/>
+        <location filename="../ui/TimeWindow.ui" line="1103"/>
+        <source>&lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="901"/>
+        <location filename="../ui/TimeWindow.ui" line="1119"/>
+        <source>&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="917"/>
+        <location filename="../ui/TimeWindow.ui" line="1151"/>
+        <source>&gt;&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="930"/>
+        <source>Show &amp;velocity distribution</source>
+        <translation type="finished">显示速度分布</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="950"/>
+        <source>Mean Q</source>
+        <translation type="finished">Q平均值</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="983"/>
+        <source>&amp;Lock</source>
+        <translation type="finished">锁定</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1018"/>
+        <source>RMS</source>
+        <translation type="finished">均方根值</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1038"/>
+        <source>Fine tune sel. start</source>
+        <translation type="finished">微调选区起始</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1170"/>
+        <source>Selection freq</source>
+        <translation type="finished">选区频率</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1205"/>
+        <source>Selection length</source>
+        <translation type="finished">选区长度</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1218"/>
+        <source>Selection end</source>
+        <translation type="finished">选区终止</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1232"/>
+        <source>Max I</source>
+        <translation type="finished">I最大值</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1240"/>
+        <source>Palette and contrast</source>
+        <translation type="finished">调色板与对比度</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1275"/>
+        <source>Palette origin</source>
+        <translation type="finished">初始调色板</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1282"/>
+        <source>Palette</source>
+        <translation type="finished">调色板</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1289"/>
+        <source>Contrast</source>
+        <translation type="finished">对比度</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1307"/>
+        <source>Carrier recovery</source>
+        <translation type="finished">载波恢复</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1328"/>
+        <source>Automatic frequency correction</source>
+        <translation type="finished">自动频率修正</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1365"/>
+        <source>Averager span</source>
+        <translation type="finished">平均器范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1375"/>
+        <location filename="../ui/TimeWindow.ui" line="1477"/>
+        <location filename="../ui/TimeWindow.ui" line="1556"/>
+        <source>&amp;Sync</source>
+        <translation type="finished">同步</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1398"/>
+        <source>DC notch width</source>
+        <translation type="finished">直流陷波宽度</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1446"/>
+        <source>PLL-based recovery</source>
+        <translation type="finished">基于锁相环的频率恢复</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1467"/>
+        <source>Cut-off</source>
+        <translation type="finished">截止</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1490"/>
+        <source>Costas loop-based recovery</source>
+        <translation type="finished">基于Costas环的频率恢复</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1517"/>
+        <source>Loop BW</source>
+        <translation type="finished">环路带宽</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1528"/>
+        <source>2 phase / BPSK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1533"/>
+        <source>4 phase / QPSK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1538"/>
+        <source>8 phase / 8PSK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1546"/>
+        <source>Arm BW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1563"/>
+        <source>Order</source>
+        <translation type="finished">级数</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1576"/>
+        <source>Manual frequency correction</source>
+        <translation type="finished">手动频率修正</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1597"/>
+        <location filename="../ui/TimeWindow.ui" line="2331"/>
+        <source>Frequency</source>
+        <translation type="finished">频率</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1610"/>
+        <location filename="../ui/TimeWindow.ui" line="1747"/>
+        <location filename="../ui/TimeWindow.ui" line="1840"/>
+        <location filename="../ui/TimeWindow.ui" line="1893"/>
+        <source>&amp;Apply</source>
+        <translation type="finished">应用</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1623"/>
+        <location filename="../ui/TimeWindow.ui" line="2341"/>
+        <source>Phase</source>
+        <translation type="finished">相位</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1636"/>
+        <source> º</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1652"/>
+        <location filename="../ui/TimeWindow.ui" line="1695"/>
+        <source>Limit to selection</source>
+        <translation type="finished">限制在选取内</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1659"/>
+        <location filename="../ui/TimeWindow.ui" line="1688"/>
+        <source>&amp;Reset</source>
+        <translation type="finished">重置</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1667"/>
+        <source>Transforms</source>
+        <translation type="finished">变换</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1702"/>
+        <source>&amp;Cyclostationary analysis</source>
+        <translation type="finished">循环平稳信号分析</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1709"/>
+        <source>&amp;Quadrature demodulation</source>
+        <translation type="finished">正交解调</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1716"/>
+        <source>Low-pass filter</source>
+        <translation type="finished">低通滤波器</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1754"/>
+        <source>Bandwidth</source>
+        <translation type="finished">带宽</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1764"/>
+        <source>Automatic Gain Control</source>
+        <translation type="finished">自动增益控制</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1785"/>
+        <location filename="../ui/TimeWindow.ui" line="1919"/>
+        <source>τ =</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1807"/>
+        <location filename="../ui/TimeWindow.ui" line="1912"/>
+        <source>0 s (0 sp)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1824"/>
+        <location filename="../ui/TimeWindow.ui" line="1877"/>
+        <source>1/τ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1856"/>
+        <source>Product by the delayed conjugate</source>
+        <translation type="finished">与延迟的样点共轭相乘</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1943"/>
+        <source>Sampling and decision</source>
+        <translation type="finished">取样与判决</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1969"/>
+        <source>&amp;Sample</source>
+        <translation type="finished">样点</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="1979"/>
+        <source>Clock source</source>
+        <translation type="finished">时钟源</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2040"/>
+        <source>Number of symbols </source>
+        <translation type="finished">符号数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2050"/>
+        <source>Zero-crossings</source>
+        <translation type="finished">过零点</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2093"/>
+        <source> dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2112"/>
+        <source>Loop gain  </source>
+        <translation type="finished">环路增益</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2122"/>
+        <source>Gardner clock recovery</source>
+        <translation type="finished">Gardner时钟恢复</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2132"/>
+        <source>Sync to selection intervals</source>
+        <translation type="finished">同步到选区间隔</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2145"/>
+        <source>Manual</source>
+        <translation type="finished">手动</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2189"/>
+        <source>Symbol rate </source>
+        <translation type="finished">符号速率</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2199"/>
+        <source>Fixed interval partition</source>
+        <translation type="finished">以固定间隔分组</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2239"/>
+        <source>Component</source>
+        <translation type="finished">分量</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2266"/>
+        <source>Absolute value</source>
+        <translation type="finished">绝对值</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2274"/>
+        <source>Zero point</source>
+        <translation type="finished">零点</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2297"/>
+        <source>Decision space</source>
+        <translation type="finished">判决域</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2318"/>
+        <source>Amplitude</source>
+        <translation type="finished">幅度</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2354"/>
+        <source>Sampling interval</source>
+        <translation type="finished">取样间隔</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2375"/>
+        <source>Full capture</source>
+        <translation type="finished">全部捕获</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2388"/>
+        <source>Selection</source>
+        <translation type="finished">选区</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2398"/>
+        <source>&amp;Histogram</source>
+        <translation type="finished">直方图</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2422"/>
+        <source>Save</source>
+        <translation type="finished">保存</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2425"/>
+        <source>Save captured data</source>
+        <translation type="finished">保存捕获数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2428"/>
+        <source>Ctrl+S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2437"/>
+        <source>Reset zoom</source>
+        <translation type="finished">重置缩放</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2446"/>
+        <source>Save selection</source>
+        <translation type="finished">保存选区</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2449"/>
+        <source>Ctrl+Shift+S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2461"/>
+        <source>Horizontal selection</source>
+        <translation type="finished">水平选区</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2473"/>
+        <source>Vertical selection</source>
+        <translation type="finished">垂直选区</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2482"/>
+        <source>Zoom selection</source>
+        <translation type="finished">选区缩放</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2493"/>
+        <source>&amp;Waveform</source>
+        <translation type="finished">波形</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2496"/>
+        <source>Toggle display waveform</source>
+        <translation type="finished">显示波形开关</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2504"/>
+        <source>&amp;Envelope</source>
+        <translation type="finished">包络</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2507"/>
+        <source>Toggle overlay envelope</source>
+        <translation type="finished">包络重叠开关</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2518"/>
+        <source>&amp;Phase</source>
+        <translation type="finished">相位</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2521"/>
+        <source>Toggle phase colorization</source>
+        <translation type="finished">相位着色开关</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2532"/>
+        <source>&amp;Frequency</source>
+        <translation type="finished">频率</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2535"/>
+        <source>Toggle phase derivative (frequency)</source>
+        <translation type="finished">相位求导（频率）开关</translation>
+    </message>
+    <message>
+        <location filename="../ui/TimeWindow.ui" line="2547"/>
+        <source>Automatically fit to evenlope</source>
+        <translation type="finished">自适应包络</translation>
+    </message>
+  </context>
+  <context>
+    <name>ToneControl</name>
+    <message>
+        <location filename="../ui/ToneControl.ui" line="20"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ToneControl.ui" line="84"/>
+        <source>Phase</source>
+        <translation type="finished">相位</translation>
+    </message>
+    <message>
+        <location filename="../ui/ToneControl.ui" line="94"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;FSK demodulator&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="finished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;FSK解调器&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../ui/ToneControl.ui" line="101"/>
+        <source>Bits per tone</source>
+        <translation type="finished">单音比特位数</translation>
+    </message>
+    <message>
+        <location filename="../ui/ToneControl.ui" line="127"/>
+        <source>Disable sample normalization</source>
+        <translation type="finished">不使能样本归一化</translation>
+    </message>
+  </context>
+  <context>
+    <name>ToneGenSourcePage</name>
+    <message>
+        <location filename="../Default/SourceConfig/ToneGenSourcePage.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/ToneGenSourcePage.ui" line="35"/>
+        <source>Signal power</source>
+        <translation type="finished">信号功率</translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/ToneGenSourcePage.ui" line="61"/>
+        <source> dBFS/Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/ToneGenSourcePage.ui" line="77"/>
+        <source> dBFS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Default/SourceConfig/ToneGenSourcePage.ui" line="90"/>
+        <source>Noise floor density</source>
+        <translation type="finished">噪底电平</translation>
+    </message>
+  </context>
 </TS>
