@@ -95,10 +95,8 @@ DeviceTweaks::setChanged(bool changed)
   m_changed = changed;
 
   if (m_profile != nullptr) {
-    std::string desc = m_profile->getDevice().getDesc();
-
-    if (desc.size() == 0)
-      desc = "(No device description)";
+    auto props = m_profile->getDeviceSpec().properties();
+    std::string desc = props == nullptr ? "(device not found)" : props->label();
 
     if (changed)
       setWindowTitle(QString::fromStdString(desc) + " [changed]");

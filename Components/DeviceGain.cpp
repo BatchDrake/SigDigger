@@ -21,94 +21,92 @@
 
 using namespace SigDigger;
 
-DeviceGain::DeviceGain(
-    QWidget *parent,
-    Suscan::Source::GainDescription const &desc) :
+DeviceGain::DeviceGain(QWidget *parent, Suscan::DeviceGainDesc const &desc) :
   QWidget(parent),
-  ui(new Ui_DeviceGain)
+  m_ui(new Ui_DeviceGain)
 {
-  this->ui->setupUi(this);
+  m_ui->setupUi(this);
 
-  this->name = desc.getName();
-  this->min  = static_cast<float>(desc.getMin());
-  this->max  = static_cast<float>(desc.getMax());
-  this->step = static_cast<float>(desc.getStep());
+  m_name = desc.getName();
+  m_min  = static_cast<float>(desc.getMin());
+  m_max  = static_cast<float>(desc.getMax());
+  m_step = static_cast<float>(desc.getStep());
 
-  if (this->step < 1)
-    this->step = 1;
+  if (m_step < 1)
+    m_step = 1;
 
-  this->defl = static_cast<float>(desc.getDefault());
+  m_defl = static_cast<float>(desc.getDefault());
 
   // The slider must be configured as follows
   // Min value: 0
-  // Max value: (this->max - this->min) / this->step
+  // Max value: (m_max - m_min) / m_step
   // Tick interval: 1
   // Single step: 1
 
   // Gain to value:
-  // value = (gain - this->min) / this->step
+  // value = (gain - m_min) / m_step
 
   // Value to gain
-  // gain = this->min + this->step * value
+  // gain = m_min + m_step * value
 
-  this->ui->gainSlider->setMinimum(0);
-  this->ui->gainSlider->setMaximum(static_cast<int>((this->max - this->min) / this->step));
-  this->ui->gainSlider->setTickInterval(1);
-  this->ui->gainSlider->setSingleStep(1);
+  m_ui->gainSlider->setMinimum(0);
+  m_ui->gainSlider->setMaximum(static_cast<int>((m_max - m_min) / m_step));
+  m_ui->gainSlider->setTickInterval(1);
+  m_ui->gainSlider->setSingleStep(1);
 
-  this->ui->nameLabel->setText(QString::fromStdString(this->name));
+  m_ui->nameLabel->setText(QString::fromStdString(m_name));
 
   connect(
-        this->ui->gainSlider,
+        m_ui->gainSlider,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onValueChanged(int)));
 
   connect(
-        this->ui->resetButton,
+        m_ui->resetButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onResetClicked(void)));
 
-  this->setGain(this->defl);
+  setGain(m_defl);
 }
 
 float
-DeviceGain::getGain(void) const
+DeviceGain::getGain() const
 {
-  int value = this->ui->gainSlider->value();
+  int value = m_ui->gainSlider->value();
 
-  return value * this->step + this->min;
+  return value * m_step + m_min;
 }
 
 void
 DeviceGain::setGain(float gain)
 {
-  int value = static_cast<int>((gain - this->min) / this->step);
+  int value = static_cast<int>((gain - m_min) / m_step);
 
-  this->current = value;
+  m_current = value;
 
-  this->ui->gainSlider->setValue(value);
-  this->ui->valueLabel->setText(QString::number(static_cast<qreal>(this->getGain())) + " dB");
+  m_ui->gainSlider->setValue(value);
+  m_ui->valueLabel->setText(QString::number(static_cast<qreal>(getGain())) + " dB");
 }
 
 void
 DeviceGain::onValueChanged(int val)
 {
-  if (val != this->current) {
-    this->setGain(this->getGain());
-    emit gainChanged(QString::fromStdString(this->name), this->getGain());
+  if (val != m_current) {
+    setGain(getGain());
+    emit gainChanged(QString::fromStdString(m_name), getGain());
   }
 }
 
 void
 DeviceGain::onResetClicked(void)
 {
-  this->setGain(this->defl);
-  emit gainChanged(QString::fromStdString(this->name), this->getGain());
+  setGain(m_defl);
+  emit gainChanged(QString::fromStdString(m_name), getGain());
 }
 
 DeviceGain::~DeviceGain()
 {
-  delete ui;
+  delete m_ui;
 }

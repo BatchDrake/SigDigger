@@ -374,21 +374,24 @@ SigDiggerHelpers::populateAntennaCombo(
     QComboBox *combo)
 {
   int index = 0;
+  int i = 0;
   combo->clear();
 
-  for (auto i = profile.getDevice().getFirstAntenna();
-       i != profile.getDevice().getLastAntenna();
-       ++i) {
-    combo->addItem(QString::fromStdString(*i));
+  auto prop = profile.getDeviceSpec().properties();
+  if (prop != nullptr) {
+    for (auto antenna : prop->antennas()) {
+      combo->addItem(QString::fromStdString(antenna));
 
-    if (profile.getAntenna() == *i)
-      index = static_cast<int>(
-            i - profile.getDevice().getFirstAntenna());
+      if (profile.getAntenna() == antenna)
+        index = i;
+
+      ++i;
+    }
+
+    combo->setEnabled(combo->count() > 0);
+    if (combo->count() > 0)
+      BLOCKSIG(combo, setCurrentIndex(index));
   }
-
-  combo->setEnabled(combo->count() > 0);
-  if (combo->count() > 0)
-    combo->setCurrentIndex(index);
 }
 
 const Palette *

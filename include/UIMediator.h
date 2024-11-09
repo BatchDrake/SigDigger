@@ -75,7 +75,6 @@ namespace SigDigger {
     // Cached members
     struct timeval m_profileStart;
     struct timeval m_profileEnd;
-    Suscan::Source::Device m_remoteDevice;
 
     GlobalProperty *m_propSampRate  = nullptr;
     GlobalProperty *m_propFftSize   = nullptr;
@@ -218,7 +217,7 @@ namespace SigDigger {
     Suscan::AnalyzerParams *getAnalyzerParams() const;
 
     // panSpectrum functions
-    bool         getPanSpectrumDevice(Suscan::Source::Device &) const;
+    bool         getPanSpectrumDevice(Suscan::DeviceProperties &) const;
     QString      getPanSpectrumAntenna(void) const;
     bool         getPanSpectrumRange(qint64 &min, qint64 &max) const;
     bool         getPanSpectrumZoomRange(qint64 &min, qint64 &max, bool &noHop) const;

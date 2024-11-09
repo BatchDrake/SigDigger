@@ -23,6 +23,7 @@
 #include <Suscan/Library.h>
 #include <SuWidgetsHelpers.h>
 #include <SourceConfigWidgetFactory.h>
+#include <analyzer/source.h>
 #include <time.h>
 #include "ProfileConfigTab.h"
 #include "SigDiggerHelpers.h"
@@ -33,7 +34,6 @@
 using namespace SigDigger;
 
 Q_DECLARE_METATYPE(Suscan::Source::Config); // Unicorns
-Q_DECLARE_METATYPE(Suscan::Source::Device); // More unicorns
 
 
 // TODO:
@@ -68,15 +68,12 @@ ProfileConfigTab::populateProfileCombo()
 void
 ProfileConfigTab::populateRemoteDeviceCombo()
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
   ui->remoteDeviceCombo->clear();
 
-  for (
-       auto i = sus->getFirstNetworkProfile();
-       i != sus->getLastNetworkProfile();
-       ++i)
-    ui->remoteDeviceCombo->addItem(i->label().c_str());
+  for (auto &dev : Suscan::DeviceFacade::instance()->devices())
+    ui->remoteDeviceCombo->addItem(
+          QString::fromStdString(dev.label()),
+          QVariant::fromValue(dev.uuid()));
 
   if (ui->remoteDeviceCombo->currentIndex() != -1)
     ui->remoteDeviceCombo->setCurrentIndex(0);
@@ -96,14 +93,15 @@ ProfileConfigTab::makeConfigWidgets()
   int index = 0;
   auto sus = Suscan::Singleton::get_instance();
 
-  QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator p   = sus->getFirstSourceConfigWidgetFactory();
+  QList<SigDigger::SourceConfigWidgetFactory *>::const_iterator p =
+      sus->getFirstSourceConfigWidgetFactory();
   auto end = sus->getLastSourceConfigWidgetFactory();
 
   ui->sourceTypeCombo->clear();
 
   while (p != end) {
     SigDigger::SourceConfigWidgetFactory *factory = *p;
-    auto *iface = suscan_source_interface_lookup_by_name(factory->name());
+    auto *iface = suscan_source_lookup("local", factory->name());
 
     if (iface != nullptr) {
       auto widget = factory->make();
@@ -271,7 +269,7 @@ ProfileConfigTab::refreshTrueSampleRate()
 void
 ProfileConfigTab::refreshAnalyzerTypeUi()
 {
-  int index = m_profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE ? 0 : 1;
+  int index = m_profile.getDeviceSpec().analyzer() == "remote" ? 0 : 1;
 
   ui->analyzerTypeCombo->setCurrentIndex(index);
   ui->analyzerParamsStackedWidget->setCurrentIndex(index);
@@ -308,7 +306,7 @@ ProfileConfigTab::refreshUi()
 
   refreshAnalyzerTypeUi();
 
-  if (m_profile.getInterface() == SUSCAN_SOURCE_LOCAL_INTERFACE) {
+  if (m_profile.getDeviceSpec().analyzer() == "remote") {
     adjustableSourceTime = !m_profile.isRealTime();
   } else {
     bool hasMc;
@@ -662,14 +660,6 @@ ProfileConfigTab::ProfileConfigTab(QWidget *parent) :
   // Set local analyzer as default
   ui->analyzerTypeCombo->setCurrentIndex(0);
 
-  // Setup remote device
-  m_remoteDevice = Suscan::Source::Device(
-          "Remote device",
-          "localhost",
-          28001,
-          "anonymous",
-          "");
-
   // Setup sample rate size
   ui->trueRateLabel->setFixedWidth(
         SuWidgetsHelpers::getWidgetTextWidth(
@@ -712,10 +702,6 @@ ProfileConfigTab::selectSourceType(std::string const &type)
     next = m_configWidgets[asQString];
 
   if (next != m_currentConfigWidget) {
-    // Previous widget present, call deactivate
-    if (!tryLeaveCurrentConfigWidget())
-      return false;
-
     // New widget, set current widget and call activate
     m_currentConfigWidget = next;
 
@@ -737,22 +723,31 @@ ProfileConfigTab::selectSourceType(std::string const &type)
   return true;
 }
 
-bool
-ProfileConfigTab::tryLeaveCurrentConfigWidget()
-{
-  if (m_currentConfigWidget != nullptr)
-    if (!m_currentConfigWidget->deactivateWidget())
-      return false;
-
-  m_currentConfigWidget = nullptr;
-
-  return true;
-}
-
 void
 ProfileConfigTab::loadProfile(Suscan::Source::Config const &config)
 {
   m_profile = config;
+
+  std::map<std::string, std::string> traits;
+
+  traits.clear();
+  traits["device"] = "rtlsdr";
+
+  m_savedLocalSpec.setAnalyzer("local");
+  m_savedLocalSpec.setSource("soapysdr");
+  m_savedLocalSpec.setTraits(traits);
+
+  traits.clear();
+  traits["host"] = "localhost";
+  traits["port"] = "port";
+
+  m_savedRemoteSpec.setAnalyzer("remote");
+  m_savedRemoteSpec.setSource(traits["host"] + ":" + traits["port"]);
+  m_savedRemoteSpec.setTraits(traits);
+  m_savedRemoteSpec.set("user",     "anonymous");
+  m_savedRemoteSpec.set("password", "");
+
+  saveCurrentDeviceSpec();
 
   for (auto p: m_configWidgets)
     p->setConfigRef(m_profile);
@@ -771,10 +766,8 @@ ProfileConfigTab::onLoadProfileClicked()
 {
   QVariant data = ui->profileCombo->itemData(ui->profileCombo->currentIndex());
 
-  if (tryLeaveCurrentConfigWidget()) {
-    configChanged(true);
-    loadProfile(data.value<Suscan::Source::Config>());
-  }
+  configChanged(true);
+  loadProfile(data.value<Suscan::Source::Config>());
 }
 
 void
@@ -809,21 +802,30 @@ ProfileConfigTab::onSourceConfigWidgetChanged()
 }
 
 void
+ProfileConfigTab::saveCurrentDeviceSpec()
+{
+  auto currSpec = m_profile.getDeviceSpec();
+
+  if (currSpec.analyzer() == "local")
+    m_savedLocalSpec = currSpec;
+
+  if (currSpec.analyzer() == "remote")
+    m_savedRemoteSpec = currSpec;
+}
+
+void
 ProfileConfigTab::onAnalyzerTypeChanged(int index)
 {
+  saveCurrentDeviceSpec();
+
   switch (index) {
     case 0:
-      m_profile.setInterface(SUSCAN_SOURCE_LOCAL_INTERFACE);
+      m_profile.setDeviceSpec(m_savedLocalSpec);
       selectSourceType(m_profile.getType());
       break;
 
     case 1:
-      if (!tryLeaveCurrentConfigWidget()) {
-        refreshUi();
-        return;
-      }
-
-      m_profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
+      m_profile.setDeviceSpec(m_savedRemoteSpec);
       onChangeConnectionType();
       onRemoteParamsChanged();
       break;
@@ -839,7 +841,6 @@ ProfileConfigTab::onRemoteParamsChanged()
   if (remoteSelected()) {
     ui->mcInterfaceEdit->setEnabled(ui->mcCheck->isChecked());
     configChanged(true);
-    m_profile.setDevice(m_remoteDevice);
     updateRemoteParams();
   }
 }
@@ -1029,11 +1030,11 @@ ProfileConfigTab::onChangeConnectionType()
 void
 ProfileConfigTab::onRefreshRemoteDevices()
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   int countBefore = ui->remoteDeviceCombo->count();
   int countAfter;
 
-  sus->refreshNetworkProfiles();
+  Suscan::DeviceFacade::instance()->discoverAll();
+
   populateRemoteDeviceCombo();
 
   countAfter = ui->remoteDeviceCombo->count();
@@ -1051,10 +1052,7 @@ ProfileConfigTab::onRefreshRemoteDevices()
 void
 ProfileConfigTab::onRemoteProfileSelected()
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
   if (ui->useNetworkProfileRadio->isChecked()) {
-    QHash<QString, Suscan::Source::Config>::const_iterator it;
     std::string user, pass, mc, mc_if;
     bool hasMc;
 
@@ -1062,22 +1060,26 @@ ProfileConfigTab::onRemoteProfileSelected()
     hasMc = ui->mcCheck->isChecked();
     mc_if = ui->mcInterfaceEdit->text().toStdString();
 
-    it = sus->getNetworkProfileFrom(ui->remoteDeviceCombo->currentText());
+    auto uuid = ui->remoteDeviceCombo->currentData().value<uint64_t>();
 
-    if (it != sus->getLastNetworkProfile()) {
-      user = it->getParam("user");
-      pass = it->getParam("password");
+    auto prop = Suscan::DeviceFacade::instance()->deviceByUuid(uuid);
 
-      if (user.length() == 0)
+    if (prop != nullptr) {
+      Suscan::DeviceSpec spec(*prop);
+
+      user = spec.get("user");
+      pass = spec.get("password");
+
+      if (user.empty())
         user = ui->userEdit->text().toStdString();
-      if (user.length() == 0)
+      if (user.empty())
         user = "anonymous";
 
-      if (pass.length() == 0)
+      if (pass.empty())
         pass = ui->passEdit->text().toStdString();
 
       configChanged(true);
-      setProfile(*it);
+      m_profile.setDeviceSpec(spec);
 
       // Provide a better hint for username if the server announced none
       ui->userEdit->setText(user.c_str());

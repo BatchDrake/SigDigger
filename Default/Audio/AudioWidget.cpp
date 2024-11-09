@@ -935,7 +935,7 @@ AudioWidget::setProfile(Suscan::Source::Config &profile)
   struct timeval tv, start, end;
   bool isRealTime = profile.isRealTime();
 
-  if (!profile.isRemote()) {
+  if (profile.getDeviceSpec().analyzer() != "remote") {
     if (!isRealTime)
       setTimeStamp(profile.getStartTime());
   } else {

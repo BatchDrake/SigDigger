@@ -35,23 +35,6 @@
 
 using namespace SigDigger;
 
-DeviceDetectWorker::DeviceDetectWorker()
-{
-  m_instance = Suscan::Singleton::get_instance();
-}
-
-DeviceDetectWorker::~DeviceDetectWorker()
-{
-
-}
-
-void
-DeviceDetectWorker::process()
-{
-  m_instance->detect_devices();
-  emit finished();
-}
-
 Application::Application(QWidget *parent) : QMainWindow(parent), m_ui(this)
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
@@ -59,10 +42,6 @@ Application::Application(QWidget *parent) : QMainWindow(parent), m_ui(this)
   sing->init_plugins();
 
   m_mediator = new UIMediator(this, &m_ui);
-  m_deviceDetectThread = new QThread(this);
-  m_deviceDetectWorker = new DeviceDetectWorker();
-  m_deviceDetectWorker->moveToThread(m_deviceDetectThread);
-  m_deviceDetectThread->start();
 
   setAcceptDrops(true);
 }
@@ -93,7 +72,6 @@ Application::updateRecent()
 void
 Application::run(Suscan::Object const &config)
 {
-  Suscan::Singleton *sing = Suscan::Singleton::get_instance();
   m_ui.postLoadInit(m_mediator, this);
 
   m_mediator->loadSerializedConfig(config);
@@ -101,11 +79,9 @@ Application::run(Suscan::Object const &config)
   m_mediator->setState(UIMediator::HALTED);
 
   // New devices may have been discovered after config deserialization
-  sing->refreshDevices();
   m_mediator->refreshDevicesDone();
 
   connectUI();
-  connectDeviceDetect();
   updateRecent();
 
   show();
@@ -303,22 +279,6 @@ Application::connectScanner()
         SLOT(onScannerStopped()));
 }
 
-void
-Application::connectDeviceDetect()
-{
-  connect(
-        this,
-        SIGNAL(detectDevices()),
-        m_deviceDetectWorker,
-        SLOT(process()));
-
-  connect(
-        m_deviceDetectWorker,
-        SIGNAL(finished()),
-        this,
-        SLOT(onDetectFinished()));
-}
-
 QString
 Application::getLogText(int howMany)
 {
@@ -371,9 +331,9 @@ Application::getLogText(int howMany)
 void
 Application::startCapture()
 {
-  auto iface = m_mediator->getProfile()->getInterface();
-
 #ifdef _WIN32
+  auto iface = m_mediator->getProfile()->getDeviceSpec().analyzer();
+
   if (iface == SUSCAN_SOURCE_REMOTE_INTERFACE) {
     QMessageBox::critical(
           this,
@@ -428,7 +388,7 @@ Application::startCapture()
       Suscan::Logger::getInstance()->flush();
 
       // Allocate objects
-      if (profile.instance == nullptr) {
+      if (profile.instance() == nullptr) {
         QMessageBox::warning(
                   this,
                   "SigDigger error",
@@ -571,10 +531,6 @@ Application::~Application()
     delete m_scanner;
 
   m_analyzer = nullptr;
-
-  m_deviceDetectThread->quit();
-  m_deviceDetectThread->deleteLater();
-  m_deviceDetectWorker->deleteLater();
 
   if (m_mediator != nullptr)
     delete m_mediator;
@@ -775,7 +731,7 @@ Application::onPanSpectrumStart()
 {
   qint64 freqMin, initFreqMin;
   qint64 freqMax, initFreqMax;
-  Suscan::Source::Device device;
+  Suscan::DeviceProperties panDevProps;
   bool noHop;
 
   // we defer deletion of old scanner instances to here to avoid user-after-free of PSD data
@@ -787,12 +743,13 @@ Application::onPanSpectrumStart()
 
   if (m_mediator->getPanSpectrumRange(freqMin, freqMax) &&
       m_mediator->getPanSpectrumZoomRange(initFreqMin, initFreqMax, noHop) &&
-      m_mediator->getPanSpectrumDevice(device)) {
+      m_mediator->getPanSpectrumDevice(panDevProps)) {
     Suscan::Source::Config config(
           "soapysdr",
           SUSCAN_SOURCE_FORMAT_AUTO);
 
-    config.setDevice(device);
+    Suscan::DeviceSpec spec(panDevProps);
+    config.setDeviceSpec(spec);
     config.setAntenna(m_mediator->getPanSpectrumAntenna().toStdString());
     config.setSampleRate(
           static_cast<unsigned int>(
@@ -804,7 +761,7 @@ Application::onPanSpectrumStart()
 
     // default RTL-SDR buffer size results in ~40 ms wait between chunks of data
     // shorter buffer size avoids that being a bottleneck in sweep speed
-    if (device.getDriver() == "rtlsdr")
+    if (spec.get("device") == "rtlsdr")
       config.setParam("stream:bufflen", "16384");
 
     try {
@@ -817,14 +774,10 @@ Application::onPanSpectrumStart()
       onPanSpectrumPartitioningChanged(
             m_mediator->getPanSpectrumPartition());
 
-      for (auto p = device.getFirstGain();
-           p != device.getLastGain();
-           ++p) {
+      for (auto &p : panDevProps.gains())
         m_scanner->setGain(
-              QString::fromStdString(p->getName()),
-              m_mediator->getPanSpectrumGain(
-                QString::fromStdString(p->getName())));
-      }
+              QString::fromStdString(p),
+              m_mediator->getPanSpectrumGain(QString::fromStdString(p)));
 
       connectScanner();
       Suscan::Logger::getInstance()->flush();

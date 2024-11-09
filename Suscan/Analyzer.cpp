@@ -607,7 +607,7 @@ Analyzer::Analyzer(AnalyzerParams &params, Source::Config const &config)
 
   SU_ATTEMPT(this->instance = suscan_analyzer_new(
         &params.getCParams(),
-        config.instance,
+        config.instance(),
         &mq.mq));
 
   this->asyncThread = new AsyncThread(this);

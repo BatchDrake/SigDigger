@@ -34,7 +34,7 @@ QuickConnectDialog::QuickConnectDialog(QWidget *parent) :
 void
 QuickConnectDialog::setProfile(Suscan::Source::Config const &prof)
 {
-  if (prof.getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
+  if (prof.getDeviceSpec().analyzer() == "remote") {
     this->ui->hostEdit->setText(
           QString::fromStdString(prof.getParam("host")));
     this->ui->userEdit->setText(

@@ -178,7 +178,7 @@ GenericInspector::setProfile(Suscan::Source::Config &profile)
   bool isRealTime = false;
   struct timeval tv, start, end;
 
-  isRealTime = !profile.isRemote() && profile.isRealTime();
+  isRealTime = profile.getDeviceSpec().analyzer() != "remote" && profile.isRealTime();
 
   if (isRealTime) {
     gettimeofday(&tv, nullptr);

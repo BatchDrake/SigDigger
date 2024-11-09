@@ -31,7 +31,6 @@
 using namespace SigDigger;
 
 Q_DECLARE_METATYPE(Suscan::Source::Config); // Unicorns
-Q_DECLARE_METATYPE(Suscan::Source::Device); // More unicorns
 
 void
 ConfigDialog::connectAll()

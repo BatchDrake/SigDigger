@@ -81,7 +81,7 @@ UIMediator::feedPSD(const Suscan::PSDMessage &msg)
       delta -= m_rtDeltaReal;
       expired = delta > max_delta;
 
-      if (m_appConfig->profile.isRemote()
+      if (m_appConfig->profile.getDeviceSpec().analyzer() == "remote"
           && fabs(m_psdAdj / interval)
           < SIGDIGGER_UI_MEDIATOR_PSD_LAG_THRESHOLD) {
         if ((m_psdDelta - interval) / interval

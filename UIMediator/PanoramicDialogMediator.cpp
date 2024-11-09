@@ -23,23 +23,23 @@
 using namespace SigDigger;
 
 bool
-UIMediator::getPanSpectrumDevice(Suscan::Source::Device &dev) const
+UIMediator::getPanSpectrumDevice(Suscan::DeviceProperties &dev) const
 {
-  return this->m_ui->panoramicDialog->getSelectedDevice(dev);
+  return m_ui->panoramicDialog->getSelectedDevice(dev);
 }
 
 QString
 UIMediator::getPanSpectrumAntenna(void) const
 {
-  return this->m_ui->panoramicDialog->getAntenna();
+  return m_ui->panoramicDialog->getAntenna();
 }
 
 bool
 UIMediator::getPanSpectrumRange(qint64 &min, qint64 &max) const
 {
-  if (!this->m_ui->panoramicDialog->invalidRange()) {
-    min = static_cast<qint64>(this->m_ui->panoramicDialog->getMinFreq());
-    max = static_cast<qint64>(this->m_ui->panoramicDialog->getMaxFreq());
+  if (!m_ui->panoramicDialog->invalidRange()) {
+    min = static_cast<qint64>(m_ui->panoramicDialog->getMinFreq());
+    max = static_cast<qint64>(m_ui->panoramicDialog->getMaxFreq());
     return true;
   }
 
@@ -49,8 +49,8 @@ UIMediator::getPanSpectrumRange(qint64 &min, qint64 &max) const
 bool
 UIMediator::getPanSpectrumZoomRange(qint64 &min, qint64 &max, bool &noHop) const
 {
-  if (!this->m_ui->panoramicDialog->invalidRange()) {
-    this->m_ui->panoramicDialog->getZoomRange(min, max, noHop);
+  if (!m_ui->panoramicDialog->invalidRange()) {
+    m_ui->panoramicDialog->getZoomRange(min, max, noHop);
     return true;
   }
 
@@ -60,49 +60,49 @@ UIMediator::getPanSpectrumZoomRange(qint64 &min, qint64 &max, bool &noHop) const
 unsigned int
 UIMediator::getPanSpectrumRttMs(void) const
 {
-  return this->m_ui->panoramicDialog->getRttMs();
+  return m_ui->panoramicDialog->getRttMs();
 }
 
 float
 UIMediator::getPanSpectrumRelBw(void) const
 {
-  return this->m_ui->panoramicDialog->getRelBw();
+  return m_ui->panoramicDialog->getRelBw();
 }
 
 float
 UIMediator::getPanSpectrumGain(QString const &name) const
 {
-  return this->m_ui->panoramicDialog->getGain(name);
+  return m_ui->panoramicDialog->getGain(name);
 }
 
 SUFREQ
 UIMediator::getPanSpectrumLnbOffset(void) const
 {
-  return this->m_ui->panoramicDialog->getLnbOffset();
+  return m_ui->panoramicDialog->getLnbOffset();
 }
 
 float
 UIMediator::getPanSpectrumPreferredSampleRate(void) const
 {
-  return this->m_ui->panoramicDialog->getPreferredSampleRate();
+  return m_ui->panoramicDialog->getPreferredSampleRate();
 }
 
 QString
 UIMediator::getPanSpectrumStrategy(void) const
 {
-  return this->m_ui->panoramicDialog->getStrategy();
+  return m_ui->panoramicDialog->getStrategy();
 }
 
 QString
 UIMediator::getPanSpectrumPartition(void) const
 {
-  return this->m_ui->panoramicDialog->getPartitioning();
+  return m_ui->panoramicDialog->getPartitioning();
 }
 
 void
 UIMediator::setMinPanSpectrumBw(quint64 bw)
 {
-  this->m_ui->panoramicDialog->setMinBwForZoom(bw);
+  m_ui->panoramicDialog->setMinBwForZoom(bw);
 }
 
 void
@@ -112,68 +112,68 @@ UIMediator::feedPanSpectrum(
     float *data,
     size_t size)
 {
-  this->m_ui->panoramicDialog->feed(minFreq, maxFreq, data, size);
+  m_ui->panoramicDialog->feed(minFreq, maxFreq, data, size);
 }
 
 void
 UIMediator::setPanSpectrumRunning(bool running)
 {
-  this->m_ui->panoramicDialog->setRunning(running);
+  m_ui->panoramicDialog->setRunning(running);
 }
 
 void
 UIMediator::connectPanoramicDialog(void)
 {
   connect(
-        this->m_ui->panoramicDialog,
+        m_ui->panoramicDialog,
         SIGNAL(start(void)),
         this,
         SLOT(onPanoramicSpectrumStart(void)));
 
   connect(
-        this->m_ui->panoramicDialog,
+        m_ui->panoramicDialog,
         SIGNAL(stop(void)),
         this,
         SLOT(onPanoramicSpectrumStop(void)));
 
   connect(
-        this->m_ui->panoramicDialog,
+        m_ui->panoramicDialog,
         SIGNAL(detailChanged(qint64, qint64, bool)),
         this,
         SLOT(onPanoramicSpectrumDetailChanged(qint64, qint64, bool)));
 
   connect(
-        this->m_ui->panoramicDialog,
+        m_ui->panoramicDialog,
         SIGNAL(frameSkipChanged(void)),
         this,
         SIGNAL(panSpectrumSkipChanged(void)));
 
   connect(
-        this->m_ui->panoramicDialog,
+        m_ui->panoramicDialog,
         SIGNAL(relBandwidthChanged(void)),
         this,
         SIGNAL(panSpectrumRelBwChanged(void)));
 
   connect(
-        this->m_ui->panoramicDialog,
+        m_ui->panoramicDialog,
         SIGNAL(reset(void)),
         this,
         SIGNAL(panSpectrumReset(void)));
 
   connect(
-        this->m_ui->panoramicDialog,
+        m_ui->panoramicDialog,
         SIGNAL(strategyChanged(QString)),
         this,
         SIGNAL(panSpectrumStrategyChanged(QString)));
 
   connect(
-        this->m_ui->panoramicDialog,
+        m_ui->panoramicDialog,
         SIGNAL(partitioningChanged(QString)),
         this,
         SIGNAL(panSpectrumPartitioningChanged(QString)));
 
   connect(
-        this->m_ui->panoramicDialog,
+        m_ui->panoramicDialog,
         SIGNAL(gainChanged(QString, float)),
         this,
         SIGNAL(panSpectrumGainChanged(QString, float)));

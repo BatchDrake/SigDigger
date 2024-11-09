@@ -20,7 +20,7 @@
 #define DEVICEGAIN_H
 
 #include <QWidget>
-#include <Suscan/Source.h>
+#include <Suscan/Device.h>
 
 class Ui_DeviceGain;
 
@@ -29,31 +29,29 @@ namespace SigDigger {
   {
     Q_OBJECT
 
-    Ui_DeviceGain *ui;
+    Ui_DeviceGain *m_ui = nullptr;
 
-    std::string name;
-    float min;
-    float max;
-    float step;
-    float defl;
+    std::string    m_name;
+    float          m_min;
+    float          m_max;
+    float          m_step;
+    float          m_defl;
 
-    int current; // Current value, to prevent spurious event triggers
+    int            m_current; // Current value, to prevent spurious event triggers
 
   public:
-    explicit DeviceGain(
-        QWidget *parent,
-        Suscan::Source::GainDescription const &desc);
+    explicit DeviceGain(QWidget *parent, Suscan::DeviceGainDesc const &desc);
 
-    std::string const&
+    inline std::string const &
     getName(void) const
     {
-      return this->name;
+      return m_name;
     }
 
     void setGain(float);
     float getGain(void) const;
 
-    ~DeviceGain();
+    virtual ~DeviceGain() override;
 
   signals:
     void gainChanged(QString, float);

@@ -77,7 +77,8 @@ namespace SigDigger {
       bool m_running = false;
       QWidget *m_noGainLabel = nullptr;
       std::vector<DeviceGain *> m_gainControls;
-      std::map<std::string, Suscan::Source::Device> m_deviceMap;
+      std::map<uint64_t, Suscan::DeviceProperties> m_deviceMap;
+      uint64_t m_lastSelectedDevice = SUSCAN_DEVICE_UUID_INVALID;
       std::vector<FrequencyAllocationTable *> m_FATs;
 
       QString m_bannedDevice;
@@ -105,14 +106,14 @@ namespace SigDigger {
 
       DeviceGain *lookupGain(std::string const &name);
       void clearGains();
-      void refreshGains(Suscan::Source::Device &device);
+      void refreshGains(Suscan::DeviceProperties &device);
       void deserializeFATs();
-      void setRanges(Suscan::Source::Device const &);
+      void setRanges(Suscan::DeviceProperties const &);
       void adjustRanges();
 
       static FrequencyBand deserializeFrequencyBand(Suscan::Object const &);
       static int getFrequencyUnits(qint64);
-      static unsigned int preferredRttMs(Suscan::Source::Device const &dev);
+      static unsigned int preferredRttMs(Suscan::DeviceProperties const &dev);
 
     public:
       explicit PanoramicDialog(QWidget *parent = nullptr);
@@ -139,7 +140,7 @@ namespace SigDigger {
       void run();
       void setMinBwForZoom(quint64 bw);
       bool invalidRange() const;
-      bool getSelectedDevice(Suscan::Source::Device &) const;
+      bool getSelectedDevice(Suscan::DeviceProperties &) const;
       QString getAntenna() const;
       QString getStrategy() const;
       QString getPartitioning() const;

@@ -98,7 +98,7 @@ PanoramicDialogConfig::deserialize(Suscan::Object const &conf)
 }
 
 Suscan::Object &&
-PanoramicDialogConfig::serialize(void)
+PanoramicDialogConfig::serialize()
 {
   Suscan::Object obj(SUSCAN_OBJECT_TYPE_OBJECT);
 
@@ -239,61 +239,61 @@ PanoramicDialog::setGuiConfig(GuiConfig const &cfg)
 }
 
 void
-PanoramicDialog::connectAll(void)
+PanoramicDialog::connectAll()
 {
   connect(
         m_ui->deviceCombo,
         SIGNAL(activated(int)),
         this,
-        SLOT(onDeviceChanged(void)));
+        SLOT(onDeviceChanged()));
 
   connect(
         m_ui->lnbDoubleSpinBox,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onLnbOffsetChanged(void)));
+        SLOT(onLnbOffsetChanged()));
 
   connect(
         m_ui->sampleRateSpin,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onSampleRateSpinChanged(void)));
+        SLOT(onSampleRateSpinChanged()));
 
   connect(
         m_ui->fullRangeCheck,
         SIGNAL(stateChanged(int)),
         this,
-        SLOT(onFullRangeChanged(void)));
+        SLOT(onFullRangeChanged()));
 
   connect(
         m_ui->rangeStartSpin,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onFreqRangeChanged(void)));
+        SLOT(onFreqRangeChanged()));
 
   connect(
         m_ui->rangeEndSpin,
         SIGNAL(valueChanged(double)),
         this,
-        SLOT(onFreqRangeChanged(void)));
+        SLOT(onFreqRangeChanged()));
 
   connect(
         m_ui->scanButton,
         SIGNAL(clicked(bool)),
         this,
-        SLOT(onToggleScan(void)));
+        SLOT(onToggleScan()));
 
   connect(
         m_ui->resetButton,
         SIGNAL(clicked(bool)),
         this,
-        SIGNAL(reset(void)));
+        SIGNAL(reset()));
 
   connect(
         m_ui->frameSkipSpin,
         SIGNAL(valueChanged(int)),
         this,
-        SIGNAL(frameSkipChanged(void)));
+        SIGNAL(frameSkipChanged()));
 
   connect(
         m_ui->frameSkipSpin,
@@ -305,7 +305,7 @@ PanoramicDialog::connectAll(void)
         m_ui->relBwSlider,
         SIGNAL(valueChanged(int)),
         this,
-        SIGNAL(relBandwidthChanged(void)));
+        SIGNAL(relBandwidthChanged()));
 
   connect(
         m_ui->paletteCombo,
@@ -335,11 +335,11 @@ PanoramicDialog::connectAll(void)
         m_ui->exportButton,
         SIGNAL(clicked(bool)),
         this,
-        SLOT(onExport(void)));
+        SLOT(onExport()));
 }
 
 void
-PanoramicDialog::connectWaterfall(void)
+PanoramicDialog::connectWaterfall()
 {
   connect(
         m_waterfall,
@@ -374,15 +374,17 @@ PanoramicDialog::connectWaterfall(void)
 
 // The following values are purely experimental
 unsigned int
-PanoramicDialog::preferredRttMs(Suscan::Source::Device const &dev)
+PanoramicDialog::preferredRttMs(Suscan::DeviceProperties const &dev)
 {
-  if (dev.getDriver() == "rtlsdr")
+  auto device = dev.get("device");
+
+  if (device == "rtlsdr")
     return 5;
-  else if (dev.getDriver() == "airspy")
+  else if (device == "airspy")
     return 16;
-  else if (dev.getDriver() == "hackrf")
+  else if (device == "hackrf")
     return 10;
-  else if (dev.getDriver() == "uhd")
+  else if (device == "uhd")
     return 2;
 
   // reasonable default for unknown devices
@@ -390,7 +392,7 @@ PanoramicDialog::preferredRttMs(Suscan::Source::Device const &dev)
 }
 
 void
-PanoramicDialog::refreshUi(void)
+PanoramicDialog::refreshUi()
 {
   bool empty = m_deviceMap.size() == 0;
   bool fullRange = m_ui->fullRangeCheck->isChecked();
@@ -407,19 +409,19 @@ PanoramicDialog::refreshUi(void)
 }
 
 SUFREQ
-PanoramicDialog::getLnbOffset(void) const
+PanoramicDialog::getLnbOffset() const
 {
   return m_ui->lnbDoubleSpinBox->value();
 }
 
 SUFREQ
-PanoramicDialog::getMinFreq(void) const
+PanoramicDialog::getMinFreq() const
 {
   return m_ui->rangeStartSpin->value();
 }
 
 SUFREQ
-PanoramicDialog::getMaxFreq(void) const
+PanoramicDialog::getMaxFreq() const
 {
   return m_ui->rangeEndSpin->value();
 }
@@ -475,19 +477,19 @@ PanoramicDialog::setRunning(bool running)
 }
 
 QString
-PanoramicDialog::getAntenna(void) const
+PanoramicDialog::getAntenna() const
 {
   return m_ui->antennaCombo->currentText();
 }
 
 QString
-PanoramicDialog::getStrategy(void) const
+PanoramicDialog::getStrategy() const
 {
   return m_ui->walkStrategyCombo->currentText();
 }
 
 QString
-PanoramicDialog::getPartitioning(void) const
+PanoramicDialog::getPartitioning() const
 {
   return m_ui->partitioningCombo->currentText();
 }
@@ -564,7 +566,7 @@ PanoramicDialog::setPaletteGradient(QString const &name)
 }
 
 SUFLOAT
-PanoramicDialog::getPreferredSampleRate(void) const
+PanoramicDialog::getPreferredSampleRate() const
 {
   return m_ui->sampleRateSpin->value();
 }
@@ -577,19 +579,25 @@ PanoramicDialog::setMinBwForZoom(quint64 bw)
 }
 
 void
-PanoramicDialog::populateDeviceCombo(void)
+PanoramicDialog::populateDeviceCombo()
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
   m_ui->deviceCombo->clear();
   m_deviceMap.clear();
 
-  for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
-    if (i->getMaxFreq() > 0 && i->isAvailable()) {
-      std::string name = i->getDesc();
-      m_deviceMap[name] = *i;
-      m_ui->deviceCombo->addItem(QString::fromStdString(name));
+  for (auto &prop : Suscan::DeviceFacade::instance()->devices()) {
+    if (prop.maxFreq() > 0 && prop.analyzer() == "local") {
+      m_deviceMap[prop.uuid()] = prop;
+      m_ui->deviceCombo->addItem(
+            QString::fromStdString(prop.label()),
+            QVariant::fromValue(prop.uuid()));
     }
+  }
+
+  if (m_lastSelectedDevice != SUSCAN_DEVICE_UUID_INVALID) {
+    int index = m_ui->deviceCombo->findData(
+          QVariant::fromValue(m_lastSelectedDevice));
+    if (index != -1)
+      BLOCKSIG(m_ui->deviceCombo, setCurrentIndex(index));
   }
 
   if (m_deviceMap.size() > 0)
@@ -599,21 +607,22 @@ PanoramicDialog::populateDeviceCombo(void)
 }
 
 bool
-PanoramicDialog::getSelectedDevice(Suscan::Source::Device &dev) const
+PanoramicDialog::getSelectedDevice(Suscan::DeviceProperties &dev) const
 {
-  std::string name = m_ui->deviceCombo->currentText().toStdString();
-  auto p = m_deviceMap.find(name);
-
-  if (p != m_deviceMap.cend()) {
-    dev = p->second;
-    return true;
+  if (m_ui->deviceCombo->currentIndex() != -1) {
+    uint64_t uuid = m_ui->deviceCombo->currentData().value<uint64_t>();
+    auto it = m_deviceMap.find(uuid);
+    if (it != m_deviceMap.end()) {
+      dev = it->second;
+      return true;
+    }
   }
 
   return false;
 }
 
 void
-PanoramicDialog::adjustRanges(void)
+PanoramicDialog::adjustRanges()
 {
   // swap min and max if reversed
   if (m_ui->rangeStartSpin->value() >
@@ -651,7 +660,7 @@ PanoramicDialog::adjustRanges(void)
 }
 
 bool
-PanoramicDialog::invalidRange(void) const
+PanoramicDialog::invalidRange() const
 {
   return fabs(
         m_ui->rangeEndSpin->value() - m_ui->rangeStartSpin->value()) < 1;
@@ -677,10 +686,10 @@ PanoramicDialog::getFrequencyUnits(qint64 freq)
 
 
 void
-PanoramicDialog::setRanges(Suscan::Source::Device const &dev)
+PanoramicDialog::setRanges(Suscan::DeviceProperties const &dev)
 {
-  SUFREQ minFreq = dev.getMinFreq() + getLnbOffset();
-  SUFREQ maxFreq = dev.getMaxFreq() + getLnbOffset();
+  SUFREQ minFreq = dev.minFreq() + getLnbOffset();
+  SUFREQ maxFreq = dev.maxFreq() + getLnbOffset();
 
   // Prevents Waterfall frequencies from overflowing.
 
@@ -698,11 +707,11 @@ PanoramicDialog::setRanges(Suscan::Source::Device const &dev)
 }
 
 void
-PanoramicDialog::saveConfig(void)
+PanoramicDialog::saveConfig()
 {
-  Suscan::Source::Device dev;
+  Suscan::DeviceProperties dev;
   if (getSelectedDevice(dev)) {
-    m_dialogConfig->device = dev.getDesc();
+    m_dialogConfig->device = dev.label();
     m_dialogConfig->antenna = m_ui->antennaCombo->currentText().toStdString();
   }
 
@@ -738,7 +747,7 @@ PanoramicDialog::deserializeFrequencyBand(Suscan::Object const &obj)
 }
 
 void
-PanoramicDialog::deserializeFATs(void)
+PanoramicDialog::deserializeFATs()
 {
   if (m_FATs.size() == 0) {
     Suscan::Singleton *sus = Suscan::Singleton::get_instance();
@@ -782,7 +791,7 @@ PanoramicDialog::deserializeFATs(void)
 }
 
 void
-PanoramicDialog::run(void)
+PanoramicDialog::run()
 {
   populateDeviceCombo();
   deserializeFATs();
@@ -794,7 +803,7 @@ PanoramicDialog::run(void)
 }
 
 void
-PanoramicDialog::redrawMeasures(void)
+PanoramicDialog::redrawMeasures()
 {
   m_demodFreq = static_cast<qint64>(
         m_waterfall->getFilterOffset() +
@@ -816,13 +825,13 @@ PanoramicDialog::redrawMeasures(void)
 }
 
 unsigned int
-PanoramicDialog::getRttMs(void) const
+PanoramicDialog::getRttMs() const
 {
   return static_cast<unsigned int>(m_ui->frameSkipSpin->value());
 }
 
 float
-PanoramicDialog::getRelBw(void) const
+PanoramicDialog::getRelBw() const
 {
   return m_ui->relBwSlider->value() / 100.f;
 }
@@ -842,7 +851,7 @@ PanoramicDialog::lookupGain(std::string const &name)
 }
 
 void
-PanoramicDialog::clearGains(void)
+PanoramicDialog::clearGains()
 {
   int i, len;
 
@@ -876,16 +885,15 @@ PanoramicDialog::clearGains(void)
 }
 
 void
-PanoramicDialog::refreshGains(Suscan::Source::Device &device)
+PanoramicDialog::refreshGains(Suscan::DeviceProperties &device)
 {
   DeviceGain *gain = nullptr;
 
   clearGains();
 
-  for (auto p = device.getFirstGain();
-       p != device.getLastGain();
-       ++p) {
-    gain = new DeviceGain(nullptr, *p);
+  for (auto &gainName : device.gains()) {
+    auto gainDesc = device.lookupGain(gainName);
+    gain = new DeviceGain(nullptr, *gainDesc);
     m_gainControls.push_back(gain);
     m_ui->gainGridLayout->addWidget(
           gain,
@@ -900,10 +908,11 @@ PanoramicDialog::refreshGains(Suscan::Source::Device &device)
           this,
           SLOT(onGainChanged(QString, float)));
 
-    if (m_dialogConfig->hasGain(device.getDriver(), p->getName()))
-      gain->setGain(m_dialogConfig->getGain(device.getDriver(), p->getName()));
+    auto driver = device.get("device");
+    if (m_dialogConfig->hasGain(driver, gainName))
+      gain->setGain(m_dialogConfig->getGain(driver, gainName));
     else
-      gain->setGain(p->getDefault());
+      gain->setGain(gainDesc->getDefault());
   }
 
   if (m_gainControls.size() == 0) {
@@ -922,13 +931,13 @@ PanoramicDialog::refreshGains(Suscan::Source::Device &device)
 
 // Overriden methods
 Suscan::Serializable *
-PanoramicDialog::allocConfig(void)
+PanoramicDialog::allocConfig()
 {
   return m_dialogConfig = new PanoramicDialogConfig();
 }
 
 void
-PanoramicDialog::applyConfig(void)
+PanoramicDialog::applyConfig()
 {
   SigDiggerHelpers::instance()->populatePaletteCombo(m_ui->paletteCombo);
 
@@ -962,24 +971,25 @@ PanoramicDialog::applyConfig(void)
 ////////////////////////////// Slots //////////////////////////////////////
 
 void
-PanoramicDialog::onDeviceChanged(void)
+PanoramicDialog::onDeviceChanged()
 {
-  Suscan::Source::Device dev;
+  Suscan::DeviceProperties dev;
 
   if (getSelectedDevice(dev)) {
+    m_lastSelectedDevice = dev.uuid();
     unsigned int rtt = preferredRttMs(dev);
     setRanges(dev);
     refreshGains(dev);
     m_ui->frameSkipSpin->setValue(static_cast<int>(rtt));
     if (m_ui->fullRangeCheck->isChecked()) {
-      m_ui->rangeStartSpin->setValue(dev.getMinFreq() + getLnbOffset());
-      m_ui->rangeEndSpin->setValue(dev.getMaxFreq() + getLnbOffset());
+      m_ui->rangeStartSpin->setValue(dev.minFreq() + getLnbOffset());
+      m_ui->rangeEndSpin->setValue(dev.maxFreq() + getLnbOffset());
     }
 
     int curAntennaIndex = m_ui->antennaCombo->currentIndex();
     m_ui->antennaCombo->clear();
-    for (auto i = dev.getFirstAntenna(); i != dev.getLastAntenna(); i++) {
-      m_ui->antennaCombo->addItem(QString::fromStdString(*i));
+    for (auto &ant : dev.antennas()) {
+      m_ui->antennaCombo->addItem(QString::fromStdString(ant));
     }
     int antennaCount = m_ui->antennaCombo->count();
     m_ui->antennaCombo->setEnabled(antennaCount > 0);
@@ -993,15 +1003,15 @@ PanoramicDialog::onDeviceChanged(void)
 }
 
 void
-PanoramicDialog::onFullRangeChanged(void)
+PanoramicDialog::onFullRangeChanged()
 {
-  Suscan::Source::Device dev;
+  Suscan::DeviceProperties dev;
   bool checked = m_ui->fullRangeCheck->isChecked();
 
   if (getSelectedDevice(dev)) {
     if (checked) {
-      m_ui->rangeStartSpin->setValue(dev.getMinFreq() + getLnbOffset());
-      m_ui->rangeEndSpin->setValue(dev.getMaxFreq() + getLnbOffset());
+      m_ui->rangeStartSpin->setValue(dev.minFreq() + getLnbOffset());
+      m_ui->rangeEndSpin->setValue(dev.maxFreq() + getLnbOffset());
     }
   }
 
@@ -1009,21 +1019,21 @@ PanoramicDialog::onFullRangeChanged(void)
 }
 
 void
-PanoramicDialog::onFreqRangeChanged(void)
+PanoramicDialog::onFreqRangeChanged()
 {
   adjustRanges();
 }
 
 void
-PanoramicDialog::onToggleScan(void)
+PanoramicDialog::onToggleScan()
 {
   if (m_ui->scanButton->isChecked()) {
-    Suscan::Source::Device dev;
-    getSelectedDevice(dev);
+    Suscan::DeviceProperties prop;
+    getSelectedDevice(prop);
 
     if (m_bannedDevice.length() > 0
-        && dev.getDesc() == m_bannedDevice.toStdString()) {
-      (void)  QMessageBox::critical(
+        && prop.uri() == m_bannedDevice.toStdString()) {
+      (void) QMessageBox::critical(
             this,
             "Panoramic spectrum error error",
             "Scan cannot start because the selected device is in use by the main window.",
@@ -1067,7 +1077,7 @@ PanoramicDialog::onRangeChanged(float min, float max)
 }
 
 void
-PanoramicDialog::onNewOffset(void)
+PanoramicDialog::onNewOffset()
 {
   redrawMeasures();
 }
@@ -1133,16 +1143,16 @@ PanoramicDialog::onPartitioningChanged(int)
 }
 
 void
-PanoramicDialog::onLnbOffsetChanged(void)
+PanoramicDialog::onLnbOffsetChanged()
 {
-  Suscan::Source::Device dev;
+  Suscan::DeviceProperties dev;
 
   if (getSelectedDevice(dev))
     setRanges(dev);
 }
 
 void
-PanoramicDialog::onExport(void)
+PanoramicDialog::onExport()
 {
   bool done = false;
 
@@ -1197,16 +1207,16 @@ PanoramicDialog::onBandPlanChanged(int)
 void
 PanoramicDialog::onGainChanged(QString name, float val)
 {
-  Suscan::Source::Device dev;
+  Suscan::DeviceProperties dev;
 
   if (getSelectedDevice(dev))
-    m_dialogConfig->setGain(dev.getDriver(), name.toStdString(), val);
+    m_dialogConfig->setGain(dev.get("device"), name.toStdString(), val);
 
   emit gainChanged(name, val);
 }
 
 void
-PanoramicDialog::onSampleRateSpinChanged(void)
+PanoramicDialog::onSampleRateSpinChanged()
 {
   if (!m_running)
     m_dialogConfig->sampRate = static_cast<int>(

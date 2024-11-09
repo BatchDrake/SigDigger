@@ -21,6 +21,8 @@
 
 #include <QWidget>
 #include <SourceConfigWidgetFactory.h>
+#include <Suscan/Device.h>
+#include <QMap>
 
 namespace Ui {
   class SoapySDRSourcePage;
@@ -40,18 +42,17 @@ namespace SigDigger {
     Q_OBJECT
 
     Suscan::Source::Config *m_config    = nullptr;
-
-    bool                    m_hasTweaks = false;
     DeviceTweaks           *m_tweaks    = nullptr;
-    int                     m_savedLocalDeviceIndex = -1;
+
+    QMap<uint64_t, Suscan::DeviceSpec> m_savedSpecs;
 
     void populateDeviceCombo();
-    bool shouldDisregardTweaks();
     void refreshAntennas();
-    void selectDeviceByIndex(int);
+    void setSavedDeviceSpec(uint64_t);
 
     void refreshUi();
     void connectAll();
+    void saveCurrentSpecs();
 
   public:
     explicit SoapySDRSourcePage(

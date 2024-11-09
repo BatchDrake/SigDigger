@@ -29,6 +29,7 @@
 #include <Suscan/Message.h>
 #include <Suscan/Channel.h>
 #include <Suscan/AnalyzerParams.h>
+#include <Suscan/Device.h>
 
 #include <Suscan/Messages/ChannelMessage.h>
 #include <Suscan/Messages/InspectorMessage.h>
@@ -233,13 +234,13 @@ namespace Suscan {
 
 
     inline void
-    getGainInfo(std::vector<Source::GainDescription> &vec) const
+    getGainInfo(std::vector<DeviceGainDesc> &vec) const
     {
       unsigned int i;
       vec.clear();
 
       for (i = 0; i < this->c_info->gain_count; ++i)
-        vec.push_back(Source::GainDescription(this->c_info->gain_list[i]));
+        vec.push_back(DeviceGainDesc(this->c_info->gain_list[i]));
     }
 
     inline void

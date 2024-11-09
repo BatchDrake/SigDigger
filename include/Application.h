@@ -35,24 +35,6 @@ namespace SigDigger {
   class Scanner;
   class FileDataSaver;
 
-  class DeviceDetectWorker : public QObject {
-      Q_OBJECT
-
-  public:
-      DeviceDetectWorker();
-      ~DeviceDetectWorker() override;
-
-  public slots:
-      void process();
-
-  signals:
-      void finished();
-
-  private:
-      Suscan::Singleton *m_instance = nullptr;
-  };
-
-
   class Application : public QMainWindow {
     Q_OBJECT
 
@@ -73,15 +55,10 @@ namespace SigDigger {
     // Panoramic spectrum
     Scanner *m_scanner = nullptr;
 
-    // Rediscover devices
-    QThread *m_deviceDetectThread;
-    DeviceDetectWorker *m_deviceDetectWorker;
-
     // Private methods
     QString getLogText(int howMany = -1);
     void connectUI();
     void connectAnalyzer();
-    void connectDeviceDetect();
     void connectScanner();
 
     void hotApplyProfile(Suscan::Source::Config const *);

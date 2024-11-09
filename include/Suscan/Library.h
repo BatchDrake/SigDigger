@@ -30,6 +30,7 @@
 #include <SuWidgetsHelpers.h>
 
 #include <analyzer/source.h>
+#include <analyzer/device/facade.h>
 #include <analyzer/estimator.h>
 #include <analyzer/spectsrc.h>
 #include <analyzer/inspector/inspector.h>
@@ -52,8 +53,6 @@ namespace SigDigger {
 };
 
 namespace Suscan {
-  uint qHash(const Suscan::Source::Device &dev);
-
   class MultitaskController;
   class Plugin;
 
@@ -258,7 +257,7 @@ namespace Suscan {
 
     // Background tasks
     MultitaskController *backgroundTaskController = nullptr;
-    std::vector<Source::Device> devices;
+
     ConfigMap profiles;
     std::vector<Object> palettes;
     std::vector<Object> autoGains;
@@ -272,7 +271,6 @@ namespace Suscan {
     QMap<std::string, TLESource>    tleSources;
     QMap<qint64, Bookmark>          bookmarks;
     QMap<std::string, SpectrumUnit> spectrumUnits;
-    QHash<QString, Source::Config>  networkProfiles;
 
     // Delayed plugin callbacks
     std::list<std::pair<DelayedPluginCallback, Suscan::Plugin *>> pluginCallbacks;
@@ -337,8 +335,6 @@ namespace Suscan {
 
     void registerDelayedCallback(DelayedPluginCallback, Plugin *);
     void registerSourceConfig(suscan_source_config_t *config);
-    void registerNetworkProfile(const suscan_source_config_t *config);
-    void registerSourceDevice(const suscan_source_device_t *dev);
 
     MultitaskController *getBackgroundTaskController() const;
 
@@ -359,17 +355,11 @@ namespace Suscan {
     void replaceSpectrumUnit(std::string const &, float, float);
     void removeSpectrumUnit(std::string const &);
 
-    void refreshDevices();
-    void refreshNetworkProfiles();
-
     bool registerTLE(std::string const &);
 
     bool haveQth() const;
     Location getQth() const;
     void setQth(Location const &);
-
-    std::vector<Source::Device>::const_iterator getFirstDevice() const;
-    std::vector<Source::Device>::const_iterator getLastDevice() const;
 
     std::vector<Object>::const_iterator getFirstPalette() const;
     std::vector<Object>::const_iterator getLastPalette() const;
@@ -408,11 +398,6 @@ namespace Suscan {
     QMap<std::string, SpectrumUnit>::const_iterator getLastSpectrumUnit() const;
     QMap<std::string, SpectrumUnit>::const_iterator getSpectrumUnitFrom(std::string const &) const;
 
-    QHash<QString, Source::Config> const &getNetworkProfileMap() const;
-    QHash<QString, Source::Config>::const_iterator getFirstNetworkProfile() const;
-    QHash<QString, Source::Config>::const_iterator getLastNetworkProfile() const;
-    QHash<QString, Source::Config>::const_iterator getNetworkProfileFrom(QString const &) const;
-
     bool registerToolWidgetFactory(SigDigger::ToolWidgetFactory *);
     bool unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *);
     QList<SigDigger::ToolWidgetFactory *>::const_iterator getFirstToolWidgetFactory() const;
@@ -446,8 +431,6 @@ namespace Suscan {
     void clearRecent();
 
     void putUIConfig(unsigned int where, Object &&rv);
-
-    const Source::Device *getDeviceAt(unsigned int index) const;
 
     static Singleton *get_instance();
 

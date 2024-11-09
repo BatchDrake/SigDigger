@@ -26,6 +26,7 @@
 #include <fcntl.h>
 #include <UIMediator.h>
 #include <SigDiggerHelpers.h>
+#include <SuWidgetsHelpers.h>
 
 using namespace SigDigger;
 
@@ -296,30 +297,32 @@ SourceWidget::clearGains(void)
 void
 SourceWidget::refreshGains(Suscan::Source::Config &config)
 {
-  Suscan::Source::Device const &dev = config.getDevice();
+  auto spec = config.getDeviceSpec();
   DeviceGain *gain = nullptr;
   bool presetEnabled = m_ui->gainPresetCheck->isChecked();
 
   clearGains();
+  auto props = spec.properties();
 
-  for (auto p = dev.getFirstGain();
-       p != dev.getLastGain();
-       ++p) {
-    gain = new DeviceGain(nullptr, *p);
-    m_gainControls.push_back(gain);
-    m_ui->gainGridLayout->addWidget(
-          gain,
-          static_cast<int>(m_gainControls.size() - 1),
-          0,
-          1,
-          1);
+  if (props != nullptr) {
+    for (auto &gainName : props->gains()) {
+      auto gainDesc = props->lookupGain(gainName.c_str());
+      gain = new DeviceGain(nullptr, *gainDesc);
+      m_gainControls.push_back(gain);
+      m_ui->gainGridLayout->addWidget(
+            gain,
+            static_cast<int>(m_gainControls.size() - 1),
+            0,
+            1,
+            1);
 
-    connect(
-          gain,
-          SIGNAL(gainChanged(QString, float)),
-          this,
-          SLOT(onGainChanged(QString, float)));
-    gain->setGain(config.getGain(p->getName()));
+      connect(
+            gain,
+            SIGNAL(gainChanged(QString, float)),
+            this,
+            SLOT(onGainChanged(QString, float)));
+      gain->setGain(config.getGain(gainName.c_str()));
+    }
   }
 
   if (m_gainControls.size() == 0 || !config.isRealTime())
@@ -327,8 +330,8 @@ SourceWidget::refreshGains(Suscan::Source::Config &config)
   else
     m_ui->gainsFrame->show();
 
-  if (presetEnabled)
-    refreshCurrentAutoGain(dev.getDriver());
+  if (props != nullptr && presetEnabled)
+    refreshCurrentAutoGain(props->get("device"));
   else
     m_ui->gainsFrame->setEnabled(true);
 }
@@ -337,7 +340,7 @@ bool
 SourceWidget::tryApplyGains(
     Suscan::AnalyzerSourceInfo const &info)
 {
-  std::vector<Suscan::Source::GainDescription> gains;
+  std::vector<Suscan::DeviceGainDesc> gains;
   DeviceGain *gain;
   unsigned int i;
 
@@ -359,7 +362,7 @@ SourceWidget::tryApplyGains(
 void
 SourceWidget::applySourceInfo(Suscan::AnalyzerSourceInfo const &info)
 {
-  std::vector<Suscan::Source::GainDescription> gains;
+  std::vector<Suscan::DeviceGainDesc> gains;
   DeviceGain *gain = nullptr;
   bool oldBlocking;
 
@@ -484,19 +487,20 @@ void
 SourceWidget::applyCurrentProfileGains()
 {
   if (m_profile != nullptr) {
-    Suscan::Source::Device const &dev = m_profile->getDevice();
-    for (auto p = dev.getFirstGain();
-         p != dev.getLastGain();
-         ++p) {
-      auto name = p->getName();
-      auto value = m_profile->getGain(name);
+    auto dev = m_profile->getDeviceSpec();
+    auto prop = dev.properties();
 
-      DeviceGain *gain = lookupGain(name);
-      if (gain != nullptr) {
-        gain->setGain(static_cast<float>(m_profile->getGain(name)));
-        onGainChanged(
-              QString::fromStdString(name),
-              static_cast<float>(value));
+    if (prop != nullptr) {
+      auto gains = prop->gains();
+      for (auto &gainName : gains) {
+        auto value = m_profile->getGain(gainName);
+        DeviceGain *gain = lookupGain(gainName);
+
+        if (gain != nullptr) {
+          value = m_profile->getGain(gainName);
+          gain->setGain(value);
+          onGainChanged(QString::fromStdString(gainName), value);
+        }
       }
     }
   }
@@ -546,7 +550,7 @@ SourceWidget::refreshUi()
   bool seekable = false;
 
   if (m_profile != nullptr) {
-    bool isRemote = m_profile->isRemote();
+    bool isRemote = m_profile->getDeviceSpec().analyzer() == "remote";
 
     setThrottleable(!m_profile->isRealTime() || isRemote);
     m_ui->antennaCombo->setEnabled(m_profile->isRealTime());
@@ -757,7 +761,7 @@ SourceWidget::setProcessRate(unsigned int rate)
 void
 SourceWidget::refreshAutoGains(Suscan::Source::Config &config)
 {
-  std::string driver = config.getDevice().getDriver();
+  std::string driver = config.getDeviceSpec().get("device");
   bool showFrame = false;
 
   m_ui->autoGainCombo->clear();
@@ -1028,7 +1032,7 @@ SourceWidget::setProfile(Suscan::Source::Config &profile)
 
   if (m_ui->antennaCombo->count() == 0
       || !profile.isRealTime()
-      || profile.getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE) {
+      || profile.getDeviceSpec().analyzer() == "remote") {
     m_ui->antennaCombo->hide();
     m_ui->antennaLabel->hide();
   } else {
@@ -1049,7 +1053,7 @@ SourceWidget::setProfile(Suscan::Source::Config &profile)
 
   // Reset the autogain configuration if a new profile is chosen
   if (presetEnabled)
-    refreshCurrentAutoGain(profile.getDevice().getDriver());
+    refreshCurrentAutoGain(profile.getDeviceSpec().get("device"));
   else
     m_ui->gainsFrame->setEnabled(true);
 

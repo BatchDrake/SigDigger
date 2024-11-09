@@ -92,15 +92,6 @@ TLESource::serialize()
   return this->persist(obj);
 }
 
-uint
-Suscan::qHash(const Suscan::Source::Device &dev)
-{
-  return
-      ::qHash(dev.getDesc().c_str())
-    ^ ::qHash(dev.getDriver().c_str())
-    ^ ::qHash(dev.isRemote());
-}
-
 Singleton::Singleton()
 {
   suscan_sigutils_init(SUSCAN_MODE_NOLOG);
@@ -109,7 +100,6 @@ Singleton::Singleton()
   this->estimators_initd = false;
   this->spectrum_sources_initd = false;
   this->inspectors_initd = false;
-
   this->backgroundTaskController = new MultitaskController;
 
   // Define some read-only units. We may let the user add customized
@@ -175,36 +165,12 @@ walk_all_sources(suscan_source_config_t *config, void *privdata)
   return SU_TRUE;
 }
 
-static SUBOOL
-walk_all_devices(const suscan_source_device_t *device, unsigned int, void *privdata)
-{
-  Singleton *instance = static_cast<Singleton *>(privdata);
-
-  instance->registerSourceDevice(device);
-
-  return SU_TRUE;
-}
-
-static SUBOOL
-walk_all_remote_devices(
-    void *privdata,
-    const suscan_source_device_t *,
-    const suscan_source_config_t *config)
-{
-  Singleton *instance = static_cast<Singleton *>(privdata);
-
-  instance->registerNetworkProfile(config);
-
-  return SU_TRUE;
-}
-
 void
 Singleton::init_sources()
 {
   if (!this->sources_initd) {
     SU_ATTEMPT(suscan_init_sources());
     suscan_source_config_walk(walk_all_sources, static_cast<void *>(this));
-    suscan_source_device_walk(walk_all_devices, static_cast<void *>(this));
     this->sources_initd = true;
   }
 }
@@ -519,22 +485,6 @@ Singleton::init_plugins()
   }
 }
 
-void
-Singleton::refreshDevices()
-{
-  this->devices.clear();
-  suscan_source_device_walk(walk_all_devices, static_cast<void *>(this));
-}
-
-void
-Singleton::refreshNetworkProfiles()
-{
-  this->networkProfiles.clear();
-  suscan_discovered_remote_device_walk(
-        walk_all_remote_devices,
-        static_cast<void *>(this));
-}
-
 bool
 Singleton::haveQth() const
 {
@@ -558,8 +508,7 @@ Singleton::setQth(Location const &loc)
 void
 Singleton::detect_devices()
 {
-  suscan_source_detect_devices();
-  this->refreshDevices();
+  Suscan::DeviceFacade::instance()->discoverAll();
 }
 
 void
@@ -752,15 +701,6 @@ Singleton::registerSourceConfig(suscan_source_config_t *config)
   this->profiles[label] = Suscan::Source::Config(config);
 }
 
-void
-Singleton::registerNetworkProfile(const suscan_source_config_t *config)
-{
-  QString name = QString(suscan_source_config_get_label(config));
-
-  this->networkProfiles[name] = Suscan::Source::Config::wrap(
-        suscan_source_config_clone(config));
-}
-
 MultitaskController *
 Singleton::getBackgroundTaskController() const
 {
@@ -795,7 +735,7 @@ Singleton::saveProfile(Suscan::Source::Config const &profile)
 
   SU_ATTEMPT(
         suscan_source_config_register(
-          this->profiles[profile.label()].instance));
+          this->profiles[profile.label()].instance()));
 }
 
 void
@@ -978,24 +918,6 @@ Singleton::removeSpectrumUnit(std::string const &name)
   }
 }
 
-void
-Singleton::registerSourceDevice(const suscan_source_device_t *dev)
-{
-  this->devices.push_back(Source::Device(dev, 0));
-}
-
-std::vector<Source::Device>::const_iterator
-Singleton::getFirstDevice() const
-{
-  return this->devices.begin();
-}
-
-std::vector<Source::Device>::const_iterator
-Singleton::getLastDevice() const
-{
-  return this->devices.end();
-}
-
 std::vector<Object>::const_iterator
 Singleton::getFirstPalette() const
 {
@@ -1051,15 +973,6 @@ Singleton::putUIConfig(unsigned int pos, Object &&rv)
     this->uiConfig.resize(pos + 1);
 
   this->uiConfig[pos] = std::move(rv);
-}
-
-const Source::Device *
-Singleton::getDeviceAt(unsigned int index) const
-{
-  if (index < this->devices.size())
-    return &this->devices[index];
-
-  return nullptr;
 }
 
 std::list<std::string>::const_iterator
@@ -1175,31 +1088,6 @@ QMap<std::string, SpectrumUnit>::const_iterator
 Singleton::getSpectrumUnitFrom(std::string const &name) const
 {
   return this->spectrumUnits.lowerBound(name);
-}
-
-
-QHash<QString, Source::Config> const &
-Singleton::getNetworkProfileMap() const
-{
-  return this->networkProfiles;
-}
-
-QHash<QString, Source::Config>::const_iterator
-Singleton::getFirstNetworkProfile() const
-{
-  return this->networkProfiles.cbegin();
-}
-
-QHash<QString, Source::Config>::const_iterator
-Singleton::getLastNetworkProfile() const
-{
-  return this->networkProfiles.cend();
-}
-
-QHash<QString, Source::Config>::const_iterator
-Singleton::getNetworkProfileFrom(QString const &name) const
-{
-  return this->networkProfiles.constFind(name);
 }
 
 bool

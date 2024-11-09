@@ -159,6 +159,7 @@ SOURCES += \
     Settings/TLESourceTab.cpp \
     Suscan/AnalyzerRequestTracker.cpp \
     Suscan/CancellableTask.cpp \
+    Suscan/Device.cpp \
     Suscan/FeatureFactory.cpp \
     Suscan/Messages/ChannelMessage.cpp \
     Suscan/Messages/GenericMessage.cpp \
@@ -384,6 +385,7 @@ HEADERS += \
     include/Loader.h \
     include/SaveProfileDialog.h \
     include/SNREstimator.h \
+    include/Suscan/Device.h \
     include/TLESourceTab.h \
     include/TimeWindow.h \
     include/FileDataSaver.h \

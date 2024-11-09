@@ -21,7 +21,7 @@
 #include "ui_SoapySDRSourcePage.h"
 #include "DeviceTweaks.h"
 #include "SigDiggerHelpers.h"
-
+#include <Suscan/Device.h>
 #include <QMessageBox>
 
 using namespace SigDigger;
@@ -82,7 +82,6 @@ SoapySDRSourcePage::connectAll()
 void
 SoapySDRSourcePage::populateDeviceCombo()
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
   int currentIndex = ui->deviceCombo->currentIndex();
   int newIndex = -1;
   int p = 0;
@@ -93,15 +92,15 @@ SoapySDRSourcePage::populateDeviceCombo()
 
   ui->deviceCombo->clear();
 
-  for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
-    if (i->isAvailable() && !i->isRemote()) {
-      name = QString::fromStdString(i->getDesc());
+  for (auto &dev: Suscan::DeviceFacade::instance()->devices()) {
+    if (dev.analyzer() == "local" && dev.source() == "soapysdr") {
+      name = QString::fromStdString(dev.label());
       if (currentIndex != -1 && newIndex == -1 && name == prevName)
         newIndex = p;
 
       ui->deviceCombo->addItem(
           name,
-          QVariant::fromValue<long>(i - sus->getFirstDevice()));
+          QVariant::fromValue<uint64_t>(dev.uuid()));
       ++p;
     }
   }
@@ -130,29 +129,33 @@ SoapySDRSourcePage::getCapabilityMask() const
 }
 
 void
-SoapySDRSourcePage::selectDeviceByIndex(int index)
+SoapySDRSourcePage::saveCurrentSpecs()
 {
-  // Remember: only set device if the analyzer type is local
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-  const Suscan::Source::Device *device;
+  auto currentUuid = m_config->getDeviceSpec().uuid();
 
-  SU_ATTEMPT(
-        device = sus->getDeviceAt(
-          static_cast<unsigned int>(
-          ui->deviceCombo->itemData(index).value<long>())));
+  if (currentUuid != SUSCAN_DEVICE_UUID_INVALID)
+    m_savedSpecs[currentUuid] = m_config->getDeviceSpec();
+}
 
-  m_savedLocalDeviceIndex = index;
-  m_config->setDevice(*device);
-  m_hasTweaks = false;
+void
+SoapySDRSourcePage::setSavedDeviceSpec(uint64_t uuid)
+{
+  auto prop = Suscan::DeviceFacade::instance()->deviceByUuid(uuid);
 
-  auto begin = device->getFirstAntenna();
-  auto end   = device->getLastAntenna();
+  saveCurrentSpecs();
 
-  // We check whether we can keep the current antenna configuration. If we
-  // cannot, just set the first antenna in the list.
-  if (device->findAntenna(m_config->getAntenna()) == end
-      && begin != end)
-    m_config->setAntenna(*begin);
+  if (prop != nullptr) {
+    if (m_savedSpecs.contains(uuid))
+      m_config->setDeviceSpec(m_savedSpecs[uuid]);
+    else
+      m_config->setDeviceSpec(Suscan::DeviceSpec(*prop));
+
+    auto antennas = prop->antennas();
+    if (!antennas.empty() &&
+        std::find(antennas.begin(), antennas.end(), m_config->getAntenna())
+        == antennas.end())
+      m_config->setAntenna(antennas.front());
+  }
 }
 
 bool
@@ -161,12 +164,14 @@ SoapySDRSourcePage::getPreferredRates(QList<int> &list) const
   if (m_config == nullptr)
     return false;
 
-  auto dev = m_config->getDevice();
+  auto dev = m_config->getDeviceSpec();
+  auto prop = dev.properties();
 
   list.clear();
 
-  for (auto p = dev.getFirstSampRate(); p != dev.getLastSampRate(); ++p)
-    list.append(SCAST(int, *p));
+  if (prop != nullptr)
+    for (auto &rate : prop->sampleRates())
+      list.append(SCAST(int, rate));
 
   return list.size() > 0;
 }
@@ -174,33 +179,18 @@ SoapySDRSourcePage::getPreferredRates(QList<int> &list) const
 void
 SoapySDRSourcePage::refreshUi()
 {
-  Suscan::Singleton *sus = Suscan::Singleton::get_instance();
-
   if (m_config == nullptr)
     return;
 
   BLOCKSIG(ui->bandwidthSpinBox, setValue(
         static_cast<double>(m_config->getBandwidth())));
 
-  if (m_savedLocalDeviceIndex < 0) {
-    for (auto i = sus->getFirstDevice(); i != sus->getLastDevice(); ++i) {
-      if (i->equals(m_config->getDevice())) {
-        int index = ui->deviceCombo->findData(
-              QVariant::fromValue(
-                static_cast<long>(i - sus->getFirstDevice())));
-        if (index != -1) {
-          BLOCKSIG(ui->deviceCombo, setCurrentIndex(index));
-          m_savedLocalDeviceIndex = index;
-        }
+  uint64_t currUuid = m_config->getDeviceSpec().uuid();
+  int index = ui->deviceCombo->findData(QVariant::fromValue(currUuid));
 
-        break;
-      }
-    }
-  } else {
-    selectDeviceByIndex(m_savedLocalDeviceIndex);
-  }
-
-  if (ui->deviceCombo->currentIndex() == -1)
+  if (index != -1)
+    BLOCKSIG(ui->deviceCombo, setCurrentIndex(index));
+  else
     BLOCKSIG(ui->deviceCombo, setCurrentIndex(0));
 
   refreshAntennas();
@@ -215,12 +205,7 @@ SoapySDRSourcePage::activateWidget()
 bool
 SoapySDRSourcePage::deactivateWidget()
 {
-  if (shouldDisregardTweaks()) {
-    m_savedLocalDeviceIndex = ui->deviceCombo->currentIndex();
-    return true;
-  }
-
-  return false;
+  return true;
 }
 
 void
@@ -229,34 +214,14 @@ SoapySDRSourcePage::notifySingletonChanges()
   populateDeviceCombo();
 }
 
-bool
-SoapySDRSourcePage::shouldDisregardTweaks()
-{
-  QMessageBox::StandardButton reply;
-
-  if (m_hasTweaks) {
-    reply = QMessageBox::question(
-          this,
-          "Per-device tweaks",
-          "This action will clear currently defined device tweaks. Are you sure?",
-          QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes)
-      return false;
-  }
-
-  m_hasTweaks = false;
-
-  return true;
-}
-
 void
 SoapySDRSourcePage::setConfigRef(Suscan::Source::Config &cfg)
 {
-  m_config = &cfg;
-  m_hasTweaks = false;
-  m_savedLocalDeviceIndex = -1;
-
   populateDeviceCombo();
+
+  m_config = &cfg;
+  m_savedSpecs.clear();
+
   refreshUi();
 }
 
@@ -280,8 +245,7 @@ SoapySDRSourcePage::onDeviceTweaksAccepted()
 
   if (m_tweaks->hasChanged()) {
     m_tweaks->commitConfig();
-    m_hasTweaks = true;
-
+    saveCurrentSpecs();
     emit changed();
   }
 }
@@ -289,12 +253,11 @@ SoapySDRSourcePage::onDeviceTweaksAccepted()
 void
 SoapySDRSourcePage::onDeviceChanged(int index)
 {
-  if (shouldDisregardTweaks()) {
-    selectDeviceByIndex(index);
+  if (index != -1) {
+    uint64_t selectedUuid = ui->deviceCombo->currentData().value<uint64_t>();
+    setSavedDeviceSpec(selectedUuid);
     refreshUi();
     emit changed();
-  } else if (m_savedLocalDeviceIndex >= 0) {
-    BLOCKSIG(ui->deviceCombo, setCurrentIndex(m_savedLocalDeviceIndex));
   }
 }
 

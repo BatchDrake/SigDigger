@@ -420,7 +420,8 @@ UIMediator::refreshTimeToolbarState()
         m_analyzer->getSourceInfo().testPermission(SUSCAN_ANALYZER_PERM_SEEK);
   } else {
     Suscan::Source::Config *config = getProfile();
-    haveToolbar = !config->isRemote() && config->isSeekable();
+    haveToolbar = config->getDeviceSpec().analyzer() != "remote"
+        && config->isSeekable();
   }
 
   m_ui->timeToolbar->setVisible(haveToolbar);
@@ -434,7 +435,8 @@ UIMediator::refreshUI()
   QString sourceDesc;
 
   Suscan::Source::Config *config = getProfile();
-  const Suscan::Source::Device &dev = config->getDevice();
+  auto spec = config->getDeviceSpec();
+  auto prop = spec.properties();
 
   switch (m_state) {
     case INVALID:
@@ -474,9 +476,7 @@ UIMediator::refreshUI()
       m_ui->main->actionRun->setChecked(true);
       m_ui->main->actionStart_capture->setEnabled(false);
       m_ui->main->actionStop_capture->setEnabled(true);
-      m_ui->panoramicDialog->setBannedDevice(
-            QString::fromStdString(
-              m_appConfig->profile.getDevice().getDesc()));
+      m_ui->panoramicDialog->setBannedDevice(QString::fromStdString(spec.uri()));
       break;
 
     case RESTARTING:
@@ -487,7 +487,7 @@ UIMediator::refreshUI()
       break;
   }
 
-  if (config->isRemote()) {
+  if (spec.analyzer() == "remote") {
     QString user = QString::fromStdString(config->getParam("user"));
     QString host = QString::fromStdString(config->getParam("host"));
     QString port = QString::fromStdString(config->getParam("port"));
@@ -496,21 +496,16 @@ UIMediator::refreshUI()
     m_ui->spectrum->setGracePeriod(
           SIGDIGGER_UI_MEDIATOR_REMOTE_GRACE_PERIOD_MS);
   } else {
-    if (config->getType() == "soapysdr") {
-      sourceDesc = QString::fromStdString(dev.getDesc());
-    } else if (config->getType() == "file") {
+    if (config->getType() == "file") {
       QFileInfo fi = QFileInfo(QString::fromStdString(config->getPath()));
       sourceDesc = fi.fileName();
     } else {
-      const struct suscan_source_interface *iface;
-
-      iface = suscan_source_interface_lookup_by_name(config->getType().c_str());
-      if (iface == nullptr)
-        sourceDesc = QString::fromStdString(
-              "Unknown source type `" + config->getType() + "'");
-      else
-        sourceDesc = iface->desc;
+      sourceDesc = QString::fromStdString(
+            prop == nullptr
+            ? spec.uri()
+            : prop->label());
     }
+
     m_ui->spectrum->setGracePeriod(
           SIGDIGGER_UI_MEDIATOR_LOCAL_GRACE_PERIOD_MS);
   }
@@ -723,13 +718,6 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   m_requestTracker = new Suscan::AnalyzerRequestTracker(this);
   m_lastToolBar    = m_ui->main->helpToolBar;
-
-  m_remoteDevice = Suscan::Source::Device(
-            "Remote device",
-            "localhost",
-            28001,
-            "anonymous",
-            "");
 
   assertConfig();
 
@@ -1007,12 +995,12 @@ UIMediator::refreshProfile(bool updateFreqs)
 
   user = getProfile()->getParam("user");
   pass = getProfile()->getParam("password");
-  interface = getProfile()->getInterface();
+  interface = getProfile()->getDeviceSpec().analyzer();
 
   m_ui->configDialog->setProfile(m_appConfig->profile);
 
   // Local sources, we may know the limits beforehand
-  if (!m_appConfig->profile.isRemote()) {
+  if (interface != "remote") {
     SUFREQ fMin, fMax;
     isRealTime = m_appConfig->profile.isRealTime();
     if (m_appConfig->profile.getFreqLimits(fMin, fMax)) {
@@ -1361,23 +1349,24 @@ UIMediator::onQuickConnect()
 void
 UIMediator::onQuickConnectAccepted()
 {
-  m_appConfig->profile.setInterface(SUSCAN_SOURCE_REMOTE_INTERFACE);
-  m_appConfig->profile.setDevice(m_remoteDevice);
+  Suscan::DeviceSpec spec;
+  std::map<std::string, std::string> traits;
 
-  m_appConfig->profile.clearParams();
+  auto host = m_ui->quickConnectDialog->getHost().toStdString();
+  auto port = std::to_string(m_ui->quickConnectDialog->getPort());
+  auto user = m_ui->quickConnectDialog->getUser().toStdString();
+  auto pass = m_ui->quickConnectDialog->getPassword().toStdString();
 
-  m_appConfig->profile.setParam(
-        "host",
-        m_ui->quickConnectDialog->getHost().toStdString());
-  m_appConfig->profile.setParam(
-        "port",
-        std::to_string(m_ui->quickConnectDialog->getPort()));
-  m_appConfig->profile.setParam(
-        "user",
-        m_ui->quickConnectDialog->getUser().toStdString());
-  m_appConfig->profile.setParam(
-        "password",
-        m_ui->quickConnectDialog->getPassword().toStdString());
+  traits["host"] = host;
+  traits["port"] = port;
+
+  spec.setAnalyzer("remote");
+  spec.setSource(traits["host"] + ":" + traits["port"]);
+  spec.setTraits(traits);
+  spec.set("user", user);
+  spec.set("password", pass);
+
+  m_appConfig->profile.setDeviceSpec(spec);
 
   refreshProfile(false);
   refreshUI();

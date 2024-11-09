@@ -22,6 +22,7 @@
 #include <QDialog>
 #include <Suscan/Library.h>
 #include <Suscan/Source.h>
+#include <Suscan/Device.h>
 #include <vector>
 
 namespace Ui {
@@ -33,23 +34,23 @@ namespace SigDigger {
   {
       Q_OBJECT
 
-      static QPixmap getDeviceIcon(Suscan::Source::Device const &);
+      static QPixmap getDeviceIcon(Suscan::DeviceProperties const &);
       void setRefreshing(bool refreshing);
-      void connectAll(void);
+      void connectAll();
 
     public:
       explicit DeviceDialog(QWidget *parent = nullptr);
-      ~DeviceDialog();
-      void refreshDevices(void);
-      void refreshDone(void);
-      void run(void);
+      virtual ~DeviceDialog() override;
+      void refreshDevices();
+      void refreshDone();
+      void run();
 
     signals:
-      void refreshRequest(void);
+      void refreshRequest();
 
     public slots:
-      void onRefresh(void);
-      void onOk(void);
+      void onRefresh();
+      void onOk();
 
     private:
       Ui::DeviceDialog *ui;

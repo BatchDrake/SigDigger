@@ -17,6 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include <DeviceDialog.h>
+#include <Suscan/Device.h>
 #include "ui_DeviceDialog.h"
 
 using namespace SigDigger;
@@ -27,7 +28,7 @@ DeviceDialog::DeviceDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  this->connectAll();
+  connectAll();
 }
 
 DeviceDialog::~DeviceDialog()
@@ -37,17 +38,14 @@ DeviceDialog::~DeviceDialog()
 
 
 QPixmap
-DeviceDialog::getDeviceIcon(Suscan::Source::Device const &dev)
+DeviceDialog::getDeviceIcon(Suscan::DeviceProperties const &dev)
 {
   QString iconPath = ":/icons/";
 
-  if (dev.isRemote())
+  if (dev.analyzer() == "remote")
     iconPath += "network-device";
   else
     iconPath += "devices";
-
-  if (!dev.isAvailable())
-    iconPath += "-unavail";
 
   return QPixmap(iconPath + ".png");
 }
@@ -56,105 +54,105 @@ void
 DeviceDialog::setRefreshing(bool refreshing)
 {
   if (refreshing) {
-    this->ui->okButton->setEnabled(false);
-    this->ui->refreshButton->setEnabled(false);
-    this->ui->refreshProgress->setMaximum(0);
+    ui->okButton->setEnabled(false);
+    ui->refreshButton->setEnabled(false);
+    ui->refreshProgress->setMaximum(0);
   } else {
-    this->ui->okButton->setEnabled(true);
-    this->ui->refreshButton->setEnabled(true);
-    this->ui->refreshProgress->setMaximum(1);
+    ui->okButton->setEnabled(true);
+    ui->refreshButton->setEnabled(true);
+    ui->refreshProgress->setMaximum(1);
   }
 }
 
 void
-DeviceDialog::refreshDone(void)
+DeviceDialog::refreshDone()
 {
-  this->setRefreshing(false);
-  this->refreshDevices();
+  setRefreshing(false);
+  refreshDevices();
 }
 
 void
-DeviceDialog::run(void)
+DeviceDialog::run()
 {
-  this->refreshDevices();
-  this->exec();
+  refreshDevices();
+  exec();
 }
 
 void
-DeviceDialog::refreshDevices(void)
+DeviceDialog::refreshDevices()
 {
   int i = 0;
-  Suscan::Singleton *s = Suscan::Singleton::get_instance();
-  std::vector<Suscan::Source::Device>::const_iterator start
-      = s->getFirstDevice();
-  std::vector<Suscan::Source::Device>::const_iterator end
-      = s->getLastDevice();
+  Suscan::DeviceFacade *facade = Suscan::DeviceFacade::instance();
 
-  this->ui->deviceTable->clear();
+  ui->deviceTable->clear();
 
   // Set headers
-  this->ui->deviceTable->setHorizontalHeaderItem(
-        0,
-        new QTableWidgetItem(""));
-  this->ui->deviceTable->setHorizontalHeaderItem(
-        1,
-        new QTableWidgetItem("Device ID"));
-  this->ui->deviceTable->setHorizontalHeaderItem(
-        2,
-        new QTableWidgetItem("Driver"));
+  ui->deviceTable->setHorizontalHeaderItem(0, new QTableWidgetItem(""));
+  ui->deviceTable->setHorizontalHeaderItem(1, new QTableWidgetItem("Device ID"));
+  ui->deviceTable->setHorizontalHeaderItem(2, new QTableWidgetItem("Driver / Transport"));
 
-  this->ui->deviceTable->horizontalHeaderItem(0)->setTextAlignment(
+  ui->deviceTable->horizontalHeaderItem(0)->setTextAlignment(
         Qt::AlignLeft);
-  this->ui->deviceTable->horizontalHeaderItem(1)->setTextAlignment(
+  ui->deviceTable->horizontalHeaderItem(1)->setTextAlignment(
         Qt::AlignLeft);
-  this->ui->deviceTable->horizontalHeaderItem(2)->setTextAlignment(
+  ui->deviceTable->horizontalHeaderItem(2)->setTextAlignment(
         Qt::AlignLeft);
 
-  for (auto p = start; p != end; ++p) {
+  auto devices = facade->devices();
+
+  for (auto &dev : devices) {
+    QString driver;
     QTableWidgetItem *iconItem = new QTableWidgetItem();
-    iconItem->setIcon(QIcon(getDeviceIcon(*p)));
-    this->ui->deviceTable->setRowCount(i + 1);
-    this->ui->deviceTable->setItem(i, 0, iconItem);
-    this->ui->deviceTable->setItem(
+    iconItem->setIcon(QIcon(getDeviceIcon(dev)));
+    ui->deviceTable->setRowCount(i + 1);
+    ui->deviceTable->setItem(i, 0, iconItem);
+
+    ui->deviceTable->setItem(
           i,
           1,
-          new QTableWidgetItem(QString::fromStdString(p->getDesc())));
-    this->ui->deviceTable->setItem(
+          new QTableWidgetItem(QString::fromStdString(dev.label())));
+
+    if (dev.analyzer() == "remote")
+      driver = "SuRPC";
+    else
+      driver = dev.get("device").c_str();
+
+    ui->deviceTable->setItem(
           i,
           2,
-          new QTableWidgetItem(QString::fromStdString(p->getDriver())));
+          new QTableWidgetItem(driver));
     ++i;
   }
 
-  this->ui->deviceTable->resizeColumnToContents(1);
+  ui->deviceTable->resizeColumnToContents(1);
 }
 
 void
-DeviceDialog::connectAll(void)
+DeviceDialog::connectAll()
 {
   connect(
-        this->ui->okButton,
-        SIGNAL(clicked(void)),
+        ui->okButton,
+        SIGNAL(clicked()),
         this,
-        SLOT(onOk(void)));
+        SLOT(onOk()));
 
   connect(
-        this->ui->refreshButton,
-        SIGNAL(clicked(void)),
+        ui->refreshButton,
+        SIGNAL(clicked()),
         this,
-        SLOT(onRefresh(void)));
+        SLOT(onRefresh()));
 }
 
 ///////////////////////////////// Slots ////////////////////////////////////////
 void
-DeviceDialog::onRefresh(void)
+DeviceDialog::onRefresh()
 {
-  this->setRefreshing(true);
+  setRefreshing(true);
   emit refreshRequest();
 }
 
 void
-DeviceDialog::onOk(void)
+DeviceDialog::onOk()
 {
   emit accept();
 }

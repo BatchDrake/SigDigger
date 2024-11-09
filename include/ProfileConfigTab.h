@@ -22,6 +22,7 @@
 #include <ConfigTab.h>
 #include <Suscan/AnalyzerParams.h>
 #include <Suscan/Source.h>
+#include <Suscan/Device.h>
 
 #include <QComboBox>
 #include <SaveProfileDialog.h>
@@ -56,11 +57,15 @@ namespace SigDigger {
     int                    m_currentConfigIndex  = -1;
 
     Suscan::Source::Config m_profile;
-    Suscan::Source::Device m_remoteDevice;
+
+    Suscan::DeviceSpec     m_savedLocalSpec;
+    Suscan::DeviceSpec     m_savedRemoteSpec;
 
     SaveProfileDialog     *m_saveProfileDialog;
 
     void connectAll();
+
+    void saveCurrentDeviceSpec();
 
     void makeConfigWidgets();
     void populateProfileCombo();
@@ -76,7 +81,6 @@ namespace SigDigger {
     void sampRateCtlHint(SampleRateCtlHint);
     void refreshTrueSampleRate();
     void loadProfile(Suscan::Source::Config const &config);
-    bool tryLeaveCurrentConfigWidget();
     void updateRemoteParams();
     void configChanged(bool restart = false);
     bool selectSourceType(std::string const &);

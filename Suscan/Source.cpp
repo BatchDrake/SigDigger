@@ -22,177 +22,54 @@
 
 using namespace Suscan;
 
-//////////////////////////// Source device wrapper ///////////////////////////
-Source::GainDescription::GainDescription(const struct suscan_source_gain_desc *desc)
-{
-  this->def  = desc->def;
-  this->max  = desc->max;
-  this->min  = desc->min;
-  this->step = desc->step;
-  this->name = std::string(desc->name);
-}
-
-Source::GainDescription::GainDescription(const struct suscan_source_gain_info *desc)
-{
-  this->def  = desc->value;
-  this->max  = desc->max;
-  this->min  = desc->min;
-  this->step = desc->step;
-  this->name = std::string(desc->name);
-}
-
-void
-Source::Device::setDevice(const suscan_source_device_t *dev, unsigned int channel)
-{
-  unsigned int i;
-
-  struct suscan_source_device_info info =
-      suscan_source_device_info_INITIALIZER;
-
-  if (this->owned != nullptr && this->owned != dev) {
-    suscan_source_device_destroy(this->owned);
-    this->owned = nullptr;
-  }
-
-  this->instance = dev;
-
-  this->antennas.clear();
-  this->gains.clear();
-
-  this->freqMin = 0;
-  this->freqMax = 0;
-
-  if (suscan_source_device_get_info(dev, channel, &info)) {
-    this->freqMax = info.freq_max;
-    this->freqMin = 0; //info.freq_min;
-
-    for (i = 0; i < info.antenna_count; ++i)
-      this->antennas.push_back(std::string(info.antenna_list[i]));
-
-    for (i = 0; i < info.gain_desc_count; ++i)
-      this->gains.push_back(Source::GainDescription(info.gain_desc_list[i]));
-
-    for (i = 0; i < info.samp_rate_count; ++i)
-      this->rates.push_back(info.samp_rate_list[i]);
-    suscan_source_device_info_finalize(&info);
-  }
-}
-
-Source::Device::Device(
-    const std::string &name,
-    const std::string &host,
-    uint16_t port,
-    const std::string &user,
-    const std::string &password)
-{
-  SoapySDRKwargs args;
-  std::string label;
-
-  memset(&args, 0, sizeof(SoapySDRKwargs));
-
-  label = name + " on " + host + ":" + std::to_string(port);
-
-  SoapySDRKwargs_set(&args, "label",    label.c_str());
-  SoapySDRKwargs_set(&args, "driver",   "tcp");
-  SoapySDRKwargs_set(&args, "host",     host.c_str());
-  SoapySDRKwargs_set(&args, "port",     std::to_string(port).c_str());
-  SoapySDRKwargs_set(&args, "user",     user.c_str());
-  SoapySDRKwargs_set(&args, "password", password.c_str());
-
-  SU_ATTEMPT(
-        this->owned = suscan_source_device_new(
-          SUSCAN_SOURCE_REMOTE_INTERFACE,
-          &args));
-
-  SoapySDRKwargs_clear(&args);
-
-  this->setDevice(this->owned, 0);
-}
-
-Source::Device::Device(Source::Device &&rv)
-{
-  *this       = rv;
-  rv.owned    = nullptr;
-  rv.instance = nullptr;
-}
-
-Source::Device::Device(const Source::Device &dev)
-{
-  if (dev.owned != nullptr) {
-    SU_ATTEMPT(this->owned = suscan_source_device_dup(dev.owned));
-    this->setDevice(this->owned, 0);
-  } else {
-    this->setDevice(dev);
-  }
-}
-
-Source::Device::Device(const suscan_source_device_t *dev, unsigned int channel)
-{
-  this->setDevice(dev, channel);
-}
-
-Source::Device::Device()
-{
-  this->owned    = nullptr;
-  this->instance = nullptr;
-}
-
-Source::Device::~Device()
-{
-  if (this->owned != nullptr)
-    suscan_source_device_destroy(this->owned);
-}
-
 //////////////////////////// Source config wrapper ///////////////////////////
-
 Source::Config::Config()
 {
-  this->instance = nullptr;
-  this->borrowed = true;
+  m_instance = nullptr;
+  m_borrowed = true;
 }
 
 Source::Config::Config(
     const std::string &type,
     enum suscan_source_format fmt)
 {
-  SU_ATTEMPT(this->instance = suscan_source_config_new(type.c_str(), fmt));
+  SU_ATTEMPT(m_instance = suscan_source_config_new(type.c_str(), fmt));
 
-  this->borrowed = false;
+  m_borrowed = false;
 }
 
 Source::Config::Config(Config const &prev)
 {
-  if (prev.borrowed) {
-    this->instance = prev.instance;
+  if (prev.m_borrowed) {
+    m_instance = prev.m_instance;
   } else {
-    SU_ATTEMPT(this->instance = suscan_source_config_clone(prev.instance));
+    SU_ATTEMPT(m_instance = suscan_source_config_clone(prev.m_instance));
   }
-  this->borrowed = prev.borrowed;
+  m_borrowed = prev.m_borrowed;
 }
 
 Source::Config::Config(Config &&rv) : Config()
 {
-  std::swap(this->instance, rv.instance);
-  std::swap(this->borrowed, rv.borrowed);
-  this->devWrapper = std::move(rv.devWrapper);
+  std::swap(m_instance, rv.m_instance);
+  std::swap(m_borrowed, rv.m_borrowed);
 }
 
 Source::Config::Config(suscan_source_config_t *config)
 {
-  this->instance = config;
-  this->borrowed = true;
+  m_instance = config;
+  m_borrowed = true;
 }
 
 Source::Config::Config(Suscan::Object const &obj)
 {
-  SU_ATTEMPT(this->instance = suscan_source_config_from_object(obj.getInstance()));
-  this->borrowed = false;
+  SU_ATTEMPT(m_instance = suscan_source_config_from_object(obj.getInstance()));
+  m_borrowed = false;
 }
 
 Source::Config::~Config()
 {
-  if (this->instance != nullptr && !this->borrowed)
-    suscan_source_config_destroy(this->instance);
+  if (m_instance != nullptr && !m_borrowed)
+    suscan_source_config_destroy(m_instance);
 }
 
 Source::Config
@@ -200,7 +77,7 @@ Source::Config::wrap(suscan_source_config_t *config)
 {
   Source::Config result = Source::Config(config);
 
-  result.borrowed = false;
+  result.m_borrowed = false;
 
   return result;
 }
@@ -211,15 +88,15 @@ Source::Config::operator=(const Config &rv)
 {
   // This is what the Cobol of the 2020s looks like
   if (this != &rv) {
-    if (this->instance != nullptr && !this->borrowed)
-      suscan_source_config_destroy(this->instance);
+    if (m_instance != nullptr && !m_borrowed)
+      suscan_source_config_destroy(m_instance);
 
-    this->borrowed = rv.borrowed;
+    m_borrowed = rv.m_borrowed;
 
-    if (rv.borrowed) {
-      this->instance = rv.instance;
+    if (rv.m_borrowed) {
+      m_instance = rv.m_instance;
     } else {
-      SU_ATTEMPT(this->instance = suscan_source_config_clone(rv.instance));
+      SU_ATTEMPT(m_instance = suscan_source_config_clone(rv.m_instance));
     }
   }
 
@@ -231,9 +108,9 @@ Source::Config::operator=(Config &&rv)
 {
   // This is what the Cobol of the 2020s looks like
   if (this != &rv) {
-    std::swap(this->instance, rv.instance);
-    std::swap(this->borrowed, rv.borrowed);
-    this->devWrapper = std::move(rv.devWrapper);
+    std::swap(m_instance, rv.m_instance);
+    std::swap(m_borrowed, rv.m_borrowed);
+    std::swap(m_devSpecWrapper, m_devSpecWrapper);
   }
 
   return *this;
@@ -243,10 +120,10 @@ Source::Config::operator=(Config &&rv)
 std::string
 Source::Config::label(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return "<Null profile>";
 
-  return suscan_source_config_get_label(this->instance);
+  return suscan_source_config_get_label(m_instance);
 }
 
 Suscan::Object
@@ -254,9 +131,9 @@ Source::Config::serialize(void)
 {
   suscan_object_t *obj = nullptr;
 
-  SU_ATTEMPT(this->instance != nullptr);
+  SU_ATTEMPT(m_instance != nullptr);
 
-  SU_ATTEMPT(obj = suscan_source_config_to_object(this->instance));
+  SU_ATTEMPT(obj = suscan_source_config_to_object(m_instance));
 
   return Object::wrap(obj);
 }
@@ -266,10 +143,10 @@ Source::Config::getAntenna(void) const
 {
   const char *ant;
 
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return "N/C";
 
-  ant = suscan_source_config_get_antenna(this->instance);
+  ant = suscan_source_config_get_antenna(m_instance);
 
   if (ant == nullptr)
     return "N/C";
@@ -280,74 +157,74 @@ Source::Config::getAntenna(void) const
 SUFREQ
 Source::Config::getFreq(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return 0;
 
-  return suscan_source_config_get_freq(this->instance);
+  return suscan_source_config_get_freq(m_instance);
 }
 
 SUFREQ
 Source::Config::getLnbFreq(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return 0;
 
-  return suscan_source_config_get_lnb_freq(this->instance);
+  return suscan_source_config_get_lnb_freq(m_instance);
 }
 
 unsigned int
 Source::Config::getDecimatedSampleRate(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return 0;
 
-  return suscan_source_config_get_samp_rate(this->instance)
-      / suscan_source_config_get_average(this->instance);
+  return suscan_source_config_get_samp_rate(m_instance)
+      / suscan_source_config_get_average(m_instance);
 }
 
 unsigned int
 Source::Config::getSampleRate(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return 0;
 
-  return suscan_source_config_get_samp_rate(this->instance);
+  return suscan_source_config_get_samp_rate(m_instance);
 }
 
 unsigned int
 Source::Config::getDecimation(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return 0;
 
-  return suscan_source_config_get_average(this->instance);
+  return suscan_source_config_get_average(m_instance);
 }
 
 bool
 Source::Config::getLoop(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return true;
 
-  return suscan_source_config_get_loop(this->instance) != SU_FALSE;
+  return suscan_source_config_get_loop(m_instance) != SU_FALSE;
 }
 
 bool
 Source::Config::getDCRemove(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return true;
 
-  return suscan_source_config_get_dc_remove(this->instance) != SU_FALSE;
+  return suscan_source_config_get_dc_remove(m_instance) != SU_FALSE;
 }
 
 bool
 Source::Config::getIQBalance(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return false;
 
-  return suscan_source_config_get_iq_balance(this->instance) != SU_FALSE;
+  return suscan_source_config_get_iq_balance(m_instance) != SU_FALSE;
 }
 
 struct timeval
@@ -355,8 +232,8 @@ Source::Config::getStartTime(void) const
 {
   struct timeval tv = {0, 0};
 
-  if (this->instance != nullptr)
-    suscan_source_config_get_start_time(this->instance, &tv);
+  if (m_instance != nullptr)
+    suscan_source_config_get_start_time(m_instance, &tv);
 
   return tv;
 }
@@ -366,9 +243,9 @@ Source::Config::getEndTime(void) const
 {
   struct timeval tv = {0, 0};
 
-  if (this->instance != nullptr)
-    if (!suscan_source_config_get_end_time(this->instance, &tv))
-      suscan_source_config_get_start_time(this->instance, &tv);
+  if (m_instance != nullptr)
+    if (!suscan_source_config_get_end_time(m_instance, &tv))
+      suscan_source_config_get_start_time(m_instance, &tv);
 
   return tv;
 }
@@ -376,46 +253,37 @@ Source::Config::getEndTime(void) const
 bool
 Source::Config::fileIsValid(void) const
 {
-  if (this->instance != nullptr)
-    return suscan_source_config_file_is_valid(this->instance) != SU_FALSE;
+  if (m_instance != nullptr)
+    return suscan_source_config_file_is_valid(m_instance) != SU_FALSE;
 
   return false;
-}
-
-std::string
-Source::Config::getInterface(void) const
-{
-  if (this->instance == nullptr)
-    return SUSCAN_SOURCE_LOCAL_INTERFACE;
-
-  return suscan_source_config_get_interface(this->instance);
 }
 
 SUFLOAT
 Source::Config::getBandwidth(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return 0;
 
-  return suscan_source_config_get_bandwidth(this->instance);
+  return suscan_source_config_get_bandwidth(m_instance);
 }
 
 enum suscan_source_format
 Source::Config::getFormat(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return SUSCAN_SOURCE_FORMAT_AUTO;
 
-  return suscan_source_config_get_format(this->instance);
+  return suscan_source_config_get_format(m_instance);
 }
 
 std::string
 Source::Config::getType(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return "soapysdr";
 
-  return suscan_source_config_get_type(this->instance);
+  return suscan_source_config_get_type(m_instance);
 }
 
 std::string
@@ -423,10 +291,10 @@ Source::Config::getPath(void) const
 {
   const char *path;
 
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return "";
 
-  path = suscan_source_config_get_path(this->instance);
+  path = suscan_source_config_get_path(m_instance);
 
   if (path == nullptr)
     return "";
@@ -439,10 +307,10 @@ Source::Config::getParam(const std::string &key) const
 {
   const char *param;
 
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return "";
 
-  param = suscan_source_config_get_param(this->instance, key.c_str());
+  param = suscan_source_config_get_param(m_instance, key.c_str());
 
   if (param == nullptr)
     return "";
@@ -455,10 +323,10 @@ Source::Config::hasParam(const std::string &key) const
 {
   const char *param;
 
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return "";
 
-  param = suscan_source_config_get_param(this->instance, key.c_str());
+  param = suscan_source_config_get_param(m_instance, key.c_str());
 
   return param != nullptr;
 }
@@ -485,7 +353,7 @@ Source::Config::getParamList(void) const
 
   SU_ATTEMPT(
         suscan_source_config_walk_params(
-          this->instance,
+          m_instance,
           Source::Config::walkParams,
           &list));
 
@@ -495,130 +363,115 @@ Source::Config::getParamList(void) const
 bool
 Source::Config::isRealTime() const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return false;
 
-  return suscan_source_config_is_real_time(this->instance) == SU_TRUE;
+  return suscan_source_config_is_real_time(m_instance) == SU_TRUE;
 }
 
 bool
 Source::Config::isSeekable() const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return false;
 
-  return suscan_source_config_is_seekable(this->instance) == SU_TRUE;
+  return suscan_source_config_is_seekable(m_instance) == SU_TRUE;
 }
 
 bool
 Source::Config::getFreqLimits(SUFREQ &min, SUFREQ &max) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return false;
 
   return
-     suscan_source_config_get_freq_limits(this->instance, &min, &max) == SU_TRUE;
+     suscan_source_config_get_freq_limits(m_instance, &min, &max) == SU_TRUE;
 }
 
 bool
 Source::Config::guessMetadata(struct suscan_source_metadata &meta) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return false;
 
-  return suscan_source_config_guess_metadata(this->instance, &meta) == SU_TRUE;
-}
-
-bool
-Source::Config::isRemote(void) const
-{
-  return this->getInterface() == SUSCAN_SOURCE_REMOTE_INTERFACE;
+  return suscan_source_config_guess_metadata(m_instance, &meta) == SU_TRUE;
 }
 
 SUFLOAT
 Source::Config::getPPM(void) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return 0.;
 
-  return suscan_source_config_get_ppm(this->instance);
+  return suscan_source_config_get_ppm(m_instance);
 }
 
 void
 Source::Config::setSampleRate(unsigned int rate)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
-  suscan_source_config_set_samp_rate(this->instance, rate);
+  suscan_source_config_set_samp_rate(m_instance, rate);
 }
 
 void
 Source::Config::setDecimation(unsigned int rate)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
-  suscan_source_config_set_average(this->instance, rate);
+  suscan_source_config_set_average(m_instance, rate);
 }
 
 void
 Source::Config::setPath(const std::string &path)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
   SU_ATTEMPT(
         suscan_source_config_set_path(
-          this->instance,
+          m_instance,
           path.c_str()));
 }
 
 void
 Source::Config::setFreq(SUFREQ freq)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
-  suscan_source_config_set_freq(this->instance, freq);
+  suscan_source_config_set_freq(m_instance, freq);
 }
 
 void
 Source::Config::setLnbFreq(SUFREQ freq)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
-  suscan_source_config_set_lnb_freq(this->instance, freq);
+  suscan_source_config_set_lnb_freq(m_instance, freq);
 }
 
 void
 Source::Config::setAntenna(const std::string &antenna)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
-  SU_ATTEMPT(suscan_source_config_set_antenna(this->instance, antenna.c_str()));
-}
-
-void
-Source::Config::setInterface(std::string const &iface)
-{
-  if (this->instance == nullptr)
-    return;
-
-  SU_ATTEMPT(suscan_source_config_set_interface(this->instance, iface.c_str()));
+  SU_ATTEMPT(suscan_source_config_set_antenna(m_instance, antenna.c_str()));
 }
 
 void
 Source::Config::setParam(std::string const &key, std::string const &val)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
   SU_ATTEMPT(
         suscan_source_config_set_param(
-          this->instance,
+          m_instance,
           key.c_str(),
           val.c_str()));
 }
@@ -626,157 +479,158 @@ Source::Config::setParam(std::string const &key, std::string const &val)
 void
 Source::Config::clearParams(void)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
-  suscan_source_config_clear_params(this->instance);
+  suscan_source_config_clear_params(m_instance);
 }
 
 void
 Source::Config::debugGains(std::string const &prefix) const
 {
   SU_INFO("%s: Debug gains\n", prefix.c_str());
-  Suscan::Source::Device const &dev = const_cast<Suscan::Source::Config *>(this)->getDevice();
-  for (auto p = dev.getFirstGain();
-       p != dev.getLastGain();
-       ++p) {
-    auto name = p->getName();
-    auto value = this->getGain(name);
+  auto spec = getDeviceSpec();
+  auto props = spec.properties();
 
-    SU_INFO("%s:   %s = %g dB\n", prefix.c_str(), name.c_str(), value);
+  if (props == nullptr) {
+    SU_INFO("%s: ... but device does not exist\n", prefix.c_str());
+  } else {
+    for (auto &gain : props->gains()) {
+      auto value = getGain(gain);
+      SU_INFO("%s:   %s = %g dB\n", prefix.c_str(), gain.c_str(), value);
+    }
   }
 }
 
 void
 Source::Config::setPPM(SUFLOAT ppm)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
-  suscan_source_config_set_ppm(this->instance, ppm);
+  suscan_source_config_set_ppm(m_instance, ppm);
 }
 
 void
 Source::Config::setBandwidth(SUFLOAT bw)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
-  suscan_source_config_set_bandwidth(this->instance, bw);
+  suscan_source_config_set_bandwidth(m_instance, bw);
 }
 
 void
 Source::Config::setLoop(bool value)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
   suscan_source_config_set_loop(
-        this->instance,
+        m_instance,
         value ? SU_TRUE : SU_FALSE);
 }
 
 void
 Source::Config::setDCRemove(bool value)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
   suscan_source_config_set_dc_remove(
-        this->instance,
+        m_instance,
         value ? SU_TRUE : SU_FALSE);
 }
 
 void
 Source::Config::setStartTime(struct timeval const &tv)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
-  suscan_source_config_set_start_time(this->instance,tv);
+  suscan_source_config_set_start_time(m_instance,tv);
 }
 
 
 void
 Source::Config::setIQBalance(bool value)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
   suscan_source_config_set_iq_balance(
-        this->instance,
+        m_instance,
         value ? SU_TRUE : SU_FALSE);
 }
 
 void
 Source::Config::setType(const std::string &type)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
   suscan_source_config_set_type_format(
-        this->instance,
+        m_instance,
         type.c_str(),
-        suscan_source_config_get_format(this->instance));
+        suscan_source_config_get_format(m_instance));
 }
 
 void
 Source::Config::setFormat(enum suscan_source_format fmt)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
   suscan_source_config_set_type_format(
-        this->instance,
-        suscan_source_config_get_type(this->instance),
+        m_instance,
+        suscan_source_config_get_type(m_instance),
         fmt);
 }
 
 void
 Source::Config::setLabel(const std::string &path)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
   SU_ATTEMPT(
         suscan_source_config_set_label(
-          this->instance,
+          m_instance,
           path.c_str()));
 }
 
 void
-Source::Config::setDevice(const Source::Device &dev)
+Source::Config::setDeviceSpec(const DeviceSpec &dev)
 {
+  if (m_instance == nullptr)
+    return;
+
   SU_ATTEMPT(
-        suscan_source_config_set_device(
-          this->instance,
-          dev.instance));
+        suscan_source_config_set_device_spec(
+          m_instance,
+          dev.instance()));
 }
 
-const Source::Device &
-Source::Config::getDevice(void)
+DeviceSpec
+Source::Config::getDeviceSpec() const
 {
-  if (this->instance != nullptr) {
-    if (this->devWrapper.getInstance() !=
-        suscan_source_config_get_device(this->instance)) {
-      this->devWrapper.setDevice(
-            suscan_source_config_get_device(this->instance),
-            0);
-    }
-  }
+  if (m_instance == nullptr)
+    return DeviceSpec();
 
-  return this->devWrapper;
+  return DeviceSpec::wrap(
+        suscan_device_spec_copy(
+          suscan_source_config_get_device_spec(m_instance)));
 }
 
 void
 Source::Config::setGain(const std::string &name, SUFLOAT val)
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return;
 
   SU_ATTEMPT(
         suscan_source_config_set_gain(
-          this->instance,
+          m_instance,
           name.c_str(),
           val));
 }
@@ -784,22 +638,22 @@ Source::Config::setGain(const std::string &name, SUFLOAT val)
 SUFLOAT
 Source::Config::getGain(const std::string &name) const
 {
-  if (this->instance == nullptr)
+  if (m_instance == nullptr)
     return 0;
 
-  return suscan_source_config_get_gain(this->instance, name.c_str());
+  return suscan_source_config_get_gain(m_instance, name.c_str());
 }
 
 ///////////////////////////////// Source Wrappers ////////////////////////////
 Source::Source(Config const& config)
 {
-  SU_ATTEMPT(this->instance = suscan_source_new(config.instance));
+  SU_ATTEMPT(m_instance = suscan_source_new(config.m_instance));
 
-  this->config = this->instance->config; // Borrowed
+  m_config = m_instance->config; // Borrowed
 }
 
 Source::~Source()
 {
-  if (this->instance != nullptr)
-    suscan_source_destroy(this->instance);
+  if (m_instance != nullptr)
+    suscan_source_destroy(m_instance);
 }
