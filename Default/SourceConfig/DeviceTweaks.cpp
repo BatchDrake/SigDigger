@@ -22,22 +22,22 @@
 using namespace SigDigger;
 
 void
-DeviceTweaks::connectAll(void)
+DeviceTweaks::connectAll()
 {
   QPushButton *resetButton = ui->buttonBox->button(
         QDialogButtonBox::Reset);
 
   connect(
         ui->addButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onAddEntry(void)));
+        SLOT(onAddEntry()));
 
   connect(
         ui->removeButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
-        SLOT(onRemoveEntry(void)));
+        SLOT(onRemoveEntry()));
 
   connect(
         ui->tableWidget->selectionModel(),
@@ -54,13 +54,13 @@ DeviceTweaks::connectAll(void)
 
   connect(
         resetButton,
-        SIGNAL(clicked(void)),
+        SIGNAL(clicked()),
         this,
         SLOT(onReset()));
 }
 
 void
-DeviceTweaks::refreshUi(void)
+DeviceTweaks::refreshUi()
 {
   ui->tableWidget->model()->removeRows(
         0,
@@ -95,7 +95,9 @@ DeviceTweaks::setChanged(bool changed)
   m_changed = changed;
 
   if (m_profile != nullptr) {
-    auto props = m_profile->getDeviceSpec().properties();
+    auto spec = m_profile->getDeviceSpec();
+    auto props = spec.properties();
+
     std::string desc = props == nullptr ? "(device not found)" : props->label();
 
     if (changed)
@@ -106,7 +108,7 @@ DeviceTweaks::setChanged(bool changed)
 }
 
 void
-DeviceTweaks::commitConfig(void)
+DeviceTweaks::commitConfig()
 {
   if (m_profile != nullptr) {
     auto model = ui->tableWidget->model();
@@ -139,7 +141,7 @@ DeviceTweaks::setProfile(Suscan::Source::Config *profile)
 }
 
 bool
-DeviceTweaks::hasChanged(void) const
+DeviceTweaks::hasChanged() const
 {
   return m_changed;
 }
@@ -159,14 +161,14 @@ DeviceTweaks::~DeviceTweaks()
 
 /////////////////////////////////// Slots //////////////////////////////////////
 void
-DeviceTweaks::onAddEntry(void)
+DeviceTweaks::onAddEntry()
 {
   ui->tableWidget->insertRow(ui->tableWidget->rowCount());
   m_changed = true;
 }
 
 void
-DeviceTweaks::onRemoveEntry(void)
+DeviceTweaks::onRemoveEntry()
 {
   QList<QTableWidgetSelectionRange> ranges =
       ui->tableWidget->selectedRanges();
@@ -184,7 +186,7 @@ DeviceTweaks::onRemoveEntry(void)
 }
 
 void
-DeviceTweaks::onReset(void)
+DeviceTweaks::onReset()
 {
   refreshUi();
 }
@@ -197,7 +199,7 @@ DeviceTweaks::onSelectionChanged(const QItemSelection &, const QItemSelection &)
 }
 
 void
-DeviceTweaks::onChanged(void)
+DeviceTweaks::onChanged()
 {
   setChanged(true);
 }

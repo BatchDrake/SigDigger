@@ -269,7 +269,7 @@ ProfileConfigTab::refreshTrueSampleRate()
 void
 ProfileConfigTab::refreshAnalyzerTypeUi()
 {
-  int index = m_profile.getDeviceSpec().analyzer() == "remote" ? 0 : 1;
+  int index = m_profile.getDeviceSpec().analyzer() == "remote" ? 1 : 0;
 
   ui->analyzerTypeCombo->setCurrentIndex(index);
   ui->analyzerParamsStackedWidget->setCurrentIndex(index);

@@ -169,9 +169,13 @@ SoapySDRSourcePage::getPreferredRates(QList<int> &list) const
 
   list.clear();
 
+  printf("Prop: %p\n", prop);
+
   if (prop != nullptr)
-    for (auto &rate : prop->sampleRates())
+    for (auto &rate : prop->sampleRates()) {
       list.append(SCAST(int, rate));
+      printf("Rate added: %g\n", rate);
+    }
 
   return list.size() > 0;
 }

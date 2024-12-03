@@ -376,8 +376,9 @@ SigDiggerHelpers::populateAntennaCombo(
   int index = 0;
   int i = 0;
   combo->clear();
+  auto spec = profile.getDeviceSpec();
+  auto prop = spec.properties();
 
-  auto prop = profile.getDeviceSpec().properties();
   if (prop != nullptr) {
     for (auto antenna : prop->antennas()) {
       combo->addItem(QString::fromStdString(antenna));
