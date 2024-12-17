@@ -34,7 +34,6 @@
 #include <analyzer/estimator.h>
 #include <analyzer/spectsrc.h>
 #include <analyzer/inspector/inspector.h>
-#include <analyzer/discovery.h>
 #include <sgdp4/sgdp4.h>
 #include <WFHelpers.h>
 

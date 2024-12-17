@@ -35,6 +35,20 @@ namespace SigDigger {
   class Scanner;
   class FileDataSaver;
 
+  class DeviceObservable : public QObject {
+    Q_OBJECT
+
+  public:
+    DeviceObservable(QObject *parent = nullptr);
+    virtual ~DeviceObservable() override;
+
+  public slots:
+    void waitForDevices();
+
+  signals:
+    void done();
+  };
+
   class Application : public QMainWindow {
     Q_OBJECT
 
@@ -51,6 +65,10 @@ namespace SigDigger {
     QTimer m_uiTimer;
     QElapsedTimer m_cfgTimer;
     bool m_sourceInfoReceived = false;
+
+    // Device detection
+    QThread           m_deviceObservableThread;
+    DeviceObservable *m_deviceObservable = nullptr;
 
     // Panoramic spectrum
     Scanner *m_scanner = nullptr;
@@ -90,7 +108,7 @@ namespace SigDigger {
     void dropEvent(QDropEvent *event) override;
 
   signals:
-    void detectDevices();
+    void waitForDevices();
     void triggerSaveConfig();
 
   public slots:

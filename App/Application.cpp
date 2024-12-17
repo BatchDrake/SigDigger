@@ -35,6 +35,34 @@
 
 using namespace SigDigger;
 
+
+//////////////////////////// DeviceObservable //////////////////////////////////
+DeviceObservable::DeviceObservable(QObject *parent) : QObject(parent)
+{
+
+}
+
+DeviceObservable::~DeviceObservable()
+{
+
+}
+
+void
+DeviceObservable::waitForDevices()
+{
+  std::string source;
+
+  printf("Waiting 5 sec for devices...\n");
+  bool result = Suscan::DeviceFacade::instance()->waitForDevices(source, 5000);
+
+  if (result)
+    SU_INFO("%s: changes in the device list\n", source.c_str());
+
+  printf("Done.\n");
+  emit done();
+}
+
+////////////////////////////// Application /////////////////////////////////////
 Application::Application(QWidget *parent) : QMainWindow(parent), m_ui(this)
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
@@ -42,6 +70,9 @@ Application::Application(QWidget *parent) : QMainWindow(parent), m_ui(this)
   sing->init_plugins();
 
   m_mediator = new UIMediator(this, &m_ui);
+
+  m_deviceObservable = new DeviceObservable();
+  m_deviceObservable->moveToThread(&m_deviceObservableThread);
 
   setAcceptDrops(true);
 }
@@ -83,6 +114,8 @@ Application::run(Suscan::Object const &config)
 
   connectUI();
   updateRecent();
+
+  m_deviceObservableThread.start();
 
   show();
 
@@ -215,6 +248,24 @@ Application::connectUI()
         SIGNAL(triggerSaveConfig()),
         this,
         SIGNAL(triggerSaveConfig()));
+
+  connect(
+        this,
+        SIGNAL(waitForDevices()),
+        m_deviceObservable,
+        SLOT(waitForDevices()));
+
+  connect(
+        m_deviceObservable,
+        SIGNAL(done()),
+        this,
+        SLOT(onDetectFinished()));
+
+  connect(
+        m_deviceObservable,
+        SIGNAL(destroyed()),
+        &m_deviceObservableThread,
+        SLOT(quit()));
 }
 
 void
@@ -525,6 +576,14 @@ Application::onAnalyzerReadError()
 
 Application::~Application()
 {
+  if (m_deviceObservable != nullptr)
+    delete m_deviceObservable;
+
+  if (m_deviceObservableThread.isRunning()) {
+    m_deviceObservableThread.quit();
+    m_deviceObservableThread.wait();
+  }
+
   m_uiTimer.stop();
 
   if (m_scanner != nullptr)
@@ -687,7 +746,10 @@ Application::onSeek(struct timeval tv)
 void
 Application::onDeviceRefresh()
 {
-  emit detectDevices();
+  Suscan::DeviceFacade::instance()->discoverAll();
+
+  printf("Refresh devices!\n");
+  emit waitForDevices();
 }
 
 void
