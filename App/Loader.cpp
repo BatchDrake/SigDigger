@@ -39,12 +39,14 @@ InitThread::run()
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
   QString verString;
+  std::string last;
 
   try {
     emit change("Generating FFT wisdom (this may take a while)");
     su_lib_gen_wisdom();
     emit change("Loading signal sources");
     sing->init_sources();
+    sing->detect_devices();
     emit change("Loading spectrum sources");
     sing->init_spectrum_sources();
     emit change("Loading estimators");
@@ -69,6 +71,8 @@ InitThread::run()
     sing->init_ui_config();
     emit change("Loading profile history");
     sing->init_recent_list();
+    emit change("Waiting for device discovery to complete...");
+    Suscan::DeviceFacade::instance()->waitForDevices(last, 5000);
     emit change("Init done, triggering delayed plugin tasks...");
     sing->trigger_delayed();
   } catch (Suscan::Exception const &e) {

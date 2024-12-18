@@ -508,6 +508,9 @@ Singleton::setQth(Location const &loc)
 void
 Singleton::detect_devices()
 {
+  std::string ignored;
+
+  while (Suscan::DeviceFacade::instance()->waitForDevices(ignored, 0));
   Suscan::DeviceFacade::instance()->discoverAll();
 }
 
