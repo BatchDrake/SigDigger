@@ -51,14 +51,11 @@ void
 DeviceObservable::waitForDevices()
 {
   std::string source;
-
-  printf("Waiting 5 sec for devices...\n");
   bool result = Suscan::DeviceFacade::instance()->waitForDevices(source, 5000);
 
   if (result)
-    SU_INFO("%s: changes in the device list\n", source.c_str());
+    SU_INFO("%s: changes in the device list.\n", source.c_str());
 
-  printf("Done.\n");
   emit done();
 }
 
@@ -337,31 +334,9 @@ Application::getLogText(int howMany)
   std::lock_guard<Suscan::Logger> guard(*Suscan::Logger::getInstance());
   QStringList msgList;
 
-  for (const auto &p : *Suscan::Logger::getInstance()) {
-    switch (p.severity) {
-      case SU_LOG_SEVERITY_CRITICAL:
-        text += "critical: ";
-        break;
-
-      case SU_LOG_SEVERITY_DEBUG:
-        text += "debug: ";
-        break;
-
-      case SU_LOG_SEVERITY_ERROR:
-        text += "error: ";
-        break;
-
-      case SU_LOG_SEVERITY_INFO:
-        text += "info: ";
-        break;
-
-      case SU_LOG_SEVERITY_WARNING:
-        text += "warning: ";
-        break;
-    }
-
-    msgList.append(p.message.c_str());
-  }
+  for (const auto &p : *Suscan::Logger::getInstance())
+    if (p.severity >= SU_LOG_SEVERITY_ERROR && p.message.find("exception") != 0)
+      msgList.append(p.message.c_str());
 
   if (howMany < 0) {
     text = msgList.join("");
@@ -463,13 +438,21 @@ Application::startCapture()
       m_mediator->setState(UIMediator::RUNNING, m_analyzer.get());
     }
   } catch (Suscan::Exception &) {
-    QMessageBox::critical(
-          this,
-          "SigDigger error",
-          "Failed to start capture due to errors:<p /><pre>"
-          + getLogText(10).toHtmlEscaped()
-          + "</pre>",
-          QMessageBox::Ok);
+    QString error = getLogText(1).toHtmlEscaped();
+
+    if (error.isEmpty()) {
+      QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Capture failed to start. See log window for details.");
+    } else {
+      QMessageBox::critical(
+            this,
+            "SigDigger error",
+            "Capture failed to start: " + error,
+            QMessageBox::Ok);
+    }
+
     m_mediator->setState(UIMediator::HALTED);
   }
 }
