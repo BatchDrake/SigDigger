@@ -433,6 +433,7 @@ UIMediator::refreshUI()
 {
   QString stateString;
   QString sourceDesc;
+  bool runButtonPressed = false;
 
   Suscan::Source::Config *config = getProfile();
   auto spec = config->getDeviceSpec();
@@ -464,6 +465,7 @@ UIMediator::refreshUI()
       m_haveRtDelta = false;
       m_rtCalibrations = 0;
       m_rtDeltaReal = 0;
+      runButtonPressed = true;
 
       stateString = QString("Running");
 
@@ -481,6 +483,7 @@ UIMediator::refreshUI()
 
     case RESTARTING:
       stateString = QString("Restarting...");
+      runButtonPressed = true;
       m_ui->main->actionRun->setEnabled(false);
       m_ui->main->actionStart_capture->setEnabled(false);
       m_ui->main->actionStop_capture->setEnabled(false);
@@ -522,6 +525,8 @@ UIMediator::refreshUI()
         static_cast<qint64>(m_appConfig->profile.getFreq()),
         static_cast<qint64>(m_appConfig->profile.getLnbFreq()));
   setSampleRate(m_appConfig->profile.getDecimatedSampleRate());
+
+  BLOCKSIG(m_ui->main->actionRun, setChecked(runButtonPressed));
 }
 
 void
@@ -837,9 +842,9 @@ UIMediator::setState(State state, Suscan::Analyzer *analyzer)
     // Propagate state
     for (auto p : m_components)
       p->setState(state, analyzer);
-
-    refreshUI();
   }
+
+  refreshUI();
 }
 
 UIMediator::State
