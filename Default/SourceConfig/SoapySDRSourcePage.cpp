@@ -115,6 +115,11 @@ void
 SoapySDRSourcePage::refreshAntennas()
 {
   SigDiggerHelpers::populateAntennaCombo(*m_config, ui->antennaCombo);
+
+  if (ui->antennaCombo->currentIndex() < 0) {
+    BLOCKSIG(ui->antennaCombo, setCurrentIndex(0));
+    onAntennaChanged(0);
+  }
 }
 
 uint64_t
@@ -188,10 +193,12 @@ SoapySDRSourcePage::refreshUi()
   uint64_t currUuid = m_config->getDeviceSpec().uuid();
   int index = ui->deviceCombo->findData(QVariant::fromValue(currUuid));
 
-  if (index != -1)
+  if (index != -1) {
     BLOCKSIG(ui->deviceCombo, setCurrentIndex(index));
-  else
+  } else {
     BLOCKSIG(ui->deviceCombo, setCurrentIndex(0));
+    onDeviceChanged(0);
+  }
 
   refreshAntennas();
 }
