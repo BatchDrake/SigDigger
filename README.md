@@ -13,7 +13,9 @@ SigDigger is a GUI tool that serves as a wrapper for lower-level libraries like 
 
 * Downloading the latest [**development build**](https://github.com/BatchDrake/SigDigger/releases/tag/latest) as a self-contained AppImage file (GNU/Linux only)
 * Requesting a custom `.dmg` (macOS users only, I have to create these on demand because I currently do not own any Apple machine and little tweaks need to be done from version to version)
-* Building from sources and install system-wide (Unix in general):```
+* Building from sources and install system-wide (Unix in general):
+
+  ```bash
     % git clone --recursive https://github.com/BatchDrake/sigutils
     % cd sigutils && mkdir -p build && cd build && cmake .. && make && sudo make install && cd ../..
     % git clone --recursive https://github.com/BatchDrake/suscan
@@ -23,8 +25,10 @@ SigDigger is a GUI tool that serves as a wrapper for lower-level libraries like 
     % git clone https://github.com/BatchDrake/SigDigger
     % cd SigDigger && qmake6 SigDigger.pro && make && sudo make install && cd ..
   ```
+  
 * Let the [blsd](https://actinid.org/blsd) script handle all those details for you (GNU/Linux). This script will build SigDigger inside a directory under the current working directory (nothing gets installed system-wide). This directory can be placed anywhere you like, and contains a script that launches SigDigger.
-    ```
+
+    ```bash
     % wget https://actinid.org/blsd
     % chmod a+x blsd
     % ./blsd
@@ -48,7 +52,7 @@ SigDigger depends on three different projects: **Sigutils**, **Suscan** and **Su
 
 After successfully building Sigutils and Suscan, you can now proceed to build **SuWidgets**. SuWidgets is Qt5/Qt6 graphical library containing all SigDigger's custom widgets. In order to build it, ensure you have at least the Qt5 (>= 5.9) development framework installed in your system and then run:
 
-```
+```bash
 % git clone https://github.com/BatchDrake/SuWidgets
 % cd SuWidgets
 % qmake SuWidgetsLib.pro
@@ -58,7 +62,7 @@ After successfully building Sigutils and Suscan, you can now proceed to build **
 
 If you the above steps were successful, chances are that you will success on building SigDigger too. In order to build SigDigger, do:
 
-```
+```bash
 % git clone https://github.com/BatchDrake/SigDigger
 % cd SigDigger
 % qmake SigDigger.pro
