@@ -913,6 +913,7 @@ UIMediator::refreshDevicesDone()
 {
   m_ui->deviceDialog->refreshDone();
   m_ui->configDialog->notifySingletonChanges();
+  refreshUI();
 }
 
 QMessageBox::StandardButton

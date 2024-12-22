@@ -730,8 +730,6 @@ void
 Application::onDeviceRefresh()
 {
   Suscan::DeviceFacade::instance()->discoverAll();
-
-  printf("Refresh devices!\n");
   emit waitForDevices();
 }
 
