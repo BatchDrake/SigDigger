@@ -173,7 +173,7 @@ ProfileConfigTab::refreshUiState()
           ui->sampleRateCombo->count() > 0
           ? SAMPLE_RATE_CTL_HINT_LIST
           : SAMPLE_RATE_CTL_HINT_MANUAL);
-
+    adjustStartTime = !m_profile.isRealTime();
   } else {
     /* Remote analyzer */
     sampRateCtlHint(SAMPLE_RATE_CTL_HINT_MANUAL);
@@ -345,6 +345,7 @@ ProfileConfigTab::refreshUi()
     BLOCKSIG(ui->mcInterfaceEdit, setText(mc_if.c_str()));
 
     ui->mcInterfaceEdit->setEnabled(hasMc);
+    adjustableSourceTime = !m_profile.isRealTime();
   }
 
   if (adjustableSourceTime) {
