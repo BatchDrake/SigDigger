@@ -20,6 +20,7 @@
 #define APPUI_H
 
 #include <Suscan/Analyzer.h>
+#include <QHash>
 
 class QMainWindow;
 class Ui_MainWindow;
@@ -40,10 +41,14 @@ namespace SigDigger {
   class QTimeSlider;
   class Inspector;
   class QuickConnectDialog;
-
+  class ToolBarWidgetFactory;
+  class ToolBarWidget;
   class UIMediator;
 
   struct AppUI {
+    QMainWindow *owner;
+    QHash<QString, ToolBarWidget *> toolBarWidgets;
+
     Ui_MainWindow *main = nullptr;
     UIMediator *uiMediator = nullptr;
     ConfigDialog *configDialog = nullptr;
@@ -61,6 +66,7 @@ namespace SigDigger {
     QTimeSlider *timeSlider = nullptr;
 
     AppUI(QMainWindow *);
+    void addToolBarWidget(ToolBarWidget *);
     void postLoadInit(UIMediator *, QMainWindow *owner);
     ~AppUI();
   };

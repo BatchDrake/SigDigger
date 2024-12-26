@@ -1131,6 +1131,44 @@ Singleton::getLastToolWidgetFactory() const
 }
 
 bool
+Singleton::registerToolBarWidgetFactory(SigDigger::ToolBarWidgetFactory *factory)
+{
+  // Not a bug. The plugin went ahead of ourselves.
+  if (this->toolBarWidgetFactories.contains(factory))
+    return true;
+
+  this->toolBarWidgetFactories.push_back(factory);
+
+  return true;
+}
+
+bool
+Singleton::unregisterToolBarWidgetFactory(SigDigger::ToolBarWidgetFactory *factory)
+{
+  int index = this->toolBarWidgetFactories.indexOf(factory);
+
+  if (index == -1)
+    return false;
+
+  this->toolBarWidgetFactories.removeAt(index);
+
+  return true;
+}
+
+QList<SigDigger::ToolBarWidgetFactory *>::const_iterator
+Singleton::getFirstToolBarWidgetFactory() const
+{
+  return this->toolBarWidgetFactories.begin();
+}
+
+QList<SigDigger::ToolBarWidgetFactory *>::const_iterator
+Singleton::getLastToolBarWidgetFactory() const
+{
+  return this->toolBarWidgetFactories.end();
+}
+
+
+bool
 Singleton::registerTabWidgetFactory(SigDigger::TabWidgetFactory *factory)
 {
   // Not a bug. The plugin went ahead of ourselves.

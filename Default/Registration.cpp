@@ -29,6 +29,7 @@
 #include "SourceConfig/SoapySDRSourcePageFactory.h"
 #include "SourceConfig/StdinSourcePageFactory.h"
 #include "SourceConfig/ToneGenSourcePageFactory.h"
+#include "SourceTimeWidget/SourceTimeWidget.h"
 
 #include <Suscan/Library.h>
 
@@ -60,6 +61,8 @@ SigDigger::DefaultPluginEntry(Suscan::Plugin *plugin)
   sus->registerSourceConfigWidgetFactory(new SoapySDRSourcePageFactory(plugin));
   sus->registerSourceConfigWidgetFactory(new StdinSourcePageFactory(plugin));
   sus->registerSourceConfigWidgetFactory(new ToneGenSourcePageFactory(plugin));
+
+  sus->registerToolBarWidgetFactory(new SourceTimeWidgetFactory(plugin));
 
   return true;
 }

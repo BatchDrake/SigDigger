@@ -141,6 +141,7 @@ namespace SigDigger {
 
     // Refactored methods
     void initSidePanel();
+    void initToolBarWidgets();
     void initUIListeners();
     void registerUIComponent(UIComponent *);
     void unregisterUIComponent(UIComponent *);

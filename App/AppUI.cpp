@@ -41,6 +41,7 @@
 #include "SigDiggerHelpers.h"
 #include <QToolBar>
 #include <QTimeSlider.h>
+#include <ToolBarWidgetFactory.h>
 
 using namespace SigDigger;
 
@@ -48,6 +49,8 @@ AppUI::AppUI(QMainWindow *owner)
 {
   this->main = new Ui_MainWindow();
   this->main->setupUi(owner);
+
+  this->owner = owner;
 
   this->timeToolbar = new QToolBar("Time controls");
   this->timeSlider = new QTimeSlider(nullptr);
@@ -76,6 +79,33 @@ AppUI::AppUI(QMainWindow *owner)
   this->backgroundTasksDialog = new BackgroundTasksDialog(owner);
   this->addBookmarkDialog = new AddBookmarkDialog(owner);
   this->bookmarkManagerDialog = new BookmarkManagerDialog(owner);
+}
+
+void
+AppUI::addToolBarWidget(ToolBarWidget *widget)
+{
+  ToolBarWidgetFactory *factory = widget->factory();
+  QString name = factory->name();
+
+  if (toolBarWidgets.contains(name)) {
+    SU_ERROR("Attempting to add `%s' to toolbar twice!\n", factory->name());
+    return;
+  }
+
+  QToolBar *toolBar = new QToolBar(factory->desc());
+
+  toolBar->setAllowedAreas(Qt::ToolBarArea::AllToolBarAreas);
+  toolBar->setMovable(true);
+
+  this->owner->insertToolBar(this->timeToolbar, toolBar);
+
+  toolBar->addWidget(widget);
+
+  QObject::connect(
+        widget,
+        SIGNAL(destroyed(QObject*)),
+        toolBar,
+        SLOT(deleteLater()));
 }
 
 void

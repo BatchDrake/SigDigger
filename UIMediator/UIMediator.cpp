@@ -56,6 +56,7 @@
 #include <ToolWidgetFactory.h>
 #include <TabWidgetFactory.h>
 #include <UIListenerFactory.h>
+#include <ToolBarWidgetFactory.h>
 
 #if defined(_WIN32) && defined(interface)
 #  undef interface
@@ -701,6 +702,22 @@ UIMediator::initSidePanel()
 }
 
 void
+UIMediator::initToolBarWidgets()
+{
+  auto s = Suscan::Singleton::get_instance();
+
+  for (auto p = s->getFirstToolBarWidgetFactory();
+       p != s->getLastToolBarWidgetFactory();
+       ++p) {
+    ToolBarWidgetFactory *f = *p;
+    ToolBarWidget *widget = f->make(this);
+
+    m_ui->addToolBarWidget(widget);
+    registerComponentActions(widget);
+  }
+}
+
+void
 UIMediator::initUIListeners()
 {
   auto s = Suscan::Singleton::get_instance();
@@ -728,6 +745,7 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   // Now we can create UI components
   initSidePanel();
+  initToolBarWidgets();
 
   // Add baseband analyzer tab
   m_ui->main->mainTab->addTab(m_ui->spectrum, "Radio spectrum");
