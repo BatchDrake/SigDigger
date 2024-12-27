@@ -53,6 +53,7 @@ AppUI::AppUI(QMainWindow *owner)
   this->owner = owner;
 
   this->timeToolbar = new QToolBar("Time controls");
+  this->timeToolbar->setObjectName("TimeSliderToolBar");
   this->timeSlider = new QTimeSlider(nullptr);
 
   this->timeToolbar->setAllowedAreas(Qt::ToolBarArea::AllToolBarAreas);
@@ -94,6 +95,7 @@ AppUI::addToolBarWidget(ToolBarWidget *widget)
 
   QToolBar *toolBar = new QToolBar(factory->desc());
 
+  toolBar->setObjectName(name);
   toolBar->setAllowedAreas(Qt::ToolBarArea::AllToolBarAreas);
   toolBar->setMovable(true);
 

@@ -386,6 +386,7 @@ UIMediator::registerComponentActions(UIComponent *comp)
     getMainWindow()->insertToolBar(m_lastToolBar, toolBar);
     m_lastToolBar = toolBar;
 
+    toolBar->setObjectName(comp->factory()->name() + QString("::Actions"));
     toolBar->setIconSize(QSize(24, 24));
     toolBar->setFloatable(true);
     toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -1114,7 +1115,7 @@ UIMediator::saveUIConfig()
   m_appConfig->width  = m_owner->geometry().width();
   m_appConfig->height = m_owner->geometry().height();
   m_appConfig->sidePanelRatio = m_ui->spectrum->sidePanelRatio();
-
+  m_appConfig->mainWindowState = m_owner->saveState();
   m_appConfig->enabledBandPlans.clear();
 
   for (auto p : m_bandPlanMap)
@@ -1179,6 +1180,8 @@ UIMediator::applyConfig()
   if (m_appConfig->fullScreen)
     m_owner->setWindowState(
         m_owner->windowState() | Qt::WindowFullScreen);
+
+  m_owner->restoreState(m_appConfig->mainWindowState);
 
   if (m_appConfig->sidePanelRatio >= 0)
     m_ui->spectrum->setSidePanelRatio(m_appConfig->sidePanelRatio);

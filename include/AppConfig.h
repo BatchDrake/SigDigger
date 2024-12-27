@@ -53,7 +53,7 @@ namespace SigDigger {
       AudioConfig audioConfig;
       RemoteControlConfig rcConfig;
       Suscan::Serializable *panSpectrumConfig = nullptr;
-
+      QByteArray mainWindowState;
       std::string lastLoadedFile;
 
       // We cannot keep a pointer to the deserialized object. This is because

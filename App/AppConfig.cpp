@@ -57,6 +57,7 @@ AppConfig::serialize(void)
   obj.set("loFreq", this->loFreq);
   obj.set("bandwidth", this->bandwidth);
   obj.set("lastLoadedFile", this->lastLoadedFile);
+  obj.set("mainWindowState", this->mainWindowState.toBase64().toStdString());
 
   obj.setField("source", profileObj);
   obj.setField("analyzerParams", this->analyzerParams.serialize());
@@ -66,7 +67,6 @@ AppConfig::serialize(void)
   obj.setField("guiConfig", this->guiConfig.serialize());
   obj.setField("tleSourceConfig", this->tleSourceConfig.serialize());
   obj.setField("panoramicSpectrum", this->panSpectrumConfig->serialize());
-
   obj.setField("bandPlans", bandPlans);
 
   componentConfigCopy.copyFrom(this->cachedComponentConfig);
@@ -122,6 +122,7 @@ AppConfig::deserialize(Suscan::Object const &conf)
 {
   this->loadDefaults();
   if (!conf.isHollow()) {
+    std::string windowState;
     TRYSILENT(this->profile = Suscan::Source::Config(conf.getField("source")));
     TRYSILENT(this->analyzerParams.deserialize(conf.getField("analyzerParams")));
     TRYSILENT(this->colors.deserialize(conf.getField("colors")));
@@ -130,7 +131,10 @@ AppConfig::deserialize(Suscan::Object const &conf)
     TRYSILENT(this->guiConfig.deserialize(conf.getField("guiConfig")));
     TRYSILENT(this->tleSourceConfig.deserialize(conf.getField("tleSourceConfig")));
     TRYSILENT(this->panSpectrumConfig->deserialize(conf.getField("panoramicSpectrum")));
-
+    TRYSILENT(
+          this->mainWindowState = QByteArray::fromBase64(
+            QByteArray::fromStdString(
+              conf.get("mainWindowState", windowState))));
     TRYSILENT(this->version    = conf.get("version", SIGDIGGER_UICONFIG_DEFAULT_VERSION));
     TRYSILENT(this->width      = conf.get("width", this->width));
     TRYSILENT(this->height     = conf.get("height", this->height));
