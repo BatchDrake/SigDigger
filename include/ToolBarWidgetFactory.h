@@ -22,7 +22,7 @@
 #define TOOLBARWIDGETFACTORY_H
 
 #include <UIComponentFactory.h>
-#include <QWidget>
+#include <QFrame>
 
 namespace SigDigger {
   class UIMediator;
@@ -36,7 +36,7 @@ namespace SigDigger {
     Suscan::Object &&serialize() override;
   };
 
-  class ToolBarWidget : public QWidget, public UIComponent {
+  class ToolBarWidget : public QFrame, public UIComponent {
     Q_OBJECT
 
     bool                  m_visible = false;

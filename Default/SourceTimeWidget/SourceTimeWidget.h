@@ -35,6 +35,9 @@ namespace SigDigger {
     Q_OBJECT
 
     bool m_utc = false;
+    QColor m_lcdFg;
+    QColor m_lcdBg;
+    QColor m_lcdFgStopped;
     struct timeval m_ts;
 
     void drawTimeStamp();
@@ -51,6 +54,7 @@ namespace SigDigger {
 
     virtual ~SourceTimeWidget() override;
 
+    void setColors(QColor const &fg, QColor const &bg);
     void setUTC(bool);
 
   private:

@@ -69,20 +69,21 @@ SourceTimeWidget::setUTC(bool utc)
 }
 
 void
-SourceTimeWidget::setColorConfig(ColorConfig const &config)
+SourceTimeWidget::setColors(const QColor &fg, const QColor &bg)
 {
   LCD *lcds[] = {
     ui->hourLCD, ui->minLCD, ui->secLCD,
     ui->dayLCD, ui->monthLCD, ui->yearLCD};
 
   for (auto i = 0; i < 6; ++i) {
-    lcds[i]->setForegroundColor(config.lcdForeground);
-    lcds[i]->setBackgroundColor(config.lcdBackground);
+    lcds[i]->setForegroundColor(fg);
+    lcds[i]->setBackgroundColor(bg);
   }
 
   QString styleSheet =
-      "background-color: " + config.lcdBackground.name() + ";\n"
-      "color: " + config.lcdForeground.name() + ";\n";
+      "background-color: " + bg.name() + ";\n"
+      "color: " + fg.name() + ";\n"
+      "font-weight: bold;\n";
 
   QLabel *labels[] = {
     ui->label, ui->label_1, ui->label_2,
@@ -97,6 +98,19 @@ SourceTimeWidget::setColorConfig(ColorConfig const &config)
 }
 
 void
+SourceTimeWidget::setColorConfig(ColorConfig const &config)
+{
+  m_lcdBg = config.lcdBackground;
+  m_lcdFg = config.lcdForeground;
+  m_lcdFgStopped = QColor::fromRgbF(
+        .5 * (m_lcdFg.redF() + m_lcdBg.redF()),
+        .5 * (m_lcdFg.greenF() + m_lcdBg.greenF()),
+        .5 * (m_lcdFg.blueF() + m_lcdBg.blueF()));
+
+  setColors(m_lcdFgStopped, m_lcdBg);
+}
+
+void
 SourceTimeWidget::setTimeStamp(struct timeval const &tv)
 {
   m_ts = tv;
@@ -106,9 +120,8 @@ SourceTimeWidget::setTimeStamp(struct timeval const &tv)
 void
 SourceTimeWidget::setState(int, Suscan::Analyzer *analyzer)
 {
-  setEnabled(analyzer != nullptr);
+  setColors(analyzer == nullptr ? m_lcdFgStopped : m_lcdFg, m_lcdBg);
 }
-
 
 ////////////////////// SourceTimeWidgetFactory ////////////////////////////////
 const char *

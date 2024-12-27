@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>SourceTimeWidget</class>
- <widget class="QWidget" name="SourceTimeWidget">
+ <widget class="QFrame" name="SourceTimeWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -18,6 +18,12 @@
   </property>
   <property name="windowTitle">
    <string>Form</string>
+  </property>
+  <property name="frameShape">
+   <enum>QFrame::StyledPanel</enum>
+  </property>
+  <property name="frameShadow">
+   <enum>QFrame::Sunken</enum>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
@@ -431,7 +437,7 @@ font-family: Monospace;
 font-weight: bold;</string>
      </property>
      <property name="text">
-      <string>  SOURCE TIME:  </string>
+      <string>  SOURCE CLOCK:  </string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

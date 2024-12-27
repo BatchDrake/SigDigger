@@ -47,7 +47,7 @@ ToolBarWidgetConfig::serialize()
 
 ToolBarWidget::ToolBarWidget(
     ToolBarWidgetFactory *factory, UIMediator *mediator, QWidget *parent) :
-  QWidget(parent), UIComponent(factory, mediator)
+  QFrame(parent), UIComponent(factory, mediator)
 {
 
 }
