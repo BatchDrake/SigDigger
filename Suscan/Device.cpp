@@ -184,6 +184,32 @@ DeviceSpec::uri() const
 }
 
 std::string
+DeviceSpec::host() const
+{
+  std::string sourceStr = source();
+
+  auto pos = sourceStr.find(':');
+
+  if (pos != std::string::npos)
+    sourceStr.resize(pos);
+
+  return sourceStr;
+}
+
+std::string
+DeviceSpec::port() const
+{
+  std::string sourceStr = source();
+
+  auto pos = sourceStr.find(':');
+
+  if (pos != std::string::npos)
+    return sourceStr.substr(pos + 1);
+
+  return "28001";
+}
+
+std::string
 DeviceSpec::get(std::string const &key) const
 {
   SU_ATTEMPT(m_instance != nullptr);
