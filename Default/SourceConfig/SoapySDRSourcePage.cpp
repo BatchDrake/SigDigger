@@ -105,21 +105,13 @@ SoapySDRSourcePage::populateDeviceCombo()
     }
   }
 
-  if (newIndex == -1)
-    newIndex = 0;
-
-  ui->deviceCombo->setCurrentIndex(newIndex);
+  BLOCKSIG(ui->deviceCombo, setCurrentIndex(newIndex));
 }
 
 void
 SoapySDRSourcePage::refreshAntennas()
 {
   SigDiggerHelpers::populateAntennaCombo(*m_config, ui->antennaCombo);
-
-  if (ui->antennaCombo->currentIndex() < 0) {
-    BLOCKSIG(ui->antennaCombo, setCurrentIndex(0));
-    onAntennaChanged(0);
-  }
 }
 
 uint64_t
@@ -193,12 +185,10 @@ SoapySDRSourcePage::refreshUi()
   uint64_t currUuid = m_config->getDeviceSpec().uuid();
   int index = ui->deviceCombo->findData(QVariant::fromValue(currUuid));
 
-  if (index != -1) {
+  if (index != -1)
     BLOCKSIG(ui->deviceCombo, setCurrentIndex(index));
-  } else {
+  else
     BLOCKSIG(ui->deviceCombo, setCurrentIndex(0));
-    onDeviceChanged(0);
-  }
 
   refreshAntennas();
 }
@@ -207,6 +197,22 @@ void
 SoapySDRSourcePage::activateWidget()
 {
   refreshUi();
+
+  if (ui->deviceCombo->count() > 0) {
+    int currIndex = ui->deviceCombo->currentIndex();
+    if (currIndex < 0)
+      currIndex = 0;
+    ui->deviceCombo->setCurrentIndex(currIndex);
+    onDeviceChanged(currIndex);
+  }
+
+  if (ui->antennaCombo->count() > 0) {
+    int currIndex = ui->antennaCombo->currentIndex();
+    if (currIndex < 0)
+      currIndex = 0;
+    ui->antennaCombo->setCurrentIndex(currIndex);
+    onAntennaChanged(currIndex);
+  }
 }
 
 bool

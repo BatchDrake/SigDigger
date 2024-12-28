@@ -390,7 +390,7 @@ SigDiggerHelpers::populateAntennaCombo(
     }
 
     combo->setEnabled(combo->count() > 0);
-    if (combo->count() > 0)
+    if (0 <= index && index < combo->count())
       BLOCKSIG(combo, setCurrentIndex(index));
   }
 }

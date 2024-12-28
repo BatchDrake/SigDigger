@@ -312,6 +312,9 @@ ProfileConfigTab::refreshUi()
     std::string host, port, user, pass, mc_if;
     int index;
 
+    // No current confing widget
+    m_currentConfigWidget = nullptr;
+
     host  = m_profile.getDeviceSpec().host();
     port  = m_profile.getDeviceSpec().port();
     user  = m_profile.getParam("user");
@@ -712,7 +715,7 @@ ProfileConfigTab::selectSourceType(std::string const &type)
       BLOCKSIG(
             ui->sourceTypeCombo,
             setCurrentIndex(ui->sourceConfigStack->currentIndex()));
-      BLOCKSIG(next, activateWidget());
+       next->activateWidget();
     } else {
       ui->sourceConfigGroupBox->setVisible(false);
     }
@@ -834,7 +837,7 @@ ProfileConfigTab::onAnalyzerTypeChanged(int index)
   }
 
   configChanged(true);
-  refreshUiState();
+  refreshUi();
 }
 
 void
