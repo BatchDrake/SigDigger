@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SourceTimeWidget</class>
+ <widget class="QFrame" name="SourceTimeWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>326</width>
+    <height>32</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="frameShape">
+   <enum>QFrame::StyledPanel</enum>
+  </property>
+  <property name="frameShadow">
+   <enum>QFrame::Sunken</enum>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <item row="0" column="9">
+    <widget class="LCD" name="monthLCD">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>15</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="thickness">
+      <double>0.320000000000000</double>
+     </property>
+     <property name="zoom">
+      <double>0.330000000000000</double>
+     </property>
+     <property name="backgroundColor">
+      <color>
+       <red>0</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </property>
+     <property name="foregroundColor">
+      <color>
+       <red>183</red>
+       <green>232</green>
+       <blue>136</blue>
+      </color>
+     </property>
+     <property name="minDigits">
+      <UInt>2</UInt>
+     </property>
+     <property name="lockStateEditable">
+      <bool>false</bool>
+     </property>
+     <property name="showDecimalSeparator">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="4">
+    <widget class="QLabel" name="label_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: black; color: #b7e888;</string>
+     </property>
+     <property name="text">
+      <string>:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="8">
+    <widget class="QLabel" name="label_4">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: black; color: #b7e888;</string>
+     </property>
+     <property name="text">
+      <string>/</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="3">
+    <widget class="LCD" name="minLCD">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>15</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="thickness">
+      <double>0.320000000000000</double>
+     </property>
+     <property name="zoom">
+      <double>0.330000000000000</double>
+     </property>
+     <property name="backgroundColor">
+      <color>
+       <red>0</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </property>
+     <property name="foregroundColor">
+      <color>
+       <red>183</red>
+       <green>232</green>
+       <blue>136</blue>
+      </color>
+     </property>
+     <property name="minDigits">
+      <UInt>2</UInt>
+     </property>
+     <property name="lockStateEditable">
+      <bool>false</bool>
+     </property>
+     <property name="showDecimalSeparator">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="LCD" name="hourLCD">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>15</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="thickness">
+      <double>0.320000000000000</double>
+     </property>
+     <property name="zoom">
+      <double>0.330000000000000</double>
+     </property>
+     <property name="backgroundColor">
+      <color>
+       <red>0</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </property>
+     <property name="foregroundColor">
+      <color>
+       <red>183</red>
+       <green>232</green>
+       <blue>136</blue>
+      </color>
+     </property>
+     <property name="minDigits">
+      <UInt>2</UInt>
+     </property>
+     <property name="lockStateEditable">
+      <bool>false</bool>
+     </property>
+     <property name="showDecimalSeparator">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="5">
+    <widget class="LCD" name="secLCD">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>15</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="thickness">
+      <double>0.320000000000000</double>
+     </property>
+     <property name="zoom">
+      <double>0.330000000000000</double>
+     </property>
+     <property name="backgroundColor">
+      <color>
+       <red>0</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </property>
+     <property name="foregroundColor">
+      <color>
+       <red>183</red>
+       <green>232</green>
+       <blue>136</blue>
+      </color>
+     </property>
+     <property name="minDigits">
+      <UInt>2</UInt>
+     </property>
+     <property name="lockStateEditable">
+      <bool>false</bool>
+     </property>
+     <property name="showDecimalSeparator">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="7">
+    <widget class="LCD" name="dayLCD">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>15</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="thickness">
+      <double>0.320000000000000</double>
+     </property>
+     <property name="zoom">
+      <double>0.330000000000000</double>
+     </property>
+     <property name="backgroundColor">
+      <color>
+       <red>0</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </property>
+     <property name="foregroundColor">
+      <color>
+       <red>183</red>
+       <green>232</green>
+       <blue>136</blue>
+      </color>
+     </property>
+     <property name="minDigits">
+      <UInt>2</UInt>
+     </property>
+     <property name="lockStateEditable">
+      <bool>false</bool>
+     </property>
+     <property name="showDecimalSeparator">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="6">
+    <widget class="QLabel" name="label_5">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>10</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: black; color: black;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="10">
+    <widget class="QLabel" name="label_3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: black; color: #b7e888;</string>
+     </property>
+     <property name="text">
+      <string>/</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QLabel" name="label">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: black; color: #b7e888;</string>
+     </property>
+     <property name="text">
+      <string>:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_1">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: #1d1d1f;
+color: #b7e869;
+font-size: 12px;
+font-family: Monospace;
+font-weight: bold;</string>
+     </property>
+     <property name="text">
+      <string>  SOURCE CLOCK:  </string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="11">
+    <widget class="LCD" name="yearLCD">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>31</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="thickness">
+      <double>0.320000000000000</double>
+     </property>
+     <property name="zoom">
+      <double>0.330000000000000</double>
+     </property>
+     <property name="backgroundColor">
+      <color>
+       <red>0</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </property>
+     <property name="foregroundColor">
+      <color>
+       <red>183</red>
+       <green>232</green>
+       <blue>136</blue>
+      </color>
+     </property>
+     <property name="minDigits">
+      <UInt>4</UInt>
+     </property>
+     <property name="lockStateEditable">
+      <bool>false</bool>
+     </property>
+     <property name="showDecimalSeparator">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="12">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LCD</class>
+   <extends>QFrame</extends>
+   <header>LCD.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -76,6 +76,7 @@ namespace Suscan {
     bool getLoop() const;
     std::string getPath() const;
     std::string getAntenna() const;
+
     bool getDCRemove() const;
     bool getIQBalance() const;
     struct timeval getStartTime() const;

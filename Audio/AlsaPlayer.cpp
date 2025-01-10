@@ -141,13 +141,13 @@ AlsaPlayer::enumerateDevices(std::vector<GenericAudioDevice> &list)
       list.push_back(dev);
     }
 
-    if (name != nullptr && strcmp("null", name) != 0)
+    if (name != nullptr)
       free(name);
 
-    if (desc != nullptr && strcmp("null", desc) != 0)
+    if (desc != nullptr)
       free(desc);
 
-    if (ioid != nullptr && strcmp("null", ioid) != 0)
+    if (ioid != nullptr)
       free(ioid);
 
     n++;

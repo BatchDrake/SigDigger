@@ -45,6 +45,7 @@
 
 namespace SigDigger {
   class ToolWidgetFactory;
+  class ToolBarWidgetFactory;
   class TabWidgetFactory;
   class InspectionWidgetFactory;
   class SourceConfigWidgetFactory;
@@ -276,6 +277,7 @@ namespace Suscan {
 
     // Feature object factories
     QList<SigDigger::ToolWidgetFactory *>         toolWidgetFactories;
+    QList<SigDigger::ToolBarWidgetFactory *>      toolBarWidgetFactories;
     QList<SigDigger::TabWidgetFactory *>          tabWidgetFactories;
     QList<SigDigger::InspectionWidgetFactory *>   inspectionWidgetFactories;
     QList<SigDigger::UIListenerFactory *>         uiListenerFactories;
@@ -396,6 +398,11 @@ namespace Suscan {
     QMap<std::string, SpectrumUnit>::const_iterator getFirstSpectrumUnit() const;
     QMap<std::string, SpectrumUnit>::const_iterator getLastSpectrumUnit() const;
     QMap<std::string, SpectrumUnit>::const_iterator getSpectrumUnitFrom(std::string const &) const;
+
+    bool registerToolBarWidgetFactory(SigDigger::ToolBarWidgetFactory *);
+    bool unregisterToolBarWidgetFactory(SigDigger::ToolBarWidgetFactory *);
+    QList<SigDigger::ToolBarWidgetFactory *>::const_iterator getFirstToolBarWidgetFactory() const;
+    QList<SigDigger::ToolBarWidgetFactory *>::const_iterator getLastToolBarWidgetFactory() const;
 
     bool registerToolWidgetFactory(SigDigger::ToolWidgetFactory *);
     bool unregisterToolWidgetFactory(SigDigger::ToolWidgetFactory *);

@@ -143,6 +143,7 @@ SOURCES += \
     Default/SourceConfig/StdinSourcePageFactory.cpp \
     Default/SourceConfig/ToneGenSourcePage.cpp \
     Default/SourceConfig/ToneGenSourcePageFactory.cpp \
+    Default/SourceTimeWidget/SourceTimeWidget.cpp \
     Misc/AutoGain.cpp \
     Misc/Averager.cpp \
     Misc/FileViewer.cpp \
@@ -198,6 +199,7 @@ SOURCES += \
     UIComponent/InspectionWidgetFactory.cpp \
     UIComponent/SourceConfigWidgetFactory.cpp \
     UIComponent/TabWidgetFactory.cpp \
+    UIComponent/ToolBarWidgetFactory.cpp \
     UIComponent/ToolWidgetFactory.cpp \
     UIComponent/UIComponentFactory.cpp \
     UIComponent/UIListenerFactory.cpp \
@@ -344,7 +346,7 @@ HEADERS += \
     Default/SourceConfig/StdinSourcePageFactory.h \
     Default/SourceConfig/ToneGenSourcePage.h \
     Default/SourceConfig/ToneGenSourcePageFactory.h \
-    ExportCSVTask.h \
+    Default/SourceTimeWidget/SourceTimeWidget.h \
     include/AGCTask.h \
     include/AddTLESourceDialog.h \
     include/AlsaPlayer.h \
@@ -357,6 +359,7 @@ HEADERS += \
     include/DelayedConjTask.h \
     include/DopplerCalculator.h \
     include/DopplerDialog.h \
+    include/ExportCSVTask.h \
     include/FileViewer.h \
     include/FloatingTabWindow.h \
     include/FrequencyCorrectionDialog.h \
@@ -393,6 +396,7 @@ HEADERS += \
     include/FileDataSaver.h \
     include/SocketForwarder.h \
     include/NetForwarderUI.h \
+    include/ToolBarWidgetFactory.h \
     include/WaitingSpinnerWidget.h \
     include/DeviceDialog.h \
     include/PanoramicDialog.h \
@@ -428,6 +432,7 @@ FORMS += \
     Default/SourceConfig/SoapySDRSourcePage.ui \
     Default/SourceConfig/StdinSourcePage.ui \
     Default/SourceConfig/ToneGenSourcePage.ui \
+    Default/SourceTimeWidget/SourceTimeWidget.ui \
     ui/AboutDialog.ui \
     ui/AddTLESourceDialog.ui \
     ui/AfcControl.ui \

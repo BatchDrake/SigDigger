@@ -438,18 +438,18 @@ Application::startCapture()
       m_mediator->setState(UIMediator::RUNNING, m_analyzer.get());
     }
   } catch (Suscan::Exception &) {
-    QString error = getLogText(1).toHtmlEscaped();
+    QString fullError = getLogText(2);
 
-    if (error.isEmpty()) {
+    if (fullError.isEmpty()) {
       QMessageBox::critical(
             this,
-            "SigDigger error",
+            "Capture start",
             "Capture failed to start. See log window for details.");
     } else {
       QMessageBox::critical(
             this,
-            "SigDigger error",
-            "Capture failed to start: " + error,
+            "Capture start",
+            fullError.toHtmlEscaped(),
             QMessageBox::Ok);
     }
 
@@ -730,8 +730,6 @@ void
 Application::onDeviceRefresh()
 {
   Suscan::DeviceFacade::instance()->discoverAll();
-
-  printf("Refresh devices!\n");
   emit waitForDevices();
 }
 

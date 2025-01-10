@@ -71,9 +71,10 @@ ProfileConfigTab::populateRemoteDeviceCombo()
   ui->remoteDeviceCombo->clear();
 
   for (auto &dev : Suscan::DeviceFacade::instance()->devices())
-    ui->remoteDeviceCombo->addItem(
-          QString::fromStdString(dev.label()),
-          QVariant::fromValue(dev.uuid()));
+    if (dev.analyzer() == "remote")
+      ui->remoteDeviceCombo->addItem(
+            QString::fromStdString(dev.label()),
+            QVariant::fromValue(dev.uuid()));
 
   if (ui->remoteDeviceCombo->currentIndex() != -1)
     ui->remoteDeviceCombo->setCurrentIndex(0);
@@ -173,7 +174,7 @@ ProfileConfigTab::refreshUiState()
           ui->sampleRateCombo->count() > 0
           ? SAMPLE_RATE_CTL_HINT_LIST
           : SAMPLE_RATE_CTL_HINT_MANUAL);
-
+    adjustStartTime = !m_profile.isRealTime();
   } else {
     /* Remote analyzer */
     sampRateCtlHint(SAMPLE_RATE_CTL_HINT_MANUAL);
@@ -295,7 +296,6 @@ ProfileConfigTab::refreshUi()
 
   refreshSampRates();
   setDecimation(m_profile.getDecimation());
-  selectSourceType(m_profile.getType());
   setSelectedSampleRate(m_profile.getSampleRate());
 
   BLOCKSIG(ui->lnbSpinBox,       setValue(m_profile.getLnbFreq()));
@@ -304,17 +304,19 @@ ProfileConfigTab::refreshUi()
   BLOCKSIG(ui->removeDCCheck,    setChecked(m_profile.getDCRemove()));
   BLOCKSIG(ui->ppmSpinBox,       setValue(static_cast<double>(m_profile.getPPM())));
 
-  refreshAnalyzerTypeUi();
-
-  if (m_profile.getDeviceSpec().analyzer() == "remote") {
+  if (m_profile.getDeviceSpec().analyzer() == "local") {
     adjustableSourceTime = !m_profile.isRealTime();
+    selectSourceType(m_profile.getType());
   } else {
     bool hasMc;
     std::string host, port, user, pass, mc_if;
     int index;
 
-    host  = m_profile.getParam("host");
-    port  = m_profile.getParam("port");
+    // No current confing widget
+    m_currentConfigWidget = nullptr;
+
+    host  = m_profile.getDeviceSpec().host();
+    port  = m_profile.getDeviceSpec().port();
     user  = m_profile.getParam("user");
     pass  = m_profile.getParam("password");
     hasMc = m_profile.hasParam("mc_if");
@@ -345,6 +347,7 @@ ProfileConfigTab::refreshUi()
     BLOCKSIG(ui->mcInterfaceEdit, setText(mc_if.c_str()));
 
     ui->mcInterfaceEdit->setEnabled(hasMc);
+    adjustableSourceTime = !m_profile.isRealTime();
   }
 
   if (adjustableSourceTime) {
@@ -366,6 +369,7 @@ ProfileConfigTab::refreshUi()
             static_cast<unsigned int>(time(nullptr)))));
   }
 
+  refreshAnalyzerTypeUi();
   refreshFrequencyLimits();
   refreshUiState();
   refreshTrueSampleRate();
@@ -711,7 +715,7 @@ ProfileConfigTab::selectSourceType(std::string const &type)
       BLOCKSIG(
             ui->sourceTypeCombo,
             setCurrentIndex(ui->sourceConfigStack->currentIndex()));
-      BLOCKSIG(next, activateWidget());
+       next->activateWidget();
     } else {
       ui->sourceConfigGroupBox->setVisible(false);
     }
@@ -726,8 +730,6 @@ ProfileConfigTab::selectSourceType(std::string const &type)
 void
 ProfileConfigTab::loadProfile(Suscan::Source::Config const &config)
 {
-  m_profile = config;
-
   std::map<std::string, std::string> traits;
 
   traits.clear();
@@ -739,7 +741,7 @@ ProfileConfigTab::loadProfile(Suscan::Source::Config const &config)
 
   traits.clear();
   traits["host"] = "localhost";
-  traits["port"] = "port";
+  traits["port"] = "28001";
 
   m_savedRemoteSpec.setAnalyzer("remote");
   m_savedRemoteSpec.setSource(traits["host"] + ":" + traits["port"]);
@@ -749,8 +751,11 @@ ProfileConfigTab::loadProfile(Suscan::Source::Config const &config)
 
   saveCurrentDeviceSpec();
 
+  // TODO: FIXME!!!
+  m_profile = config;
   for (auto p: m_configWidgets)
     p->setConfigRef(m_profile);
+  m_profile = config;
 
   refreshUi();
 }
@@ -832,7 +837,7 @@ ProfileConfigTab::onAnalyzerTypeChanged(int index)
   }
 
   configChanged(true);
-  refreshUiState();
+  refreshUi();
 }
 
 void
@@ -1053,7 +1058,7 @@ void
 ProfileConfigTab::onRemoteProfileSelected()
 {
   if (ui->useNetworkProfileRadio->isChecked()) {
-    std::string user, pass, mc, mc_if;
+    std::string mc_if;
     bool hasMc;
 
     // Save multicast config
@@ -1065,10 +1070,13 @@ ProfileConfigTab::onRemoteProfileSelected()
     auto prop = Suscan::DeviceFacade::instance()->deviceByUuid(uuid);
 
     if (prop != nullptr) {
+      std::string user, pass, host, port = "28001";
       Suscan::DeviceSpec spec(*prop);
 
       user = spec.get("user");
       pass = spec.get("password");
+      host = spec.host();
+      port = spec.port();
 
       if (user.empty())
         user = ui->userEdit->text().toStdString();
@@ -1084,6 +1092,14 @@ ProfileConfigTab::onRemoteProfileSelected()
       // Provide a better hint for username if the server announced none
       ui->userEdit->setText(user.c_str());
       ui->passEdit->setText(pass.c_str());
+
+      ui->hostEdit->setText(host.c_str());
+
+      try {
+        ui->portEdit->setValue(std::stoi(port));
+      } catch (std::invalid_argument const &) {
+        ui->portEdit->setValue(28001);
+      }
 
       // Restore mc config
       ui->mcCheck->setChecked(hasMc);

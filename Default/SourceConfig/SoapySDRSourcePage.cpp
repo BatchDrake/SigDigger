@@ -105,10 +105,7 @@ SoapySDRSourcePage::populateDeviceCombo()
     }
   }
 
-  if (newIndex == -1)
-    newIndex = 0;
-
-  ui->deviceCombo->setCurrentIndex(newIndex);
+  BLOCKSIG(ui->deviceCombo, setCurrentIndex(newIndex));
 }
 
 void
@@ -200,6 +197,22 @@ void
 SoapySDRSourcePage::activateWidget()
 {
   refreshUi();
+
+  if (ui->deviceCombo->count() > 0) {
+    int currIndex = ui->deviceCombo->currentIndex();
+    if (currIndex < 0)
+      currIndex = 0;
+    ui->deviceCombo->setCurrentIndex(currIndex);
+    onDeviceChanged(currIndex);
+  }
+
+  if (ui->antennaCombo->count() > 0) {
+    int currIndex = ui->antennaCombo->currentIndex();
+    if (currIndex < 0)
+      currIndex = 0;
+    ui->antennaCombo->setCurrentIndex(currIndex);
+    onAntennaChanged(currIndex);
+  }
 }
 
 bool

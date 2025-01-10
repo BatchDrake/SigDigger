@@ -152,6 +152,8 @@ namespace Suscan {
     std::string source() const;
     std::string uri() const;
     std::string get(std::string const &) const;
+    std::string host() const;
+    std::string port() const;
     uint64_t uuid() const;
 
     // Setters

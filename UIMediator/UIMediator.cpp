@@ -56,6 +56,7 @@
 #include <ToolWidgetFactory.h>
 #include <TabWidgetFactory.h>
 #include <UIListenerFactory.h>
+#include <ToolBarWidgetFactory.h>
 
 #if defined(_WIN32) && defined(interface)
 #  undef interface
@@ -385,6 +386,7 @@ UIMediator::registerComponentActions(UIComponent *comp)
     getMainWindow()->insertToolBar(m_lastToolBar, toolBar);
     m_lastToolBar = toolBar;
 
+    toolBar->setObjectName(comp->factory()->name() + QString("::Actions"));
     toolBar->setIconSize(QSize(24, 24));
     toolBar->setFloatable(true);
     toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -433,6 +435,7 @@ UIMediator::refreshUI()
 {
   QString stateString;
   QString sourceDesc;
+  bool runButtonPressed = false;
 
   Suscan::Source::Config *config = getProfile();
   auto spec = config->getDeviceSpec();
@@ -464,6 +467,7 @@ UIMediator::refreshUI()
       m_haveRtDelta = false;
       m_rtCalibrations = 0;
       m_rtDeltaReal = 0;
+      runButtonPressed = true;
 
       stateString = QString("Running");
 
@@ -481,6 +485,7 @@ UIMediator::refreshUI()
 
     case RESTARTING:
       stateString = QString("Restarting...");
+      runButtonPressed = true;
       m_ui->main->actionRun->setEnabled(false);
       m_ui->main->actionStart_capture->setEnabled(false);
       m_ui->main->actionStop_capture->setEnabled(false);
@@ -522,6 +527,8 @@ UIMediator::refreshUI()
         static_cast<qint64>(m_appConfig->profile.getFreq()),
         static_cast<qint64>(m_appConfig->profile.getLnbFreq()));
   setSampleRate(m_appConfig->profile.getDecimatedSampleRate());
+
+  BLOCKSIG(m_ui->main->actionRun, setChecked(runButtonPressed));
 }
 
 void
@@ -696,6 +703,22 @@ UIMediator::initSidePanel()
 }
 
 void
+UIMediator::initToolBarWidgets()
+{
+  auto s = Suscan::Singleton::get_instance();
+
+  for (auto p = s->getFirstToolBarWidgetFactory();
+       p != s->getLastToolBarWidgetFactory();
+       ++p) {
+    ToolBarWidgetFactory *f = *p;
+    ToolBarWidget *widget = f->make(this);
+
+    m_ui->addToolBarWidget(widget);
+    registerComponentActions(widget);
+  }
+}
+
+void
 UIMediator::initUIListeners()
 {
   auto s = Suscan::Singleton::get_instance();
@@ -723,6 +746,7 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   // Now we can create UI components
   initSidePanel();
+  initToolBarWidgets();
 
   // Add baseband analyzer tab
   m_ui->main->mainTab->addTab(m_ui->spectrum, "Radio spectrum");
@@ -837,9 +861,9 @@ UIMediator::setState(State state, Suscan::Analyzer *analyzer)
     // Propagate state
     for (auto p : m_components)
       p->setState(state, analyzer);
-
-    refreshUI();
   }
+
+  refreshUI();
 }
 
 UIMediator::State
@@ -908,6 +932,7 @@ UIMediator::refreshDevicesDone()
 {
   m_ui->deviceDialog->refreshDone();
   m_ui->configDialog->notifySingletonChanges();
+  refreshUI();
 }
 
 QMessageBox::StandardButton
@@ -1090,7 +1115,7 @@ UIMediator::saveUIConfig()
   m_appConfig->width  = m_owner->geometry().width();
   m_appConfig->height = m_owner->geometry().height();
   m_appConfig->sidePanelRatio = m_ui->spectrum->sidePanelRatio();
-
+  m_appConfig->mainWindowState = m_owner->saveState();
   m_appConfig->enabledBandPlans.clear();
 
   for (auto p : m_bandPlanMap)
@@ -1155,6 +1180,8 @@ UIMediator::applyConfig()
   if (m_appConfig->fullScreen)
     m_owner->setWindowState(
         m_owner->windowState() | Qt::WindowFullScreen);
+
+  m_owner->restoreState(m_appConfig->mainWindowState);
 
   if (m_appConfig->sidePanelRatio >= 0)
     m_ui->spectrum->setSidePanelRatio(m_appConfig->sidePanelRatio);
