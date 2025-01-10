@@ -24,6 +24,8 @@
 #include <sigutils/matfile.h>
 #include <iomanip>
 #include <fstream>
+#include <sndfile.h>
+
 #include "SigDiggerHelpers.h"
 
 namespace SigDigger {
