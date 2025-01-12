@@ -10,7 +10,7 @@ runs:
   using: 'composite'
   steps:
     - name: Install Qt
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v4
 
     - name: Remove spurious symlinks
       shell:  ${{inputs.shell}}
