@@ -29,7 +29,10 @@ runs:
       run: |
         brew install --force --overwrite python@3.12
         python3 -Im pip install setuptools
-        python3.12 -Im pip install setuptools
+
+    - name: Force-install of Python-setuptools
+      shell: ${{inputs.shell}}
+      run: brew install --force --overwrite python-setuptools
 
     - name: Force-install of Node 18
       shell:  ${{inputs.shell}}
