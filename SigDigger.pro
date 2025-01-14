@@ -273,6 +273,7 @@ SUSCAN_HEADERS += \
     include/Suscan/Channel.h \
     include/Suscan/Compat.h \
     include/Suscan/Config.h \
+    include/Suscan/Device.h \
     include/Suscan/Estimator.h \
     include/Suscan/Library.h \
     include/Suscan/Logger.h \

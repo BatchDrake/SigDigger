@@ -11,8 +11,6 @@ runs:
   steps:
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
-      with:
-        arch: 'arm64'
       
     - name: Remove spurious symlinks
       shell:  ${{inputs.shell}}
