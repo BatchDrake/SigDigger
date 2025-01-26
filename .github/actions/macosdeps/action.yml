@@ -73,16 +73,16 @@ runs:
         brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
         brew install --head soapyuhd
 
-#    - name: Install SDRPlay
-#     shell: ${{inputs.shell}}
-#      run: |
-#        wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg
-#        sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /
-#        # SoapySDRPlay3 from source
-#        git clone https://github.com/pothosware/SoapySDRPlay3
-#        cd SoapySDRPlay3
-#        cmake -DCMAKE_BUILD_TYPE=Release -B build .
-#        cmake --build build
-#        cd build
-#        sudo make install
-#        cd ../..
+    - name: Install SDRPlay
+      shell: ${{inputs.shell}}
+      run: |
+        wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg
+        sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /
+        # SoapySDRPlay3 from source
+        git clone https://github.com/pothosware/SoapySDRPlay3
+        cd SoapySDRPlay3
+        cmake -DCMAKE_BUILD_TYPE=Release -B build .
+        cmake --build build
+        cd build
+        sudo make install
+        cd ../..

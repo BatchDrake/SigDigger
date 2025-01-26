@@ -41,7 +41,7 @@ jobs:
         path: Scripts/*.AppImage
 
   build-macos:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
     - uses: actions/checkout@v2
     - name: Setup interactive shell session
