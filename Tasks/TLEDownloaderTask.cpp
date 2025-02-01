@@ -76,8 +76,8 @@ TLEDownloaderTask::TLEDownloaderTask(
     curl_easy_setopt(this->curl, CURLOPT_CONNECTTIMEOUT, 10);
     curl_easy_setopt(this->curl, CURLOPT_URL, url.toStdString().c_str());
     curl_easy_setopt(this->curl, CURLOPT_NOPROGRESS, 0);
-    curl_easy_setopt(this->curl, CURLOPT_PROGRESSFUNCTION, TLEDownloaderTask::curl_progress);
-    curl_easy_setopt(this->curl, CURLOPT_PROGRESSDATA, this);
+    curl_easy_setopt(this->curl, CURLOPT_XFERINFOFUNCTION, TLEDownloaderTask::curl_progress);
+    curl_easy_setopt(this->curl, CURLOPT_XFERINFODATA, this);
     curl_easy_setopt(this->curl, CURLOPT_WRITEFUNCTION, TLEDownloaderTask::curl_save_data);
     curl_easy_setopt(this->curl, CURLOPT_WRITEDATA, this);
   }
