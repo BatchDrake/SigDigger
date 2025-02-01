@@ -23,12 +23,49 @@
 . dist-common.sh
 
 STAGINGDIR="$DEPLOYROOT/SigDigger"
+LOGFILE="$PWD/dll.log"
+WINDEPLOYQT_CMD=""
+
+function locate_windeployqt()
+{
+    if [ "x$WINDEPLOYQT_CMD" == "x" ]; then
+	if cmd_exists windeployqt6; then
+	    export WINDEPLOYQT_CMD=windeployqt6
+	elif cmd_exists windeployqt-qt6; then
+	    export WINDEPLOYQT_CMD=windeployqt-qt6
+	elif cmd_exists windeployqt; then
+	    export WINDEPLOYQT_CMD=windeployqt
+	elif cmd_exists windeployqt5; then
+	    export WINDEPLOYQT_CMD=windeployqt5
+	elif cmd_exists windeployqt-qt5; then
+	    export WINDEPLOYQT_CMD=windeployqt-qt5
+	else
+	    return 1
+	fi
+    else
+	if ! cmd_exists "$WINDEPLOYQT_CMD"; then
+	    return 1
+	fi
+    fi
+
+    return 0
+}
+
+function enum_dlls() {
+    strace SoapySDRUtil --find > "$LOGFILE" 2>&1
+    pushd "$STAGINGDIR" > /dev/null
+    strace SigDigger --help >> "$LOGFILE" 2>&1
+    result=$?
+    popd > /dev/null
+    return $result
+}
 
 function deploy()
 {
-    try "Locate windeployqt..." which windeployqt
+    try "Locate windeployqt..." locate_windeployqt
+    notice "WINDEPLOYQT_CMD=$WINDEPLOYQT_CMD"
     try "Create staging dir..." mkdir -p "$STAGINGDIR"
-    try "Deploying via windeployqt..." windeployqt --no-translations "$DEPLOYROOT/usr/bin/SigDigger.exe" --dir "$STAGINGDIR"
+    try "Deploying via windeployqt..." "$WINDEPLOYQT_CMD" --no-translations "$DEPLOYROOT/usr/bin/SigDigger.exe" --dir "$STAGINGDIR"
     try "Copying SigDigger to staging dir..." cp "$DEPLOYROOT/usr/bin/SigDigger.exe" "$STAGINGDIR"
     try "Copying Suscan CLI tool (suscli) to staging dir..." cp "$DEPLOYROOT/usr/bin/suscli.exe" "$STAGINGDIR"
     try "Copying data directory..." cp -R "$DEPLOYROOT/usr/share/suscan/config" "$STAGINGDIR"
@@ -39,8 +76,12 @@ function deploy()
 
 function fetch_dll()
 {
-    if [ -f "$DEPLOYROOT/usr/lib/$1" ]; then
-	    try "Fetching $1 (deploy root)" cp "$DEPLOYROOT/usr/lib/$1" "$STAGINGDIR/$2"
+    if [ -f "$1" ]; then
+	try "Fetch $1" cp "$1" "$STAGINGDIR/$2"
+    elif [ -f "$DEPLOYROOT/usr/lib/$1" ]; then
+	try "Fetching $1 (deploy root lib)" cp "$DEPLOYROOT/usr/lib/$1" "$STAGINGDIR/$2"
+    elif [ -f "$DEPLOYROOT/usr/bin/$1" ]; then
+	try "Fetching $1 (deploy root bin)" cp "$DEPLOYROOT/usr/bin/$1" "$STAGINGDIR/$2"
     elif [ -f "/mingw64/lib/$1" ]; then
 	    try "Fetching $1 (lib)..." cp "/mingw64/lib/$1" "$STAGINGDIR/$2"
     elif [ -f "/mingw64/bin/$1" ]; then
@@ -53,6 +94,21 @@ function fetch_dll()
     fi
 }
 
+
+function bring_discovered_dlls() {
+    cat "$LOGFILE" | grep loaded | grep dll | grep -iv ':\\Windows\\' | sed 's/^.*\([C-Z]\):\\/\\\1\\/g' | sed 's/\.dll.*/\.dll/g' | tr '\\' '/' > "dll-list.txt"
+    for dll in `cat dll-list.txt`; do
+	filename=`basename "$dll"`
+	pathname=`dirname "$dll"`
+
+	if echo "$pathname" | grep "$DEPLOYROOT" > /dev/null; then
+	    skip "Skipping $filename..."
+	else
+	    try "Bringing $filename..." cp "$dll" "$STAGINGDIR"
+	fi
+    done
+}
+
 function gather_dlls()
 {
     fetch_dll libsuscan.dll
@@ -63,51 +119,9 @@ function gather_dlls()
     fetch_dll libsndfile-1.dll
     fetch_dll libSoapySDR.dll
     fetch_dll librtlsdr.dll
-    fetch_dll libfftw3-3.dll
-    fetch_dll libfftw3f-3.dll
-    fetch_dll libcurl-4.dll
-    fetch_dll libstdc++-6.dll
-    fetch_dll libgcc_s_seh-1.dll
-    fetch_dll libwinpthread-1.dll
-    fetch_dll libdouble-conversion.dll
-    fetch_dll libicuin72.dll
-    fetch_dll libicuuc72.dll
-    fetch_dll libicudt72.dll
-    fetch_dll libpcre2-8-0.dll
-    fetch_dll libpcre2-16-0.dll
-    fetch_dll zlib1.dll
-    fetch_dll libzstd.dll
-    fetch_dll libharfbuzz-0.dll
-    fetch_dll libfreetype-6.dll
-    fetch_dll libbz2-1.dll
-    fetch_dll libusb-1.0.dll
-    fetch_dll librtlsdr.dll
-    fetch_dll libbrotlidec.dll
-    fetch_dll libbrotlicommon.dll
-    fetch_dll libpng16-16.dll
-    fetch_dll libglib-2.0-0.dll
-    fetch_dll libintl-8.dll
-    fetch_dll libiconv-2.dll
-    fetch_dll libgraphite2.dll
-    fetch_dll libmd4c.dll
-    fetch_dll libcrypto-3-x64.dll
-    fetch_dll libidn2-0.dll
-    fetch_dll libunistring-5.dll
-    fetch_dll libnghttp2-14.dll
-    fetch_dll libpsl-5.dll
-    fetch_dll libssh2-1.dll
-    fetch_dll libssl-3-x64.dll
-    fetch_dll libFLAC.dll
-    fetch_dll libogg-0.dll
-    fetch_dll libopus-0.dll
-    fetch_dll libvorbis-0.dll
-    fetch_dll libvorbisenc-2.dll
-    fetch_dll libvorbisfile-3.dll
-    fetch_dll libvolk.dll
-    fetch_dll liblzma-5.dll
-    fetch_dll liborc-0.4-0.dll
-    fetch_dll libsystre-0.dll
-    fetch_dll libtre-5.dll
+    
+    try "Enumerate SigDigger DLLs..." enum_dlls
+    bring_discovered_dlls
 }
 
 function create_bundle()

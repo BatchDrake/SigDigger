@@ -51,6 +51,12 @@ function is_mingw()
     return $?
 }
 
+function cmd_exists()
+{
+    which "$1" 2> /dev/null > /dev/null
+    return $?
+}
+
 function help()
 {
   echo "$1: SigDigger's build script"
@@ -182,16 +188,43 @@ function skip()
 
 function notice()
 {
-    echo -e "[ \033[1;33mNOTICE\033[0m ] $1"
+    echo -e "[ \033[1;36mNOTICE\033[0m ] $1"
+}
+
+function locate_qmake()
+{
+    if [ "x$QMAKE_CMD" == "x" ]; then
+	if cmd_exists qmake6; then
+	    export QMAKE_CMD=qmake6
+	elif cmd_exists qmake-qt6; then
+	    export QMAKE_CMD=qmake-qt6
+	elif cmd_exists qmake; then
+	    export QMAKE_CMD=qmake
+	elif cmd_exists qmake5; then
+	    export QMAKE_CMD=qmake5
+	elif cmd_exists qmake-qt5; then
+	    export QMAKE_CMD=qmake-qt5
+	else
+	    return 1
+	fi
+    else
+	if ! cmd_exists "$QMAKE_CMD"; then
+	    return 1
+	fi
+    fi
+
+    return 0
 }
 
 function locate_qt()
 {
     if [ "x$QT_BIN_PATH" == "x" ]; then
-      try "Locating Qt..." which qmake
+      try "Locating QMake..." locate_qmake
     
-      export QT_QMAKE_PATH=`which qmake`
+      export QT_QMAKE_PATH=`which $QMAKE_CMD`
       export QT_BIN_PATH=`dirname "$QT_QMAKE_PATH"`
+
+      notice "QMAKE_CMD=$QMAKE_CMD ($QT_BIN_PATH)"
     fi
 }
 
@@ -254,7 +287,7 @@ function build_plugins()
       continue
     fi
 
-    try "  Running qmake ($plugin)..." qmake "$plugin".pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" SIGDIGGER_PREFIX="$DEPLOYROOT/usr" PLUGIN_DIRECTORY="$PLUGINTARGET"
+    try "  Running qmake ($plugin)..." $QMAKE_CMD "$plugin".pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" SIGDIGGER_PREFIX="$DEPLOYROOT/usr" PLUGIN_DIRECTORY="$PLUGINTARGET"
     try "  Building ($plugin)... " $MAKE -j $THREADS
     try "  Installing ($plugin)... " $MAKE install
 
@@ -317,13 +350,13 @@ function build()
         fi
 	
         cd SuWidgets
-        try "Running QMake (SuWidgets)..." qmake SuWidgetsLib.pro "CONFIG += $QMAKE_BUILDTYPE" PREFIX="$DEPLOYROOT/usr" PKGVERSION="$PKGVERSION"
+        try "Running QMake (SuWidgets)..." $QMAKE_CMD SuWidgetsLib.pro "CONFIG += $QMAKE_BUILDTYPE" PREFIX="$DEPLOYROOT/usr" PKGVERSION="$PKGVERSION"
         try "Building SuWidgets..."        $MAKE -j $THREADS
         try "Deploying SuWidgets..."       $MAKE install
         cd ..
 
         cd SigDigger
-        try "Running QMake (SigDigger)..." qmake SigDigger.pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr" PKGVERSION="$PKGVERSION"
+        try "Running QMake (SigDigger)..." $QMAKE_CMD SigDigger.pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" PREFIX="$DEPLOYROOT/usr" PKGVERSION="$PKGVERSION"
         try "Building SigDigger..."        $MAKE -j $THREADS
         try "Deploying SigDigger..."       $MAKE install
         cd ..
