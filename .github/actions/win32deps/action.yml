@@ -11,6 +11,6 @@ runs:
   steps:
     - name: Fix location of lrelease executable
       shell: ${{inputs.shell}}
-      run: ln -s `which lrelease-qt6 /mingw64/bin/lrelease.exe`
+      run: ln -s `which lrelease-qt6` /mingw64/bin/lrelease.exe
 
       
