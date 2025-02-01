@@ -24,6 +24,11 @@
 
 using namespace SigDigger;
 
+#ifdef _WIN32
+#  define localtime_r(a, b) localtime_s(b, a)
+#  define gmtime_r(a, b)    gmtime_r(b, a)
+#endif // _WIN32
+
 ////////////////////////////// SourceTimeWidget ////////////////////////////////
 SourceTimeWidget::SourceTimeWidget(
     SourceTimeWidgetFactory *factory,
