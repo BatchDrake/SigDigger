@@ -372,7 +372,7 @@ Application::startCapture()
           "limitation (or even feel like helping me out addressing it), please "
           "feel free to e-mail me at BatchDrake@gmail.com",
           QMessageBox::Ok);
-    mediator->refreshUI();
+    m_mediator->refreshUI();
     return;
   }
 #endif // _WIN32
