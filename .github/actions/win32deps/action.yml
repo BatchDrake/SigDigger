@@ -20,6 +20,10 @@ runs:
       shell: ${{inputs.shell}}
       run: ls /mingw64/bin
       
+    - name: Locate where the heck is qmake6
+      shell: ${{inputs.shell}}
+      run: which qmake6
+      
     - name: Fix location of lrelease executable
       shell: ${{inputs.shell}}
       run: ln -s /mingw64/bin/lrelease-qt6.exe /mingw64/bin/lrelease.exe
