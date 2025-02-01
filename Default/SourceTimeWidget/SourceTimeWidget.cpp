@@ -25,8 +25,14 @@
 using namespace SigDigger;
 
 #ifdef _WIN32
+#  ifdef localtime_r
+#    undef localtime_r
+#  endif
+#  ifdef gmtime_r
+#    undef gmtime_r
+#  endif
 #  define localtime_r(a, b) localtime_s(b, a)
-#  define gmtime_r(a, b)    gmtime_r(b, a)
+#  define gmtime_r(a, b)    gmtime_s(b, a)
 #endif // _WIN32
 
 ////////////////////////////// SourceTimeWidget ////////////////////////////////
@@ -51,11 +57,12 @@ void
 SourceTimeWidget::drawTimeStamp()
 {
   struct tm tm;
+  time_t sec = m_ts.tv_sec;
 
   if (m_utc)
-    gmtime_r(&m_ts.tv_sec, &tm);
+    gmtime_r(&sec, &tm);
   else
-    localtime_r(&m_ts.tv_sec, &tm);
+    localtime_r(&sec, &tm);
 
   ui->hourLCD->setValue(tm.tm_hour);
   ui->minLCD->setValue(tm.tm_min);
