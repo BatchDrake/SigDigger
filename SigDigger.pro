@@ -14,6 +14,7 @@ TARGET   = SigDigger
 TEMPLATE = app
 
 DEFINES += QT_DEPRECATED_WARNINGS
+win32:LIBS += -lopengl32
 
 CONFIG += lrelease embed_translations
 
