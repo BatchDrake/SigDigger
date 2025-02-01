@@ -4,7 +4,7 @@ description: 'Install Win32 specific dependencies'
 inputs:
   shell:
     required: false
-    default: bash
+    default: msys2
 
 runs:
   using: 'composite'
@@ -13,7 +13,10 @@ runs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
+        path-type: inherit
+        release: true
         update: true
+        install: base-devel mingw-w64-x86_64-toolchain
 
 
     - name: Install dependencies explicitly
