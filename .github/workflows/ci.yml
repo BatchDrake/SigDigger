@@ -77,11 +77,7 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v2
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: git mingw-w64-x86_64-cc mingw-w64-x86_64-make mingw-w64-x86_64-cmake mingw-w64-x86_64-libsndfile mingw-w64-x86_64-fftw mingw-w64-x86_64-volk mingw-w64-x86_64-libxml2 mingw-w64-x86_64-libusb mingw-w64-x86_64-qt6 mingw-w64-x86_64-portaudio zip
+
       - name: Install dependencies
         uses: "./.github/actions/win32deps"
         
