@@ -20,9 +20,9 @@ runs:
       shell: ${{inputs.shell}}
       run: ls /mingw64/bin
       
-    - name: Locate where the heck is qmake6
+    - name: List the whole root and see where the heck this joke of OS installed Qt6
       shell: ${{inputs.shell}}
-      run: which qmake6
+      run: ls -lR /
       
     - name: Fix location of lrelease executable
       shell: ${{inputs.shell}}
