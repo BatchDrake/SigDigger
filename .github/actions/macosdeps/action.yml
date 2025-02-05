@@ -17,7 +17,7 @@ runs:
     - name: Choose target architectures
       shell:  ${{inputs.shell}}
       run: |
-          arch='arm64;x86_64'
+          arch='arm64'
           tee -a "$GITHUB_ENV" <<< "CMAKE_OSX_ARCHITECTURES=${arch}"
 
     - name: Remove spurious symlinks
