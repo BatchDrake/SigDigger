@@ -11,7 +11,10 @@ runs:
   steps:
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
-      
+      with:
+        version: '6.5.2'
+        arch: 'arm64;x86_64'
+
     - name: Remove spurious symlinks
       shell:  ${{inputs.shell}}
       run: sudo rm -f /usr/local/bin/2to3 /usr/local/bin/2to3-3.11
