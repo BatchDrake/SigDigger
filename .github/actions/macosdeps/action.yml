@@ -92,7 +92,7 @@ runs:
         # SoapySDRPlay3 from source
         git clone https://github.com/pothosware/SoapySDRPlay3
         cd SoapySDRPlay3
-        cmake -DCMAKE_BUILD_TYPE=Release -B build .
+        cmake -DCMAKE_OSX_ARCHITECTURES="$CMAKE_OSX_ARCHITECTURES" -DCMAKE_BUILD_TYPE=Release -B build .
         cmake --build build
         cd build
         sudo make install
