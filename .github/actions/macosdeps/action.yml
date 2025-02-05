@@ -80,7 +80,7 @@ runs:
       shell: ${{inputs.shell}}
       run: |
         brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
-        brew install --head soapyuhd
+        # brew install --head soapyuhd
 
     - name: Install SDRPlay
       shell: ${{inputs.shell}}
