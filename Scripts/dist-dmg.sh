@@ -22,7 +22,7 @@
 
 . dist-common.sh
 
-export BUILDTYPE=Release
+export BUILDTYPE=Debug
 
 BUNDLEID="org.actinid.SigDigger"
 
@@ -33,6 +33,8 @@ LIBPATH="$BUNDLEPATH/Contents/Frameworks"
 BINPATH="$BUNDLEPATH/Contents/MacOS"
 STAGINGDIR="$DEPLOYROOT/SigDigger.dir"
 DMG_NAME="$DISTFILENAME".dmg
+BREWPFX=`brew --prefix`
+BREWLIBDIR="$BREWPFX/lib"
 
 function locate_macdeploy()
 {
@@ -62,7 +64,7 @@ function bundle_libs()
 
 function find_soapysdr()
 {
-    SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64"
+    SOAPYDIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64 $BREWLIBDIR"
     
     for i in $SOAPYDIRS; do
 	MODDIR="$i/SoapySDR/modules$SOAPYSDRVER"
@@ -90,7 +92,7 @@ function excluded()
 
 function find_lib()
 {
-  SANE_DIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64 $LIBPATH"
+  SANE_DIRS="/usr/lib/`uname -m`-linux-gnu /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64 $BREWLIBDIR $LIBPATH"
     
   for i in $SANE_DIRS; do
 	  if [ -f "$i/$1" ]; then
@@ -114,7 +116,7 @@ function embed_soapysdr()
     try "Copying SoapySDR modules ($MODDIR)..." cp -RLfv "$MODDIR" "$LIBPATH/SoapySDR"
 
     RADIODEPS=`otool -L "$MODDIR"/lib* | grep -v :$ | sed 's/ (.*)//g'`
-    MY_RPATH=/usr/local/lib # FIXME
+    MY_RPATH="$BREWLIBDIR" # FIXME
     
     for i in $RADIODEPS; do
       name=`basename "$i"`
@@ -147,8 +149,8 @@ function embed_soapysdr()
 function deploy_deps()
 {
   embed_soapysdr
-  bundle_libs "SoapySDR libraries"    /usr/local/lib/libSoapySDR*dylib
-  bundle_libs "GCC support libraries" /usr/local/opt/gcc/lib/gcc/*/libgcc*.dylib
+  bundle_libs "SoapySDR libraries"    "$BREWLIBDIR"/libSoapySDR*dylib
+  bundle_libs "GCC support libraries" "$BREWPFX"/opt/gcc/lib/gcc/*/libgcc*.dylib
 }
 
 function remove_full_paths()
@@ -171,7 +173,8 @@ function ensure_rpath()
     if ! [ -L "$i" ]; then
 	    chmod u+rw "$i"
 	    try "Fixing "`basename $i`"..." true
-	    otool -L "$i" | grep '\t/usr/local/' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
+	    otool -L "$i" | grep '\t/usr/local/'      | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
+	    otool -L "$i" | grep '\t'"$BREWPFX"       | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
 	    otool -L "$i" | grep '\t@rpath/.*\.dylib' | tr -d '\t' | cut -f1 -d ' ' | remove_full_path_stdin "$i";
     fi
   done

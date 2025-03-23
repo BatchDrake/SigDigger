@@ -11,7 +11,15 @@ runs:
   steps:
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
-      
+      with:
+        version: '6.8.2'
+
+    - name: Choose target architectures
+      shell:  ${{inputs.shell}}
+      run: |
+          arch='arm64'
+          tee -a "$GITHUB_ENV" <<< "CMAKE_OSX_ARCHITECTURES=${arch}"
+
     - name: Remove spurious symlinks
       shell:  ${{inputs.shell}}
       run: sudo rm -f /usr/local/bin/2to3 /usr/local/bin/2to3-3.11
@@ -30,7 +38,6 @@ runs:
       shell:  ${{inputs.shell}}
       run: |
         brew install --force --overwrite python@3.12
-        python3.12 -Im pip install setuptools
 
     - name: Force-install of Python-setuptools
       shell: ${{inputs.shell}}
@@ -73,17 +80,19 @@ runs:
       shell: ${{inputs.shell}}
       run: |
         brew install soapyrtlsdr soapyhackrf soapybladerf soapyairspy soapyredpitaya soapyiris limesuite soapyplutosdr
-        brew install --head soapyuhd
+        # brew install --head soapyuhd
 
     - name: Install SDRPlay
       shell: ${{inputs.shell}}
       run: |
-        wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg
-        sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /
+        # wget https://www.sdrplay.com/software/SDRplay_RSP_API-MacOSX-3.07.3.pkg
+        #sudo installer -pkg SDRplay_RSP_API-MacOSX-3.07.3.pkg -target /       
+        wget https://www.sdrplay.com/software/SDRplayAPI-macos-installer-universal-3.15.0.pkg
+        sudo installer -pkg SDRplayAPI-macos-installer-universal-3.15.0.pkg -target /
         # SoapySDRPlay3 from source
         git clone https://github.com/pothosware/SoapySDRPlay3
         cd SoapySDRPlay3
-        cmake -DCMAKE_BUILD_TYPE=Release -B build .
+        cmake -DCMAKE_OSX_ARCHITECTURES="$CMAKE_OSX_ARCHITECTURES" -DCMAKE_BUILD_TYPE=Release -B build .
         cmake --build build
         cd build
         sudo make install

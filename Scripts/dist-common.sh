@@ -306,6 +306,11 @@ function build()
       QMAKE_BUILDTYPE=release
     fi
 
+    if [ "x$CMAKE_OSX_ARCHITECTURES" != "x" ]; then
+	notice "User-defined macOS architectures: $CMAKE_OSX_ARCHITECTURES"
+	MACOS_EXTRA_OPTS="-DCMAKE_OSX_ARCHITECTURES=$CMAKE_OSX_ARCHITECTURES"
+    fi
+    
     if [ "$SIGDIGGER_SKIPBUILD" == "" ]; then
         locate_sdk
         export PKG_CONFIG_PATH="$DEPLOYROOT/usr/lib/pkgconfig:$DEPLOYROOT/usr/lib64/pkgconfig:$PKG_CONFIG_PATH"
@@ -323,7 +328,7 @@ function build()
         try "Cloning SigDigger (${BRANCH})..."      git clone --recurse-submodules -b "$BRANCH" https://github.com/BatchDrake/SigDigger
         try "Creating builddirs..."        mkdir -p sigutils/build suscan/build
         cd sigutils/build
-        try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
+        try "Running CMake (sigutils)..."  cmake .. -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" "$MACOS_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON
         cd ../../
         try "Building sigutils..."         $MAKE -j $THREADS -C sigutils/build
         try "Deploying sigutils..."        $MAKE -j $THREADS -C sigutils/build install
@@ -336,7 +341,7 @@ function build()
         fi
 	
         cd suscan/build
-        try "Running CMake (suscan)..."    cmake .. $CMAKE_SUSCAN_EXTRA_ARGS -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
+        try "Running CMake (suscan)..."    cmake .. $CMAKE_SUSCAN_EXTRA_ARGS -DCMAKE_INSTALL_PREFIX="$DEPLOYROOT/usr" -DPKGVERSION="$PKGVERSION" -DCMAKE_BUILD_TYPE=$CMAKE_BUILDTYPE "$CMAKE_EXTRA_OPTS"  "$MACOS_EXTRA_OPTS" -DCMAKE_SKIP_RPATH=ON -DCMAKE_SKIP_INSTALL_RPATH=ON -DSUSCAN_PKGDIR="/usr"
         cd ../../
         try "Building suscan..."           $MAKE -j $THREADS -C suscan/build
         try "Deploying suscan..."          $MAKE -j $THREADS -C suscan/build install

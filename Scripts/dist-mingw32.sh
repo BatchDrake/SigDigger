@@ -101,10 +101,10 @@ function bring_discovered_dlls() {
 	filename=`basename "$dll"`
 	pathname=`dirname "$dll"`
 
-	if echo "$pathname" | grep "$DEPLOYROOT" > /dev/null; then
+	if echo "$pathname" | grep "deploy-root" > /dev/null; then
 	    skip "Skipping $filename..."
 	else
-	    try "Bringing $filename..." cp "$dll" "$STAGINGDIR"
+	    try "Bringing $filename..." cp -fu "$dll" "$STAGINGDIR"
 	fi
     done
 }
