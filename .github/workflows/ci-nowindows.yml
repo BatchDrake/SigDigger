@@ -19,7 +19,6 @@ env:
 jobs:
   # Installation of dependencies is too OS-dependent now, we don't
   # miss that much by particularizing this in a per-OS basis.
-  
   build-linux-appimage:
     runs-on: ubuntu-20.04
     steps:
@@ -30,7 +29,7 @@ jobs:
 
     - name: Install dependencies
       uses: "./.github/actions/linuxdeps"
-    
+
     - name: Build & Distribute (SigDigger)
       run: |
         cd Scripts
@@ -52,10 +51,10 @@ jobs:
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-    
+
     - name: Install dependencies
       uses: "./.github/actions/macosdeps"
-      
+
     - name: Build & Distribute (SigDigger)
       run: |
         cd Scripts
@@ -68,4 +67,3 @@ jobs:
       with:
         name: macos-latest-dmg
         path: Scripts/*.dmg
-
