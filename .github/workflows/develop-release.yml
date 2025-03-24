@@ -10,7 +10,6 @@ env:
 jobs:
   # Installation of dependencies is too OS-dependent now, we don't
   # miss that much by particularizing this in a per-OS basis.
-  
   build-linux-appimage:
     runs-on: ubuntu-20.04
     steps:
@@ -124,7 +123,6 @@ jobs:
         
       - name: Install (SoapyRTLSDR)
         run: /mingw64/bin/cmake --build  SoapyRTLSDR/build --config ${{env.BUILD_TYPE}} --target install
-        
 
       # SigDigger
       - name: Build & Distribute (SigDigger)
@@ -143,7 +141,6 @@ jobs:
   do_release:
     needs: [ build-linux-appimage, build-macos, build-windows ]
     runs-on: ubuntu-latest
-    
     steps:
       - name: Get current date
         id: date
