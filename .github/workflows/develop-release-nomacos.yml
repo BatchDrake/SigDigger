@@ -72,7 +72,7 @@ jobs:
 
 
   do_release:
-    needs: [ build-linux-appimage  build-windows ]
+    needs: [ build-linux-appimage,  build-windows ]
     runs-on: ubuntu-latest
     
     steps:
