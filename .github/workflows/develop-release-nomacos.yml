@@ -22,7 +22,7 @@ jobs:
   build-linux-appimage:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
@@ -51,7 +51,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         uses: "./.github/actions/win32deps"
@@ -70,11 +70,9 @@ jobs:
           name: windows-latest-zip
           path: Scripts/SigDigger-*.zip
 
-
   do_release:
     needs: [ build-linux-appimage,  build-windows ]
     runs-on: ubuntu-latest
-    
     steps:
       - name: Get current date
         id: date
@@ -93,4 +91,3 @@ jobs:
           files: |
             linux-latest-appimage/*.AppImage
             windows-latest-zip/*.zip
-            
