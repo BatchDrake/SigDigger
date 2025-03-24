@@ -19,7 +19,6 @@ env:
 jobs:
   # Installation of dependencies is too OS-dependent now, we don't
   # miss that much by particularizing this in a per-OS basis.
-  
   build-linux-appimage:
     runs-on: ubuntu-20.04
     steps:
@@ -30,7 +29,7 @@ jobs:
 
     - name: Install dependencies
       uses: "./.github/actions/linuxdeps"
-      
+
     - name: Build & Distribute (SigDigger)
       run: |
         cd Scripts
@@ -77,7 +76,6 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v4
-
       - name: Install dependencies
         uses: "./.github/actions/win32deps"
         
