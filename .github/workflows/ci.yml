@@ -19,18 +19,17 @@ env:
 jobs:
   # Installation of dependencies is too OS-dependent now, we don't
   # miss that much by particularizing this in a per-OS basis.
-  
   build-linux-appimage:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
     - name: Install dependencies
       uses: "./.github/actions/linuxdeps"
-      
+
     - name: Build & Distribute (SigDigger)
       run: |
         cd Scripts
@@ -48,7 +47,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Setup interactive shell session
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
@@ -76,8 +75,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@v4
       - name: Install dependencies
         uses: "./.github/actions/win32deps"
         
