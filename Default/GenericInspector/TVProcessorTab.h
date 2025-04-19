@@ -33,15 +33,15 @@ namespace SigDigger {
   {
     Q_OBJECT
 
-    qreal sampleRate = 0;
-    bool tvProcessing = false;
-    bool editingTVProcessorParams = false;
+    qreal                 m_sampleRate = 0;
+    bool                  m_tvProcessing = false;
+    bool                  m_editingTVProcessorParams = false;
 
-    Decider::DecisionMode decisionMode = Decider::MODULUS;
+    Decider::DecisionMode m_decisionMode = Decider::MODULUS;
 
-    TVProcessorWorker *tvWorker = nullptr;
-    QThread *tvThread = nullptr;
-    std::vector<SUFLOAT> floatBuffer;
+    TVProcessorWorker    *m_tvWorker = nullptr;
+    QThread              *m_tvThread = nullptr;
+    std::vector<SUFLOAT>  m_floatBuffer;
 
     void connectAll(void);
     void emitParameters(void);
@@ -57,7 +57,7 @@ namespace SigDigger {
     bool
     isEnabled(void) const
     {
-      return this->tvProcessing;
+      return this->m_tvProcessing;
     }
 
     explicit TVProcessorTab(QWidget *parent, qreal sampleRate);

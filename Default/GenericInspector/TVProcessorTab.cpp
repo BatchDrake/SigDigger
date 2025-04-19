@@ -33,36 +33,37 @@ TVProcessorTab::TVProcessorTab(QWidget *parent, qreal rate) :
   QWidget(parent),
   ui(new Ui::TVProcessorTab)
 {
-  this->sampleRate = rate;
+  m_sampleRate = rate;
 
   ui->setupUi(this);
 
-  this->tvThread = new QThread();
-  this->tvWorker = new TVProcessorWorker();
-  this->tvWorker->moveToThread(this->tvThread);
+  m_tvThread = new QThread();
+  m_tvWorker = new TVProcessorWorker();
+  m_tvWorker->moveToThread(m_tvThread);
 
   connect(
-        this->tvThread,
+        m_tvThread,
         &QThread::finished,
-        this->tvWorker,
+        m_tvWorker,
         &QObject::deleteLater);
 
   connect(
-        this->tvThread,
+        m_tvThread,
         &QThread::finished,
-        this->tvThread,
+        m_tvThread,
         &QObject::deleteLater);
 
-  this->tvThread->start();
+  m_tvThread->start();
 
-  this->connectAll();
-  this->onTVProcessorUiChanged();
+  ui->linePeriodSpin->setDecimals(3);
+  connectAll();
+  onTVProcessorUiChanged();
 }
 
 TVProcessorTab::~TVProcessorTab()
 {
-  if (this->tvThread != nullptr)
-    this->tvThread->quit();
+  if (m_tvThread != nullptr)
+    m_tvThread->quit();
 
   delete ui;
 }
@@ -71,49 +72,49 @@ void
 TVProcessorTab::connectAll(void)
 {
   connect(
-        this->tvWorker,
+        m_tvWorker,
         SIGNAL(paramsChanged(struct sigutils_tv_processor_params)),
         this,
         SLOT(onTVProcessorParamsChanged(struct sigutils_tv_processor_params)));
 
   connect(
-        this->tvWorker,
+        m_tvWorker,
         SIGNAL(error(QString)),
         this,
         SLOT(onTVProcessorError(QString)));
 
   connect(
-        this->tvWorker,
+        m_tvWorker,
         SIGNAL(frame(struct sigutils_tv_frame_buffer *)),
         this,
         SLOT(onTVProcessorFrame(struct sigutils_tv_frame_buffer *)));
 
   connect(
-        this->ui->enableTvButton,
+        ui->enableTvButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onToggleTVProcessor(void)));
 
   connect(
-        this->ui->accumButton,
+        ui->accumButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onAccumChanged(void)));
 
   connect(
-        this->ui->lpfButton,
+        ui->lpfButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onEnableLPFChanged(void)));
 
   connect(
-        this->ui->accumSpinBox,
+        ui->accumSpinBox,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onAccumSpinChanged(void)));
 
   connect(
-        this->ui->snapshotButton,
+        ui->snapshotButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSaveSnapshot(void)));
@@ -121,230 +122,230 @@ TVProcessorTab::connectAll(void)
   connect(
         this,
         SIGNAL(startTVProcessor(void)),
-        this->tvWorker,
+        m_tvWorker,
         SLOT(start(void)));
 
   connect(
         this,
         SIGNAL(stopTVProcessor(void)),
-        this->tvWorker,
+        m_tvWorker,
         SLOT(stop(void)));
 
   connect(
         this,
         SIGNAL(tvProcessorData()),
-        this->tvWorker,
+        m_tvWorker,
         SLOT(process()));
 
   connect(
         this,
         SIGNAL(tvProcessorDisposeFrame(struct sigutils_tv_frame_buffer *)),
-        this->tvWorker,
+        m_tvWorker,
         SLOT(returnFrame(struct sigutils_tv_frame_buffer *)));
 
   connect(
         this,
         SIGNAL(tvProcessorParams(sigutils_tv_processor_params)),
-        this->tvWorker,
+        m_tvWorker,
         SLOT(setParams(sigutils_tv_processor_params)));
 
   // UI signals
   connect(
-        this->ui->ntscRadio,
+        ui->ntscRadio,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->palRadio,
+        ui->palRadio,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->customRadio,
+        ui->customRadio,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->agcCheck,
+        ui->agcCheck,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->enableSyncCheck,
+        ui->enableSyncCheck,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->invertSyncCheck,
+        ui->invertSyncCheck,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->invertImageCheck,
+        ui->invertImageCheck,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->combFilterCheck,
+        ui->combFilterCheck,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->swapCombFilterButton,
+        ui->swapCombFilterButton,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->nonInterlacedRadio,
+        ui->nonInterlacedRadio,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->fieldOneRadio,
+        ui->fieldOneRadio,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->fieldTwoRadio,
+        ui->fieldTwoRadio,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->linesSpin,
+        ui->linesSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onTVProcessorUiChanged()));
+
+  connect(
+        ui->vsyncTrainLengthSpin,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->vsyncTrainLengthSpin,
+        ui->agcTauSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onTVProcessorUiChanged()));
+
+  connect(
+        ui->slowTrackTauSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onTVProcessorUiChanged()));
+
+  connect(
+        ui->fastTrackTauSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onTVProcessorUiChanged()));
+
+  connect(
+        ui->lineLenTauSpin,
+        SIGNAL(valueChanged(qreal)),
+        this,
+        SLOT(onTVProcessorUiChanged()));
+
+  connect(
+        ui->hsyncSpin,
+        SIGNAL(changed(qreal, qreal)),
+        this,
+        SLOT(onTVProcessorUiChanged()));
+
+  connect(
+        ui->vsyncSpin,
+        SIGNAL(changed(qreal, qreal)),
+        this,
+        SLOT(onTVProcessorUiChanged()));
+
+  connect(
+        ui->linePeriodSpin,
+        SIGNAL(changed(qreal, qreal)),
+        this,
+        SLOT(onTVProcessorUiChanged()));
+
+  connect(
+        ui->hugeErrorSlider,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->agcTauSpin,
-        SIGNAL(valueChanged(qreal)),
-        this,
-        SLOT(onTVProcessorUiChanged()));
-
-  connect(
-        this->ui->slowTrackTauSpin,
-        SIGNAL(valueChanged(qreal)),
-        this,
-        SLOT(onTVProcessorUiChanged()));
-
-  connect(
-        this->ui->fastTrackTauSpin,
-        SIGNAL(valueChanged(qreal)),
-        this,
-        SLOT(onTVProcessorUiChanged()));
-
-  connect(
-        this->ui->lineLenTauSpin,
-        SIGNAL(valueChanged(qreal)),
-        this,
-        SLOT(onTVProcessorUiChanged()));
-
-  connect(
-        this->ui->hsyncSpin,
-        SIGNAL(changed(qreal, qreal)),
-        this,
-        SLOT(onTVProcessorUiChanged()));
-
-  connect(
-        this->ui->vsyncSpin,
-        SIGNAL(changed(qreal, qreal)),
-        this,
-        SLOT(onTVProcessorUiChanged()));
-
-  connect(
-        this->ui->linePeriodSpin,
-        SIGNAL(changed(qreal, qreal)),
-        this,
-        SLOT(onTVProcessorUiChanged()));
-
-  connect(
-        this->ui->hugeErrorSlider,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(onTVProcessorUiChanged()));
-
-  connect(
-        this->ui->hsyncErrorRange,
+        ui->hsyncErrorRange,
         SIGNAL(rangeChanged(int, int)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->timeTolSlider,
+        ui->timeTolSlider,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->levelTolSlider,
+        ui->levelTolSlider,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->geomTolSlider,
+        ui->geomTolSlider,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVProcessorUiChanged()));
 
   connect(
-        this->ui->brightnessDial,
+        ui->brightnessDial,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVBrightnessChanged()));
 
   connect(
-        this->ui->contrastDial,
+        ui->contrastDial,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVContrastChanged()));
 
 
   connect(
-        this->ui->gammaDial,
+        ui->gammaDial,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVGammaChanged()));
 
   connect(
-        this->ui->rotationDial,
+        ui->rotationDial,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVAspectChanged()));
 
   connect(
-        this->ui->tvZoomSpin,
+        ui->tvZoomSpin,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onTVAspectChanged()));
 
   connect(
-        this->ui->flipHorizontalCheck,
+        ui->flipHorizontalCheck,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVAspectChanged()));
 
 
   connect(
-        this->ui->flipVerticalCheck,
+        ui->flipVerticalCheck,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onTVAspectChanged()));
@@ -353,52 +354,52 @@ TVProcessorTab::connectAll(void)
 SUFLOAT
 TVProcessorTab::getSampleRateFloat(void) const
 {
-  return static_cast<SUFLOAT>(this->sampleRate);
+  return static_cast<SUFLOAT>(m_sampleRate);
 }
 
 unsigned int
 TVProcessorTab::getSampleRate(void) const
 {
-  return static_cast<unsigned int>(this->sampleRate);
+  return static_cast<unsigned int>(m_sampleRate);
 }
 
 void
 TVProcessorTab::setSampleRate(qreal sampleRate)
 {
-  this->sampleRate = sampleRate;
-  this->refreshUiState();
-  this->emitParameters();
+  m_sampleRate = sampleRate;
+  refreshUiState();
+  emitParameters();
 }
 
 void
 TVProcessorTab::setDecisionMode(Decider::DecisionMode mode)
 {
-  this->decisionMode = mode;
+  m_decisionMode = mode;
 }
 
 void
 TVProcessorTab::emitParameters(void)
 {
-  if (this->getSampleRate() > 0) {
+  if (getSampleRate() > 0) {
     struct sigutils_tv_processor_params params;
 
-    this->refreshUiState();
-    this->parseUi(params);
+    refreshUiState();
+    parseUi(params);
 
     emit tvProcessorParams(params);
-    if (this->tvProcessing)
+    if (m_tvProcessing)
       emit startTVProcessor();
-    this->ui->enableTvButton->setEnabled(true);
+    ui->enableTvButton->setEnabled(true);
 
-    this->ui->tvDisplay->setPicGeometry(
+    ui->tvDisplay->setPicGeometry(
           static_cast<int>(params.line_len),
           static_cast<int>(params.frame_lines));
   } else {
-    this->ui->enableTvButton->setEnabled(false);
-    if (this->tvProcessing) {
+    ui->enableTvButton->setEnabled(false);
+    if (m_tvProcessing) {
       emit stopTVProcessor();
-      this->tvProcessing = false;
-      this->ui->enableTvButton->setChecked(false);
+      m_tvProcessing = false;
+      ui->enableTvButton->setChecked(false);
     }
   }
 }
@@ -406,185 +407,192 @@ TVProcessorTab::emitParameters(void)
 void
 TVProcessorTab::refreshUiState(void)
 {
-  bool customParamsEnabled = this->ui->customRadio->isChecked();
+  bool customParamsEnabled = ui->customRadio->isChecked();
 
-  if (this->getSampleRate() > 0) {
-    this->ui->linePeriodSpin->setSampleRate(this->getSampleRate());
-    this->ui->hsyncSpin->setSampleRate(this->getSampleRate());
-    this->ui->vsyncSpin->setSampleRate(this->getSampleRate());
+  if (getSampleRate() > 0) {
+    ui->linePeriodSpin->setSampleRate(getSampleRate());
+    ui->hsyncSpin->setSampleRate(getSampleRate());
+    ui->vsyncSpin->setSampleRate(getSampleRate());
   }
 
-  this->ui->geometryGroup->setEnabled(customParamsEnabled);
-  this->ui->agcCheck->setEnabled(customParamsEnabled);
-  this->ui->syncTab->setEnabled(customParamsEnabled);
-  this->ui->invertImageCheck->setEnabled(customParamsEnabled);
+  ui->geometryGroup->setEnabled(customParamsEnabled);
+  ui->agcCheck->setEnabled(customParamsEnabled);
+  ui->syncTab->setEnabled(customParamsEnabled);
+  ui->invertImageCheck->setEnabled(customParamsEnabled);
 
-  this->ui->nonInterlacedRadio->setEnabled(customParamsEnabled);
-  this->ui->fieldOneRadio->setEnabled(customParamsEnabled);
-  this->ui->fieldTwoRadio->setEnabled(customParamsEnabled);
+  ui->nonInterlacedRadio->setEnabled(customParamsEnabled);
+  ui->fieldOneRadio->setEnabled(customParamsEnabled);
+  ui->fieldTwoRadio->setEnabled(customParamsEnabled);
 
 
   if (!customParamsEnabled)
-    this->ui->invertImageCheck->setChecked(
-        this->ui->invertSyncCheck->isChecked());
+    ui->invertImageCheck->setChecked(
+        ui->invertSyncCheck->isChecked());
 
-  this->ui->swapCombFilterButton->setEnabled(
-        this->ui->combFilterCheck->isChecked());
+  ui->swapCombFilterButton->setEnabled(
+        ui->combFilterCheck->isChecked());
 
-  this->ui->hsyncSpin->setEnabled(this->ui->enableSyncCheck->isChecked());
-  this->ui->vsyncSpin->setEnabled(this->ui->enableSyncCheck->isChecked());
+  ui->hsyncSpin->setEnabled(ui->enableSyncCheck->isChecked());
+  ui->vsyncSpin->setEnabled(ui->enableSyncCheck->isChecked());
 
-  this->ui->levelTolLabel->setText(
+  ui->levelTolLabel->setText(
         SuWidgetsHelpers::formatQuantity(
-          100 * std::pow(10., this->ui->levelTolSlider->value() / 100.),
+          100 * std::pow(10., ui->levelTolSlider->value() / 100.),
           3,
           ""));
 
-  this->ui->timeTolLabel->setText(
+  ui->timeTolLabel->setText(
         SuWidgetsHelpers::formatQuantity(
-          100 * std::pow(10., this->ui->timeTolSlider->value() / 100.),
+          100 * std::pow(10., ui->timeTolSlider->value() / 100.),
           3,
           ""));
 
-  this->ui->geomTolLabel->setText(
+  ui->geomTolLabel->setText(
         SuWidgetsHelpers::formatQuantity(
-          100 * std::pow(10., this->ui->geomTolSlider->value() / 100.),
+          100 * std::pow(10., ui->geomTolSlider->value() / 100.),
           3,
           ""));
 
-  this->ui->hsyncErrorRangeLabel->setText(
+  ui->hsyncErrorRangeLabel->setText(
         QString::number(
           EP_INV * std::round(
             EP * 100 * std::pow(
               10.,
-              this->ui->hsyncErrorRange->minimumPosition() / 100.)))
+              ui->hsyncErrorRange->minimumPosition() / 100.)))
         + "% - "
         + QString::number(
             EP_INV * std::round(
               EP * 100 * std::pow(
                 10.,
-                this->ui->hsyncErrorRange->maximumPosition() / 100.)))
+                ui->hsyncErrorRange->maximumPosition() / 100.)))
         + "%");
 
-  this->ui->hugeErrorLabel->setText(
+  ui->hugeErrorLabel->setText(
         QString::number(
           EP_INV * std::round(
-            EP * 100 * std::pow(10., this->ui->hugeErrorSlider->value() / 100.)))
+            EP * 100 * std::pow(10., ui->hugeErrorSlider->value() / 100.)))
         + "%");
 
-  this->ui->frameRateSpin->setValue(
-        1. / (this->ui->linesSpin->value()
-              * this->ui->linePeriodSpin->timeValue()));
+  ui->frameRateSpin->setValue(
+        1. / (ui->linesSpin->value()
+              * ui->linePeriodSpin->timeValue()));
 }
 
 void
 TVProcessorTab::refreshUi(
     struct sigutils_tv_processor_params const &params)
 {
-  bool oldState = this->editingTVProcessorParams;
-  this->editingTVProcessorParams = true;
+  bool oldState = m_editingTVProcessorParams;
+  m_editingTVProcessorParams = true;
 
-  this->ui->combFilterCheck->setChecked(params.enable_comb);
-  this->ui->agcCheck->setChecked(params.enable_agc);
-  this->ui->enableSyncCheck->setChecked(params.enable_sync);
-  this->ui->invertImageCheck->setChecked(params.reverse);
-  this->ui->swapCombFilterButton->setChecked(params.comb_reverse);
+  ui->combFilterCheck->setChecked(params.enable_comb);
+  ui->agcCheck->setChecked(params.enable_agc);
+  ui->enableSyncCheck->setChecked(params.enable_sync);
+  ui->invertImageCheck->setChecked(params.reverse);
+  ui->swapCombFilterButton->setChecked(params.comb_reverse);
 
   if (!params.interlace) {
-    this->ui->nonInterlacedRadio->setChecked(true);
+    ui->nonInterlacedRadio->setChecked(true);
   } else if (params.dominance) {
-    this->ui->fieldOneRadio->setChecked(true);
+    ui->fieldOneRadio->setChecked(true);
   } else {
-    this->ui->fieldTwoRadio->setChecked(true);
+    ui->fieldTwoRadio->setChecked(true);
   }
 
   refreshUiState();
 
-  this->ui->linesSpin->setValue(static_cast<int>(params.frame_lines));
-  this->ui->hsyncSpin->setSamplesValue(
-        static_cast<qreal>(params.hsync_len));
-  this->ui->vsyncSpin->setSamplesValue(
-        static_cast<qreal>(params.vsync_len));
-  this->ui->linePeriodSpin->setSamplesValue(
-        static_cast<qreal>(params.line_len));
+  BLOCKSIG(ui->linesSpin, setValue(
+        static_cast<qreal>(params.frame_lines) + params.frame_spacing));
 
-  this->ui->hsyncSpin->setBestUnits(true);
-  this->ui->vsyncSpin->setBestUnits(true);
-  this->ui->linePeriodSpin->setBestUnits(true);
+  BLOCKSIG(ui->hsyncSpin, setSamplesValue(
+        static_cast<qreal>(params.hsync_len)));
 
-  this->ui->timeTolSlider->setValue(
+  BLOCKSIG(ui->vsyncSpin, setSamplesValue(
+        static_cast<qreal>(params.vsync_len)));
+
+  BLOCKSIG(ui->linePeriodSpin, setSamplesValue(
+        static_cast<qreal>(params.line_len)));
+
+  ui->hsyncSpin->setBestUnits(true);
+  ui->vsyncSpin->setBestUnits(true);
+  ui->linePeriodSpin->setBestUnits(true);
+
+  ui->timeTolSlider->setValue(
         static_cast<int>(100 * std::log10(params.t_tol)));
-  this->ui->levelTolSlider->setValue(
+  ui->levelTolSlider->setValue(
         static_cast<int>(100 * std::log10(params.l_tol)));
-  this->ui->geomTolSlider->setValue(
+  ui->geomTolSlider->setValue(
         static_cast<int>(100 * std::log10(params.g_tol)));
 
-  this->ui->hsyncErrorRange->setMinimumPosition(
+  ui->hsyncErrorRange->setMinimumPosition(
         static_cast<int>(100 * std::log10(params.hsync_min_err)));
-  this->ui->hsyncErrorRange->setMaximumPosition(
+  ui->hsyncErrorRange->setMaximumPosition(
         static_cast<int>(100 * std::log10(params.hsync_max_err)));
-  this->ui->hugeErrorSlider->setValue(
+  ui->hugeErrorSlider->setValue(
         static_cast<int>(100 * std::log10(params.hsync_huge_err)));
-  this->ui->vsyncTrainLengthSpin->setValue(
+  ui->vsyncTrainLengthSpin->setValue(
         static_cast<int>(params.vsync_odd_trigger));
 
-  this->ui->agcTauSpin->setValue(
+  ui->agcTauSpin->setValue(
         static_cast<qreal>(params.agc_tau));
-  this->ui->lineLenTauSpin->setValue(
+  ui->lineLenTauSpin->setValue(
         static_cast<qreal>(params.line_len_tau));
-  this->ui->fastTrackTauSpin->setValue(
+  ui->fastTrackTauSpin->setValue(
         static_cast<qreal>(params.hsync_fast_track_tau));
-  this->ui->slowTrackTauSpin->setValue(
+  ui->slowTrackTauSpin->setValue(
         static_cast<qreal>(params.hsync_slow_track_tau));
 
-  this->editingTVProcessorParams = oldState;
+  m_editingTVProcessorParams = oldState;
 }
 
 bool
 TVProcessorTab::parseUi(
     struct sigutils_tv_processor_params &params)
 {
-  params.enable_sync  = this->ui->enableSyncCheck->isChecked();
-  params.reverse      = this->ui->invertImageCheck->isChecked();
-  params.interlace    = !this->ui->nonInterlacedRadio->isChecked();
-  params.dominance    = !this->ui->fieldTwoRadio->isChecked();
-  params.enable_agc   = this->ui->agcCheck->isChecked();
-  params.frame_lines  = static_cast<SUSCOUNT>(this->ui->linesSpin->value());
-  params.enable_comb  = this->ui->combFilterCheck->isChecked();
-  params.comb_reverse = this->ui->swapCombFilterButton->isChecked();
+  qreal lines = ui->linesSpin->value();
+  params.enable_sync  = ui->enableSyncCheck->isChecked();
+  params.reverse      = ui->invertImageCheck->isChecked();
+  params.interlace    = !ui->nonInterlacedRadio->isChecked();
+  params.dominance    = !ui->fieldTwoRadio->isChecked();
+  params.enable_agc   = ui->agcCheck->isChecked();
+  params.frame_lines  = static_cast<SUSCOUNT>(floor(lines));
+  params.frame_spacing = lines - params.frame_lines;
+
+  params.enable_comb  = ui->combFilterCheck->isChecked();
+  params.comb_reverse = ui->swapCombFilterButton->isChecked();
   params.x_off        = 0;
   params.hsync_len    = static_cast<SUFLOAT>(
-        this->ui->hsyncSpin->samplesValue());
+        ui->hsyncSpin->samplesValue());
   params.vsync_len    = static_cast<SUFLOAT>(
-        this->ui->vsyncSpin->samplesValue());
+        ui->vsyncSpin->samplesValue());
   params.line_len     = static_cast<SUFLOAT>(
-        this->ui->linePeriodSpin->samplesValue());
+        ui->linePeriodSpin->samplesValue());
   params.t_tol        = static_cast<SUFLOAT>(
-        std::pow(10., this->ui->timeTolSlider->value() / 100.));
+        std::pow(10., ui->timeTolSlider->value() / 100.));
   params.l_tol        = static_cast<SUFLOAT>(
-        std::pow(10., this->ui->levelTolSlider->value() / 100.));
+        std::pow(10., ui->levelTolSlider->value() / 100.));
   params.g_tol        = static_cast<SUFLOAT>(
-        std::pow(10., this->ui->geomTolSlider->value() / 100.));
+        std::pow(10., ui->geomTolSlider->value() / 100.));
 
   params.hsync_huge_err = static_cast<SUFLOAT>(
-        std::pow(10., this->ui->hugeErrorSlider->value() / 100.));
+        std::pow(10., ui->hugeErrorSlider->value() / 100.));
   params.hsync_min_err  = static_cast<SUFLOAT>(
-        std::pow(10., this->ui->hsyncErrorRange->minimumPosition() / 100.));
+        std::pow(10., ui->hsyncErrorRange->minimumPosition() / 100.));
   params.hsync_max_err  = static_cast<SUFLOAT>(
-        std::pow(10., this->ui->hsyncErrorRange->maximumPosition() / 100.));
+        std::pow(10., ui->hsyncErrorRange->maximumPosition() / 100.));
   params.vsync_odd_trigger  = static_cast<SUSCOUNT>(
-        this->ui->vsyncTrainLengthSpin->value());
+        ui->vsyncTrainLengthSpin->value());
 
   params.hsync_len_tau = 9.5;
 
   params.line_len_tau  = static_cast<SUFLOAT>(
-        this->ui->lineLenTauSpin->value());
+        ui->lineLenTauSpin->value());
   params.hsync_fast_track_tau  = static_cast<SUFLOAT>(
-        this->ui->fastTrackTauSpin->value());
+        ui->fastTrackTauSpin->value());
   params.hsync_slow_track_tau  = static_cast<SUFLOAT>(
-        this->ui->slowTrackTauSpin->value());
+        ui->slowTrackTauSpin->value());
   params.agc_tau  = static_cast<SUFLOAT>(
-        this->ui->agcTauSpin->value());
+        ui->agcTauSpin->value());
 
   return true;
 }
@@ -592,20 +600,20 @@ TVProcessorTab::parseUi(
 void
 TVProcessorTab::feed(const SUCOMPLEX *data, unsigned int size)
 {
-  SUFLOAT k = this->ui->invertSyncCheck->isChecked() ? -1 : 1;
-  SUFLOAT dc = static_cast<SUFLOAT>(this->ui->dcSpin->value()) / 100;
+  SUFLOAT k = ui->invertSyncCheck->isChecked() ? -1 : 1;
+  SUFLOAT dc = static_cast<SUFLOAT>(ui->dcSpin->value()) / 100;
 
-  this->floatBuffer.resize(size);
+  m_floatBuffer.resize(size);
 
-  if (this->decisionMode == Decider::MODULUS) {
+  if (m_decisionMode == Decider::MODULUS) {
     for (unsigned i = 0; i < size; ++i)
-      this->floatBuffer[i] = k * SU_C_ABS(data[i]) + dc;
+      m_floatBuffer[i] = k * SU_C_ABS(data[i]) + dc;
   } else {
     for (unsigned i = 0; i < size; ++i)
-      this->floatBuffer[i] = k * SU_C_ARG(data[i]) / PI + dc;
+      m_floatBuffer[i] = k * SU_C_ARG(data[i]) / PI + dc;
   }
 
-  this->tvWorker->pushData(this->floatBuffer);
+  m_tvWorker->pushData(m_floatBuffer);
 
   emit tvProcessorData();
 }
@@ -615,29 +623,29 @@ TVProcessorTab::feed(const SUCOMPLEX *data, unsigned int size)
 void
 TVProcessorTab::onTVProcessorUiChanged(void)
 {
-  if (!this->editingTVProcessorParams) {
-    if (this->ui->ntscRadio->isChecked()) {
+  if (!m_editingTVProcessorParams) {
+    if (ui->ntscRadio->isChecked()) {
       struct sigutils_tv_processor_params params;
-      su_tv_processor_params_ntsc(&params, this->getSampleRateFloat());
-      this->refreshUi(params);
-    } else if (this->ui->palRadio->isChecked()) {
+      su_tv_processor_params_ntsc(&params, getSampleRateFloat());
+      refreshUi(params);
+    } else if (ui->palRadio->isChecked()) {
       struct sigutils_tv_processor_params params;
-      su_tv_processor_params_pal(&params, this->getSampleRateFloat());
-      this->refreshUi(params);
+      su_tv_processor_params_pal(&params, getSampleRateFloat());
+      refreshUi(params);
     }
 
-    this->emitParameters();
+    emitParameters();
   }
 
-  this->refreshUiState();
+  refreshUiState();
 }
 
 void
 TVProcessorTab::onToggleTVProcessor(void)
 {
-  this->tvProcessing = this->ui->enableTvButton->isChecked();
+  m_tvProcessing = ui->enableTvButton->isChecked();
 
-  if (this->tvProcessing) {
+  if (m_tvProcessing) {
     onTVProcessorUiChanged();
     emit startTVProcessor();
   } else {
@@ -648,9 +656,9 @@ TVProcessorTab::onToggleTVProcessor(void)
 void
 TVProcessorTab::onTVProcessorFrame(struct sigutils_tv_frame_buffer *frame)
 {
-  this->tvWorker->acknowledgeFrame();
-  this->ui->tvDisplay->putFrame(frame);
-  this->ui->tvDisplay->invalidate();
+  m_tvWorker->acknowledgeFrame();
+  ui->tvDisplay->putFrame(frame);
+  ui->tvDisplay->invalidate();
   emit tvProcessorDisposeFrame(frame);
 }
 
@@ -658,49 +666,49 @@ void
 TVProcessorTab::onTVProcessorParamsChanged(
     struct sigutils_tv_processor_params params)
 {
-  this->refreshUi(params);
+  refreshUi(params);
 }
 
 void
 TVProcessorTab::onTVProcessorError(QString error)
 {
-  QMessageBox::critical(this->ui->tvDisplay, "TV Processor error", error);
-  this->ui->enableTvButton->setChecked(false);
-  this->onToggleTVProcessor();
+  QMessageBox::critical(ui->tvDisplay, "TV Processor error", error);
+  ui->enableTvButton->setChecked(false);
+  onToggleTVProcessor();
 }
 
 void
 TVProcessorTab::onTVContrastChanged(void)
 {
-  this->ui->tvDisplay->setContrast(this->ui->contrastDial->value() / 100.);
+  ui->tvDisplay->setContrast(ui->contrastDial->value() / 100.);
 }
 
 void
 TVProcessorTab::onTVBrightnessChanged(void)
 {
-  this->ui->tvDisplay->setBrightness(this->ui->brightnessDial->value() / 100.);
+  ui->tvDisplay->setBrightness(ui->brightnessDial->value() / 100.);
 }
 
 void
 TVProcessorTab::onTVGammaChanged(void)
 {
-  qreal gamma = this->ui->gammaDial->value() / 25. + 1;
+  qreal gamma = ui->gammaDial->value() / 25. + 1;
 
   if (gamma < 1)
     gamma = -1. / (gamma - 2);
 
-  this->ui->tvDisplay->setGamma(gamma);
+  ui->tvDisplay->setGamma(gamma);
 }
 
 void
 TVProcessorTab::onTVAspectChanged(void)
 {
-  this->ui->tvDisplay->setRotation(this->ui->rotationDial->value());
-  this->ui->tvDisplay->setHorizontalFlip(
-        this->ui->flipHorizontalCheck->isChecked());
-  this->ui->tvDisplay->setVerticalFlip(
-        this->ui->flipVerticalCheck->isChecked());
-  this->ui->tvDisplay->setZoom(this->ui->tvZoomSpin->value());
+  ui->tvDisplay->setRotation(ui->rotationDial->value());
+  ui->tvDisplay->setHorizontalFlip(
+        ui->flipHorizontalCheck->isChecked());
+  ui->tvDisplay->setVerticalFlip(
+        ui->flipVerticalCheck->isChecked());
+  ui->tvDisplay->setZoom(ui->tvZoomSpin->value());
 }
 
 void
@@ -727,7 +735,7 @@ TVProcessorTab::onSaveSnapshot(void)
         ? fi.suffix()
         : SuWidgetsHelpers::extractFilterExtension(filter);
 
-    if (!this->ui->tvDisplay->saveToFile(
+    if (!ui->tvDisplay->saveToFile(
           SuWidgetsHelpers::ensureExtension(path, ext)))
       QMessageBox::critical(
             this,
@@ -741,24 +749,24 @@ TVProcessorTab::onSaveSnapshot(void)
 void
 TVProcessorTab::onAccumChanged(void)
 {
-  this->ui->tvDisplay->setAccumulate(this->ui->accumButton->isChecked());
-  this->ui->lpfButton->setEnabled(this->ui->accumButton->isChecked());
-  this->onEnableLPFChanged();
+  ui->tvDisplay->setAccumulate(ui->accumButton->isChecked());
+  ui->lpfButton->setEnabled(ui->accumButton->isChecked());
+  onEnableLPFChanged();
 }
 
 void
 TVProcessorTab::onEnableLPFChanged(void)
 {
-  this->ui->tvDisplay->setEnableSPLPF(this->ui->lpfButton->isChecked());
-  this->ui->accumSpinBox->setEnabled(
-        this->ui->lpfButton->isChecked() && this->ui->accumButton->isChecked());
-  this->onAccumSpinChanged();
+  ui->tvDisplay->setEnableSPLPF(ui->lpfButton->isChecked());
+  ui->accumSpinBox->setEnabled(
+        ui->lpfButton->isChecked() && ui->accumButton->isChecked());
+  onAccumSpinChanged();
 }
 
 void
 TVProcessorTab::onAccumSpinChanged(void)
 {
-  this->ui->tvDisplay->setAccumAlpha(
-          SU_SPLPF_ALPHA(this->ui->accumSpinBox->value() / 5.f));
+  ui->tvDisplay->setAccumAlpha(
+          SU_SPLPF_ALPHA(ui->accumSpinBox->value() / 5.f));
 }
 
