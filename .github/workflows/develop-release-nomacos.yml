@@ -1,4 +1,4 @@
-name: CI
+name: DevelopReleaseNoMacos
 
 on:
   push:
@@ -7,11 +7,10 @@ on:
     branches: [ master ]
   workflow_dispatch:
     inputs:
-      debug_enabled:
-        description: 'Build and run interactive shell'
+      plugin_list:
+        description: 'Plugins to include'
         required: false
-        default: false
-
+        default: ''
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -29,13 +28,13 @@ jobs:
 
     - name: Install dependencies
       uses: "./.github/actions/linuxdeps"
-
+      
     - name: Build & Distribute (SigDigger)
       run: |
         cd Scripts
         chmod a+x dist-appimage.sh
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PWD"/deploy-root/lib
-        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Release BRANCH=master ./dist-appimage.sh 
+        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Debug ./dist-appimage.sh ${{ github.event.inputs.plugin_list }}
         cd ..
 
     - name: Archive AppImage files
@@ -43,30 +42,6 @@ jobs:
       with:
         name: linux-latest-appimage
         path: Scripts/*.AppImage
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup interactive shell session
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-    
-    - name: Install dependencies
-      uses: "./.github/actions/macosdeps"
-      
-    - name: Build & Distribute (SigDigger)
-      run: |
-        cd Scripts
-        chmod a+x dist-dmg.sh
-        SIGDIGGER_EMBED_SOAPYSDR=1 BUILDTYPE=Release BRANCH=master ./dist-dmg.sh
-        cd ..
-
-    - name: Archive .DMG files
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos-latest-dmg
-        path: Scripts/*.dmg
 
   # Windows
   build-windows:
@@ -92,3 +67,25 @@ jobs:
         with:
           name: windows-latest-zip
           path: Scripts/SigDigger-*.zip
+
+  do_release:
+    needs: [ build-linux-appimage,  build-windows ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+
+      - name: Deploy 'latest' release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "SigDigger Development Build (${{steps.date.outputs.date}}, Windows and GNU/Linux)"
+          files: |
+            linux-latest-appimage/*.AppImage
+            windows-latest-zip/*.zip

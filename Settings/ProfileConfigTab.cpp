@@ -207,6 +207,8 @@ ProfileConfigTab::refreshSampRates()
 {
   QList<int> rates;
 
+  bool blocked = ui->sampleRateCombo->blockSignals(true);
+
   ui->sampleRateCombo->clear();
 
   if (m_currentConfigWidget != nullptr) {
@@ -224,6 +226,8 @@ ProfileConfigTab::refreshSampRates()
           ui->sampleRateCombo->count() > 0
           ? SAMPLE_RATE_CTL_HINT_LIST
           : SAMPLE_RATE_CTL_HINT_MANUAL);
+
+  ui->sampleRateCombo->blockSignals(blocked);
 }
 
 void
@@ -781,15 +785,18 @@ ProfileConfigTab::onChangeSourceType(int)
   QVariant data = ui->sourceTypeCombo->currentData();
   QString name = data.value<QString>();
 
-  if (name == nullptr)
+  if (name.isNull())
     return;
 
+  auto oldType = m_profile.getType();
+  m_profile.setType(name.toStdString());
+
   if (selectSourceType(name.toStdString())) {
-    m_profile.setType(name.toStdString());
     configChanged(true);
     refreshUiState();
     refreshFrequencyLimits();
   } else {
+    m_profile.setType(oldType);
     BLOCKSIG(ui->sourceTypeCombo, setCurrentIndex(m_currentConfigIndex));
   }
 }

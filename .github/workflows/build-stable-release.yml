@@ -10,12 +10,10 @@ env:
 jobs:
   # Installation of dependencies is too OS-dependent now, we don't
   # miss that much by particularizing this in a per-OS basis.
-  
   build-linux-appimage:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v2
-
+    - uses: actions/checkout@v4
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
 
@@ -83,9 +81,8 @@ jobs:
     - uses: actions/setup-python@v3
       with:
         python-version: '3.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
-    
-    - uses: actions/checkout@v2
 
+    - uses: actions/checkout@v4
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
@@ -164,7 +161,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -173,7 +170,7 @@ jobs:
           
       # SoapySDR
       - name: Checkout (SoapySDR)
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: pothosware/SoapySDR
           ref: refs/heads/master
@@ -190,7 +187,7 @@ jobs:
         
       # BatchDrake's fixed rtl-sdr-blog
       - name: Checkout (rtl-sdr-blog from BatchDrake)
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: BatchDrake/rtl-sdr-blog
           ref: refs/heads/feature/xfer-completion
@@ -207,7 +204,7 @@ jobs:
         
       # SoapyRTLSDR
       - name: Checkout (SoapyRTLSDR)
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: pothosware/SoapyRTLSDR
           ref: refs/heads/master
@@ -221,7 +218,6 @@ jobs:
         
       - name: Install (SoapyRTLSDR)
         run: /mingw64/bin/cmake --build  SoapyRTLSDR/build --config ${{env.BUILD_TYPE}} --target install
-        
 
       # SigDigger
       - name: Build & Distribute (SigDigger)
