@@ -485,18 +485,18 @@ TVProcessorTab::refreshUi(
   bool oldState = m_editingTVProcessorParams;
   m_editingTVProcessorParams = true;
 
-  ui->combFilterCheck->setChecked(params.enable_comb);
-  ui->agcCheck->setChecked(params.enable_agc);
-  ui->enableSyncCheck->setChecked(params.enable_sync);
-  ui->invertImageCheck->setChecked(params.reverse);
-  ui->swapCombFilterButton->setChecked(params.comb_reverse);
+  BLOCKSIG(ui->combFilterCheck, setChecked(params.enable_comb));
+  BLOCKSIG(ui->agcCheck, setChecked(params.enable_agc));
+  BLOCKSIG(ui->enableSyncCheck, setChecked(params.enable_sync));
+  BLOCKSIG(ui->invertImageCheck, setChecked(params.reverse));
+  BLOCKSIG(ui->swapCombFilterButton, setChecked(params.comb_reverse));
 
   if (!params.interlace) {
-    ui->nonInterlacedRadio->setChecked(true);
+    BLOCKSIG(ui->nonInterlacedRadio, setChecked(true));
   } else if (params.dominance) {
-    ui->fieldOneRadio->setChecked(true);
+    BLOCKSIG(ui->fieldOneRadio, setChecked(true));
   } else {
-    ui->fieldTwoRadio->setChecked(true);
+    BLOCKSIG(ui->fieldTwoRadio, setChecked(true));
   }
 
   refreshUiState();
@@ -517,30 +517,30 @@ TVProcessorTab::refreshUi(
   ui->vsyncSpin->setBestUnits(true);
   ui->linePeriodSpin->setBestUnits(true);
 
-  ui->timeTolSlider->setValue(
-        static_cast<int>(100 * std::log10(params.t_tol)));
-  ui->levelTolSlider->setValue(
-        static_cast<int>(100 * std::log10(params.l_tol)));
-  ui->geomTolSlider->setValue(
-        static_cast<int>(100 * std::log10(params.g_tol)));
+  BLOCKSIG(ui->timeTolSlider, setValue(
+        static_cast<int>(100 * std::log10(params.t_tol))));
+  BLOCKSIG(ui->levelTolSlider, setValue(
+        static_cast<int>(100 * std::log10(params.l_tol))));
+  BLOCKSIG(ui->geomTolSlider, setValue(
+        static_cast<int>(100 * std::log10(params.g_tol))));
 
-  ui->hsyncErrorRange->setMinimumPosition(
-        static_cast<int>(100 * std::log10(params.hsync_min_err)));
-  ui->hsyncErrorRange->setMaximumPosition(
-        static_cast<int>(100 * std::log10(params.hsync_max_err)));
-  ui->hugeErrorSlider->setValue(
-        static_cast<int>(100 * std::log10(params.hsync_huge_err)));
-  ui->vsyncTrainLengthSpin->setValue(
-        static_cast<int>(params.vsync_odd_trigger));
+  BLOCKSIG(ui->hsyncErrorRange, setMinimumPosition(
+        static_cast<int>(100 * std::log10(params.hsync_min_err))));
+  BLOCKSIG(ui->hsyncErrorRange, setMaximumPosition(
+        static_cast<int>(100 * std::log10(params.hsync_max_err))));
+  BLOCKSIG(ui->hugeErrorSlider, setValue(
+        static_cast<int>(100 * std::log10(params.hsync_huge_err))));
+  BLOCKSIG(ui->vsyncTrainLengthSpin, setValue(
+        static_cast<int>(params.vsync_odd_trigger)));
 
-  ui->agcTauSpin->setValue(
-        static_cast<qreal>(params.agc_tau));
-  ui->lineLenTauSpin->setValue(
-        static_cast<qreal>(params.line_len_tau));
-  ui->fastTrackTauSpin->setValue(
-        static_cast<qreal>(params.hsync_fast_track_tau));
-  ui->slowTrackTauSpin->setValue(
-        static_cast<qreal>(params.hsync_slow_track_tau));
+  BLOCKSIG(ui->agcTauSpin, setValue(
+        static_cast<qreal>(params.agc_tau)));
+  BLOCKSIG(ui->lineLenTauSpin, setValue(
+        static_cast<qreal>(params.line_len_tau)));
+  BLOCKSIG(ui->fastTrackTauSpin, setValue(
+        static_cast<qreal>(params.hsync_fast_track_tau)));
+  BLOCKSIG(ui->slowTrackTauSpin, setValue(
+        static_cast<qreal>(params.hsync_slow_track_tau)));
 
   m_editingTVProcessorParams = oldState;
 }
