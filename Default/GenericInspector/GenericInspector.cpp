@@ -404,6 +404,8 @@ GenericInspector::setTimeLimits(
 
 GenericInspector::~GenericInspector()
 {
+  if (this->ui != nullptr)
+    this->ui->aboutToDelete();
 }
 
 /////////////////////////////////// Slots /////////////////////////////////////

@@ -1760,6 +1760,16 @@ InspectorUI::onScOpenInspector(void)
         this->ui->scPreciseCheck->isChecked());
 }
 
+void
+InspectorUI::aboutToDelete()
+{
+  for (auto c : this->controls)
+    if (c != nullptr)
+      delete c;
+
+  this->controls.clear();
+}
+
 #if 0
 void
 InspectorUI::onInspectorRename(void)

@@ -232,6 +232,7 @@ namespace SigDigger {
       unsigned int getBandwidth(void) const;
       int getLo(void) const;
       void adjustSizes(void);
+      void aboutToDelete();
       float getZeroPoint(void) const;
       enum State getState(void) const;
 
