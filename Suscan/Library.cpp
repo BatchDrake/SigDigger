@@ -449,9 +449,8 @@ void
 Singleton::init_plugins()
 {
   Plugin *defPlug = Plugin::getDefaultPlugin();
-  QStringList plugins;
 
-  if (!defPlug->load())
+  if (defPlug == nullptr)
     throw Exception(
         "Failed to load the default plugin. "
         "Please report this error to "
@@ -459,30 +458,21 @@ Singleton::init_plugins()
         "https://github.com/BatchDrake/SigDigger/issues"
         "</a>");
 
-  plugins << suscan_confdb_get_local_path() + QString("/../plugins")
-          << suscan_confdb_get_system_path() + QString("/../plugins");
+  if (!Plugin::registerSigDiggerPluginService())
+    throw Exception(
+        "Failed to register SigDigger plugin service. "
+        "Please report this error to "
+        "<a href=\"https://github.com/BatchDrake/SigDigger/issues\">"
+        "https://github.com/BatchDrake/SigDigger/issues"
+        "</a>");
 
-  for (auto path : plugins) {
-    QDir dir(path);
-    QStringList files = dir.entryList(QStringList() << "*", QDir::Files);
-    auto asStd = path.toStdString();
-
-    for (auto file : files) {
-      auto fullPath = (path + "/" + file).toStdString();
-      auto plugin = Suscan::Plugin::make(fullPath.c_str());
-
-      if (plugin != nullptr) {
-        if (!plugin->load()) {
-          SU_WARNING("Plugin %s failed to load\n", fullPath.c_str());
-          delete plugin;
-        }
-
-        // TODO: register plugin here!!
-      } else {
-        printf("Failed to make plugin.\n");
-      }
-    }
-  }
+  if (!suscan_plugin_load_all())
+    throw Exception(
+        "Failed to load plugins. "
+        "Please report this error to "
+        "<a href=\"https://github.com/BatchDrake/SigDigger/issues\">"
+        "https://github.com/BatchDrake/SigDigger/issues"
+        "</a>");
 }
 
 bool

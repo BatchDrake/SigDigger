@@ -23,44 +23,21 @@
 #include <stdint.h>
 #include <sigutils/util/util.h>
 #include <sigutils/version.h>
+#include <suscan/plugin.h>
 
 #include <QSet>
 
-#define SUSCAN_SYM_PFX  SUSCAN_CPP_
+#define IF_LOADED_FROM_SIGDIGGER(plugin, suscanPlugin)     \
+  auto plugin = reinterpret_cast<Suscan::Plugin *>(        \
+    suscan_plugin_get_service(suscanPlugin, "SigDigger")); \
+                                                           \
+  if (plugin == nullptr) {                                 \
+    SU_ERROR(                                              \
+      "%s: plugin is being loaded outside SigDigger\n",    \
+      suscan_plugin_get_name(suscanPlugin));               \
+    return false;                                          \
+  } else
 
-#define SUSCAN_SYM(name)                       \
-  JOIN(SUSCAN_SYM_PFX, name)
-
-#define SUSCAN_SYM_NAME(name)                  \
-  STRINGIFY(SUSCAN_SYM(name))
-
-#define SUSCAN_DECLARE_SYM(type, name, val)    \
-  extern "C" {                                 \
-    extern type SUSCAN_SYM(name);              \
-    type SUSCAN_SYM(name) = val;               \
-  }
-
-#define SUSCAN_PLUGIN(name, desc)              \
-  SUSCAN_DECLARE_SYM(                          \
-    const char *,                              \
-    plugin_name,                               \
-    name)                                      \
-  SUSCAN_DECLARE_SYM(                          \
-    const char *,                              \
-    plugin_desc,                               \
-    desc)
-
-#define SUSCAN_PLUGIN_VERSION(x, y, z)         \
-  SUSCAN_DECLARE_SYM(                          \
-    uint32_t,                                  \
-    plugin_ver,                                \
-    SU_VER(x, y, z));
-
-#define SUSCAN_PLUGIN_API_VERSION(x, y, z)     \
-  SUSCAN_DECLARE_SYM(                          \
-    uint32_t,                                  \
-    api_ver,                                   \
-    SU_VER(x, y, z));
 
 namespace Suscan {
   class Plugin;
@@ -70,41 +47,36 @@ namespace Suscan {
 
   class Plugin {
       static Plugin *m_default;
-      void *m_handle = nullptr;
+      suscan_plugin_t *m_suscanPlugin = nullptr;
       std::string m_name;
       std::string m_path;
 
       std::string m_version;
       std::string m_description;
 
-      bool m_loaded = false;
-
-      void *resolveSym(std::string const &sym);
-
       Plugin();
-      Plugin(
-          std::string const &name,
-          std::string const &path,
-          std::string const &desc,
-          void *handle);
+      Plugin(suscan_plugin_t *);
 
 
       QSet<FeatureFactory *> m_factorySet;
 
     public:
-      static Plugin *make(const char *path);
       static Plugin *getDefaultPlugin();
+      static Plugin *make(suscan_plugin_t *);
+      static inline Plugin *cast(suscan_plugin_t *plugin) {
+        void *result = suscan_plugin_get_service(plugin, "SigDigger");
+        return reinterpret_cast<Plugin *>(result);
+      }
 
-      bool load(void);
-      bool canBeUnloaded(void) const;
-      bool unload(void);
+      static bool    registerSigDiggerPluginService();
+
+      void postLoad();
 
       ~Plugin();
 
       // Internal
       bool registerFactory(FeatureFactory *);
       bool unregisterFactory(FeatureFactory *);
-
   };
 }
 
