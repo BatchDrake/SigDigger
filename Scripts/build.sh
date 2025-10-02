@@ -45,6 +45,7 @@ function make_startup_script() {
     SELF=$(readlink -f "$0")
     HERE=${SELF%/*}
     export SUSCAN_CONFIG_PATH="${HERE}/share/suscan/config"
+    export SUSCAN_PLUGIN_PATH="${HERE}/share/suscan/plugins"
     export LD_LIBRARY_PATH="${HERE}/lib:${HERE}/lib64:$LD_LIBRARY_PATH"
     exec "${HERE}"/bin/'"$1"' "$@"' > "$DEPLOYROOT"/"$1"
     return $?

@@ -282,15 +282,21 @@ function build_plugins()
       cd "$plugin"
     fi
     
-    if [ ! -f "$plugin".pro ]; then
-      notice "Project does not look like a SigDigger plugin, skipped"
-      continue
+    if [ -f "$plugin".pro ]; then
+	try "  Running qmake ($plugin)..." $QMAKE_CMD "$plugin".pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" SIGDIGGER_PREFIX="$DEPLOYROOT/usr" PLUGIN_DIRECTORY="$PLUGINTARGET"
+	try "  Building ($plugin)... " $MAKE -j $THREADS
+	try "  Installing ($plugin)... " $MAKE install
+    elif [ -f "CMakeLists.txt" ]; then
+	try "  Creating plugin directory ($plugin)..." mkdir build
+	cd build
+	try "  Running CMake ($plugin)..." cmake $CMAKE_SUSCAN_EXTRA_ARGS -DSUWIDGETS_PREFIX="$DEPLOYROOT/usr" -DSIGDIGGER_PREFIX="$DEPLOYROOT/usr" -DPLUGIN_DIRECTORY="$PLUGINTARGET" ..
+	cd ..
+	try "  Building pluging ($plugin)... " $MAKE -j $THREADS -C build
+	try "  Installing ($plugin)... "  $MAKE -j $THREADS -C build install
+    else
+	notice "Project does not look like a SigDigger plugin, skipped"
+	continue
     fi
-
-    try "  Running qmake ($plugin)..." $QMAKE_CMD "$plugin".pro $QMAKE_SIGDIGGER_EXTRA_ARGS "CONFIG += $QMAKE_BUILDTYPE" SUWIDGETS_PREFIX="$DEPLOYROOT/usr" SIGDIGGER_PREFIX="$DEPLOYROOT/usr" PLUGIN_DIRECTORY="$PLUGINTARGET"
-    try "  Building ($plugin)... " $MAKE -j $THREADS
-    try "  Installing ($plugin)... " $MAKE install
-
   done
 }
 

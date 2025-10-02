@@ -25,6 +25,7 @@ HERE=${SELF%/*}
 ARGV0=`basename "$ARGV0"`
 
 export SUSCAN_CONFIG_PATH="${HERE}/../share/suscan/config"
+export SUSCAN_PLUGIN_PATH="${HERE}/../share/suscan/plugins"
 export LD_LIBRARY_PATH="${HERE}/../lib:${HERE}/../lib64:$LD_LIBRARY_PATH"
 
 SIGDIGGER_EXEC="${HERE}"/SigDigger.app
