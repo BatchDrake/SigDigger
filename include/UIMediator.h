@@ -139,6 +139,8 @@ namespace SigDigger {
     QList<InspectionWidget *>          m_inspectors;
     QMap<uint32_t, InspectionWidget *> m_inspTable;
 
+    bool                               m_uiInitialized = false;
+
     // Refactored methods
     void initSidePanel();
     void initToolBarWidgets();

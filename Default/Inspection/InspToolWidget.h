@@ -44,9 +44,9 @@ namespace SigDigger {
   class InspToolWidgetConfig : public Suscan::Serializable {
   public:
     bool collapsed = true;
-    std::string inspectorClass = "psk";
-    std::string palette = "Suscan";
-    std::string inspFactory = "GenericInspector";
+    std::string inspectorClass    = "psk";
+    std::string palette           = "Suscan";
+    std::string inspFactory       = "GenericInspector";
     SUFLOAT autoSquelchTriggerSNR = SIGDIGGER_DEFAULT_SQUELCH_TRIGGER;
     unsigned int paletteOffset;
     int paletteContrast;
@@ -77,16 +77,16 @@ namespace SigDigger {
 
     // TODO: Allow multiple TimeWindows
     TimeWindow *m_timeWindow = nullptr;
-    qreal m_timeWindowFs = 1;
-    qint64 m_demodFreq = 0;
-    SUFLOAT m_squelch = 0;
-    SUFLOAT m_hangLevel = 0;
-    bool m_autoSquelch = false;
-    bool m_autoSquelchTriggered = false;
+    qreal       m_timeWindowFs = 1;
+    qint64      m_demodFreq = 0;
+    SUFLOAT     m_squelch = 0;
+    SUFLOAT     m_hangLevel = 0;
+    bool        m_autoSquelch = false;
+    bool        m_autoSquelchTriggered = false;
 
-    Suscan::AnalyzerRequestTracker *m_tracker = nullptr;
+    Suscan::AnalyzerRequestTracker *m_tracker  = nullptr;
     Suscan::Analyzer               *m_analyzer = nullptr;
-    bool                            m_opened = false;
+    bool                            m_opened   = false;
     Suscan::AnalyzerRequest         m_request;
     // UI State
     State m_state = DETACHED;
@@ -115,6 +115,7 @@ namespace SigDigger {
     void refreshCaptureInfo();
     void openTimeWindow();
     void transferHistory();
+    void loadDemodulators();
 
     void applySourceInfo(Suscan::AnalyzerSourceInfo const &info);
     void setDemodFrequency(qint64);

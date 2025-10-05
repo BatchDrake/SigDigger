@@ -446,7 +446,7 @@ Singleton::init_tle()
 }
 
 void
-Singleton::init_plugins()
+Singleton::init_default_plugin()
 {
   Plugin *defPlug = Plugin::getDefaultPlugin();
 
@@ -465,7 +465,12 @@ Singleton::init_plugins()
         "<a href=\"https://github.com/BatchDrake/SigDigger/issues\">"
         "https://github.com/BatchDrake/SigDigger/issues"
         "</a>");
+}
 
+
+void
+Singleton::init_plugins()
+{
   if (!suscan_plugin_load_all())
     throw Exception(
         "Failed to load plugins. "
@@ -909,6 +914,22 @@ Singleton::removeSpectrumUnit(std::string const &name)
     SpectrumUnit bm = this->spectrumUnits[name];
     this->spectrumUnits.remove(name);
   }
+}
+
+std::list<std::pair<std::string, std::string>>
+Singleton::getInspectorDemodulators() const
+{
+  std::list<std::pair<std::string, std::string>> demods;
+  const struct suscan_inspector_interface **iface_list = nullptr;
+  unsigned int iface_count = 0;
+
+  suscan_inspector_interface_get_list(&iface_list, &iface_count);
+
+  for (unsigned i = 0; i < iface_count; ++i)
+    demods.push_back(
+          std::pair(iface_list[i]->name, iface_list[i]->desc));
+
+  return demods;
 }
 
 std::vector<Object>::const_iterator

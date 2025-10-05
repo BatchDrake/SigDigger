@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>375</width>
-    <height>714</height>
+    <width>354</width>
+    <height>418</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,13 +29,6 @@
    <property name="spacing">
     <number>3</number>
    </property>
-   <item row="3" column="0" colspan="2">
-    <widget class="QCheckBox" name="preciseCheck">
-     <property name="text">
-      <string>Precise channel centering</string>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_18">
      <property name="text">
@@ -43,24 +36,102 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="FrequencySpinBox" name="bandwidthSpin"/>
-   </item>
-   <item row="6" column="0" colspan="2">
-    <widget class="QPushButton" name="openInspectorButton">
-     <property name="styleSheet">
-      <string notr="true">background-color: #005f00;
+   <item row="5" column="0" colspan="2">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Streaming inspection</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_8">
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>6</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>6</number>
+      </property>
+      <property name="spacing">
+       <number>3</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Demodulator</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="demodCombo">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Inspector type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="inspectorCombo">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" rowspan="2">
+       <widget class="QPushButton" name="openInspectorButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <bold>true</bold>
+          <kerning>true</kerning>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: #005f00;
 color: white;
-height: 50px;
 font-weight: bold;</string>
-     </property>
-     <property name="text">
-      <string>Open inspector</string>
-     </property>
+        </property>
+        <property name="text">
+         <string>&amp;Open</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="FrequencySpinBox" name="frequencySpinBox"/>
    </item>
    <item row="0" column="0" colspan="2">
     <widget class="QCheckBox" name="checkBox_5">
@@ -79,114 +150,17 @@ font-weight: bold;</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Streaming inspection</string>
+   <item row="1" column="1">
+    <widget class="FrequencySpinBox" name="frequencySpinBox"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="FrequencySpinBox" name="bandwidthSpin"/>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QCheckBox" name="preciseCheck">
+     <property name="text">
+      <string>Precise channel centering</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_8">
-      <property name="leftMargin">
-       <number>6</number>
-      </property>
-      <property name="topMargin">
-       <number>6</number>
-      </property>
-      <property name="rightMargin">
-       <number>6</number>
-      </property>
-      <property name="bottomMargin">
-       <number>6</number>
-      </property>
-      <property name="horizontalSpacing">
-       <number>1</number>
-      </property>
-      <property name="verticalSpacing">
-       <number>6</number>
-      </property>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="inspectorCombo">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0" colspan="2">
-       <widget class="QRadioButton" name="rawRadio">
-        <property name="text">
-         <string>Pass-through (no demodulation)</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup</string>
-        </attribute>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QRadioButton" name="pskRadio">
-        <property name="text">
-         <string>Digital &amp;Phase demodulator (PSK)</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup</string>
-        </attribute>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QRadioButton" name="audioRadio">
-        <property name="text">
-         <string>&amp;Audio demodulator</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup</string>
-        </attribute>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QRadioButton" name="fskRadio">
-        <property name="text">
-         <string>Digital &amp;FM demodulator (FSK)</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup</string>
-        </attribute>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Inspector type</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QRadioButton" name="askRadio">
-        <property name="text">
-         <string>Digital &amp;AM demodulator (ASK)</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup</string>
-        </attribute>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QRadioButton" name="powerRadio">
-        <property name="text">
-         <string>&amp;Power meter</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup</string>
-        </attribute>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
    <item row="4" column="0" colspan="2">

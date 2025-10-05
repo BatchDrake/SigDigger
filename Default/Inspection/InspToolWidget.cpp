@@ -115,6 +115,7 @@ InspToolWidget::refreshInspectorCombo()
 void
 InspToolWidget::applyConfig()
 {
+  loadDemodulators();
   refreshInspectorCombo();
   setInspectorClass(m_panelConfig->inspectorClass);
   setPrecise(m_panelConfig->precise);
@@ -155,35 +156,11 @@ void
 InspToolWidget::connectAll()
 {
   connect(
-        m_ui->askRadio,
-        SIGNAL(toggled(bool)),
+        m_ui->demodCombo,
+        SIGNAL(activated(int)),
         this,
         SLOT(onInspClassChanged()));
-  connect(
-        m_ui->powerRadio,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onInspClassChanged()));
-  connect(
-        m_ui->pskRadio,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onInspClassChanged()));
-  connect(
-        m_ui->fskRadio,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onInspClassChanged()));
-  connect(
-        m_ui->audioRadio,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onInspClassChanged()));
-  connect(
-        m_ui->rawRadio,
-        SIGNAL(toggled(bool)),
-        this,
-        SLOT(onInspClassChanged()));
+
   connect(
         m_ui->bandwidthSpin,
         SIGNAL(valueChanged(double)),
@@ -368,35 +345,22 @@ InspToolWidget::getPrecise() const
 void
 InspToolWidget::setInspectorClass(std::string const &cls)
 {
-  if (cls == "psk")
-    m_ui->pskRadio->setChecked(true);
-  else if (cls == "fsk")
-    m_ui->fskRadio->setChecked(true);
-  else if (cls == "ask")
-    m_ui->askRadio->setChecked(true);
-  else if (cls == "audio")
-    m_ui->audioRadio->setChecked(true);
-  else if (cls == "raw")
-    m_ui->rawRadio->setChecked(true);
-  else if (cls == "power")
-    m_ui->powerRadio->setChecked(true);
+  auto qInspClass = QString::fromStdString(cls);
+
+  auto ndx = m_ui->demodCombo->findData(qInspClass);
+
+  if (ndx >= 0)
+    m_ui->demodCombo->setCurrentIndex(ndx);
+  else
+    m_ui->demodCombo->setCurrentIndex(-1);
 }
 
 std::string
 InspToolWidget::getInspectorClass() const
 {
-  if (m_ui->pskRadio->isChecked())
-    return "psk";
-  else if (m_ui->fskRadio->isChecked())
-    return "fsk";
-  else if (m_ui->askRadio->isChecked())
-    return "ask";
-  else if (m_ui->audioRadio->isChecked())
-    return "audio";
-  else if (m_ui->rawRadio->isChecked())
-    return "raw";
-  else if (m_ui->powerRadio->isChecked())
-    return "power";
+  if (m_ui->demodCombo->currentIndex() >= 0)
+    return m_ui->demodCombo->currentData().value<QString>().toStdString();
+
   return "";
 }
 
@@ -731,6 +695,19 @@ InspToolWidget::openInspector(
   mediator()->openInspectorTab(inspFactory, inspClass, ch, precise);
 }
 
+void
+InspToolWidget::loadDemodulators()
+{
+  auto demods = Suscan::Singleton::get_instance()->getInspectorDemodulators();
+
+  BLOCKSIG(m_ui->demodCombo, clear());
+
+  for (auto &demod : demods)
+    BLOCKSIG(m_ui->demodCombo, addItem(
+          QString::fromStdString(demod.second),
+          QString::fromStdString(demod.first)));
+}
+
 InspToolWidget::InspToolWidget
 (InspToolWidgetFactory *factory, UIMediator *mediator, QWidget *parent) :
   ToolWidget(factory, mediator, parent),
@@ -743,6 +720,7 @@ InspToolWidget::InspToolWidget
   assertConfig();
   setState(DETACHED);
   refreshUi();
+  loadDemodulators();
   connectAll();
 
   setProperty("collapsed", m_panelConfig->collapsed);

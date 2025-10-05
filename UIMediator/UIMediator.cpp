@@ -744,10 +744,6 @@ UIMediator::UIMediator(QMainWindow *owner, AppUI *ui)
 
   assertConfig();
 
-  // Now we can create UI components
-  initSidePanel();
-  initToolBarWidgets();
-
   // Add baseband analyzer tab
   m_ui->main->mainTab->addTab(m_ui->spectrum, "Radio spectrum");
 
@@ -1160,6 +1156,13 @@ UIMediator::refreshQthProperties()
 void
 UIMediator::applyConfig()
 {
+  // Check if all plugin widgets have been loaded.
+  if (!m_uiInitialized) {
+    initSidePanel();
+    initToolBarWidgets();
+    m_uiInitialized = true;
+  }
+
   // Apply window config
   QRect rec = QGuiApplication::primaryScreen()->geometry();
   unsigned int savedBw = m_appConfig->bandwidth;

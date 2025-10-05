@@ -64,7 +64,7 @@ Application::Application(QWidget *parent) : QMainWindow(parent), m_ui(this)
 {
   Suscan::Singleton *sing = Suscan::Singleton::get_instance();
 
-  sing->init_plugins();
+  sing->init_default_plugin();
 
   m_mediator = new UIMediator(this, &m_ui);
 

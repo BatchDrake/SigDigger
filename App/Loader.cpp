@@ -67,6 +67,8 @@ InitThread::run()
     sing->init_tle();
     emit change("Loading auto gains");
     sing->init_autogains();
+    emit change("Loading plugins...");
+    sing->init_plugins();
     emit change("Loading UI config");
     sing->init_ui_config();
     emit change("Loading profile history");

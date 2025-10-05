@@ -313,6 +313,7 @@ namespace Suscan {
     static QString normalizeTLEName(QString const &);
 
   public:
+    void init_default_plugin();
     void init_sources();
     void init_estimators();
     void init_spectrum_sources();
@@ -361,6 +362,8 @@ namespace Suscan {
     bool haveQth() const;
     Location getQth() const;
     void setQth(Location const &);
+
+    std::list<std::pair<std::string, std::string>> getInspectorDemodulators() const;
 
     std::vector<Object>::const_iterator getFirstPalette() const;
     std::vector<Object>::const_iterator getLastPalette() const;
