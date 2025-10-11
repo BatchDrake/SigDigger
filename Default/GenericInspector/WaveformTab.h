@@ -12,18 +12,20 @@ namespace Ui {
   class WaveformTab;
 }
 
+class Waveform;
+
 namespace SigDigger {
   class WaveformTab : public QWidget
   {
     Q_OBJECT
 
-    qreal fs = 1;
-    std::vector<SUCOMPLEX> buffer;
-    bool recording = false;
+    qreal m_fs = 1;
+    std::vector<SUCOMPLEX> m_buffer;
+    bool m_recording = false;
 
-    bool hadSelectionBefore = true; // Yep. This must be true.
-    bool adjusting = false;
-    bool firstShow = true;
+    bool m_hadSelectionBefore = true; // Yep. This must be true.
+    bool m_adjusting = false;
+    bool m_firstShow = true;
 
     const SUCOMPLEX *getDisplayData(void) const;
     size_t getDisplayDataLength(void) const;
@@ -44,6 +46,7 @@ namespace SigDigger {
     void connectFineTuneSelWidgets(void);
     void connectAll(void);
     void clear(void);
+    void scrollToLast(Waveform *wf);
 
   public:
     explicit WaveformTab(QWidget *parent = 0);
@@ -63,7 +66,7 @@ namespace SigDigger {
     inline bool
     isRecording(void) const
     {
-      return this->recording;
+      return m_recording;
     }
 
     void feed(const SUCOMPLEX *, unsigned int);
