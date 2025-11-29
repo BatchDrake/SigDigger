@@ -29,6 +29,8 @@
 #include <QMessageBox>
 #include <complex.h>
 #include <QToolTip>
+#include <util/npy.h>
+
 #define MAX_LINE_SIZE  4096
 #define TIMER_INTERVAL_MS 100
 using namespace SigDigger;
@@ -40,38 +42,38 @@ RMSViewTab::RMSViewTab(QWidget *parent, QTcpSocket *socket) :
 {
   setlocale(LC_ALL, "C");
 
-  this->ui->setupUi(this);
+  ui->setupUi(this);
 
-  this->ui->waveform->setData(&this->data);
-  this->ui->waveform->setHorizontalUnits("s");
-  this->ui->waveform->setAutoFitToEnvelope(false);
-  this->ui->waveform->setHorizontalUnits("unix");
-  this->onToggleModes();
+  ui->waveform->setData(&m_data);
+  ui->waveform->setHorizontalUnits("s");
+  ui->waveform->setAutoFitToEnvelope(false);
+  ui->waveform->setHorizontalUnits("unix");
+  onToggleModes();
 
-  this->ui->averageTimeLabel->setVisible(false);
-  this->ui->averageTimeSpinBox->setVisible(false);
+  ui->averageTimeLabel->setVisible(false);
+  ui->averageTimeSpinBox->setVisible(false);
 
 
-  this->timer.start(TIMER_INTERVAL_MS);
+  m_timer.start(TIMER_INTERVAL_MS);
 
   if (socket != nullptr)
-    this->processSocketData();
+    processSocketData();
 
-  this->connectAll();
+  connectAll();
 
 }
 
 void
 RMSViewTab::setIntegrationTimeMode(qreal min, qreal max)
 {
-  this->ui->stopButton->setIcon(QIcon(":/icons/start-capture.png"));
-  this->ui->stopButton->setToolTip("Toggle capture on / off");
+  ui->stopButton->setIcon(QIcon(":/icons/start-capture.png"));
+  ui->stopButton->setToolTip("Toggle capture on / off");
 
-  this->ui->timeSpinBox->setTimeMin(min);
-  this->ui->timeSpinBox->setTimeMax(max);
+  ui->timeSpinBox->setTimeMin(min);
+  ui->timeSpinBox->setTimeMax(max);
 
-  this->ui->averageTimeLabel->setVisible(true);
-  this->ui->averageTimeSpinBox->setVisible(true);
+  ui->averageTimeLabel->setVisible(true);
+  ui->averageTimeSpinBox->setVisible(true);
 
   ui->intSpin->setValue(1);
   ui->stackedWidget->setCurrentIndex(1);
@@ -83,7 +85,7 @@ RMSViewTab::getCurrentTimeDelta() const
   if (intTimeMode())
     return ui->intSpin->value() * ui->timeSpinBox->timeValue();
   else
-    return ui->intSpin->value() / rate;
+    return ui->intSpin->value() / m_rate;
 }
 
 bool
@@ -113,21 +115,21 @@ RMSViewTab::getIntegrationTimeHint() const
 void
 RMSViewTab::setSampleRate(qreal rate)
 {
-  this->rate = rate;
-  this->ui->waveform->setSampleRate(rate / this->ui->intSpin->value());
+  rate = rate;
+  ui->waveform->setSampleRate(rate / ui->intSpin->value());
 
   bool blocked = ui->averageTimeSpinBox->blockSignals(true);
-  this->ui->averageTimeSpinBox->setTimeMin(1. / rate);
-  this->ui->averageTimeSpinBox->setTimeMax(3600);
-  this->ui->averageTimeSpinBox->setSampleRate(rate);
-  this->ui->averageTimeSpinBox->setBestUnits(false);
+  ui->averageTimeSpinBox->setTimeMin(1. / rate);
+  ui->averageTimeSpinBox->setTimeMax(3600);
+  ui->averageTimeSpinBox->setSampleRate(rate);
+  ui->averageTimeSpinBox->setBestUnits(false);
   ui->averageTimeSpinBox->blockSignals(blocked);
 }
 
 void
 RMSViewTab::feed(qreal timeStamp, qreal mag)
 {
-  bool firstTime = this->data.size() == 0;
+  bool firstTime = m_data.size() == 0;
 
   if (firstTime) {
     bool shouldHavePoint = ui->intSpin->value() > 1;
@@ -145,29 +147,29 @@ RMSViewTab::feed(qreal timeStamp, qreal mag)
     }
   }
 
-  this->integrateMeasure(timeStamp, SCAST(SUFLOAT, mag));
+  integrateMeasure(timeStamp, SCAST(SUFLOAT, mag));
 
-  if (this->data.size() > 0) {
+  if (m_data.size() > 0) {
     QDateTime date;
-    date.setSecsSinceEpoch(static_cast<qint64>(this->last));
-    this->ui->lastLabel->setText("Last: " + date.toString());
+    date.setSecsSinceEpoch(static_cast<qint64>(m_last));
+    ui->lastLabel->setText("Last: " + date.toString());
 
-    if (this->data.size() == 1) {
-      this->first = this->last;
-      if (!this->ui->dateTimeEdit->isEnabled())
-        this->ui->dateTimeEdit->setDateTime(
-              QDateTime::fromSecsSinceEpoch(this->first));
+    if (m_data.size() == 1) {
+      m_first = m_last;
+      if (!ui->dateTimeEdit->isEnabled())
+        ui->dateTimeEdit->setDateTime(
+              QDateTime::fromSecsSinceEpoch(m_first));
 
       refreshUi();
 
-      this->ui->sinceLabel->setText("Since: " + date.toString());
+      ui->sinceLabel->setText("Since: " + date.toString());
     }
 
     if (firstTime) {
-      qint64 width = this->ui->waveform->getVerticalAxisWidth();
-      this->ui->waveform->zoomHorizontal(
+      qint64 width = ui->waveform->getVerticalAxisWidth();
+      ui->waveform->zoomHorizontal(
             -width,
-            static_cast<qint64>(this->ui->waveform->size().width()) - width);
+            static_cast<qint64>(ui->waveform->size().width()) - width);
     }
   }
 }
@@ -175,11 +177,11 @@ RMSViewTab::feed(qreal timeStamp, qreal mag)
 void
 RMSViewTab::setColorConfig(ColorConfig const &cfg)
 {
-  this->ui->waveform->setBackgroundColor(cfg.spectrumBackground);
-  this->ui->waveform->setForegroundColor(cfg.spectrumForeground);
-  this->ui->waveform->setAxesColor(cfg.spectrumAxes);
-  this->ui->waveform->setTextColor(cfg.spectrumText);
-  this->ui->waveform->setSelectionColor(cfg.selection);
+  ui->waveform->setBackgroundColor(cfg.spectrumBackground);
+  ui->waveform->setForegroundColor(cfg.spectrumForeground);
+  ui->waveform->setAxesColor(cfg.spectrumAxes);
+  ui->waveform->setTextColor(cfg.spectrumText);
+  ui->waveform->setSelectionColor(cfg.selection);
 }
 // https://stackoverflow.com/questions/12966957/is-there-an-equivalent-in-c-of-phps-explode-function
 
@@ -200,7 +202,7 @@ void
 RMSViewTab::refreshUi()
 {
   bool haveCustomDateTime = false;
-  qreal first = this->data.size() > 0 ? this->first : SCAST(qreal, time(nullptr));
+  qreal first = m_data.size() > 0 ? m_first : SCAST(qreal, time(nullptr));
 
   switch (ui->timeScaleCombo->currentIndex()) {
     case 0:
@@ -229,24 +231,20 @@ RMSViewTab::saveToMatlab(QString const &path)
 {
   FILE *fp;
 
-  if ((fp = fopen(path.toStdString().c_str(), "w")) == nullptr) {
-    QMessageBox::critical(
-          this,
-          "Save data to MATLAB file",
-          "Failed to save data to MATLAB file: "
-          + QString(strerror(errno)));
-    return false;
-  }
+  if ((fp = fopen(path.toStdString().c_str(), "w")) == nullptr)
+    throw std::runtime_error((
+      "Failed to save data to MATLAB file: " + QString(strerror(errno))
+    ).toStdString());
 
-  fprintf(fp, "RATE=%.9f;\n", this->rate / this->ui->intSpin->value());
-  fprintf(fp, "TIMESTAMP=%.6f;\n", this->first);
+  fprintf(fp, "RATE=%.9f;\n", m_rate / ui->intSpin->value());
+  fprintf(fp, "TIMESTAMP=%.6f;\n", m_first);
   fprintf(fp, "X=[\n");
-  for (size_t i = 0; i < this->data.size(); ++i)
+  for (size_t i = 0; i < m_data.size(); ++i)
     fprintf(
           fp,
           "  %.9e, %.9f\n",
-          SU_C_REAL(this->data[i]),
-          SU_C_IMAG(this->data[i]));
+          SU_C_REAL(m_data[i]),
+          SU_C_IMAG(m_data[i]));
 
   fprintf(fp, "];\n");
   fclose(fp);
@@ -254,44 +252,109 @@ RMSViewTab::saveToMatlab(QString const &path)
   return true;
 }
 
+bool
+RMSViewTab::saveToCSV(QString const &path)
+{
+  FILE *fp;
+
+  if ((fp = fopen(path.toStdString().c_str(), "w")) == nullptr)
+    throw std::runtime_error((
+      "Failed to save data to CSV file: " + QString(strerror(errno))
+    ).toStdString());
+
+  for (size_t i = 0; i < m_data.size(); ++i)
+    fprintf(
+          fp,
+          "%.9e;%.9f\n",
+          SU_C_REAL(m_data[i]),
+          SU_C_IMAG(m_data[i]));
+  fclose(fp);
+
+  return true;
+}
+
+bool
+RMSViewTab::saveToNPY(QString const &path)
+{
+  FILE *fp = nullptr;
+  bool ok = false;
+  npy_file_t *npy = nullptr;
+  std::string stdPath = path.toStdString();
+  const char *strPath = stdPath.c_str();
+
+  QString exception;
+
+  if ((fp = fopen(strPath, "w")) == nullptr) {
+    exception = "Failed to open NPY file: " + QString(strerror(errno));
+    goto done;
+  }
+
+  if ((npy = npy_file_new(fp, NPY_DTYPE_FLOAT32, 1, 2, 0)) == nullptr) {
+    exception = "Failed to initialize NPY headers: " + QString(strerror(errno));
+    goto done;
+  }
+
+  if (!npy_file_write_float32(
+        npy,
+        reinterpret_cast<SUFLOAT *>(m_data.data()),
+        m_data.size() * 2)) {
+    exception = "Failed to write data to NPY file: " + QString(strerror(errno));
+    goto done;
+  }
+
+  ok = true;
+
+done:
+  if (!ok)
+    throw std::runtime_error(exception.toStdString());
+
+  if (npy != nullptr)
+    npy_file_destroy(npy);
+
+  if (fp != nullptr)
+    fclose(fp);
+
+  return ok;
+}
+
 void
 RMSViewTab::integrateMeasure(qreal timestamp, SUFLOAT mag)
 {
-  int intLen = this->ui->intSpin->value();
+  int intLen = ui->intSpin->value();
 
-  this->energy_accum += mag;
+  m_energyAccum += mag;
 
-  if (++this->accum_ctr == intLen) {
-    this->energy_accum /= intLen;
-    this->data.push_back(
-          this->energy_accum
-          + SU_I * SU_ASFLOAT(SU_POWER_DB_RAW(this->energy_accum)));
-    this->last = timestamp;
-    this->accum_ctr = 0;
-    this->energy_accum = 0;
-    this->ui->waveform->refreshData();
-    if (this->ui->autoFitButton->isChecked())
-      this->fitVertical();
-    this->ui->waveform->invalidate();
+  if (++m_accumCtr == intLen) {
+    m_energyAccum /= intLen;
+    m_data.push_back(
+          m_energyAccum
+          + SU_I * SU_ASFLOAT(SU_POWER_DB_RAW(m_energyAccum)));
+    m_last = timestamp;
+    m_accumCtr = 0;
+    m_energyAccum = 0;
+    ui->waveform->refreshData();
+    if (ui->autoFitButton->isChecked())
+      fitVertical();
+    ui->waveform->invalidate();
   } else {
     if (m_haveCurrSamplePoint) {
-      if (this->data.size() == 0) {
-        mag = this->energy_accum / this->accum_ctr;
+      if (m_data.size() == 0) {
+        mag = m_energyAccum / m_accumCtr;
       } else {
-        SUFLOAT prev = SU_C_REAL(this->data[this->data.size() - 1]);
-        mag = (prev * (intLen - this->accum_ctr) + this->energy_accum) / intLen;
+        SUFLOAT prev = SU_C_REAL(m_data[m_data.size() - 1]);
+        mag = (prev * (intLen - m_accumCtr) + m_energyAccum) / intLen;
       }
 
       SUCOMPLEX curr = mag + SU_I * SU_ASFLOAT(SU_POWER_DB_RAW(mag));
       m_currSampleIterator->point = curr;
-      m_currSampleIterator->t = this->data.size() * getCurrentTimeDelta();
+      m_currSampleIterator->t = m_data.size() * getCurrentTimeDelta();
       m_currSampleIterator = ui->waveform->refreshPoint(m_currSampleIterator);
     }
   }
 }
 
 bool
-RMSViewTab::parseLine(void)
+RMSViewTab::parseLine()
 {
   SUFLOAT mag, db;
   QDateTime date;
@@ -299,11 +362,11 @@ RMSViewTab::parseLine(void)
   qreal usec;
   qreal rate;
   std::vector<std::string> fields;
-  std::istringstream iss(this->line);
+  std::istringstream iss(m_line);
 
   // Description line allows commas and stuff
-  if (line.compare(0, 5, "DESC,") == 0) {
-    emit titleChanged(QString(line.c_str() + 5));
+  if (m_line.compare(0, 5, "DESC,") == 0) {
+    emit titleChanged(QString(m_line.c_str() + 5));
     return true;
   }
 
@@ -315,7 +378,7 @@ RMSViewTab::parseLine(void)
       if (sscanf(fields[1].c_str(), "%lf", &rate) < 1)
         return false;
 
-      this->setSampleRate(rate);
+      setSampleRate(rate);
     } else {
       return false;
     }
@@ -329,7 +392,7 @@ RMSViewTab::parseLine(void)
     if (sscanf(fields[3].c_str(), "%g", &db) < 1)
       return false;
 
-    this->feed(SCAST(qreal, sec) + usec, SCAST(qreal, mag));
+    feed(SCAST(qreal, sec) + usec, SCAST(qreal, mag));
 
     return true;
   }
@@ -338,24 +401,24 @@ RMSViewTab::parseLine(void)
 }
 
 void
-RMSViewTab::processSocketData(void)
+RMSViewTab::processSocketData()
 {
   char c;
 
-  while (this->socket->bytesAvailable() > 0) {
-    if (this->socket->read(&c, 1) < 1) {
-      this->disconnectSocket();
+  while (socket->bytesAvailable() > 0) {
+    if (socket->read(&c, 1) < 1) {
+      disconnectSocket();
       return;
     }
 
     if (c == '\n') {
-      this->parseLine();
-      this->line.clear();
+      parseLine();
+      m_line.clear();
     } else if (isprint(c)) {
-      this->line += c;
-      if (this->line.size() >= MAX_LINE_SIZE) {
-        this->line.clear();
-        this->disconnect();
+      m_line += c;
+      if (m_line.size() >= MAX_LINE_SIZE) {
+        m_line.clear();
+        disconnect();
         QMessageBox::critical(
               this,
               "Max line size exceeded",
@@ -366,50 +429,89 @@ RMSViewTab::processSocketData(void)
 }
 
 void
-RMSViewTab::disconnectSocket(void)
+RMSViewTab::disconnectSocket()
 {
-  if (this->socket != nullptr) {
-    this->socket->close();
-    delete this->socket;
-    this->socket = nullptr;
+  if (socket != nullptr) {
+    socket->close();
+    delete socket;
+    socket = nullptr;
 
-    this->ui->stopButton->setEnabled(false);
-    this->ui->stopButton->setChecked(false);
-    this->ui->stopButton->setIcon(QIcon(":/icons/offline.png"));
+    ui->stopButton->setEnabled(false);
+    ui->stopButton->setChecked(false);
+    ui->stopButton->setIcon(QIcon(":/icons/offline.png"));
   }
+}
+
+bool
+RMSViewTab::doSave()
+{
+  QString fileName =
+      QFileDialog::getSaveFileName(
+        this,
+        "Save data to MATLAB file",
+        "power.npy",
+        "NumPy data file (*.npy);;Comma-separated values (CSV) (*.csv);;MATLAB script (*.m)");
+
+  if (fileName.size() == 0) {
+    ui->timeSpinBox->setTimeValue(m_time);
+    return false;
+  }
+
+  QFileInfo fi(fileName);
+
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+
+  try {
+    if (fi.suffix() == "m")
+      saveToMatlab(fileName);
+    else if (fi.suffix() == "csv")
+      saveToCSV(fileName);
+    else if (fi.suffix() == "npy")
+      saveToNPY(fileName);
+    else
+      throw std::runtime_error("Unrecognized file format");
+  } catch (std::runtime_error const &e) {
+    QApplication::restoreOverrideCursor();
+
+    QMessageBox::critical(this, "Save RMS data", QString(e.what()));
+  }
+
+  QApplication::restoreOverrideCursor();
+
+  return true;
 }
 
 void
 RMSViewTab::toggleModes(QObject *sender)
 {
-  if (sender == nullptr || sender == this->ui->autoScrollButton)
-    this->ui->waveform->setAutoScroll(this->ui->autoScrollButton->isChecked());
+  if (sender == nullptr || sender == ui->autoScrollButton)
+    ui->waveform->setAutoScroll(ui->autoScrollButton->isChecked());
 
-  if (sender == nullptr || sender == this->ui->autoFitButton)
-    this->ui->resetButton->setEnabled(!this->ui->autoFitButton->isChecked());
+  if (sender == nullptr || sender == ui->autoFitButton)
+    ui->resetButton->setEnabled(!ui->autoFitButton->isChecked());
 
-  if (sender == nullptr || sender == this->ui->dbButton) {
-    if (this->ui->dbButton->isChecked()) {
-      this->ui->waveform->setVerticalUnits("dB");
-      this->ui->waveform->setRealComponent(false);
+  if (sender == nullptr || sender == ui->dbButton) {
+    if (ui->dbButton->isChecked()) {
+      ui->waveform->setVerticalUnits("dB");
+      ui->waveform->setRealComponent(false);
     } else {
-      this->ui->waveform->setVerticalUnits("");
-      this->ui->waveform->setRealComponent(true);
+      ui->waveform->setVerticalUnits("");
+      ui->waveform->setRealComponent(true);
     }
   }
 
-  if (sender == nullptr || sender == this->ui->autoFitButton) {
-    this->ui->waveform->refreshData();
-    this->ui->waveform->setAutoFitToEnvelope(this->ui->autoFitButton->isChecked());
-    if (this->ui->autoFitButton->isChecked())
-      this->fitVertical();
+  if (sender == nullptr || sender == ui->autoFitButton) {
+    ui->waveform->refreshData();
+    ui->waveform->setAutoFitToEnvelope(ui->autoFitButton->isChecked());
+    if (ui->autoFitButton->isChecked())
+      fitVertical();
   }
 }
 
 void
 RMSViewTab::setVerticalLimitsLinear(qreal min, qreal max)
 {
-  if (this->ui->dbButton->isChecked()) {
+  if (ui->dbButton->isChecked()) {
     setVerticalLimitsDb(SU_POWER_DB_RAW(min), SU_POWER_DB_RAW(max));
     return;
   }
@@ -419,7 +521,7 @@ RMSViewTab::setVerticalLimitsLinear(qreal min, qreal max)
 void
 RMSViewTab::setVerticalLimitsDb(qreal min, qreal max)
 {
-  if (!this->ui->dbButton->isChecked()) {
+  if (!ui->dbButton->isChecked()) {
     setVerticalLimitsLinear(SU_POWER_MAG_RAW(min), SU_POWER_MAG_RAW(max));
     return;
   }
@@ -440,14 +542,14 @@ RMSViewTab::getMax() const
 }
 
 void
-RMSViewTab::fitVertical(void)
+RMSViewTab::fitVertical()
 {
-  if (this->ui->waveform->getDataLength() > 0) {
-    SUCOMPLEX dataMin = this->ui->waveform->getDataMin();
-    SUCOMPLEX dataMax = this->ui->waveform->getDataMax();
+  if (ui->waveform->getDataLength() > 0) {
+    SUCOMPLEX dataMin = ui->waveform->getDataMin();
+    SUCOMPLEX dataMax = ui->waveform->getDataMax();
     qreal min, max;
 
-    if (this->ui->dbButton->isChecked()) {
+    if (ui->dbButton->isChecked()) {
       min = SU_C_IMAG(dataMin);
       max = SU_C_IMAG(dataMax);
     } else {
@@ -460,14 +562,14 @@ RMSViewTab::fitVertical(void)
       max += 1;
     }
 
-    this->ui->waveform->zoomVertical(min, max);
+    ui->waveform->zoomVertical(min, max);
   }
 }
 
 bool
 RMSViewTab::userClear(QString const &message)
 {
-  if (this->data.size() > 0) {
+  if (m_data.size() > 0) {
     auto reply = QMessageBox::question(
           this,
           "Clear current plot",
@@ -477,117 +579,105 @@ RMSViewTab::userClear(QString const &message)
       ui->timeSpinBox->setTimeValue(m_time);
       return false;
     }
-    if (reply == QMessageBox::StandardButton::Yes) {
-      QString fileName =
-          QFileDialog::getSaveFileName(
-            this,
-            "Save data to MATLAB file",
-            "power.m",
-            "MATLAB scripts (*.m)");
 
-      if (fileName.size() == 0) {
-        ui->timeSpinBox->setTimeValue(m_time);
-        return false;
-      }
-
-      this->saveToMatlab(fileName);
-    }
+    if (reply == QMessageBox::StandardButton::Yes)
+      return doSave();
   }
 
   return true;
 }
 
 void
-RMSViewTab::connectAll(void)
+RMSViewTab::connectAll()
 {
   connect(
-        &this->timer,
+        &m_timer,
         SIGNAL(timeout()),
         this,
         SLOT(onTimeout()));
 
   if (socket != nullptr){
     connect(
-          this->socket,
+          socket,
           SIGNAL(disconnected()),
           this,
           SLOT(onSocketDisconnected()));
   }
 
   connect(
-        this->ui->stopButton,
+        ui->stopButton,
         SIGNAL(toggled(bool)),
         this,
         SLOT(onToggleStartStop()));
 
   connect(
-        this->ui->timeSpinBox,
+        ui->timeSpinBox,
         SIGNAL(changed(qreal, qreal)),
         this,
         SLOT(onTimeChanged(qreal, qreal)));
 
   connect(
-        this->ui->averageTimeSpinBox,
+        ui->averageTimeSpinBox,
         SIGNAL(changed(qreal, qreal)),
         this,
         SLOT(onAverageTimeChanged()));
 
   connect(
-        this->ui->saveButton,
+        ui->saveButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onSave()));
 
   connect(
-        this->ui->resetButton,
+        ui->resetButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onResetZoom()));
 
   connect(
-        this->ui->autoScrollButton,
+        ui->autoScrollButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onToggleModes()));
 
   connect(
-        this->ui->autoFitButton,
+        ui->autoFitButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onToggleModes()));
 
   connect(
-        this->ui->dbButton,
+        ui->dbButton,
         SIGNAL(clicked(bool)),
         this,
         SLOT(onToggleModes()));
 
   connect(
-        this->ui->intSpin,
+        ui->intSpin,
         SIGNAL(valueChanged(int)),
         this,
         SLOT(onValueChanged(int)));
 
   connect(
-        this->ui->waveform,
+        ui->waveform,
         SIGNAL(pointClicked(qreal, qreal, Qt::KeyboardModifiers)),
         this,
         SLOT(onPointClicked(qreal,qreal, Qt::KeyboardModifiers)));
 
   connect(
-        this->ui->waveform,
+        ui->waveform,
         SIGNAL(toolTipAt(int, int, qreal, qreal)),
         this,
         SLOT(onToolTip(int,int,qreal,qreal)));
 
   connect(
-        this->ui->timeScaleCombo,
+        ui->timeScaleCombo,
         SIGNAL(activated(int)),
         this,
         SLOT(onTimeScaleChanged()));
 
   connect(
-        this->ui->dateTimeEdit,
+        ui->dateTimeEdit,
         SIGNAL(dateTimeChanged(QDateTime)),
         this,
         SLOT(onTimeScaleChanged()));
@@ -601,7 +691,7 @@ RMSViewTab::running() const
 
 RMSViewTab::~RMSViewTab()
 {
-  this->disconnectSocket();
+  disconnectSocket();
   delete ui;
 }
 
@@ -649,26 +739,18 @@ RMSViewTab::setAutoScroll(bool enabled)
 
 //////////////////////////////////// Slots /////////////////////////////////////
 void
-RMSViewTab::onSave(void)
+RMSViewTab::onSave()
 {
-  QString fileName =
-      QFileDialog::getSaveFileName(
-        this,
-        "Save data to MATLAB file",
-        "power.m",
-        "MATLAB scripts (*.m)");
-
-  if (fileName.size() > 0)
-    this->saveToMatlab(fileName);
+  doSave();
 }
 
 void
-RMSViewTab::onToggleStartStop(void)
+RMSViewTab::onToggleStartStop()
 {
   if (m_running != ui->stopButton->isChecked()) {
     if (m_running) {
       // Disconnect
-      this->disconnectSocket();
+      disconnectSocket();
     } else {
       // Starting
       if (!userClear(
@@ -685,48 +767,48 @@ RMSViewTab::onToggleStartStop(void)
 }
 
 void
-RMSViewTab::onTimeout(void)
+RMSViewTab::onTimeout()
 {
-  if (this->socket != nullptr)
-    this->processSocketData();
+  if (socket != nullptr)
+    processSocketData();
 }
 
 void
-RMSViewTab::onToggleModes(void)
+RMSViewTab::onToggleModes()
 {
   QObject *sender = QObject::sender();
 
-  this->toggleModes(sender);
+  toggleModes(sender);
 
   emit viewTypeChanged();
 }
 
 void
-RMSViewTab::onResetZoom(void)
+RMSViewTab::onResetZoom()
 {
-  this->fitVertical();
-  this->ui->waveform->zoomHorizontalReset();
+  fitVertical();
+  ui->waveform->zoomHorizontalReset();
 }
 
 void
-RMSViewTab::onSocketDisconnected(void)
+RMSViewTab::onSocketDisconnected()
 {
-  this->socket = nullptr;
-  this->disconnectSocket();
+  socket = nullptr;
+  disconnectSocket();
 }
 
 void
 RMSViewTab::onValueChanged(int)
 {
-  this->energy_accum = 0;
-  this->accum_ctr = 0;
-  this->ui->sinceLabel->setText("Since: N/A");
-  this->ui->lastLabel->setText("Last: N/A");
-  this->data.clear();
-  this->ui->waveform->setSampleRate(rate / this->ui->intSpin->value());
-  this->ui->waveform->refreshData();
-  if (this->ui->autoFitButton->isChecked())
-    this->fitVertical();
+  m_energyAccum = 0;
+  m_accumCtr = 0;
+  ui->sinceLabel->setText("Since: N/A");
+  ui->lastLabel->setText("Last: N/A");
+  m_data.clear();
+  ui->waveform->setSampleRate(m_rate / ui->intSpin->value());
+  ui->waveform->refreshData();
+  if (ui->autoFitButton->isChecked())
+    fitVertical();
 }
 
 void
@@ -764,10 +846,10 @@ RMSViewTab::onAverageTimeChanged()
         "Do you want to save the current plot first?"))
     goto done;
 
-  points = SCAST(int, ui->averageTimeSpinBox->timeValue() * this->rate);
+  points = SCAST(int, ui->averageTimeSpinBox->timeValue() * m_rate);
   if (points < 1)
     points = 1;
-  ui->averageTimeSpinBox->setTimeValue(points / this->rate);
+  ui->averageTimeSpinBox->setTimeValue(points / m_rate);
   ui->intSpin->setValue(points);
   onValueChanged(0);
 

@@ -37,13 +37,13 @@ namespace SigDigger {
       Q_OBJECT
 
       QTcpSocket *socket = nullptr;
-      QTimer timer;
-      std::string line;
-      std::vector<SUCOMPLEX> data;
+      QTimer m_timer;
+      std::string m_line;
+      std::vector<SUCOMPLEX> m_data;
 
-      qreal rate = 1;
-      qreal first;
-      qreal last;
+      qreal m_rate = 1;
+      qreal m_first;
+      qreal m_last;
 
       qreal m_time = 0;
 
@@ -61,8 +61,8 @@ namespace SigDigger {
 
       int   m_extraIntegration = 0;
 
-      int     accum_ctr = 0;
-      SUFLOAT energy_accum = 0;
+      int     m_accumCtr = 0;
+      SUFLOAT m_energyAccum = 0;
 
       void refreshUi();
       void refreshSampleRate();
@@ -71,10 +71,12 @@ namespace SigDigger {
       bool parseLine();
       void processSocketData();
       bool saveToMatlab(QString const &);
+      bool saveToCSV(QString const &);
+      bool saveToNPY(QString const &);
       void disconnectSocket();
       void fitVertical();
       void toggleModes(QObject *sender);
-
+      bool doSave();
       bool userClear(QString const &);
       qreal getCurrentTimeDelta() const;
       bool  intTimeMode() const;
