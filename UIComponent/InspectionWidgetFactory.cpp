@@ -272,7 +272,7 @@ InspectionWidgetFactory::registerGlobally()
 bool
 InspectionWidgetFactory::worksWith(QString inspClass) const
 {
-  return inspClass != "raw" && inspClass != "power";
+  return inspClass != "power";
 }
 
 bool

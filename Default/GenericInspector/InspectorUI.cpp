@@ -370,6 +370,8 @@ InspectorUI::setSampleRate(float rate)
 
   for (auto p : this->controls)
     p->setSampleRate(rate);
+
+  onInspectorControlChanged();
 }
 
 void
@@ -1188,7 +1190,9 @@ InspectorUI::getBaudRateFloat(void) const
   // Check baudrate
   if ((val = this->config->get("clock.baud")) != nullptr)
     baud = val->getFloat();
-
+  else
+    baud = sampleRate;
+  
   return baud;
 }
 
