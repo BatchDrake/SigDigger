@@ -24,7 +24,7 @@
 #include <suscan.h>
 #include <analyzer/version.h>
 #include <QtGui>
-#include <Suscan/Plugin.h>
+#include <Suscan/PluginSupport.h>
 #include <FeatureFactory.h>
 #include <ToolWidgetFactory.h>
 #include <TabWidgetFactory.h>

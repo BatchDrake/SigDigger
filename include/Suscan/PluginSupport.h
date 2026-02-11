@@ -1,5 +1,5 @@
 //
-//    Plugin.h: Plugin support
+//    PluginSupport.h: Plugin support
 //    Copyright (C) 2022 Gonzalo José Carracedo Carballal
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,8 @@
 //    License along with this program.  If not, see
 //    <http://www.gnu.org/licenses/>
 //
-#ifndef PLUGIN_H
-#define PLUGIN_H
+#ifndef _SUSCAN_PLUGIN_SUPPORT_H
+#define _SUSCAN_PLUGIN_SUPPORT_H
 
 #include <string>
 #include <stdint.h>
@@ -80,4 +80,4 @@ namespace Suscan {
   };
 }
 
-#endif // PLUGIN_H
+#endif // _SUSCAN_PLUGIN_SUPPORT_H

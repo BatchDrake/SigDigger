@@ -17,7 +17,7 @@
 //    <http://www.gnu.org/licenses/>
 //
 #include <FeatureFactory.h>
-#include <Suscan/Plugin.h>
+#include <Suscan/PluginSupport.h>
 #include <cassert>
 
 using namespace Suscan;

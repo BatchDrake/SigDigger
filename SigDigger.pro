@@ -182,7 +182,7 @@ SOURCES += \
     Suscan/Messages/StatusMessage.cpp \
     Suscan/MultitaskController.cpp \
     Suscan/Object.cpp \
-    Suscan/Plugin.cpp \
+    Suscan/PluginSupport.cpp \
     Suscan/Serializable.cpp \
     Suscan/Source.cpp \
     Tasks/AGCTask.cpp \
@@ -282,7 +282,7 @@ SUSCAN_HEADERS += \
     include/Suscan/MQ.h \
     include/Suscan/MultitaskController.h \
     include/Suscan/Object.h \
-    include/Suscan/Plugin.h \
+    include/Suscan/PluginSupport.h \
     include/Suscan/Serializable.h \
     include/Suscan/Source.h \
     include/Suscan/SpectrumSource.h

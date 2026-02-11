@@ -19,7 +19,7 @@
 
 #define SU_LOG_DOMAIN "sigdigger-plugin"
 
-#include <Suscan/Plugin.h>
+#include <Suscan/PluginSupport.h>
 #include <cstdio>
 #include <Suscan/Logger.h>
 #include <SuWidgetsHelpers.h>
